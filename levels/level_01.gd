@@ -22,6 +22,7 @@ const SPAWN_POSITION := Vector2(56, 214)
 @onready var music: AudioStreamPlayer = %Music
 
 var _cleared: bool = false
+var _web_audio_locked: bool = false
 
 
 func _ready() -> void:
@@ -34,6 +35,18 @@ func _ready() -> void:
 	_spawn_actors()
 	fall_zone.body_entered.connect(_on_fall_zone_body_entered)
 	player.connect(&"respawn_requested", _respawn_player)
+	if OS.has_feature("web"):
+		_web_audio_locked = true
+		hud.show_press_to_start()
+	else:
+		_start_music()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not _web_audio_locked or not event.is_pressed() or event.is_echo():
+		return
+	_web_audio_locked = false
+	hud.hide_press_to_start()
 	_start_music()
 
 

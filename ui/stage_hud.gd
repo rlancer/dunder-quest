@@ -3,6 +3,7 @@ extends CanvasLayer
 
 var seed_count: int = 0
 var cleared: bool = false
+var waiting_for_start: bool = false
 
 
 func _ready() -> void:
@@ -20,8 +21,21 @@ func note_seed() -> void:
 	%SeedCount.text = "Emberseeds %d" % seed_count
 
 
+func show_press_to_start() -> void:
+	waiting_for_start = true
+	%Hint.text = "Press any key to play"
+	%Hint.show()
+
+
+func hide_press_to_start() -> void:
+	waiting_for_start = false
+	if not cleared:
+		%Hint.hide()
+
+
 func show_clear() -> void:
 	cleared = true
+	waiting_for_start = false
 	%ClearPanel.show()
 	%Hint.hide()
 
@@ -31,5 +45,5 @@ func is_cleared() -> bool:
 
 
 func _hide_hint() -> void:
-	if not cleared:
+	if not cleared and not waiting_for_start:
 		%Hint.hide()

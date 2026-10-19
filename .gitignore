@@ -25,5 +25,8 @@ build/
 # Generator output and caches
 __pycache__/
 *.pyc
+node_modules/
+deploy/.cloudflare/
+.playwright-mcp/
 tools/generated/
 tools/generation_log.txt

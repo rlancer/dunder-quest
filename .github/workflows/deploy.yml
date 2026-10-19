@@ -1,0 +1,61 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CF_SEND_TELEMETRY: "false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache Godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/godot-web
+            ~/.local/share/godot/export_templates
+          key: godot-4.7.2-web-v1
+
+      - name: Export the web build
+        run: bash scripts/export_web.sh
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+
+      - name: Install the deploy CLI
+        working-directory: deploy
+        run: bun install --frozen-lockfile
+
+      - name: Check the build
+        if: github.event_name == 'pull_request'
+        working-directory: deploy
+        run: npx --no-install cf deploy --mode ${{ github.base_ref == 'main' && 'production' || 'dev' }} --dry-run
+
+      - name: Deploy dev
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+        working-directory: deploy
+        run: npx --no-install cf deploy --mode dev
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Deploy production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: deploy
+        run: npx --no-install cf deploy --mode production
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
