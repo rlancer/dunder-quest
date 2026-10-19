@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "godot-characterbody-2d": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-characterbody-2d/SKILL.md",
+      "computedHash": "395d2d91299184ef44fe263aa2e43cb2f027f9d773aa94a94cd1c9f27a783863"
+    },
+    "godot-genre-platformer": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-genre-platformer/SKILL.md",
+      "computedHash": "191b68a963fbb5541a299617f68c41fe7e8fa3e5f5d4ec5f89b96b7effdddd6c"
+    },
+    "godot-input-handling": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-input-handling/SKILL.md",
+      "computedHash": "d0beb039257932e2454d01d7ad4ef652ac7da040bf4585fe9e82270448b0e2cf"
+    },
+    "godot-master": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-master/SKILL.md",
+      "computedHash": "077f083a2cbd8847d7b0750d2ac4aebee1ace3b07a65cc5aba1971b385f11822"
+    },
+    "godot-project-foundations": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-project-foundations/SKILL.md",
+      "computedHash": "cac8f0838ec930f36032d0fe0dee743860ea4225a11213fd71855150a25ace0c"
+    },
+    "godot-tilemap-mastery": {
+      "source": "devinlee/gd-agentic-skills",
+      "sourceType": "github",
+      "skillPath": "skills/godot-tilemap-mastery/SKILL.md",
+      "computedHash": "cfee43a727d982b61b9fb3ba4444f78150023cfb31e2a155858c74f2543be720"
+    }
+  }
+}

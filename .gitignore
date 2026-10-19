@@ -1,0 +1,29 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+
+# Godot-specific ignores
+.import/
+*.translation
+
+# Mono / .NET
+.mono/
+data_*/
+mono_crash.*.json
+
+# Export artifacts
+build/
+*.exe
+*.pck
+*.zip
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Generator output and caches
+__pycache__/
+*.pyc
+tools/generated/
+tools/generation_log.txt

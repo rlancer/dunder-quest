@@ -1,0 +1,26 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://entities/blocks/cache_stone.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cache_stone.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cache_stone_spent.png" id="3_spent"]
+[ext_resource type="PackedScene" path="res://entities/pickup/emberseed.tscn" id="4_pickup"]
+[ext_resource type="AudioStream" path="res://assets/audio/bump.wav" id="5_bump"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_block"]
+size = Vector2(16, 16)
+
+[node name="CacheStone" type="StaticBody2D"]
+z_index = 2
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_script")
+spent_texture = ExtResource("3_spent")
+pickup_scene = ExtResource("4_pickup")
+bump_sound = ExtResource("5_bump")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+texture = ExtResource("2_tex")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("RectangleShape2D_block")

@@ -1,0 +1,38 @@
+{
+  "images": {
+    "emberseed": "generated",
+    "pebble": "generated",
+    "copperling": "generated",
+    "cache_stone": "generated",
+    "waygate": "generated",
+    "clay_brick": "generated",
+    "cache_stone_spent": "generated",
+    "tile_ground": "generated",
+    "tile_one_way": "generated",
+    "tile_slab": "generated",
+    "tile_fill": "failed",
+    "tileset": "failed"
+  },
+  "audio": {
+    "music_loop": "generated",
+    "jump": "generated",
+    "stomp": "generated",
+    "pickup": "generated",
+    "bump": "generated",
+    "break": "generated",
+    "goal": "generated"
+  },
+  "failures": [
+    {
+      "item": "tile_fill",
+      "error": "tile_fill image was blank after processing"
+    },
+    {
+      "item": "tileset",
+      "error": "[Errno 2] No such file or directory: 'C:\\\\Users\\\\Rob\\\\Desktop\\\\gdot-mario\\\\tools\\\\generated\\\\sprites\\\\tile_fill.png'"
+    }
+  ],
+  "image_model": "sourceful/riverflow-v2.5-pro",
+  "music_model": "google/lyria-3-pro-preview",
+  "sfx_model": "bytedance-seed/seed-audio-1-0"
+}
