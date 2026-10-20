@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tests/playtest_driver.gd" id="1_driver"]
+[ext_resource type="PackedScene" path="res://levels/level_03.tscn" id="2_level"]
+
+[node name="KilnBackSection" type="Node"]
+script = ExtResource("1_driver")
+level_scene = ExtResource("2_level")
+section_spawn = Vector2(900, 216)
+section_limit = 900
+section_goal = "clear"

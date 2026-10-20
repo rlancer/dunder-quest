@@ -6,6 +6,8 @@ const GROUND := Vector2i(0, 0)
 const FILL := Vector2i(1, 0)
 const SLAB := Vector2i(2, 0)
 const ONE_WAY := Vector2i(3, 0)
+const EMBER := Vector2i(4, 0)
+const EMBER_FRAMES := 3
 
 
 static func build(texture: Texture2D) -> TileSet:
@@ -19,13 +21,19 @@ static func build(texture: Texture2D) -> TileSet:
 	source.texture = texture
 	source.texture_region_size = Vector2i(16, 16)
 	tileset.add_source(source, SOURCE)
-	for atlas in [GROUND, FILL, SLAB, ONE_WAY]:
+	for atlas in [GROUND, FILL, SLAB, ONE_WAY, EMBER]:
 		source.create_tile(atlas)
+	# Ember flickers through the frames painted to its right in the sheet.
+	if texture.get_width() >= (EMBER.x + EMBER_FRAMES) * 16:
+		source.set_tile_animation_columns(EMBER, 0)
+		source.set_tile_animation_frames_count(EMBER, EMBER_FRAMES)
+		source.set_tile_animation_speed(EMBER, 6.0)
 
 	_add_polygon(source.get_tile_data(GROUND, 0), _full_square(), false)
 	_add_polygon(source.get_tile_data(FILL, 0), _full_square(), false)
 	_add_polygon(source.get_tile_data(SLAB, 0), _full_square(), false)
 	_add_polygon(source.get_tile_data(ONE_WAY, 0), _top_strip(), true)
+	_add_polygon(source.get_tile_data(EMBER, 0), _full_square(), false)
 	return tileset
 
 

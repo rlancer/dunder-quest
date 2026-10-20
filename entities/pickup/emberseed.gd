@@ -37,4 +37,6 @@ func _on_body_entered(body: Node2D) -> void:
 	_taken = true
 	collected.emit()
 	StageAudio.play(get_tree(), collect_sound)
+	Fx.sparks(get_parent(), global_position, Fx.SPARK, 10, 60.0)
+	Fx.float_text(get_parent(), global_position, "+1")
 	queue_free()

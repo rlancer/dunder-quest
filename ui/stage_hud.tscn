@@ -1,85 +1,285 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://ui/stage_hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emberseed.png" id="2_seed"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip"]
+content_margin_left = 5.0
+content_margin_top = 1.0
+content_margin_right = 6.0
+content_margin_bottom = 1.0
+bg_color = Color(0.07, 0.04, 0.09, 0.62)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+anti_aliasing = false
 
 [node name="Hud" type="CanvasLayer"]
+process_mode = 3
+layer = 10
 script = ExtResource("1_hud")
 
 [node name="Title" type="Label" parent="."]
 unique_name_in_owner = true
 offset_left = 8.0
-offset_top = 4.0
+offset_top = 3.0
 offset_right = 220.0
-offset_bottom = 24.0
+offset_bottom = 20.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.98, 0.94, 0.84, 1)
-theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.12, 1)
-theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 16
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
 text = "Amber Hollow"
 
-[node name="SeedCount" type="Label" parent="."]
-unique_name_in_owner = true
-offset_left = 8.0
-offset_top = 22.0
-offset_right = 220.0
-offset_bottom = 40.0
+[node name="SeedChip" type="PanelContainer" parent="."]
+offset_left = 6.0
+offset_top = 20.0
+offset_right = 60.0
+offset_bottom = 36.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(1, 0.82, 0.45, 1)
-theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.12, 1)
+theme_override_styles/panel = SubResource("StyleBoxFlat_chip")
+
+[node name="Row" type="HBoxContainer" parent="SeedChip"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 3
+
+[node name="SeedIcon" type="TextureRect" parent="SeedChip/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = ExtResource("2_seed")
+stretch_mode = 3
+
+[node name="SeedCount" type="Label" parent="SeedChip/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.46, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "0/0"
+
+[node name="Clock" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -40.0
+offset_top = 3.0
+offset_right = 40.0
+offset_bottom = 20.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.92, 0.94, 1, 1)
 theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 12
-text = "Emberseeds 0"
+theme_override_font_sizes/font_size = 13
+text = "0:00.0"
+horizontal_alignment = 1
+
+[node name="Falls" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -40.0
+offset_top = 17.0
+offset_right = 40.0
+offset_bottom = 30.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.9, 0.62, 0.6, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+
+[node name="MapButton" type="Button" parent="."]
+unique_name_in_owner = true
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -70.0
+offset_top = 4.0
+offset_right = -6.0
+offset_bottom = 20.0
+grow_horizontal = 0
+focus_mode = 0
+theme_override_font_sizes/font_size = 10
+text = "Pause [Esc]"
 
 [node name="Hint" type="Label" parent="."]
 unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
 offset_left = 8.0
-offset_top = 248.0
-offset_right = 360.0
-offset_bottom = 266.0
+offset_top = -19.0
+offset_right = 400.0
+offset_bottom = -4.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.9, 0.92, 0.96, 0.9)
-theme_override_colors/font_outline_color = Color(0.08, 0.06, 0.12, 1)
+theme_override_colors/font_color = Color(0.92, 0.92, 0.98, 0.95)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Move A/D    Jump Space"
+text = "Move A/D  Jump Space  Pause Esc"
+
+[node name="PausePanel" type="Control" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Dim" type="ColorRect" parent="PausePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.04, 0.02, 0.07, 0.6)
+
+[node name="Center" type="CenterContainer" parent="PausePanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="Box" type="PanelContainer" parent="PausePanel/Center"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="Items" type="VBoxContainer" parent="PausePanel/Center/Box"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="PauseTitle" type="Label" parent="PausePanel/Center/Box/Items"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.46, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 16
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="PauseStats" type="Label" parent="PausePanel/Center/Box/Items"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.74, 0.86, 1)
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="PausePanel/Center/Box/Items"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Resume"
+
+[node name="RestartButton" type="Button" parent="PausePanel/Center/Box/Items"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Restart stage"
+
+[node name="QuitButton" type="Button" parent="PausePanel/Center/Box/Items"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "World map"
 
 [node name="ClearPanel" type="Control" parent="."]
 unique_name_in_owner = true
 visible = false
+layout_mode = 3
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 mouse_filter = 2
 
 [node name="Dim" type="ColorRect" parent="ClearPanel"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
-color = Color(0.05, 0.04, 0.1, 0.55)
+color = Color(0.05, 0.03, 0.08, 0.55)
 
 [node name="Center" type="CenterContainer" parent="ClearPanel"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 
-[node name="Copy" type="VBoxContainer" parent="ClearPanel/Center"]
-mouse_filter = 2
-theme_override_constants/separation = 4
+[node name="Box" type="PanelContainer" parent="ClearPanel/Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(190, 0)
+layout_mode = 2
 
-[node name="Headline" type="Label" parent="ClearPanel/Center/Copy"]
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.99, 0.95, 0.86, 1)
-theme_override_colors/font_outline_color = Color(0.1, 0.07, 0.16, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 22
-text = "Waygate reached"
-horizontal_alignment = 1
+[node name="Copy" type="VBoxContainer" parent="ClearPanel/Center/Box"]
+layout_mode = 2
+theme_override_constants/separation = 3
 
-[node name="Subhead" type="Label" parent="ClearPanel/Center/Copy"]
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.78, 0.9, 0.86, 1)
-theme_override_colors/font_outline_color = Color(0.1, 0.07, 0.16, 1)
+[node name="Headline" type="Label" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.86, 0.5, 1)
 theme_override_constants/outline_size = 4
-theme_override_font_sizes/font_size = 12
-text = "Amber Hollow is open"
+theme_override_font_sizes/font_size = 26
+text = "Stage clear"
 horizontal_alignment = 1
+
+[node name="Subhead" type="Label" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.92, 0.86, 1)
+theme_override_font_sizes/font_size = 13
+text = "Cinder Span awaits"
+horizontal_alignment = 1
+
+[node name="Rule" type="ColorRect" parent="ClearPanel/Center/Box/Copy"]
+custom_minimum_size = Vector2(0, 1)
+layout_mode = 2
+mouse_filter = 2
+color = Color(0.78, 0.5, 0.26, 0.6)
+
+[node name="Stats" type="GridContainer" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 0
+columns = 2
+
+[node name="Best" type="Label" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.6, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 13
+text = "New best time!"
+horizontal_alignment = 1
+
+[node name="ContinueHint" type="Label" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.78, 0.9, 1)
+theme_override_font_sizes/font_size = 10
+text = "Press Jump to continue"
+horizontal_alignment = 1
+
+[node name="ClearMapButton" type="Button" parent="ClearPanel/Center/Box/Copy"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Return to map"
+
+[node name="Fade" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.03, 0.02, 0.05, 1)

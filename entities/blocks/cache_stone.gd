@@ -20,6 +20,16 @@ func _ready() -> void:
 	_rest_y = position.y
 
 
+func _process(_delta: float) -> void:
+	# The rune breathes until the stone is spent, so it reads as "hit me".
+	var sprite := %Sprite as Sprite2D
+	if spent:
+		sprite.modulate = Color.WHITE
+		return
+	var glow := 0.5 + 0.5 * sin(float(Time.get_ticks_msec()) / 260.0)
+	sprite.modulate = Color(1.0 + glow * 0.18, 1.0 + glow * 0.1, 1.0)
+
+
 func _exit_tree() -> void:
 	if _tween != null:
 		_tween.kill()
@@ -34,6 +44,7 @@ func receive_head_bump() -> void:
 	if spent_texture != null:
 		sprite.texture = spent_texture
 	StageAudio.play(get_tree(), bump_sound)
+	Fx.sparks(get_parent(), global_position + Vector2(0.0, -8.0), Fx.SPARK, 8, 50.0)
 	if pickup_scene == null:
 		return
 	var pickup := pickup_scene.instantiate() as Node2D

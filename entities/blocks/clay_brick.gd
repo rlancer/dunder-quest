@@ -28,6 +28,7 @@ func receive_head_bump() -> void:
 	StageAudio.play(get_tree(), break_sound)
 	var sprite := %Sprite as Sprite2D
 	_scatter(sprite)
+	Fx.dust(get_parent(), global_position, 8)
 	_tween = create_tween()
 	_tween.tween_property(sprite, "scale", Vector2(1.25, 0.3), 0.08)
 	_tween.parallel().tween_property(sprite, "modulate:a", 0.0, 0.12)
@@ -40,14 +41,23 @@ func _scatter(sprite: Sprite2D) -> void:
 	var parent_node := get_parent()
 	if parent_node == null:
 		return
-	for index in 3:
+	for index in 4:
+		# Quarter-brick chunks that pop up, then tumble down under gravity.
 		var bit := Sprite2D.new()
 		bit.texture = sprite.texture
-		bit.scale = Vector2(0.45, 0.45)
-		bit.global_position = global_position
+		bit.region_enabled = true
+		bit.region_rect = Rect2((index % 2) * 8, (index / 2) * 8, 8, 8)
+		bit.global_position = global_position + Vector2(float(index % 2) * 8.0 - 4.0, float(index / 2) * 8.0 - 4.0)
+		bit.z_index = 4
 		parent_node.add_child(bit)
+		var side := -1.0 if index % 2 == 0 else 1.0
+		var rise := -22.0 if index < 2 else -12.0
+		var start := bit.global_position
 		var tween := bit.create_tween()
-		var hop := Vector2(float(index - 1) * 12.0, -16.0)
-		tween.tween_property(bit, "global_position", bit.global_position + hop, 0.16)
-		tween.parallel().tween_property(bit, "modulate:a", 0.0, 0.2)
+		tween.tween_method(
+			func(t: float) -> void:
+				bit.global_position = start + Vector2(side * 26.0 * t, rise * 4.0 * t + 120.0 * t * t)
+				bit.rotation = side * t * 6.0,
+			0.0, 1.0, 0.55)
+		tween.parallel().tween_property(bit, "modulate:a", 0.0, 0.2).set_delay(0.35)
 		tween.tween_callback(bit.queue_free)

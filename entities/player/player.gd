@@ -31,6 +31,10 @@ var _sprite_base_y: float = -4.0
 var _was_on_floor: bool = false
 var _respawn_locked: bool = false
 var _squash_tween: Tween
+var _death_tween: Tween
+var _facing: float = 1.0
+var _step_timer: float = 0.0
+var _dead: bool = false
 
 
 func _ready() -> void:
@@ -47,6 +51,8 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _squash_tween != null:
 		_squash_tween.kill()
+	if _death_tween != null:
+		_death_tween.kill()
 
 
 func _physics_process(delta: float) -> void:
@@ -74,6 +80,7 @@ func _physics_process(delta: float) -> void:
 		jumped = true
 		StageAudio.play(get_tree(), jump_sound)
 		_play_squash(0.82, 1.16)
+		Fx.dust(get_parent(), global_position + Vector2(0.0, 8.0), 5)
 
 	if controls_enabled and Input.is_action_just_released(&"jump") and not Input.is_action_just_pressed(&"jump") and velocity.y < 0.0:
 		velocity.y *= jump_cut_multiplier
@@ -85,14 +92,18 @@ func _physics_process(delta: float) -> void:
 	var rate := acceleration if direction != 0.0 else (friction if is_on_floor() else air_resistance)
 	velocity.x = move_toward(velocity.x, target_speed, rate * delta)
 	if direction > 0.0:
-		sprite.scale.x = 1.0
+		_facing = 1.0
 	elif direction < 0.0:
-		sprite.scale.x = -1.0
+		_facing = -1.0
 
 	var fall_speed := velocity.y
 	var collided := move_and_slide()
-	if is_on_floor() and not _was_on_floor and fall_speed > 220.0 and not jumped:
-		_play_squash(1.16, 0.82)
+	if is_on_floor() and not _was_on_floor and not jumped:
+		if fall_speed > 220.0:
+			_play_squash(1.16, 0.82)
+		if fall_speed > 120.0:
+			Fx.dust(get_parent(), global_position + Vector2(0.0, 8.0), 7)
+	_kick_up_steps(delta, direction)
 	_was_on_floor = is_on_floor()
 	if is_on_ceiling() and velocity.y < 0.0:
 		velocity.y = 0.0
@@ -101,11 +112,58 @@ func _physics_process(delta: float) -> void:
 
 
 func _process(_delta: float) -> void:
+	if _dead:
+		return
 	var bob := 0.0
 	if is_on_floor() and absf(velocity.x) > 20.0 and int(Time.get_ticks_msec() / 140) % 2 == 0:
 		bob = -1.0
 	sprite.position = Vector2(0.0, _sprite_base_y + bob)
+	# Stretch along the fall or rise so airtime reads at a glance.
+	var stretch := 0.0
+	if not is_on_floor():
+		stretch = clampf(absf(velocity.y) / 900.0, 0.0, 0.14)
+	sprite.scale = Vector2(_facing * (1.0 - stretch * 0.6), 1.0 + stretch)
 	visual.position = global_position.round() - global_position
+	camera.look_toward(_facing, absf(velocity.x) > 40.0)
+
+
+## Freezes the body and plays the knocked-out hop. The stage moves it home after.
+func play_death() -> void:
+	_dead = true
+	controls_enabled = false
+	jump_buffer_timer = 0.0
+	velocity = Vector2.ZERO
+	# Physics stops, but the collision layer stays: toggling it makes the fall
+	# zone report a fresh entry once the body is already back at the spawn.
+	set_physics_process(false)
+	camera.shake(5.0)
+	if _squash_tween != null:
+		_squash_tween.kill()
+	visual.scale = Vector2.ONE
+	sprite.scale = Vector2(_facing, -1.0)
+	sprite.modulate = Color(1.0, 0.7, 0.6)
+	if _death_tween != null:
+		_death_tween.kill()
+	_death_tween = create_tween()
+	_death_tween.tween_property(sprite, "position:y", _sprite_base_y - 22.0, 0.22).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_death_tween.tween_property(sprite, "position:y", _sprite_base_y + 160.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+
+
+func revive() -> void:
+	if _death_tween != null:
+		_death_tween.kill()
+	_dead = false
+	sprite.modulate = Color.WHITE
+	sprite.scale = Vector2(_facing, 1.0)
+	sprite.position = Vector2(0.0, _sprite_base_y)
+	velocity = Vector2.ZERO
+	set_physics_process(true)
+	controls_enabled = true
+	_was_on_floor = false
+
+
+func is_dead() -> bool:
+	return _dead
 
 
 func set_controls_enabled(enabled: bool) -> void:
@@ -119,6 +177,7 @@ func set_camera_bounds(bounds: Rect2i) -> void:
 
 
 func reset_camera() -> void:
+	camera.reset_lead()
 	camera.reset_smoothing()
 	camera.force_update_scroll()
 
@@ -142,6 +201,7 @@ func _handle_contacts() -> void:
 			velocity.y = stomp_bounce_velocity
 			StageAudio.play(get_tree(), stomp_sound)
 			_play_squash(1.2, 0.78)
+			camera.shake(2.0)
 	if not controls_enabled:
 		return
 	for index in get_slide_collision_count():
@@ -173,6 +233,18 @@ func _ask_respawn() -> void:
 		return
 	_respawn_locked = true
 	respawn_requested.emit()
+
+
+func _kick_up_steps(delta: float, direction: float) -> void:
+	if not is_on_floor() or absf(velocity.x) < 120.0:
+		_step_timer = 0.0
+		return
+	_step_timer -= delta
+	# A skid puff when reversing, otherwise a light footfall every few steps.
+	var skidding := direction != 0.0 and signf(direction) != signf(velocity.x)
+	if _step_timer <= 0.0 or skidding:
+		_step_timer = 0.09 if skidding else 0.28
+		Fx.dust(get_parent(), global_position + Vector2(-signf(velocity.x) * 4.0, 8.0), 2 if not skidding else 4, -signf(velocity.x))
 
 
 func _play_squash(wide: float, tall: float) -> void:

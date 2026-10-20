@@ -1,0 +1,333 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://levels/world_map.gd" id="1_map"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/world_map.png" id="2_map"]
+[ext_resource type="Script" path="res://levels/world_map_path_drawer.gd" id="5_drawer"]
+[ext_resource type="Texture2D" path="res://assets/sprites/emberseed.png" id="7_seed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/pebble.png" id="8_pebble"]
+[ext_resource type="Script" path="res://common/stage_audio.gd" id="9_audio"]
+
+[node name="WorldMap" type="Node2D"]
+script = ExtResource("1_map")
+
+[node name="MapArt" type="Sprite2D" parent="."]
+texture_filter = 1
+texture = ExtResource("2_map")
+centered = false
+
+[node name="PathDrawer" type="Node2D" parent="."]
+unique_name_in_owner = true
+script = ExtResource("5_drawer")
+
+[node name="Nodes" type="Node2D" parent="."]
+
+[node name="StageNode1" type="Node2D" parent="Nodes"]
+unique_name_in_owner = true
+position = Vector2(78, 116)
+
+[node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode1"]
+visible = false
+texture_filter = 0
+position = Vector2(0, -22)
+texture = ExtResource("7_seed")
+
+[node name="NumberBadge" type="Label" parent="Nodes/StageNode1"]
+offset_left = -10.0
+offset_top = -7.0
+offset_right = 10.0
+offset_bottom = 6.0
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
+text = "1"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="Nodes/StageNode1"]
+offset_left = -50.0
+offset_top = 9.0
+offset_right = 50.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Amber Hollow"
+horizontal_alignment = 1
+
+[node name="ClickButton" type="Button" parent="Nodes/StageNode1"]
+offset_left = -20.0
+offset_top = -25.0
+offset_right = 20.0
+offset_bottom = 25.0
+focus_mode = 0
+flat = true
+
+[node name="StageNode2" type="Node2D" parent="Nodes"]
+unique_name_in_owner = true
+position = Vector2(240, 104)
+
+[node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode2"]
+visible = false
+texture_filter = 0
+position = Vector2(0, -22)
+texture = ExtResource("7_seed")
+
+[node name="NumberBadge" type="Label" parent="Nodes/StageNode2"]
+offset_left = -10.0
+offset_top = -7.0
+offset_right = 10.0
+offset_bottom = 6.0
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
+text = "2"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="Nodes/StageNode2"]
+offset_left = -50.0
+offset_top = 9.0
+offset_right = 50.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Cinder Span"
+horizontal_alignment = 1
+
+[node name="ClickButton" type="Button" parent="Nodes/StageNode2"]
+offset_left = -20.0
+offset_top = -25.0
+offset_right = 20.0
+offset_bottom = 25.0
+focus_mode = 0
+flat = true
+
+[node name="StageNode3" type="Node2D" parent="Nodes"]
+unique_name_in_owner = true
+position = Vector2(392, 132)
+
+[node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode3"]
+visible = false
+texture_filter = 0
+position = Vector2(0, -22)
+texture = ExtResource("7_seed")
+
+[node name="NumberBadge" type="Label" parent="Nodes/StageNode3"]
+offset_left = -10.0
+offset_top = -7.0
+offset_right = 10.0
+offset_bottom = 6.0
+theme_override_colors/font_color = Color(1, 0.95, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
+text = "3"
+horizontal_alignment = 1
+
+[node name="NameLabel" type="Label" parent="Nodes/StageNode3"]
+offset_left = -50.0
+offset_top = 9.0
+offset_right = 50.0
+offset_bottom = 23.0
+theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Kiln Mouth"
+horizontal_alignment = 1
+
+[node name="ClickButton" type="Button" parent="Nodes/StageNode3"]
+offset_left = -20.0
+offset_top = -25.0
+offset_right = 20.0
+offset_bottom = 25.0
+focus_mode = 0
+flat = true
+
+[node name="PebbleAvatar" type="Node2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(78, 116)
+
+[node name="PebbleSprite" type="Sprite2D" parent="PebbleAvatar"]
+unique_name_in_owner = true
+texture_filter = 0
+position = Vector2(0, -10)
+texture = ExtResource("8_pebble")
+
+[node name="StageAudio" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("9_audio")
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="HeaderBar" type="ColorRect" parent="UI"]
+offset_right = 480.0
+offset_bottom = 24.0
+mouse_filter = 2
+color = Color(0.06, 0.05, 0.12, 0.88)
+
+[node name="HeaderTitle" type="Label" parent="UI/HeaderBar"]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 4.0
+offset_right = 160.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(1, 0.92, 0.73, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 13
+text = "Ember Trail"
+
+[node name="HeaderSubtitle" type="Label" parent="UI/HeaderBar"]
+layout_mode = 0
+offset_left = 110.0
+offset_top = 5.0
+offset_right = 250.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(0.66, 0.62, 0.72, 1)
+theme_override_font_sizes/font_size = 10
+text = "World map"
+
+[node name="TotalSeedsIcon" type="TextureRect" parent="UI/HeaderBar"]
+layout_mode = 0
+offset_left = 378.0
+offset_top = 6.0
+offset_right = 390.0
+offset_bottom = 18.0
+mouse_filter = 2
+texture = ExtResource("7_seed")
+
+[node name="TotalSeeds" type="Label" parent="UI/HeaderBar"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 394.0
+offset_top = 4.0
+offset_right = 472.0
+offset_bottom = 20.0
+theme_override_colors/font_color = Color(1, 0.78, 0.29, 1)
+theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Seeds 0 / 11"
+
+[node name="StageCard" type="ColorRect" parent="UI"]
+offset_left = 12.0
+offset_top = 196.0
+offset_right = 468.0
+offset_bottom = 260.0
+mouse_filter = 2
+color = Color(0.07, 0.06, 0.13, 0.92)
+
+[node name="Border" type="ReferenceRect" parent="UI/StageCard"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+border_color = Color(0.83, 0.53, 0.23, 0.85)
+border_width = 1.5
+editor_only = false
+
+[node name="StageTitle" type="Label" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 260.0
+offset_bottom = 22.0
+theme_override_colors/font_color = Color(1, 0.89, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
+text = "STAGE 1: AMBER HOLLOW"
+
+[node name="StageStatus" type="Label" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 330.0
+offset_top = 5.0
+offset_right = 446.0
+offset_bottom = 22.0
+theme_override_colors/font_color = Color(0.4, 0.95, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "[ AVAILABLE ]"
+horizontal_alignment = 2
+
+[node name="StageSubtitle" type="Label" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 22.0
+offset_right = 270.0
+offset_bottom = 37.0
+theme_override_colors/font_color = Color(0.76, 0.72, 0.82, 1)
+theme_override_font_sizes/font_size = 10
+text = "Foothills of ash & shattered clay"
+
+[node name="StageSeeds" type="Label" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 320.0
+offset_top = 22.0
+offset_right = 446.0
+offset_bottom = 37.0
+theme_override_colors/font_color = Color(1, 0.73, 0.27, 1)
+theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 10
+text = "Seeds: 0 / 5"
+horizontal_alignment = 2
+
+[node name="EnterPrompt" type="Label" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 40.0
+offset_right = 320.0
+offset_bottom = 56.0
+theme_override_colors/font_color = Color(1, 0.95, 0.75, 1)
+theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Press Jump or Enter to play"
+
+[node name="KeyHint" type="Label" parent="UI/StageCard"]
+layout_mode = 0
+offset_left = 320.0
+offset_top = 42.0
+offset_right = 446.0
+offset_bottom = 56.0
+theme_override_colors/font_color = Color(0.56, 0.54, 0.64, 1)
+theme_override_font_sizes/font_size = 10
+text = "A/D move   Esc title"
+horizontal_alignment = 2
+
+[node name="StageCardButton" type="Button" parent="UI/StageCard"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+focus_mode = 0
+flat = true
+
+[node name="FadeRect" type="ColorRect" parent="UI"]
+unique_name_in_owner = true
+offset_right = 480.0
+offset_bottom = 270.0
+mouse_filter = 2
+color = Color(0, 0, 0, 1)
+
+[connection signal="pressed" from="Nodes/StageNode1/ClickButton" to="." method="_on_node_clicked" binds= [1]]
+[connection signal="pressed" from="Nodes/StageNode2/ClickButton" to="." method="_on_node_clicked" binds= [2]]
+[connection signal="pressed" from="Nodes/StageNode3/ClickButton" to="." method="_on_node_clicked" binds= [3]]
+[connection signal="pressed" from="UI/StageCard/StageCardButton" to="." method="_on_stage_card_button_pressed"]

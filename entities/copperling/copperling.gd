@@ -10,6 +10,8 @@ var gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 
 var _dead: bool = false
 var _tween: Tween
+var _sprite_base_y: float = 0.0
+var _walk_clock: float = 0.0
 
 
 func _ready() -> void:
@@ -21,6 +23,8 @@ func _ready() -> void:
 	var sprite := %Sprite as Sprite2D
 	if sprite.texture != null:
 		sprite.position.y = -float(sprite.texture.get_height()) * 0.5
+	_sprite_base_y = sprite.position.y
+	_walk_clock = randf() * 1.0
 
 
 func _exit_tree() -> void:
@@ -41,6 +45,9 @@ func _physics_process(delta: float) -> void:
 	velocity.x = direction * speed
 	var sprite := %Sprite as Sprite2D
 	sprite.scale.x = -1.0 if direction < 0.0 else 1.0
+	# Two-step waddle so the beetle reads as walking, not sliding.
+	_walk_clock += delta * maxf(speed, 10.0) / 10.0
+	sprite.position.y = _sprite_base_y - (1.0 if int(_walk_clock) % 2 == 0 else 0.0)
 	move_and_slide()
 
 
@@ -56,8 +63,11 @@ func receive_stomp() -> void:
 	var face := signf(sprite.scale.x)
 	if is_zero_approx(face):
 		face = 1.0
+	Fx.sparks(get_parent(), global_position + Vector2(0.0, -5.0), Color(0.95, 0.6, 0.3), 8, 60.0)
+	Fx.dust(get_parent(), global_position, 6)
 	_tween = create_tween()
 	_tween.tween_property(sprite, "scale", Vector2(face * 1.35, 0.35), 0.1)
+	_tween.tween_property(sprite, "modulate:a", 0.0, 0.2).set_delay(0.15)
 	_tween.tween_callback(queue_free)
 
 

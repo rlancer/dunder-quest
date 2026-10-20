@@ -1,0 +1,146 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://ui/title_screen.gd" id="1_title"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/title_art.png" id="2_art"]
+[ext_resource type="Script" path="res://common/stage_audio.gd" id="3_audio"]
+
+[sub_resource type="Gradient" id="Gradient_motes"]
+colors = PackedColorArray(1, 0.8, 0.4, 0.9, 1, 0.45, 0.15, 0)
+
+[node name="TitleScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_title")
+
+[node name="Art" type="TextureRect" parent="."]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+texture = ExtResource("2_art")
+stretch_mode = 6
+
+[node name="Motes" type="CPUParticles2D" parent="."]
+position = Vector2(300, 280)
+amount = 28
+lifetime = 7.0
+preprocess = 7.0
+emission_shape = 3
+emission_rect_extents = Vector2(220, 4)
+direction = Vector2(0.3, -1)
+spread = 25.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 10.0
+initial_velocity_max = 28.0
+scale_amount_min = 1.0
+scale_amount_max = 2.0
+color_ramp = SubResource("Gradient_motes")
+
+[node name="LogoHolder" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 26.0
+offset_bottom = 90.0
+grow_horizontal = 2
+mouse_filter = 2
+
+[node name="Logo" type="VBoxContainer" parent="LogoHolder"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="Name" type="Label" parent="LogoHolder/Logo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.84, 0.46, 1)
+theme_override_colors/font_outline_color = Color(0.16, 0.06, 0.12, 1)
+theme_override_colors/font_shadow_color = Color(0.5, 0.14, 0.12, 1)
+theme_override_constants/outline_size = 6
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_font_sizes/font_size = 39
+text = "Ember Trail"
+horizontal_alignment = 1
+
+[node name="Tagline" type="Label" parent="LogoHolder/Logo"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.96, 0.9, 1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 13
+text = "A pebble's journey to the kiln"
+horizontal_alignment = 1
+
+[node name="Menu" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -62.0
+offset_top = -122.0
+offset_right = 62.0
+offset_bottom = -24.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_constants/separation = 4
+
+[node name="StartButton" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Start"
+
+[node name="NewButton" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "New game"
+
+[node name="FullscreenButton" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Fullscreen [F11]"
+
+[node name="QuitButton" type="Button" parent="Menu"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Quit"
+
+[node name="Footer" type="Label" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -16.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.9, 0.84, 0.96, 0.9)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+horizontal_alignment = 1
+
+[node name="Fade" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+color = Color(0.03, 0.02, 0.05, 1)
+
+[node name="StageAudio" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_audio")
+
