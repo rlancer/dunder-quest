@@ -84,4 +84,7 @@ func _spawn_actors() -> void:
 	]
 	for point in seed_points:
 		_bind_seed(_spawn(emberseed_scene, point))
+	# Under the low roof past the first long jump, so the barrier fills the
+	# gap from floor to roof.
+	_spawn_wizard(Vector2(656, 224), "Cinder Warlock", Color(0.95, 0.55, 1.0))
 	_spawn_gate(Vector2(2568, 224))

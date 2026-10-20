@@ -4,6 +4,9 @@ extends Node
 @export var section_spawn: Vector2 = Vector2(-1, -1)
 @export var section_limit: int = 0
 @export var section_goal: String = "cache"
+## Extra frames to hold the body at the section spawn, which shifts every
+## patrol's phase. `-- --section-wait=N` overrides it for sweeps.
+@export var section_wait: int = 0
 
 var _player: CharacterBody2D
 var _hud: StageHud
@@ -21,6 +24,13 @@ var _l2_bump: bool = false
 var _l2_break: bool = false
 var _l2_pickup: bool = false
 var _l2_gate: bool = false
+var _l1_wizard: bool = false
+var _l2_wizard: bool = false
+var _wizard_passed: bool = false
+var _quiz_wait: int = 0
+## Set once the run at Copperling A's island starts, so it is never abandoned midway.
+var _a_commit: bool = false
+var _quiz_presses: int = 0
 var _jump_left: int = 0
 var _jump_cooldown: int = 0
 var _crossed_gap: bool = false
@@ -58,7 +68,10 @@ func _ready() -> void:
 		get_tree().quit(1)
 		return
 	add_child(level_scene.instantiate())
-	if section_limit > 0 and section_goal != "clear" and section_goal != "route":
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--section-wait="):
+			section_wait = int(arg.get_slice("=", 1))
+	if section_limit > 0 and section_goal != "clear" and section_goal != "route" and section_goal != "fight":
 		for node in get_tree().get_nodes_in_group(&"copperling"):
 			node.remove_from_group(&"copperling")
 			node.set_physics_process(false)
@@ -88,9 +101,12 @@ func _physics_process(_delta: float) -> void:
 			push_error("Playtest lost the stage")
 			_finish_soon(false)
 		return
+	if _hud.is_quiz_open():
+		_answer_quiz()
+		return
 	_tick_jump()
 	_refresh_flags()
-	if section_limit > 0 and _frames <= 8:
+	if section_limit > 0 and _frames <= 8 + section_wait:
 		_player.global_position = section_spawn
 		_player.velocity = Vector2.ZERO
 		_set_move(0.0)
@@ -99,7 +115,7 @@ func _physics_process(_delta: float) -> void:
 	if section_limit > 0 and _section_done():
 		return
 	if _stage_index == 3 and _hud.is_cleared():
-		_finish_soon(_level_one_clear() and _level_two_clear() and _crossed_gap and _stomped and _bumped and _broke and _collected)
+		_finish_soon(_level_one_clear() and _level_two_clear() and _crossed_gap and _stomped and _bumped and _broke and _collected and _wizard_passed)
 		return
 	if _frames > 160 * 60:
 		_shot("fail")
@@ -172,6 +188,7 @@ func _sync_stage() -> bool:
 		_l1_break = _broke
 		_l1_pickup = _collected
 		_l1_gate = true
+		_l1_wizard = _wizard_passed
 		print("PLAYTEST enter Cinder Span")
 	elif _stage_index == 2:
 		_l2_gap = _crossed_gap
@@ -180,6 +197,7 @@ func _sync_stage() -> bool:
 		_l2_break = _broke
 		_l2_pickup = _collected
 		_l2_gate = true
+		_l2_wizard = _wizard_passed
 		print("PLAYTEST enter Kiln Mouth")
 	_stage_index = index
 	_crossed_gap = false
@@ -196,6 +214,8 @@ func _sync_stage() -> bool:
 	_kiln_landed = false
 	_span_hold_hop = false
 	_span_clay_hop = false
+	_wizard_passed = false
+	_quiz_wait = 0
 	Input.action_release(&"jump")
 	Input.action_release(&"move_left")
 	Input.action_release(&"move_right")
@@ -216,11 +236,54 @@ func _living_in_group(group_name: StringName) -> Node:
 
 
 func _level_one_clear() -> bool:
-	return _l1_gap and _l1_stomp and _l1_bump and _l1_break and _l1_pickup and _l1_gate
+	return _l1_gap and _l1_stomp and _l1_bump and _l1_break and _l1_pickup and _l1_gate and _l1_wizard
 
 
 func _level_two_clear() -> bool:
-	return _l2_gap and _l2_stomp and _l2_bump and _l2_break and _l2_pickup and _l2_gate
+	return _l2_gap and _l2_stomp and _l2_bump and _l2_break and _l2_pickup and _l2_gate and _l2_wizard
+
+
+## The wizard holds the player with controls off. The bot stands still and
+## answers through the same input events a player sends: step the selection
+## with move_right until it reaches the marked option, then press confirm.
+func _answer_quiz() -> void:
+	_set_move(0.0)
+	_jump_left = 0
+	Input.action_release(&"jump")
+	_shot("quiz_%d" % _stage_index)
+	if not _hud.is_quiz_asking():
+		_quiz_wait = 0
+		return
+	_quiz_wait += 1
+	# Let the panel settle, and leave a few frames between presses.
+	if _quiz_wait < 12 or _quiz_wait % 6 != 0:
+		return
+	var target := _hud.quiz_answer_index()
+	if _hud.quiz_selected_index() == target:
+		_tap(&"confirm")
+		print("PLAYTEST quiz stage=%d answer=%d presses=%d" % [_stage_index, target, _quiz_presses])
+		_quiz_presses = 0
+	else:
+		_tap(&"move_right")
+		_quiz_presses += 1
+
+
+func _wizard_banished() -> bool:
+	for node in get_tree().get_nodes_in_group(&"wizard"):
+		if not node.is_queued_for_deletion() and bool(node.get(&"banished")):
+			return true
+	return false
+
+
+func _tap(action: StringName) -> void:
+	var press := InputEventAction.new()
+	press.action = action
+	press.pressed = true
+	Input.parse_input_event(press)
+	var release := InputEventAction.new()
+	release.action = action
+	release.pressed = false
+	Input.parse_input_event.call_deferred(release)
 
 
 func _refresh_flags() -> void:
@@ -257,6 +320,9 @@ func _refresh_flags() -> void:
 	if _hud.seed_count > 0 and not _collected:
 		_collected = true
 		_shot("pickup")
+	if not _wizard_passed and _wizard_banished():
+		_wizard_passed = true
+		_shot("wizard_%d" % _stage_index)
 
 
 func _steer() -> void:
@@ -305,7 +371,11 @@ func _section_done() -> bool:
 		finished = _hud.is_cleared() or _frames >= section_limit
 		ok = _hud.is_cleared() and _stomped and _bumped and _broke
 		if section_goal == "route":
-			ok = ok and _collected
+			ok = ok and _collected and _wizard_passed
+	elif section_goal == "fight":
+		var cleared_fight := _span_crawler(1700.0, 2100.0) == null
+		finished = cleared_fight or _hud.falls > 0 or _frames >= section_limit
+		ok = cleared_fight and _hud.falls == 0
 	elif section_goal == "span_exit":
 		var parked := (
 			_broke
@@ -569,8 +639,14 @@ func _span_ground(x: float, y: float, on_floor: bool) -> float:
 
 
 func _span_fight(x: float, on_floor: bool) -> float:
+	# Standing on the lantern ledge means a respawn put us back before both
+	# islands, so neither landing counts any more.
+	if on_floor and x < 1770.0 and not _a_commit:
+		_a_landed = false
+		_b_landed = false
 	if on_floor and x > 1808.0 and x < 1900.0:
 		_a_landed = true
+		_a_commit = false
 	if on_floor and x > 1936.0 and x < 2100.0:
 		_b_landed = true
 	var foe_a := _span_crawler(1780.0, 1900.0)
@@ -585,8 +661,14 @@ func _span_fight_a(foe: CharacterBody2D, x: float, on_floor: bool) -> float:
 	if not _a_landed:
 		if not on_floor:
 			return 1.0
-		var away := foe.global_position.x >= 1830.0 and foe.velocity.x > 0.0
-		if away:
+		var foe_x := foe.global_position.x
+		# Measured with span_fight_section: from the hold spot, a run that starts
+		# while the foe walks right through 1832-1848 lands behind it; earlier
+		# lands on it, later meets it on its way back.
+		var away := foe_x >= 1834.0 and foe_x <= 1846.0 and foe.velocity.x > 0.0
+		if away and not _a_commit and x > 1712.0 and x < 1736.0:
+			_a_commit = true
+		if _a_commit:
 			if x > 1756.0 and x < 1768.0:
 				_start_jump(1)
 			return 1.0
@@ -768,7 +850,7 @@ func _report() -> void:
 	if _hud != null and is_instance_valid(_hud):
 		goal_open = _hud.is_cleared()
 	print(
-		"PLAYTEST result=%s l1=%s,%s,%s,%s,%s,%s l2=%s,%s,%s,%s,%s,%s l3=%s,%s,%s,%s,%s goal=%s"
+		"PLAYTEST result=%s l1=%s,%s,%s,%s,%s,%s l2=%s,%s,%s,%s,%s,%s l3=%s,%s,%s,%s,%s wizards=%s,%s,%s goal=%s"
 		% [
 			"ok" if _result_ok else "fail",
 			_l1_gap,
@@ -788,6 +870,9 @@ func _report() -> void:
 			_bumped,
 			_broke,
 			_collected,
+			_l1_wizard,
+			_l2_wizard,
+			_wizard_passed,
 			goal_open,
 		]
 	)

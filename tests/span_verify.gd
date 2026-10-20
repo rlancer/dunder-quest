@@ -164,6 +164,40 @@ func _audit() -> void:
 	_audit_pickups()
 	_audit_shelves()
 	_audit_backdrop()
+	_audit_wizard()
+
+## The wizard must stand on one flat ground run the route already walks, with
+## his barrier closed and a run-up past it to the lip of that run.
+func _audit_wizard() -> void:
+	var wizards: Array[Wizard] = []
+	for node in get_tree().get_nodes_in_group(&"wizard"):
+		if _level.is_ancestor_of(node):
+			wizards.append(node as Wizard)
+	if wizards.size() != 1:
+		_fail("wizard count=%d" % wizards.size())
+		return
+	var wizard := wizards[0]
+	var span := wizard.blocked_span()
+	var home: Dictionary = {}
+	for surf in _surfaces:
+		if (
+			str(surf["kind"]) == "ground"
+			and is_equal_approx(float(surf["top"]), wizard.global_position.y)
+			and float(surf["x0"]) <= span.x
+			and float(surf["x1"]) >= span.y
+		):
+			home = surf
+	if home.is_empty():
+		_fail("wizard not on one flat ground run span=%.0f-%.0f" % [span.x, span.y])
+		return
+	var run_up := float(home["x1"]) - span.x
+	if run_up < 64.0:
+		_fail("wizard run-up %.0f" % run_up)
+		return
+	if wizard.barrier_open():
+		_fail("wizard barrier starts open")
+		return
+	print("AUDIT pass wizard %s x=%.0f on=%s span=%.0f-%.0f run_up=%.0f" % [wizard.title, wizard.global_position.x, home["id"], span.x, span.y, run_up])
 
 
 func _scan_tiles() -> void:
@@ -619,6 +653,8 @@ func _surface_at(feet_x: float, feet_y: float) -> Dictionary:
 
 
 func _silence_pests() -> void:
+	# Trials measure the level alone; the playtest covers the wizard.
+	get_tree().call_group(&"wizard", &"dismiss")
 	for node in get_tree().get_nodes_in_group(&"copperling"):
 		node.set_physics_process(false)
 		node.set(&"collision_layer", 0)
