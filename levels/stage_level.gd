@@ -2,7 +2,7 @@ class_name StageLevel
 extends Node2D
 
 ## Shared stage flow: tiles, spawn, deaths, checkpoints, the run clock,
-## audio unlock, the pause menu, and the waygate exit.
+## audio unlock, the pause menu, the wizard's quiz, and the waygate exit.
 
 const TILE := 16
 ## How long the results card waits for a press before moving on by itself.
@@ -10,6 +10,11 @@ const PASSAGE_TIMEOUT := 4.0
 const DEATH_HOLD := 0.55
 const ASH_SHELF := preload("res://entities/platforms/ash_shelf.tscn")
 const LANTERN := preload("res://entities/checkpoint/lantern.tscn")
+const WIZARD := preload("res://entities/wizard/wizard.tscn")
+## Lets the confirm press that closed the quiz finish before Space means jump again.
+const QUIZ_RELEASE := 0.15
+## Moving hazards hold still while a wizard speaks, the same as the clock.
+const QUIZ_FROZEN_GROUPS: Array[StringName] = [&"copperling", &"ash_shelf"]
 
 @export var tileset_texture: Texture2D
 @export var music_stream: AudioStream
@@ -37,6 +42,11 @@ var _death_serial: int = 0
 var _web_audio_locked: bool = false
 var _elapsed: float = 0.0
 var _clock_running: bool = false
+var _quiz: WizardQuiz
+var _quiz_wizard: Wizard
+var _quiz_question: Dictionary = {}
+## Bumped whenever a quiz opens or is called off, so a stale await can tell.
+var _quiz_serial: int = 0
 
 
 func _ready() -> void:
@@ -61,6 +71,7 @@ func _ready() -> void:
 	player.connect(&"respawn_requested", _kill_player)
 	hud.map_requested.connect(return_to_map)
 	hud.restart_requested.connect(_restart_stage)
+	hud.quiz_answered.connect(_on_quiz_answered)
 	if OS.has_feature("web") and not StageAudio.web_audio_unlocked:
 		_web_audio_locked = true
 		hud.show_press_to_start()
@@ -80,7 +91,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	if not _clock_running or _cleared or _departing:
+	# The clock waits while a wizard holds the player at his quiz.
+	if not _clock_running or _cleared or _departing or _quiz_wizard != null:
 		return
 	_elapsed += delta
 	hud.set_time(_elapsed)
@@ -202,6 +214,20 @@ func _spawn_checkpoint(at: Vector2) -> void:
 	lantern.connect(&"lit", _on_checkpoint_lit)
 
 
+## A wizard standing on the floor at `at`, with his barrier just to the right.
+## The stage's question pool is loaded on first use and lasts the whole visit.
+func _spawn_wizard(at: Vector2, title: String, tint: Color) -> Wizard:
+	var wizard := WIZARD.instantiate() as Wizard
+	wizard.title = title
+	wizard.tint = tint
+	wizard.position = at
+	add_child(wizard)
+	wizard.challenged.connect(_on_wizard_challenged)
+	if _quiz == null:
+		_quiz = WizardQuiz.for_stage(stage_index())
+	return wizard
+
+
 func _add_parallax(node_name: String, texture: Texture2D, scroll: Vector2, z: int, scale_factor: float = 4.0, tint: Color = Color.WHITE) -> void:
 	var layer := Parallax2D.new()
 	layer.name = node_name
@@ -301,6 +327,74 @@ func _on_checkpoint_lit(at: Vector2) -> void:
 	spawn.global_position = at
 
 
+func _on_wizard_challenged(wizard: Wizard) -> void:
+	if _cleared or _departing or _dying or _quiz_wizard != null or wizard.banished:
+		return
+	_quiz_wizard = wizard
+	_quiz_serial += 1
+	player.set_controls_enabled(false)
+	_freeze_hazards(true)
+	_ask_question()
+
+
+func _ask_question() -> void:
+	_quiz_question = _quiz.next_question()
+	if _quiz_question.is_empty():
+		# No bank to ask from: the wizard steps aside rather than trap the run.
+		_pass_wizard()
+		return
+	hud.open_quiz(_quiz_wizard.title, _quiz_question, _quiz_wizard.tint)
+
+
+func _on_quiz_answered(index: int) -> void:
+	if _quiz_wizard == null:
+		return
+	var serial := _quiz_serial
+	var correct := index == int(_quiz_question.get("answer", -1))
+	hud.show_quiz_feedback(index, correct)
+	if not correct:
+		_quiz_wizard.zap(player)
+		player.camera.shake(4.0)
+		player.sprite.modulate = Color(0.75, 0.85, 1.4)
+		var flash := player.create_tween()
+		flash.tween_property(player.sprite, "modulate", Color.WHITE, 0.35)
+	await hud.quiz_feedback_done
+	if serial != _quiz_serial or not is_inside_tree() or _quiz_wizard == null:
+		return
+	if correct:
+		_pass_wizard()
+	else:
+		_ask_question()
+
+
+## The wizard is banished, his barrier opens, and controls come back.
+func _pass_wizard() -> void:
+	var wizard := _quiz_wizard
+	_end_quiz()
+	wizard.banish()
+	var serial := _quiz_serial
+	await get_tree().create_timer(QUIZ_RELEASE, false).timeout
+	if serial != _quiz_serial or not is_inside_tree() or _dying or _cleared or _departing:
+		return
+	player.set_controls_enabled(true)
+
+
+## Closes the quiz and thaws the stage, leaving the wizard as he is.
+func _end_quiz() -> void:
+	_quiz_wizard = null
+	_quiz_question = {}
+	_quiz_serial += 1
+	hud.close_quiz()
+	_freeze_hazards(false)
+
+
+func _freeze_hazards(frozen: bool) -> void:
+	for group_name in QUIZ_FROZEN_GROUPS:
+		for node in get_tree().get_nodes_in_group(group_name):
+			if is_ancestor_of(node):
+				node.process_mode = Node.PROCESS_MODE_DISABLED if frozen else Node.PROCESS_MODE_INHERIT
+
+
 func _on_waygate_reached() -> void:
 	if _departing or _cleared or _dying:
 		return
@@ -389,6 +483,9 @@ func _respawn_player() -> void:
 		return
 	_death_serial += 1
 	_dying = false
+	if _quiz_wizard != null:
+		# A restart while the quiz is up: the wizard keeps his post for next time.
+		_end_quiz()
 	player.global_position = spawn.global_position
 	player.revive()
 	player.reset_camera()

@@ -1,0 +1,82 @@
+[gd_scene load_steps=12 format=3]
+
+[ext_resource type="Script" path="res://entities/wizard/wizard.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/sprites/wizard.png" id="2_sprite"]
+[ext_resource type="AudioStream" path="res://assets/audio/break.wav" id="3_zap"]
+[ext_resource type="AudioStream" path="res://assets/audio/pickup.wav" id="4_banish"]
+[ext_resource type="Script" path="res://entities/wizard/arcane_barrier.gd" id="5_barrier"]
+
+[sub_resource type="Gradient" id="Gradient_glow"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_glow"]
+gradient = SubResource("Gradient_glow")
+width = 18
+height = 18
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_barrier"]
+blend_mode = 1
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
+size = Vector2(40, 40)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
+size = Vector2(8, 256)
+
+[node name="Wizard" type="Area2D"]
+z_index = 1
+collision_layer = 0
+collision_mask = 2
+monitorable = false
+script = ExtResource("1_script")
+zap_sound = ExtResource("3_zap")
+banish_sound = ExtResource("4_banish")
+
+[node name="Glow" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+material = SubResource("CanvasItemMaterial_add")
+position = Vector2(-6, -22)
+texture = SubResource("GradientTexture2D_glow")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(0, -14)
+texture = ExtResource("2_sprite")
+hframes = 2
+
+[node name="Nameplate" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -40.0
+offset_top = -44.0
+offset_right = 40.0
+offset_bottom = -32.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.86, 0.78, 1, 1)
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 10
+text = "Dark Wizard"
+horizontal_alignment = 1
+
+[node name="Zone" type="CollisionShape2D" parent="."]
+unique_name_in_owner = true
+position = Vector2(-26, -20)
+shape = SubResource("RectangleShape2D_zone")
+
+[node name="Barrier" type="StaticBody2D" parent="."]
+unique_name_in_owner = true
+z_index = -2
+material = SubResource("CanvasItemMaterial_barrier")
+position = Vector2(16, 0)
+collision_mask = 0
+script = ExtResource("5_barrier")
+
+[node name="Wall" type="CollisionShape2D" parent="Barrier"]
+unique_name_in_owner = true
+position = Vector2(0, -128)
+shape = SubResource("RectangleShape2D_wall")

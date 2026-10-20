@@ -64,4 +64,6 @@ func _spawn_actors() -> void:
 	]
 	for point in seed_points:
 		_bind_seed(_spawn(emberseed_scene, point))
+	# On the ledge between the seed hop and the second shelf.
+	_spawn_wizard(Vector2(720, 224), "Kiln Archmage", Color(0.5, 1.0, 0.65))
 	_spawn_gate(Vector2(1456, 224))

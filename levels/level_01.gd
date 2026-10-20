@@ -55,4 +55,6 @@ func _spawn_actors() -> void:
 	var seed_xs: Array[int] = [680, 696, 712, 728, 744]
 	for seed_x in seed_xs:
 		_bind_seed(_spawn(emberseed_scene, Vector2(float(seed_x), 210.0)))
+	# On the flat run past the seed gap, where the route walks without jumping.
+	_spawn_wizard(Vector2(1008, 224), "Ash Hexer", Color(0.55, 0.85, 1.0))
 	_spawn_gate(Vector2(1224, 224))
