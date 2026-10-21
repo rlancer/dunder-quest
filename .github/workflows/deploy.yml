@@ -15,6 +15,8 @@ jobs:
   deploy:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
+    permissions:
+      contents: write
     env:
       CF_SEND_TELEMETRY: "false"
     steps:
@@ -26,10 +28,13 @@ jobs:
           path: |
             ~/.cache/godot-web
             ~/.local/share/godot/export_templates
-          key: godot-4.7.2-web-v1
+          key: godot-4.7.2-templates-v2
 
-      - name: Export the web build
+      - name: Build the site and the browser game
         run: bash scripts/export_web.sh
+
+      - name: Export the desktop builds
+        run: bash scripts/export_desktop.sh
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -59,3 +64,18 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Publish desktop downloads
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git tag -f builds
+          git push -f origin refs/tags/builds
+          notes="Desktop builds of Ember Trail from ${GITHUB_SHA::7}. Rebuilt on every push to main. Play in the browser at https://ember-trail.robertlancer.com"
+          if gh release view builds >/dev/null 2>&1; then
+            gh release upload builds build/downloads/* --clobber
+            gh release edit builds --notes "$notes"
+          else
+            gh release create builds build/downloads/* --title "Ember Trail desktop builds" --notes "$notes" --latest
+          fi
