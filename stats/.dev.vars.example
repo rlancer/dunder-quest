@@ -1,0 +1,2 @@
+# Copy to .dev.vars for `bun run dev`. Skips the Access check on localhost only.
+AUTH_DISABLED=true

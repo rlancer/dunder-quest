@@ -11,6 +11,7 @@ const MOVE_SOUND := preload("res://assets/audio/bump.wav")
 @onready var start_button: Button = %StartButton
 @onready var new_button: Button = %NewButton
 @onready var fullscreen_button: Button = %FullscreenButton
+@onready var stats_button: Button = %StatsButton
 @onready var quit_button: Button = %QuitButton
 @onready var logo: Control = %Logo
 @onready var fade: ColorRect = %Fade
@@ -30,8 +31,10 @@ func _ready() -> void:
 	start_button.pressed.connect(_on_start)
 	new_button.pressed.connect(_on_new_game)
 	fullscreen_button.pressed.connect(_toggle_fullscreen)
+	stats_button.pressed.connect(_toggle_stats)
+	_update_stats_button()
 	quit_button.pressed.connect(func() -> void: get_tree().quit())
-	for button in [start_button, new_button, fullscreen_button, quit_button]:
+	for button in [start_button, new_button, fullscreen_button, stats_button, quit_button]:
 		button.focus_entered.connect(_on_focus_moved)
 	_update_footer()
 	start_button.grab_focus()
@@ -102,6 +105,16 @@ func _toggle_fullscreen() -> void:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+## Players can opt out of the anonymous play stats; the choice is remembered.
+func _toggle_stats() -> void:
+	Telemetry.set_enabled(not Telemetry.enabled)
+	_update_stats_button()
+
+
+func _update_stats_button() -> void:
+	stats_button.text = "Anonymous stats: %s" % ("On" if Telemetry.enabled else "Off")
 
 
 func _update_footer() -> void:
