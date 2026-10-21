@@ -17,7 +17,7 @@
       "binding": "DB",
       "database_name": "ember-trail-stats",
       // Replace with the id `wrangler d1 create ember-trail-stats` prints.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "da5fc032-958f-418a-a872-9eb1f223b2fa",
       "migrations_dir": "migrations"
     }
   ],
