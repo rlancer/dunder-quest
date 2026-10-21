@@ -1,0 +1,428 @@
+{
+	"1": {
+		"topic": "Lists & Indexing",
+		"taunt": "Do you count as the scrolls count, little ember?",
+		"scrolls": [
+			{
+				"id": "list_zero",
+				"title": "Counting from Zero",
+				"code": [
+					"row = [\"ash\", \"clay\", \"ember\"]",
+					"print(row[0])  # ash",
+					"print(row[2])  # ember"
+				],
+				"insight": "A list's first item lives at index 0, so the third item is row[2]."
+			},
+			{
+				"id": "list_negative",
+				"title": "Counting Backwards",
+				"code": [
+					"row = [\"ash\", \"clay\", \"ember\"]",
+					"print(row[-1])   # ember",
+					"print(len(row))  # 3"
+				],
+				"insight": "Negative indexes count from the end: row[-1] is always the last item."
+			},
+			{
+				"id": "list_slice",
+				"title": "The Slice Spell",
+				"code": [
+					"row = [10, 20, 30, 40]",
+					"print(row[1:3])    # [20, 30]",
+					"print(\"ember\"[:3])  # emb"
+				],
+				"insight": "A slice [a:b] starts at a and stops just before b. Strings slice too."
+			},
+			{
+				"id": "list_change",
+				"title": "Lists Can Change",
+				"code": [
+					"row = [1, 2, 3]",
+					"row.append(4)",
+					"row[0] = 9",
+					"print(row)  # [9, 2, 3, 4]"
+				],
+				"insight": "append() adds to the end. Assigning to an index replaces that item."
+			}
+		],
+		"questions": [
+			{
+				"code": ["xs = [\"a\", \"b\", \"c\", \"d\"]", "print(xs[1])"],
+				"prompt": "What does this print?",
+				"options": ["a", "b", "c", "d"],
+				"answer": 1,
+				"explanation": "Indexes start at 0, so xs[1] is the second item.",
+				"scroll": "list_zero",
+				"hint": "Children count from one. Scrolls do not."
+			},
+			{
+				"code": ["xs = [5, 6, 7]", "print(xs[0] + xs[2])"],
+				"prompt": "What does this print?",
+				"options": ["11", "12", "13", "18"],
+				"answer": 1,
+				"explanation": "xs[0] is 5 and xs[2] is 7, the first and the last.",
+				"scroll": "list_zero",
+				"hint": "Three items. Which number names the last of them?"
+			},
+			{
+				"code": ["xs = [7, 8, 9]", "i = 1", "print(xs[i + 1])"],
+				"prompt": "What does this print?",
+				"options": ["7", "8", "9", "IndexError"],
+				"answer": 2,
+				"explanation": "i + 1 is 2, and index 2 is the third item, 9.",
+				"scroll": "list_zero",
+				"hint": "Do the sum first. Then count the way the hollow taught you."
+			},
+			{
+				"code": ["xs = [\"ash\", \"clay\", \"ember\"]", "print(xs[-1])"],
+				"prompt": "What does this print?",
+				"options": ["ash", "clay", "ember", "IndexError"],
+				"answer": 2,
+				"explanation": "-1 counts back from the end, so it is always the last item.",
+				"scroll": "list_negative",
+				"hint": "A minus sign does not mean nothing. It means turn around."
+			},
+			{
+				"code": ["xs = [3, 1, 4, 1, 5]", "print(len(xs), xs[-2])"],
+				"prompt": "What does this print?",
+				"options": ["5 1", "4 1", "5 4", "4 5"],
+				"answer": 0,
+				"explanation": "len counts all five items. xs[-2] is second from the end: 1.",
+				"scroll": "list_negative",
+				"hint": "len() counts like a merchant. -2 walks in from the far end."
+			},
+			{
+				"code": ["xs = [1, 2, 3, 4]", "print(xs[-1] * xs[0])"],
+				"prompt": "What does this print?",
+				"options": ["3", "4", "8", "16"],
+				"answer": 1,
+				"explanation": "xs[-1] is the last item, 4. xs[0] is the first, 1.",
+				"scroll": "list_negative",
+				"hint": "One end times the other end. Which ends?"
+			},
+			{
+				"code": ["xs = [10, 20, 30, 40, 50]", "print(xs[1:4])"],
+				"prompt": "What does this print?",
+				"options": ["[10, 20, 30, 40]", "[20, 30, 40]", "[20, 30, 40, 50]", "[10, 20, 30]"],
+				"answer": 1,
+				"explanation": "The slice starts at index 1 and stops before index 4.",
+				"scroll": "list_slice",
+				"hint": "A slice never takes the item at its last number."
+			},
+			{
+				"code": ["word = \"ember\"", "print(word[:3])"],
+				"prompt": "What does this print?",
+				"options": ["em", "emb", "embe", "mbe"],
+				"answer": 1,
+				"explanation": "[:3] starts at the beginning and stops before index 3.",
+				"scroll": "list_slice",
+				"hint": "Letters line up just like list items do."
+			},
+			{
+				"code": ["xs = [1, 2, 3]", "xs.append(4)", "print(len(xs))"],
+				"prompt": "What does this print?",
+				"options": ["3", "4", "5", "[1, 2, 3, 4]"],
+				"answer": 1,
+				"explanation": "append() adds one item to the end, so there are now four.",
+				"scroll": "list_change",
+				"hint": "The list grew. len() only ever gives back a number."
+			},
+			{
+				"code": ["xs = [\"a\", \"b\", \"c\"]", "xs[1] = \"z\"", "print(xs)"],
+				"prompt": "What does this print?",
+				"options": ["['z', 'b', 'c']", "['a', 'z', 'c']", "['a', 'b', 'z']", "['a', 'z', 'b', 'c']"],
+				"answer": 1,
+				"explanation": "Assigning to xs[1] replaces the second item. Nothing is inserted.",
+				"scroll": "list_change",
+				"hint": "Replacing is not inserting. And which one is [1]?"
+			}
+		]
+	},
+	"2": {
+		"topic": "Dictionaries & Hashing",
+		"taunt": "Every key knows its bucket. Do you?",
+		"scrolls": [
+			{
+				"id": "dict_basics",
+				"title": "Keys and Values",
+				"code": [
+					"bag = {\"ash\": 3, \"ember\": 5}",
+					"print(bag[\"ember\"])  # 5",
+					"bag[\"clay\"] = 1",
+					"print(len(bag))  # 3"
+				],
+				"insight": "A dict maps each key to a value. You look things up by key, not by position."
+			},
+			{
+				"id": "dict_hash",
+				"title": "The Hashing Rune",
+				"code": [
+					"key = \"ember\"",
+					"slot = hash(key) % 4",
+					"print(slot == hash(key) % 4)  # True"
+				],
+				"insight": "A dict hashes the key to pick a bucket, then looks only there. No searching."
+			},
+			{
+				"id": "dict_overwrite",
+				"title": "One Key, One Value",
+				"code": [
+					"d = {}",
+					"d[\"ash\"] = 1",
+					"d[\"ash\"] = 2",
+					"print(d, len(d))  # {'ash': 2} 1"
+				],
+				"insight": "The same key always hashes to the same bucket, so writing it again replaces the value."
+			},
+			{
+				"id": "dict_unhashable",
+				"title": "Keys Must Not Change",
+				"code": [
+					"ok = {(1, 2): \"tuple\"}",
+					"print(ok[(1, 2)])  # tuple",
+					"bad = {[1, 2]: \"list\"}  # TypeError!"
+				],
+				"raises": "TypeError",
+				"insight": "A list can change, so its hash could not be trusted. Keys must be str, int, tuple..."
+			},
+			{
+				"id": "dict_get",
+				"title": "Asking Politely",
+				"code": [
+					"bag = {\"ash\": 3}",
+					"print(bag.get(\"clay\", 0))  # 0",
+					"print(\"ash\" in bag)  # True"
+				],
+				"insight": "bag[\"clay\"] would raise KeyError. get() hands back a default instead."
+			}
+		],
+		"questions": [
+			{
+				"code": ["bag = {\"ash\": 3, \"ember\": 5}", "print(bag[\"ash\"])"],
+				"prompt": "What does this print?",
+				"options": ["ash", "3", "5", "0"],
+				"answer": 1,
+				"explanation": "Looking up a key gives back its value, not the key.",
+				"scroll": "dict_basics",
+				"hint": "The key opens the box. What is inside the box?"
+			},
+			{
+				"code": ["bag = {\"a\": 1}", "bag[\"b\"] = 2", "print(len(bag))"],
+				"prompt": "What does this print?",
+				"options": ["1", "2", "3", "KeyError"],
+				"answer": 1,
+				"explanation": "Assigning to a new key adds it. len counts the keys.",
+				"scroll": "dict_basics",
+				"hint": "A new key is not an error. It is a new resident."
+			},
+			{
+				"code": ["bag = {\"ash\": 3, \"ember\": 5}", "print(sum(bag.values()))"],
+				"prompt": "What does this print?",
+				"options": ["2", "8", "15", "TypeError"],
+				"answer": 1,
+				"explanation": "values() gives 3 and 5, and sum adds them.",
+				"scroll": "dict_basics",
+				"hint": "Count what is inside, not how many boxes."
+			},
+			{
+				"code": ["a = hash(\"ember\") % 4", "b = hash(\"ember\") % 4", "print(a == b)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "None", "0"],
+				"answer": 0,
+				"explanation": "The same key always hashes the same way, so it lands in the same bucket.",
+				"scroll": "dict_hash",
+				"hint": "If the rune changed its mind, how would any vault find anything?"
+			},
+			{
+				"code": ["d = {\"x\": 1, \"y\": 2}", "d[\"x\"] = 9", "print(d)"],
+				"prompt": "What does this print?",
+				"options": ["{'x': 1, 'y': 2}", "{'x': 9, 'y': 2}", "{'x': 1, 'y': 2, 'x': 9}", "{'y': 2, 'x': 9}"],
+				"answer": 1,
+				"explanation": "x already exists, so its value is replaced in place.",
+				"scroll": "dict_overwrite",
+				"hint": "One key. One bucket. Room for one value."
+			},
+			{
+				"code": ["d = {\"k\": 1, \"k\": 2}", "print(d)"],
+				"prompt": "What does this print?",
+				"options": ["{'k': 1}", "{'k': 2}", "{'k': 1, 'k': 2}", "{'k': [1, 2]}"],
+				"answer": 1,
+				"explanation": "Both entries share one key. The later one wins.",
+				"scroll": "dict_overwrite",
+				"hint": "Two travellers, one bed. Who sleeps there last?"
+			},
+			{
+				"code": ["bag = {\"ash\": 3}", "print(bag.get(\"clay\", 0))"],
+				"prompt": "What does this print?",
+				"options": ["0", "3", "None", "KeyError"],
+				"answer": 0,
+				"explanation": "clay is missing, so get() returns the default you gave it.",
+				"scroll": "dict_get",
+				"hint": "Ask politely and you are never refused. You get what you asked."
+			},
+			{
+				"code": ["bag = {\"ash\": 3}", "print(\"clay\" in bag, \"ash\" in bag)"],
+				"prompt": "What does this print?",
+				"options": ["True True", "False True", "True False", "False 3"],
+				"answer": 1,
+				"explanation": "in checks the keys. Only ash is there.",
+				"scroll": "dict_get",
+				"hint": "in only asks yes or no."
+			},
+			{
+				"code": [
+					"d = {}",
+					"try:",
+					"    d[[1, 2]] = \"x\"",
+					"    print(\"stored\")",
+					"except TypeError:",
+					"    print(\"unhashable\")"
+				],
+				"prompt": "What does this print?",
+				"options": ["stored", "unhashable", "x", "[1, 2]"],
+				"answer": 1,
+				"explanation": "A list can change, so it has no hash and cannot be a key.",
+				"scroll": "dict_unhashable",
+				"hint": "What may change cannot be trusted with a bucket."
+			}
+		]
+	},
+	"3": {
+		"topic": "Loops & range",
+		"taunt": "Round and round the kiln turns. Where does it stop?",
+		"scrolls": [
+			{
+				"id": "loop_for",
+				"title": "The Loop Rune",
+				"code": [
+					"laps = []",
+					"for i in range(3):",
+					"    laps.append(i)",
+					"print(laps)  # [0, 1, 2]"
+				],
+				"insight": "range(3) counts 0, 1, 2. It stops before the number you give it."
+			},
+			{
+				"id": "loop_range",
+				"title": "Start, Stop, Step",
+				"code": [
+					"print(list(range(2, 6)))     # [2, 3, 4, 5]",
+					"print(list(range(1, 9, 3)))  # [1, 4, 7]",
+					"print(list(range(3, 0, -1))) # [3, 2, 1]"
+				],
+				"insight": "range(start, stop, step) begins at start, adds step, and stops before stop."
+			},
+			{
+				"id": "loop_total",
+				"title": "Gathering Embers",
+				"code": [
+					"total = 0",
+					"for n in [3, 4, 5]:",
+					"    total += n",
+					"print(total)  # 12"
+				],
+				"insight": "Start the total before the loop, then add to it on every pass."
+			},
+			{
+				"id": "loop_while",
+				"title": "Loops That Wait",
+				"code": [
+					"heat = 1",
+					"while heat < 20:",
+					"    heat *= 3",
+					"print(heat)  # 27"
+				],
+				"insight": "while repeats until its condition is False. It checks before every pass."
+			}
+		],
+		"questions": [
+			{
+				"code": ["print(list(range(4)))"],
+				"prompt": "What does this print?",
+				"options": ["[1, 2, 3, 4]", "[0, 1, 2, 3]", "[0, 1, 2, 3, 4]", "[4]"],
+				"answer": 1,
+				"explanation": "range(4) starts at 0 and stops before 4.",
+				"scroll": "loop_for",
+				"hint": "The kiln starts cold, at nothing. And it never reaches the end."
+			},
+			{
+				"code": [
+					"count = 0",
+					"for x in [5, 8, 2, 9]:",
+					"    if x > 4:",
+					"        count += 1",
+					"print(count)"
+				],
+				"prompt": "What does this print?",
+				"options": ["2", "3", "4", "22"],
+				"answer": 1,
+				"explanation": "5, 8 and 9 are greater than 4. Each adds one to count.",
+				"scroll": "loop_for",
+				"hint": "The loop visits every one. Only some pass the gate."
+			},
+			{
+				"code": ["print(list(range(2, 7, 2)))"],
+				"prompt": "What does this print?",
+				"options": ["[2, 4, 6]", "[2, 4, 6, 8]", "[2, 4]", "[3, 5]"],
+				"answer": 0,
+				"explanation": "Start at 2 and step by 2. 8 would pass the stop of 7.",
+				"scroll": "loop_range",
+				"hint": "Walk it out loud: start, add the step, check the stop."
+			},
+			{
+				"code": ["print(len(range(5, 10)))"],
+				"prompt": "What does this print?",
+				"options": ["4", "5", "6", "10"],
+				"answer": 1,
+				"explanation": "5, 6, 7, 8, 9. Stop minus start is 5.",
+				"scroll": "loop_range",
+				"hint": "Ten is never reached. Count what is."
+			},
+			{
+				"code": ["print(list(range(5, 0, -2)))"],
+				"prompt": "What does this print?",
+				"options": ["[5, 3, 1]", "[5, 3, 1, -1]", "[]", "[5, 3]"],
+				"answer": 0,
+				"explanation": "A negative step counts down. It stops before reaching 0.",
+				"scroll": "loop_range",
+				"hint": "Steps may walk backwards. The stop still bars the door."
+			},
+			{
+				"code": ["total = 0", "for n in range(4):", "    total += n", "print(total)"],
+				"prompt": "What does this print?",
+				"options": ["4", "6", "10", "0"],
+				"answer": 1,
+				"explanation": "0 + 1 + 2 + 3 is 6. range(4) never gives 4.",
+				"scroll": "loop_total",
+				"hint": "List the numbers range hands out before you add a single one."
+			},
+			{
+				"code": ["word = \"\"", "for c in \"ash\":", "    word = c + word", "print(word)"],
+				"prompt": "What does this print?",
+				"options": ["ash", "hsa", "a", "h"],
+				"answer": 1,
+				"explanation": "Each letter is put in front of the others, so the word comes out reversed.",
+				"scroll": "loop_total",
+				"hint": "Watch which side each new letter joins."
+			},
+			{
+				"code": ["n = 10", "while n > 3:", "    n -= 4", "print(n)"],
+				"prompt": "What does this print?",
+				"options": ["6", "3", "2", "-2"],
+				"answer": 2,
+				"explanation": "10 becomes 6, then 2. Now 2 > 3 is False, so the loop stops.",
+				"scroll": "loop_while",
+				"hint": "Check the condition before each pass, not after."
+			},
+			{
+				"code": ["i = 0", "while i < 3:", "    i += 1", "print(i)"],
+				"prompt": "What does this print?",
+				"options": ["2", "3", "4", "0"],
+				"answer": 1,
+				"explanation": "The loop stops as soon as i < 3 is False, which first happens at 3.",
+				"scroll": "loop_while",
+				"hint": "The while asks one question. When is the answer first no?"
+			}
+		]
+	}
+}

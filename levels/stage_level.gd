@@ -3,6 +3,10 @@ extends Node2D
 
 ## Shared stage flow: tiles, spawn, deaths, checkpoints, the run clock,
 ## audio unlock, the pause menu, the wizard's quiz, and the waygate exit.
+##
+## Each stage is also a Python lesson (see `Lessons`). Lore scrolls on the
+## route teach it, a stage gadget lets the player act it out, and the wizard
+## at the end quizzes on the scrolls the player read, with hints on request.
 
 const TILE := 16
 ## How long the results card waits for a press before moving on by itself.
@@ -15,6 +19,11 @@ const WIZARD := preload("res://entities/wizard/wizard.tscn")
 const QUIZ_RELEASE := 0.15
 ## Moving hazards hold still while a wizard speaks, the same as the clock.
 const QUIZ_FROZEN_GROUPS: Array[StringName] = [&"copperling", &"ash_shelf"]
+const SCROLL_TINT := Color(1.0, 0.84, 0.46)
+const LORE_SCROLL := preload("res://entities/lesson/lore_scroll.gd")
+const RUNE_BLOCK := preload("res://entities/lesson/rune_block.gd")
+const RUNE_KEY := preload("res://entities/lesson/rune_key.gd")
+const LESSON_SIGN := preload("res://entities/lesson/lesson_sign.gd")
 
 @export var tileset_texture: Texture2D
 @export var music_stream: AudioStream
@@ -47,6 +56,8 @@ var _quiz_wizard: Wizard
 var _quiz_question: Dictionary = {}
 ## Bumped whenever a quiz opens or is called off, so a stale await can tell.
 var _quiz_serial: int = 0
+## How many hints the wizard has given on the open question (0, 1 or 2).
+var _hint_level: int = 0
 
 
 func _ready() -> void:
@@ -57,6 +68,8 @@ func _ready() -> void:
 		return
 	_paint_stage()
 	hud.set_stage_name(_stage_name())
+	hud.set_lesson(Lessons.topic(stage_index()))
+	_refresh_scrolls()
 	_configure_stage()
 	_add_abyss()
 	var spawn_position := _spawn_position()
@@ -72,6 +85,7 @@ func _ready() -> void:
 	hud.map_requested.connect(return_to_map)
 	hud.restart_requested.connect(_restart_stage)
 	hud.quiz_answered.connect(_on_quiz_answered)
+	hud.quiz_hint_requested.connect(_on_quiz_hint_requested)
 	if OS.has_feature("web") and not StageAudio.web_audio_unlocked:
 		_web_audio_locked = true
 		hud.show_press_to_start()
@@ -214,12 +228,87 @@ func _spawn_checkpoint(at: Vector2) -> void:
 	lantern.connect(&"lit", _on_checkpoint_lit)
 
 
+## A lore scroll on the floor at `at`, holding one scroll of this stage's lesson.
+## A dormant scroll can't be read until it wakes (see `LoreScroll.pop_to`).
+func _spawn_scroll(at: Vector2, scroll_id: String, dormant: bool = false) -> LoreScroll:
+	if Lessons.scroll(scroll_id).is_empty():
+		push_error("Unknown lore scroll %s" % scroll_id)
+	var scroll := LORE_SCROLL.new() as LoreScroll
+	scroll.scroll_id = scroll_id
+	scroll.monitoring = not dormant
+	scroll.position = at
+	add_child(scroll)
+	scroll.read.connect(_on_scroll_read)
+	return scroll
+
+
+## A carved slate centered over `at`, growing upward, with code on it.
+func _spawn_sign(at: Vector2, text: String, tint: Color) -> LessonSign:
+	var sign := LESSON_SIGN.new() as LessonSign
+	sign.text = text
+	sign.tint = tint
+	sign.position = at
+	add_child(sign)
+	return sign
+
+
+## A bumpable stone with a label; the caller handles `bumped`.
+func _spawn_rune_block(at: Vector2, index: int, label: String, tint: Color) -> RuneBlock:
+	var block := RUNE_BLOCK.new() as RuneBlock
+	block.index = index
+	block.label_text = label
+	block.tint = tint
+	block.position = at
+	add_child(block)
+	return block
+
+
+func _spawn_key(at: Vector2, key_name: String) -> RuneKey:
+	var key := RUNE_KEY.new() as RuneKey
+	key.key_name = key_name
+	key.position = at
+	add_child(key)
+	return key
+
+
+## Holds the stage on a lesson card until the player reads it.
+func _show_card(card: Dictionary) -> void:
+	hud.open_card(card)
+
+
+## A scroll the player has never read opens its card. One known from an
+## earlier run is picked up without stopping play; the Spellbook has it.
+func _on_scroll_read(scroll: LoreScroll) -> void:
+	if _dying or scroll.taken:
+		return
+	var data := Lessons.scroll(scroll.scroll_id)
+	var known := GameProgression.knows_scroll(scroll.scroll_id)
+	scroll.take()
+	GameProgression.learn_scroll(scroll.scroll_id)
+	_refresh_scrolls()
+	if known:
+		Fx.float_text(self, scroll.global_position + Vector2(-20.0, -8.0), str(data.get("title", "")), SCROLL_TINT)
+		return
+	_show_card({
+		"kicker": "Lore scroll  -  %s" % Lessons.topic(stage_index()),
+		"title": data.get("title", ""),
+		"code": data.get("code", ""),
+		"body": data.get("insight", ""),
+		"tint": SCROLL_TINT,
+	})
+
+
+func _refresh_scrolls() -> void:
+	hud.set_scrolls(GameProgression.known_scrolls(stage_index()).size(), Lessons.scroll_ids(stage_index()).size())
+
+
 ## A wizard standing on the floor at `at`, with his barrier just to the right.
 ## The stage's question pool is loaded on first use and lasts the whole visit.
 func _spawn_wizard(at: Vector2, title: String, tint: Color) -> Wizard:
 	var wizard := WIZARD.instantiate() as Wizard
 	wizard.title = title
 	wizard.tint = tint
+	wizard.taunt = str(Lessons.stage(stage_index()).get("taunt", ""))
 	wizard.position = at
 	add_child(wizard)
 	wizard.challenged.connect(_on_wizard_challenged)
@@ -303,7 +392,12 @@ func _count_seeds() -> int:
 	for cache in get_tree().get_nodes_in_group(&"cache_stone"):
 		if is_ancestor_of(cache) and not bool(cache.get(&"spent")):
 			total += 1
-	return total
+	return total + _gadget_seeds()
+
+
+## Seeds a stage's lesson gadget will hand out later, counted in the total.
+func _gadget_seeds() -> int:
+	return 0
 
 
 func _touching_ember() -> bool:
@@ -338,6 +432,8 @@ func _on_wizard_challenged(wizard: Wizard) -> void:
 
 
 func _ask_question() -> void:
+	_quiz.focus(GameProgression.known_scrolls(stage_index()))
+	_hint_level = 0
 	_quiz_question = _quiz.next_question()
 	if _quiz_question.is_empty():
 		# No bank to ask from: the wizard steps aside rather than trap the run.
@@ -365,6 +461,40 @@ func _on_quiz_answered(index: int) -> void:
 		_pass_wizard()
 	else:
 		_ask_question()
+
+
+## The wizard helps, grudgingly and never outright. The first hint is his
+## riddle for the question plus the scroll it draws on: its lesson if the
+## player read it, a jab if they walked past it. The second hint, he looks
+## away from one wrong option, which dims out. There is no third.
+func _on_quiz_hint_requested() -> void:
+	if _quiz_wizard == null or _quiz_question.is_empty() or _hint_level >= 2:
+		return
+	_hint_level += 1
+	hud.note_hint()
+	var scroll := Lessons.scroll(str(_quiz_question.get("scroll", "")))
+	var title := str(scroll.get("title", "the old ways"))
+	var detail := "Had you read the scroll %s on the trail, you would not need to ask." % title
+	if GameProgression.knows_scroll(str(scroll.get("id", ""))):
+		detail = "Your scroll, %s: %s" % [title, scroll.get("insight", "")]
+	if _hint_level == 1:
+		hud.show_quiz_hint("\"%s\"" % _quiz_question.get("hint", "Think."), detail, -1, true)
+		return
+	var wrong: Array[int] = []
+	var answer := int(_quiz_question.get("answer", -1))
+	var options: PackedStringArray = _quiz_question.get("options", PackedStringArray())
+	for index in options.size():
+		if index != answer and not hud.quiz_dimmed().has(index):
+			wrong.append(index)
+	if wrong.is_empty():
+		return
+	var dim: int = wrong.pick_random()
+	hud.show_quiz_hint(
+		"%s's eyes slide away from %s... He says no more." % [_quiz_wizard.title, StageHud.QUIZ_LETTERS[dim]],
+		detail,
+		dim,
+		false
+	)
 
 
 ## The wizard is banished, his barrier opens, and controls come back.

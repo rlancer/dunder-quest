@@ -1,6 +1,7 @@
 extends Node
 
-## Manages unlocked levels, cleared status, best emberseed counts, best times, and persistence.
+## Manages unlocked levels, cleared status, best emberseed counts, best times,
+## the lore scrolls read so far (the Spellbook), and persistence.
 
 const SAVE_PATH := "user://cinder_progression.json"
 
@@ -23,14 +24,17 @@ static var _cleared: Dictionary = {}
 static var _best_seeds: Dictionary = {}
 static var _best_times: Dictionary = {}
 static var _total_deaths: int = 0
+## Scroll id -> true for every lore scroll the player has read.
+static var _scrolls: Dictionary = {}
 static var _initialized: bool = false
 
-## max_seeds counts the loose seeds plus the one inside each stage's cache stone.
+## max_seeds counts the loose seeds, the one inside each stage's cache stone,
+## and any a lesson gadget hands out (Kiln Mouth's loop forge drops four).
 const STAGES: Array[Dictionary] = [
 	{
 		"id": 1,
 		"name": "Amber Hollow",
-		"subtitle": "Foothills of ash & shattered clay",
+		"subtitle": "Lesson 1: Lists & Indexing",
 		"scene": "res://levels/level_01.tscn",
 		"map_pos": Vector2(96.0, 155.0),
 		"max_seeds": 6,
@@ -38,7 +42,7 @@ const STAGES: Array[Dictionary] = [
 	{
 		"id": 2,
 		"name": "Cinder Span",
-		"subtitle": "Crumbling shelves & ember pits",
+		"subtitle": "Lesson 2: Dictionaries & Hashing",
 		"scene": "res://levels/level_02.tscn",
 		"map_pos": Vector2(240.0, 115.0),
 		"max_seeds": 4,
@@ -46,10 +50,10 @@ const STAGES: Array[Dictionary] = [
 	{
 		"id": 3,
 		"name": "Kiln Mouth",
-		"subtitle": "The fiery heart of the kiln",
+		"subtitle": "Lesson 3: Loops & range",
 		"scene": "res://levels/level_03.tscn",
 		"map_pos": Vector2(384.0, 155.0),
-		"max_seeds": 4,
+		"max_seeds": 8,
 	},
 ]
 
@@ -119,6 +123,32 @@ static func get_total_max_seeds() -> int:
 	return total
 
 
+static func learn_scroll(scroll_id: String) -> void:
+	_ensure_init()
+	if _scrolls.has(scroll_id):
+		return
+	_scrolls[scroll_id] = true
+	save_data()
+
+
+static func knows_scroll(scroll_id: String) -> bool:
+	_ensure_init()
+	return _scrolls.has(scroll_id)
+
+
+## Every scroll read so far, in the order the lessons list them.
+static func known_scrolls(stage_id: int = 0) -> PackedStringArray:
+	_ensure_init()
+	var known: PackedStringArray = []
+	for stage in STAGES:
+		if stage_id != 0 and stage.id != stage_id:
+			continue
+		for scroll_id in Lessons.scroll_ids(stage.id):
+			if _scrolls.has(scroll_id):
+				known.append(scroll_id)
+	return known
+
+
 static func note_death() -> void:
 	_ensure_init()
 	_total_deaths += 1
@@ -170,6 +200,7 @@ static func save_data() -> void:
 		"best_seeds": seeds,
 		"best_times": times,
 		"total_deaths": _total_deaths,
+		"scrolls": _scrolls.keys(),
 	}
 	var file := FileAccess.open(SAVE_PATH, FileAccess.WRITE)
 	if file != null:
@@ -183,6 +214,7 @@ static func _clear_memory() -> void:
 	_best_seeds = {}
 	_best_times = {}
 	_total_deaths = 0
+	_scrolls = {}
 	current_stage_id = 1
 
 
@@ -214,6 +246,8 @@ static func load_data() -> void:
 	var times: Dictionary = d.get("best_times", {})
 	for key in times.keys():
 		_best_times[int(key)] = float(times[key])
+	for scroll_id: Variant in d.get("scrolls", []):
+		_scrolls[str(scroll_id)] = true
 	_unlocked[1] = true
 
 
