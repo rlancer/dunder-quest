@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => {
       observability: { enabled: true },
       workersDev: true,
       assets: {
-        notFoundHandling: "none",
+        notFoundHandling: "404-page",
         htmlHandling: "auto-trailing-slash",
       },
       domains: dev
