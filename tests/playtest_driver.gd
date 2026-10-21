@@ -8,6 +8,9 @@ extends Node
 ## patrol's phase. `-- --section-wait=N` overrides it for sweeps.
 @export var section_wait: int = 0
 
+## Lesson cards on the main route: 3 + 5 + 4 scrolls and Cinder Span's 2 keys.
+const ROUTE_CARDS := 14
+
 var _player: CharacterBody2D
 var _hud: StageHud
 var _stage_index: int = 0
@@ -31,6 +34,8 @@ var _quiz_wait: int = 0
 ## Set once the run at Copperling A's island starts, so it is never abandoned midway.
 var _a_commit: bool = false
 var _quiz_presses: int = 0
+var _card_wait: int = 0
+var _cards_read: int = 0
 var _jump_left: int = 0
 var _jump_cooldown: int = 0
 var _crossed_gap: bool = false
@@ -67,7 +72,12 @@ func _ready() -> void:
 		push_error("Playtest is missing the level scene")
 		get_tree().quit(1)
 		return
-	add_child(level_scene.instantiate())
+	# Lesson cards pause the tree. The driver keeps running to read them, and
+	# the level beneath it must still pause.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	var level := level_scene.instantiate()
+	level.process_mode = Node.PROCESS_MODE_PAUSABLE
+	add_child(level)
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--section-wait="):
 			section_wait = int(arg.get_slice("=", 1))
@@ -101,6 +111,10 @@ func _physics_process(_delta: float) -> void:
 			push_error("Playtest lost the stage")
 			_finish_soon(false)
 		return
+	if _hud.is_card_open():
+		_read_card()
+		return
+	_card_wait = 0
 	if _hud.is_quiz_open():
 		_answer_quiz()
 		return
@@ -115,7 +129,7 @@ func _physics_process(_delta: float) -> void:
 	if section_limit > 0 and _section_done():
 		return
 	if _stage_index == 3 and _hud.is_cleared():
-		_finish_soon(_level_one_clear() and _level_two_clear() and _crossed_gap and _stomped and _bumped and _broke and _collected and _wizard_passed)
+		_finish_soon(_level_one_clear() and _level_two_clear() and _crossed_gap and _stomped and _bumped and _broke and _collected and _wizard_passed and _cards_read >= ROUTE_CARDS)
 		return
 	if _frames > 160 * 60:
 		_shot("fail")
@@ -177,6 +191,9 @@ func _sync_stage() -> bool:
 	var stage := _living_in_group(&"stage")
 	if stage == null:
 		return false
+	# Stages chained in under the driver would inherit its ALWAYS mode and
+	# play on through lesson cards.
+	stage.process_mode = Node.PROCESS_MODE_PAUSABLE
 	var index := int(stage.call(&"stage_index"))
 	var player_ok := _player != null and is_instance_valid(_player) and not _player.is_queued_for_deletion()
 	if index == _stage_index and player_ok:
@@ -266,6 +283,40 @@ func _answer_quiz() -> void:
 	else:
 		_tap(&"move_right")
 		_quiz_presses += 1
+
+
+## A lesson card holds the stage paused. The bot leaves its keys as they are
+## (a jump held mid-air stays held) and presses confirm once the card settles.
+func _read_card() -> void:
+	_card_wait += 1
+	if _card_wait == 30:
+		_cards_read += 1
+		print("PLAYTEST card stage=%d title=%s" % [_stage_index, _hud.card_title()])
+		_shot("card_%d" % _stage_index)
+		_tap(&"confirm")
+	elif _card_wait > 30 and _card_wait % 30 == 0:
+		_tap(&"confirm")
+
+
+## Cinder Span's vault: bump the bucket each key hashes to, then walk on.
+func _vault_move(x: float, on_floor: bool) -> float:
+	var stage := _living_in_group(&"stage")
+	if stage == null or not stage.has_method(&"vault_buckets"):
+		return 1.0
+	for bucket: int in stage.call(&"vault_buckets"):
+		for node in get_tree().get_nodes_in_group(&"rune_block"):
+			var block := node as RuneBlock
+			if block == null or block.index != bucket or block.lit or not stage.is_ancestor_of(block):
+				continue
+			if not on_floor:
+				return 0.0
+			return _line_up_and_jump(x, block.global_position.x, on_floor)
+	return 1.0
+
+
+func _vault_open() -> bool:
+	var door := get_tree().get_first_node_in_group(&"vault_door")
+	return door == null or bool(door.call(&"is_open"))
 
 
 func _wizard_banished() -> bool:
@@ -531,6 +582,9 @@ func _steer_span() -> void:
 	# A human can jump again on landing. The driver's cooldown is only anti-mash.
 	if on_floor and _jump_left == 0:
 		_jump_cooldown = 0
+	if x > 2520.0 and y > 200.0 and not _vault_open():
+		_set_move(_vault_move(x, on_floor))
+		return
 	if y > 226.0 and x < 960.0:
 		if on_floor and x > 904.0 and x < 922.0:
 			_start_jump(4)
@@ -850,7 +904,7 @@ func _report() -> void:
 	if _hud != null and is_instance_valid(_hud):
 		goal_open = _hud.is_cleared()
 	print(
-		"PLAYTEST result=%s l1=%s,%s,%s,%s,%s,%s l2=%s,%s,%s,%s,%s,%s l3=%s,%s,%s,%s,%s wizards=%s,%s,%s goal=%s"
+		"PLAYTEST result=%s l1=%s,%s,%s,%s,%s,%s l2=%s,%s,%s,%s,%s,%s l3=%s,%s,%s,%s,%s wizards=%s,%s,%s cards=%d goal=%s"
 		% [
 			"ok" if _result_ok else "fail",
 			_l1_gap,
@@ -873,6 +927,7 @@ func _report() -> void:
 			_l1_wizard,
 			_l2_wizard,
 			_wizard_passed,
+			_cards_read,
 			goal_open,
 		]
 	)

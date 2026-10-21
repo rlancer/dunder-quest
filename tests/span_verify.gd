@@ -280,8 +280,11 @@ func _scan_seeds() -> void:
 			_seeds.append(seed.global_position)
 
 
+## Floors stay short, apart from the spawn run and the finale: the run that
+## holds the waygate also holds the vault and the wizard's exam.
 func _audit_floors() -> void:
 	var bad := false
+	var gate := get_tree().get_first_node_in_group(&"waygate") as Node2D
 	for surf in _surfaces:
 		if str(surf["kind"]) == "one_way" or str(surf["kind"]) == "shelf":
 			continue
@@ -289,7 +292,8 @@ func _audit_floors() -> void:
 			continue
 		var tiles := int(round((float(surf["x1"]) - float(surf["x0"])) / 16.0))
 		var spawn_run := float(surf["x0"]) == 0.0 and int(surf["row"]) == 14
-		if tiles > 8 and not spawn_run:
+		var finale := gate != null and float(surf["x0"]) <= gate.global_position.x and float(surf["x1"]) >= gate.global_position.x
+		if tiles > 8 and not spawn_run and not finale:
 			bad = true
 			_fail("floor %s is %d tiles" % [surf["id"], tiles])
 	if not bad:
@@ -653,8 +657,10 @@ func _surface_at(feet_x: float, feet_y: float) -> Dictionary:
 
 
 func _silence_pests() -> void:
-	# Trials measure the level alone; the playtest covers the wizard.
+	# Trials measure the level alone; the playtest covers the wizard and
+	# lesson_check covers the lesson pieces (scrolls, keys, blocks, the vault).
 	get_tree().call_group(&"wizard", &"dismiss")
+	get_tree().call_group(&"lesson", &"dismiss")
 	for node in get_tree().get_nodes_in_group(&"copperling"):
 		node.set_physics_process(false)
 		node.set(&"collision_layer", 0)

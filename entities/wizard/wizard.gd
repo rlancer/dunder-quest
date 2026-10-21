@@ -3,15 +3,19 @@ extends Area2D
 
 ## A dark wizard who blocks the route behind a magic barrier. Walking into his
 ## zone challenges the player; the stage runs the quiz and then either zaps the
-## player or banishes him, which also dissolves the barrier.
+## player or banishes him, which also dissolves the barrier. As the player
+## draws near he taunts them with a line that gives away the lesson's theme.
 
 signal challenged(wizard: Wizard)
 
 const FRAME_TIME := 0.45
 const ORB := Vector2(-6.0, -22.0)
+## How close (in x) the player must come before the taunt shows.
+const TAUNT_RANGE := 150.0
 
 @export var title: String = "Dark Wizard"
 @export var tint: Color = Color(0.55, 0.85, 1.0)
+@export var taunt: String = ""
 @export var zap_sound: AudioStream
 @export var banish_sound: AudioStream
 
@@ -23,6 +27,7 @@ var banished: bool = false
 @onready var _nameplate: Label = %Nameplate
 
 var _clock: float = 0.0
+var _bubble: Label
 
 
 func _ready() -> void:
@@ -32,17 +37,58 @@ func _ready() -> void:
 	_barrier.tint = tint
 	_nameplate.text = title
 	_nameplate.add_theme_color_override(&"font_color", tint.lerp(Color.WHITE, 0.55))
+	_build_bubble()
+
+
+func _build_bubble() -> void:
+	_bubble = Label.new()
+	_bubble.text = taunt
+	_bubble.add_theme_font_size_override(&"font_size", 10)
+	_bubble.add_theme_color_override(&"font_color", tint.lerp(Color.WHITE, 0.7))
+	var box := StyleBoxFlat.new()
+	box.bg_color = Color(0.06, 0.03, 0.09, 0.88)
+	box.border_color = tint
+	box.set_border_width_all(1)
+	box.set_corner_radius_all(2)
+	box.content_margin_left = 4.0
+	box.content_margin_right = 4.0
+	box.content_margin_top = 1.0
+	box.content_margin_bottom = 2.0
+	box.anti_aliasing = false
+	_bubble.add_theme_stylebox_override(&"normal", box)
+	_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_bubble.z_index = 8
+	_bubble.modulate.a = 0.0
+	add_child(_bubble)
+	_bubble.reset_size()
+	_bubble.position = Vector2(-_bubble.size.x * 0.5 - 6.0, -62.0).round()
 
 
 func _process(delta: float) -> void:
 	if banished:
 		return
 	_clock += delta
+	_update_bubble(delta)
 	_sprite.frame = int(_clock / FRAME_TIME) % 2
 	# A one-pixel hover every other beat, offset from the frame swap.
 	_sprite.position.y = -14.0 - (1.0 if int(_clock / FRAME_TIME + 0.5) % 2 == 0 else 0.0)
 	_glow.position = ORB + Vector2(0.0, _sprite.position.y + 14.0)
 	_glow.modulate.a = 0.34 + 0.12 * sin(_clock * 4.0)
+
+
+func _update_bubble(delta: float) -> void:
+	if taunt == "":
+		return
+	var near := false
+	var player := get_tree().get_first_node_in_group(&"player") as Node2D
+	if player != null:
+		var gap := player.global_position - global_position
+		near = absf(gap.x) < TAUNT_RANGE and absf(gap.y) < 80.0
+	_bubble.modulate.a = move_toward(_bubble.modulate.a, 1.0 if near else 0.0, delta * 4.0)
+
+
+func is_taunting() -> bool:
+	return _bubble != null and _bubble.modulate.a > 0.5
 
 
 ## Zone center in world space, for tests that need to walk into it.
@@ -104,6 +150,7 @@ func banish() -> void:
 	Fx.dust(get_parent(), global_position + Vector2(0.0, -2.0), 10)
 	Fx.float_text(get_parent(), global_position + Vector2(-16.0, -18.0), "Banished!", tint.lightened(0.4))
 	_nameplate.hide()
+	_bubble.hide()
 	var tween := create_tween()
 	tween.tween_property(_sprite, "scale", Vector2(1.3, 0.2), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.parallel().tween_property(_sprite, "modulate:a", 0.0, 0.22)
@@ -118,6 +165,8 @@ func dismiss() -> void:
 	set_deferred(&"monitoring", false)
 	_barrier.open_now()
 	hide()
+	if _bubble != null:
+		_bubble.hide()
 
 
 func _on_body_entered(body: Node2D) -> void:

@@ -1,10 +1,31 @@
 extends StageLevel
 
-## Cinder Span. Short floors, a full-jump pit, a tap-only pad, and a low roof.
+## Cinder Span. Lesson 2: Dictionaries & Hashing.
+## Short floors, a full-jump pit, a tap-only pad, and a low roof.
 ## Ember tiles kill on touch. Ash shelves crack, then fall. Both reset on respawn.
 ## The longest stage, so two lanterns hold the respawn point.
+##
+## Two rune keys lie on the route. The vault near the end has four bucket
+## blocks; bumping the bucket a key hashes to stores it and lights a lock on
+## the door. With both stored the door opens, and the Cinder Warlock waits past it.
 
-const WIDTH := 166
+const WIDTH := 187
+const VAULT_TINT := Color(1.0, 0.8, 0.36)
+const GOOD := Color(0.5, 0.92, 0.6)
+const BAD := Color(1.0, 0.46, 0.4)
+const BUCKETS_X := 2600.0
+const BUCKETS_Y := 152.0
+const DOOR_X := 2712.0
+## Key name -> where it lies on the route.
+const KEYS: Dictionary = {
+	"ash": Vector2(1256, 222),
+	"ember": Vector2(2400, 222),
+}
+
+var _door: VaultDoor
+## Bucket -> key name, for keys carried and keys stored in the vault.
+var _held: Dictionary = {}
+var _stored: Dictionary = {}
 const _FAR := preload("res://assets/backgrounds/span_far.png")
 const _MID := preload("res://assets/backgrounds/span_mid.png")
 const _NEAR := preload("res://assets/backgrounds/span_near.png")
@@ -52,7 +73,7 @@ func _paint_stage() -> void:
 		Vector2i(132, 136),
 		Vector2i(139, 142),
 		Vector2i(148, 151),
-		Vector2i(156, 163),
+		Vector2i(156, 184),
 	]
 	for span in ground:
 		_paint_solid(span.x, span.y, 14)
@@ -84,7 +105,66 @@ func _spawn_actors() -> void:
 	]
 	for point in seed_points:
 		_bind_seed(_spawn(emberseed_scene, point))
-	# Under the low roof past the first long jump, so the barrier fills the
-	# gap from floor to roof.
-	_spawn_wizard(Vector2(656, 224), "Cinder Warlock", Color(0.95, 0.55, 1.0))
-	_spawn_gate(Vector2(2568, 224))
+	_spawn_scroll(Vector2(104, 222), "dict_basics")
+	_spawn_scroll(Vector2(600, 222), "dict_hash")
+	_spawn_scroll(Vector2(1712, 222), "dict_overwrite")
+	_spawn_scroll(Vector2(2128, 222), "dict_get")
+	_spawn_scroll(Vector2(2176, 222), "dict_unhashable")
+	_build_vault()
+	# The final exam, on the long last run past the vault.
+	_spawn_wizard(Vector2(2800, 224), "Cinder Warlock", Color(0.95, 0.55, 1.0))
+	_spawn_gate(Vector2(2904, 224))
+
+
+func _build_vault() -> void:
+	for key_name: String in KEYS:
+		_spawn_key(KEYS[key_name], key_name).collected.connect(_on_key_collected)
+	_spawn_sign(Vector2(BUCKETS_X + 24.0, BUCKETS_Y - 10.0), "bucket = rune_hash(key) % 4", VAULT_TINT)
+	for index in RuneKey.BUCKETS:
+		var block := _spawn_rune_block(Vector2(BUCKETS_X + 16.0 * index, BUCKETS_Y), index, str(index), VAULT_TINT)
+		block.bumped.connect(_on_bucket_bumped)
+	_door = VaultDoor.new()
+	_door.locks = KEYS.size()
+	_door.position = Vector2(DOOR_X, 224)
+	add_child(_door)
+
+
+func _on_key_collected(key: RuneKey) -> void:
+	key.take()
+	var bucket := key.bucket()
+	_held[bucket] = key.key_name
+	var code := "key = \"%s\"\nrune_hash(key)      # %d\nrune_hash(key) %% 4  # %d" % [key.key_name, RuneKey.rune_hash(key.key_name), bucket]
+	_show_card({
+		"kicker": "Rune key  -  %d of %d" % [_held.size() + _stored.size(), KEYS.size()],
+		"title": "The key \"%s\"" % key.key_name,
+		"code": code,
+		"body": "The vault ahead has 4 buckets. It hashes a key (here, by adding up its letter codes) and looks in that one bucket only. Bump bucket %d to store this key." % bucket,
+		"tint": VAULT_TINT,
+	})
+
+
+func _on_bucket_bumped(block: RuneBlock) -> void:
+	var bucket := block.index
+	var above := block.global_position + Vector2(-30.0, -14.0)
+	if _stored.has(bucket):
+		Fx.float_text(self, above, "vault[%d] = \"%s\"" % [bucket, _stored[bucket]], VAULT_TINT.lightened(0.3))
+		return
+	if not _held.has(bucket):
+		block.flash(BAD)
+		var message := "KeyError: bucket %d" % bucket if not _held.is_empty() else "No key hashes here"
+		Fx.float_text(self, above, message, BAD.lightened(0.3))
+		return
+	_stored[bucket] = _held[bucket]
+	_held.erase(bucket)
+	block.flash(GOOD)
+	block.set_lit(true)
+	Fx.float_text(self, above, "vault[%d] = \"%s\"" % [bucket, _stored[bucket]], GOOD.lightened(0.3))
+	_door.light_lock()
+
+
+## Test hook: the bucket each key belongs in, for bots that solve the vault.
+func vault_buckets() -> Array[int]:
+	var buckets: Array[int] = []
+	for key_name: String in KEYS:
+		buckets.append(RuneKey.rune_hash(key_name) % RuneKey.BUCKETS)
+	return buckets

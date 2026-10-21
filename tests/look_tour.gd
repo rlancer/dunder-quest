@@ -7,18 +7,26 @@ const STEPS: Array[Dictionary] = [
 	{"tag": "title", "scene": "res://ui/title_screen.tscn"},
 	{"tag": "map", "scene": "res://levels/world_map.tscn"},
 	{"tag": "amber_start", "scene": "res://levels/level_01.tscn", "at": Vector2(120, 214)},
+	{"tag": "amber_scroll", "scene": "res://levels/level_01.tscn", "at": Vector2(76, 214)},
+	{"tag": "amber_index", "scene": "res://levels/level_01.tscn", "at": Vector2(150, 214), "bump": [1, 2], "shot_at": 75},
 	{"tag": "amber_blocks", "scene": "res://levels/level_01.tscn", "at": Vector2(600, 214)},
 	{"tag": "amber_pause", "scene": "res://levels/level_01.tscn", "at": Vector2(300, 214), "pause": true},
+	{"tag": "amber_book", "scene": "res://levels/level_01.tscn", "at": Vector2(300, 214), "learn": ["list_zero", "list_negative", "dict_hash"], "pause": true, "book": true},
 	{"tag": "amber_clear", "scene": "res://levels/level_01.tscn", "at": Vector2(1150, 214), "clear": true},
-	{"tag": "amber_wizard", "scene": "res://levels/level_01.tscn", "at": Vector2(930, 214)},
+	{"tag": "amber_wizard", "scene": "res://levels/level_01.tscn", "at": Vector2(900, 214)},
 	{"tag": "amber_quiz", "scene": "res://levels/level_01.tscn", "at": Vector2(982, 214)},
-	{"tag": "span_wizard", "scene": "res://levels/level_02.tscn", "at": Vector2(580, 214)},
-	{"tag": "span_quiz", "scene": "res://levels/level_02.tscn", "at": Vector2(630, 214)},
-	{"tag": "span_quiz_wrong", "scene": "res://levels/level_02.tscn", "at": Vector2(630, 214), "answer": "wrong"},
-	{"tag": "kiln_wizard", "scene": "res://levels/level_03.tscn", "at": Vector2(664, 214)},
-	{"tag": "kiln_quiz", "scene": "res://levels/level_03.tscn", "at": Vector2(694, 214)},
-	{"tag": "kiln_quiz_right", "scene": "res://levels/level_03.tscn", "at": Vector2(694, 214), "answer": "right"},
-	{"tag": "kiln_banish", "scene": "res://levels/level_03.tscn", "at": Vector2(694, 214), "answer": "right", "skip_at": 70, "shot_at": 80},
+	{"tag": "amber_hint", "scene": "res://levels/level_01.tscn", "at": Vector2(982, 214), "learn": ["list_zero", "list_negative", "list_slice"], "hints": 1},
+	{"tag": "amber_hint2", "scene": "res://levels/level_01.tscn", "at": Vector2(982, 214), "learn": ["list_zero"], "hints": 2},
+	{"tag": "span_key", "scene": "res://levels/level_02.tscn", "at": Vector2(1256, 214)},
+	{"tag": "span_vault", "scene": "res://levels/level_02.tscn", "at": Vector2(2560, 214), "bump": [1], "shot_at": 50},
+	{"tag": "span_wizard", "scene": "res://levels/level_02.tscn", "at": Vector2(2740, 214), "open_vault": true},
+	{"tag": "span_quiz", "scene": "res://levels/level_02.tscn", "at": Vector2(2774, 214), "open_vault": true},
+	{"tag": "span_quiz_wrong", "scene": "res://levels/level_02.tscn", "at": Vector2(2774, 214), "open_vault": true, "answer": "wrong"},
+	{"tag": "kiln_forge", "scene": "res://levels/level_03.tscn", "at": Vector2(1470, 214), "bump": [0], "shot_at": 130},
+	{"tag": "kiln_wizard", "scene": "res://levels/level_03.tscn", "at": Vector2(1660, 214)},
+	{"tag": "kiln_quiz", "scene": "res://levels/level_03.tscn", "at": Vector2(1718, 214)},
+	{"tag": "kiln_quiz_right", "scene": "res://levels/level_03.tscn", "at": Vector2(1718, 214), "answer": "right"},
+	{"tag": "kiln_banish", "scene": "res://levels/level_03.tscn", "at": Vector2(1718, 214), "answer": "right", "skip_at": 70, "shot_at": 80},
 	{"tag": "span_lantern", "scene": "res://levels/level_02.tscn", "at": Vector2(1190, 214)},
 	{"tag": "span_ember", "scene": "res://levels/level_02.tscn", "at": Vector2(2000, 214)},
 	{"tag": "kiln_final", "scene": "res://levels/level_03.tscn", "at": Vector2(1400, 214), "final": true},
@@ -55,6 +63,15 @@ func _process(_delta: float) -> void:
 			hud.show_passage("Cinder Span awaits", 41.3, true)
 		if hud != null and step.get("final", false):
 			hud.show_clear(63.8, false)
+		if hud != null and step.get("book", false):
+			hud.call(&"_open_spellbook")
+		for index: int in step.get("bump", []):
+			for block in get_tree().get_nodes_in_group(&"rune_block"):
+				if _current.is_ancestor_of(block) and int(block.get(&"index")) == index:
+					block.call(&"receive_head_bump")
+		if hud != null and step.has("hints") and hud.is_quiz_asking():
+			for _hint in int(step["hints"]):
+				hud.quiz_hint_requested.emit()
 		if hud != null and step.has("answer") and hud.is_quiz_asking():
 			# Press the option button itself, as a mouse click would.
 			var pick := hud.quiz_answer_index()
@@ -88,6 +105,13 @@ func _next() -> void:
 		print("TOUR done")
 		get_tree().quit(0)
 		return
+	GameProgression.load_data()
+	for scroll_id: String in STEPS[_step].get("learn", []):
+		GameProgression.learn_scroll(scroll_id)
 	var packed := load(STEPS[_step]["scene"]) as PackedScene
 	_current = packed.instantiate()
+	# The tour runs while paused; the stage must still pause for lesson cards.
+	_current.process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_child(_current)
+	if STEPS[_step].get("open_vault", false):
+		get_tree().call_group(&"vault_door", &"open_now")

@@ -498,7 +498,7 @@ func _audit_identity() -> void:
 		_fail("next stage is set")
 	else:
 		print("AUDIT pass clear-screen")
-	if int(_level.call(&"_stage_width")) != 96:
+	if int(_level.call(&"_stage_width")) != 121:
 		_fail("width")
 	if _player.global_position.distance_to(_spawn) > 2.0:
 		_fail("spawn")
@@ -963,8 +963,10 @@ func _surface_by_id(id: String) -> Dictionary:
 
 
 func _silence_pests() -> void:
-	# Trials measure the level alone; the playtest covers the wizard.
+	# Trials measure the level alone; the playtest covers the wizard and
+	# lesson_check covers the lesson pieces (scrolls, keys, blocks, the vault).
 	get_tree().call_group(&"wizard", &"dismiss")
+	get_tree().call_group(&"lesson", &"dismiss")
 	_silence_foe()
 	for node in get_tree().get_nodes_in_group(&"waygate"):
 		node.set(&"monitoring", false)

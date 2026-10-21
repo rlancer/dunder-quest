@@ -1,9 +1,17 @@
-"""Run every wizard question and check the marked answer is what Python prints.
+"""Run every lesson snippet and check it against what Python really prints.
 
 Each snippet runs in its own isolated interpreter (`python -I`), so nothing
-from this repo or the environment leaks in. The marked option must equal the
-captured stdout exactly (one trailing newline stripped). The script also checks
-the bank's shape and that everything fits the 480x270 quiz panel.
+from this repo or the environment leaks in.
+
+Wizard questions: the marked option must equal the captured stdout exactly
+(one trailing newline stripped), and each must name a scroll from its stage
+and carry a hint.
+
+Scrolls: every `print(...)  # value` line promises its output, and the
+printed lines must match those comments in order. A scroll marked
+`"raises": "TypeError"` must end with exactly that error.
+
+The script also checks the shapes and that everything fits the 480x270 panels.
 
     python tools/verify_quiz.py
 """
@@ -16,7 +24,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-BANK = ROOT / "data" / "wizard_questions.json"
+BANK = ROOT / "data" / "lessons.json"
 
 MIN_VERSION = (3, 12)
 MIN_PER_STAGE = 6
@@ -24,6 +32,12 @@ MAX_CODE_LINES = 8
 MAX_CODE_COLS = 40
 MAX_OPTION_COLS = 28
 MAX_EXPLANATION = 88
+MAX_HINT = 64
+MIN_SCROLLS = 3
+MAX_SCROLL_LINES = 5
+MAX_SCROLL_COLS = 46
+MAX_SCROLL_TITLE = 22
+MAX_INSIGHT = 92
 TIMEOUT = 10.0
 
 
@@ -39,9 +53,53 @@ def run_snippet(code: str) -> tuple[str, str, int]:
     return completed.stdout, completed.stderr, completed.returncode
 
 
-def check_question(stage: str, index: int, question: dict) -> list[str]:
+def check_scroll(stage: str, scroll: dict) -> list[str]:
+    tag = f"stage {stage} scroll {scroll.get('id', '?')}"
+    problems: list[str] = []
+    code_lines = scroll.get("code")
+    if not isinstance(code_lines, list) or not code_lines or not all(isinstance(line, str) for line in code_lines):
+        return [f"{tag}: code must be a non-empty list of lines"]
+    for key in ("id", "title", "insight"):
+        if not str(scroll.get(key, "")).strip():
+            problems.append(f"{tag}: missing {key}")
+    if len(str(scroll.get("title", ""))) > MAX_SCROLL_TITLE:
+        problems.append(f"{tag}: title longer than {MAX_SCROLL_TITLE} chars")
+    if len(str(scroll.get("insight", ""))) > MAX_INSIGHT:
+        problems.append(f"{tag}: insight longer than {MAX_INSIGHT} chars")
+    if len(code_lines) > MAX_SCROLL_LINES:
+        problems.append(f"{tag}: {len(code_lines)} code lines (max {MAX_SCROLL_LINES})")
+    promised: list[str] = []
+    for line in code_lines:
+        if len(line) > MAX_SCROLL_COLS:
+            problems.append(f"{tag}: code line is {len(line)} cols (max {MAX_SCROLL_COLS}): {line!r}")
+        if line.lstrip().startswith("print(") and "#" in line:
+            promised.append(line.split("#", 1)[1].strip())
+    stdout, stderr, code = run_snippet("\n".join(code_lines) + "\n")
+    raises = scroll.get("raises")
+    if raises:
+        last = stderr.strip().splitlines()[-1:] or [""]
+        if code == 0 or not last[0].startswith(f"{raises}:"):
+            problems.append(f"{tag}: expected {raises}, got exit {code} {last}")
+    elif code != 0 or stderr.strip():
+        problems.append(f"{tag}: snippet failed: {stderr.strip().splitlines()[-1:]}")
+    printed = stdout.splitlines()
+    if printed != promised:
+        problems.append(f"{tag}: printed {printed} but comments promise {promised}")
+    status = "ok  " if not problems else "FAIL"
+    print(f"{status} {tag}: {printed}")
+    return problems
+
+
+def check_question(stage: str, index: int, question: dict, scroll_ids: set[str]) -> list[str]:
     tag = f"stage {stage} #{index + 1}"
     problems: list[str] = []
+    if question.get("scroll") not in scroll_ids:
+        problems.append(f"{tag}: scroll {question.get('scroll')!r} is not one of this stage's scrolls")
+    hint = str(question.get("hint", "")).strip()
+    if not hint:
+        problems.append(f"{tag}: missing hint")
+    elif len(hint) > MAX_HINT:
+        problems.append(f"{tag}: hint longer than {MAX_HINT} chars")
     code_lines = question.get("code")
     options = question.get("options")
     answer = question.get("answer")
@@ -95,22 +153,46 @@ def main() -> int:
     bank = json.loads(BANK.read_text(encoding="utf-8"))
     problems: list[str] = []
     total = 0
+    all_scroll_ids: set[str] = set()
     for stage in ("1", "2", "3"):
-        questions = bank.get(stage)
+        lesson = bank.get(stage)
+        if not isinstance(lesson, dict):
+            problems.append(f"stage {stage}: missing lesson")
+            continue
+        for key in ("topic", "taunt"):
+            if not str(lesson.get(key, "")).strip():
+                problems.append(f"stage {stage}: missing {key}")
+        scrolls = lesson.get("scrolls")
+        if not isinstance(scrolls, list) or len(scrolls) < MIN_SCROLLS:
+            problems.append(f"stage {stage}: needs at least {MIN_SCROLLS} scrolls")
+            scrolls = []
+        scroll_ids: set[str] = set()
+        for scroll in scrolls:
+            scroll_id = str(scroll.get("id", ""))
+            if scroll_id in all_scroll_ids:
+                problems.append(f"stage {stage}: duplicate scroll id {scroll_id!r}")
+            all_scroll_ids.add(scroll_id)
+            scroll_ids.add(scroll_id)
+            problems.extend(check_scroll(stage, scroll))
+        questions = lesson.get("questions")
         if not isinstance(questions, list) or len(questions) < MIN_PER_STAGE:
             problems.append(f"stage {stage}: needs at least {MIN_PER_STAGE} questions")
             continue
+        asked: set[str] = set()
         seen_code: set[str] = set()
         for index, question in enumerate(questions):
             total += 1
-            problems.extend(check_question(stage, index, question))
+            asked.add(str(question.get("scroll")))
+            problems.extend(check_question(stage, index, question, scroll_ids))
             key = "\n".join(question.get("code", []))
             if key in seen_code:
                 problems.append(f"stage {stage} #{index + 1}: duplicate snippet")
             seen_code.add(key)
+        for scroll_id in sorted(scroll_ids - asked):
+            problems.append(f"stage {stage}: no question draws on scroll {scroll_id!r}")
     for problem in problems:
         print("  -", problem)
-    counts = ", ".join(f"stage {s}={len(bank.get(s, []))}" for s in ("1", "2", "3"))
+    counts = ", ".join(f"stage {s}={len(bank.get(s, {}).get('questions', []))}" for s in ("1", "2", "3"))
     result = "ok" if not problems else "fail"
     print(f"QUIZ result={result} questions={total} ({counts}) python={sys.version.split()[0]} problems={len(problems)}")
     return 0 if not problems else 1
