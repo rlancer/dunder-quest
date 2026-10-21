@@ -299,6 +299,13 @@ func _on_block_bumped(answer_block: RuneBlock) -> void:
 		_hurt(Vector2(-140.0 if player.global_position.x > answer_block.global_position.x else 140.0, -200.0), true)
 		_timer = WRONG_HOLD
 	state = State.VERDICT
+	Telemetry.track("duel_answer", stage_id, {
+		"q": _question_index(),
+		"scroll": str(_question.get("scroll", "")),
+		"chosen": answer_block.index,
+		"correct": correct,
+		"hints": _hint_level,
+	})
 	if hud != null:
 		hud.duel_verdict(answer_block.index, correct, remaining)
 
@@ -311,6 +318,7 @@ func _on_hint_requested() -> void:
 	if state != State.ASKING or _hint_level >= 2:
 		return
 	_hint_level += 1
+	Telemetry.track("duel_hint", stage_id, {"q": _question_index(), "level": _hint_level})
 	if hud != null:
 		hud.note_hint()
 	var scroll := Lessons.scroll(str(_question.get("scroll", "")))
@@ -349,7 +357,13 @@ func _win() -> void:
 	_restore_view()
 	if hud != null:
 		hud.close_duel()
+	Telemetry.track("duel_won", stage_id, {"answers": answers, "misses": misses})
 	won.emit()
+
+
+## Where the current question sits in its lesson, so the stats can name it.
+func _question_index() -> int:
+	return (Lessons.stage(stage_id).get("questions", []) as Array).find(_question)
 
 
 func _pace() -> Array:
@@ -420,6 +434,7 @@ func _hurt(push: Vector2, zap: bool = false) -> void:
 		hud.duel_sparks(sparks)
 	if sparks <= 0:
 		_clear_spells()
+		Telemetry.track("duel_downed", stage_id, {"answers": answers, "misses": misses})
 		downed.emit()
 
 

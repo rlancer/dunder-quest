@@ -1,0 +1,35 @@
+// The stats dashboard and the endpoint the game reports to.
+// Cloudflare Access guards the whole host except /api/events; see README.md.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ember-trail-stats",
+  "account_id": "3315bb3e7d2e3556bfea6fb3947a890e",
+  "compatibility_date": "2026-10-19",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "src/server.ts",
+  "observability": { "enabled": true },
+  // Only the custom domain, which Access guards; no workers.dev or preview URLs.
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [{ "pattern": "stats.ember-trail.robertlancer.com", "custom_domain": true }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ember-trail-stats",
+      // Replace with the id `wrangler d1 create ember-trail-stats` prints.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "ratelimits": [
+    { "name": "EVENT_LIMITER", "namespace_id": "4201", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "vars": {
+    // Where the game is served from, for CORS on /api/events.
+    "GAME_ORIGINS": "https://ember-trail.robertlancer.com,https://dev.ember-trail.robertlancer.com",
+    // Your Zero Trust team domain and the Access application's AUD tag.
+    "ACCESS_TEAM_DOMAIN": "",
+    "ACCESS_AUD": "",
+    "ALLOWED_EMAILS": "robert.lancer@gmail.com"
+  }
+}

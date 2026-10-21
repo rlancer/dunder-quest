@@ -65,6 +65,29 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
 
+      - name: Install the stats app
+        working-directory: stats
+        run: bun install --frozen-lockfile
+
+      - name: Check the stats app
+        working-directory: stats
+        run: bun run typecheck && bun run build
+
+      # Skipped until the D1 database exists and its id is in stats/wrangler.jsonc.
+      - name: Deploy stats
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        working-directory: stats
+        run: |
+          if grep -q '00000000-0000-0000-0000-000000000000' wrangler.jsonc; then
+            echo "::notice::Stats not deployed: set database_id in stats/wrangler.jsonc (see stats/README.md)."
+            exit 0
+          fi
+          npx --no-install wrangler d1 migrations apply ember-trail-stats --remote
+          npx --no-install wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
       - name: Publish desktop downloads
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         env:

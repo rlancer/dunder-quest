@@ -83,6 +83,7 @@ func _ready() -> void:
 	player.connect(&"respawn_requested", _kill_player)
 	hud.map_requested.connect(return_to_map)
 	hud.restart_requested.connect(_restart_stage)
+	Telemetry.track("stage_start", stage_index())
 	if OS.has_feature("web") and not StageAudio.web_audio_unlocked:
 		_web_audio_locked = true
 		hud.show_press_to_start()
@@ -304,6 +305,7 @@ func _on_scroll_read(scroll: LoreScroll) -> void:
 	var known := GameProgression.knows_scroll(scroll.scroll_id)
 	scroll.take()
 	GameProgression.learn_scroll(scroll.scroll_id)
+	Telemetry.track("scroll_read", stage_index(), {"scroll": scroll.scroll_id, "known": known})
 	_refresh_scrolls()
 	if known:
 		Fx.float_text(self, scroll.global_position + Vector2(-20.0, -8.0), str(data.get("title", "")), SCROLL_TINT)
@@ -465,6 +467,13 @@ func _on_waygate_reached() -> void:
 	_clock_running = false
 	hud.set_time(_elapsed)
 	var new_best := GameProgression.mark_cleared(stage_index(), hud.seed_count, _elapsed)
+	Telemetry.track("stage_clear", stage_index(), {
+		"time": snappedf(_elapsed, 0.1),
+		"seeds": hud.seed_count,
+		"deaths": _death_serial,
+		"best": new_best,
+	})
+	Telemetry.flush()
 	if next_stage == null:
 		_cleared = true
 		hud.show_clear(_elapsed, new_best)
@@ -483,6 +492,12 @@ func _on_waygate_reached() -> void:
 
 
 func return_to_map() -> void:
+	if not _cleared and not _departing:
+		Telemetry.track("stage_quit", stage_index(), {
+			"x": roundi(player.global_position.x),
+			"elapsed": snappedf(_elapsed, 0.1),
+			"deaths": _death_serial,
+		})
 	GameProgression.came_from_map = true
 	GameProgression.current_stage_id = stage_index()
 	await hud.fade_to(1.0, 0.25).finished
@@ -525,6 +540,11 @@ func _kill_player() -> void:
 	if _dying:
 		return
 	_dying = true
+	Telemetry.track("death", stage_index(), {
+		"x": roundi(player.global_position.x),
+		"y": roundi(player.global_position.y),
+		"duel": _duel != null and _duel.is_engaged(),
+	})
 	if _duel != null:
 		_duel.call_off()
 	_death_serial += 1
