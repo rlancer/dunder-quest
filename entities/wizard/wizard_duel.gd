@@ -46,20 +46,20 @@ const RIGHT_HOLD := 2.4
 const WRONG_HOLD := 3.6
 ## Quiet time after a question appears, before spells start: a base plus a
 ## beat per line of code, so a longer snippet gets longer to read.
-const READ_BASE := 2.2
-const READ_PER_LINE := 0.7
-const READ_MAX := 6.5
+const READ_BASE := 3.5
+const READ_PER_LINE := 1.0
+const READ_MAX := 9.0
 const LETTERS: Array[String] = ["A", "B", "C", "D"]
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
 ## Per stage: seconds between spells, ward-wave speed, and whether hexes fall.
 const PACE: Dictionary = {
-	1: [3.4, 78.0, false],
-	2: [3.1, 86.0, false],
-	3: [2.9, 90.0, true],
-	4: [2.7, 96.0, true],
-	5: [2.5, 102.0, true],
-	6: [2.3, 108.0, true],
+	1: [5.5, 62.0, false],
+	2: [5.0, 68.0, false],
+	3: [4.7, 72.0, true],
+	4: [4.4, 76.0, true],
+	5: [4.1, 80.0, true],
+	6: [3.8, 84.0, true],
 }
 const RIGHT_LINES: Array[String] = ["Hmph. Lucky.", "So you did read it.", "Grr... correct.", "A ward?! Again!"]
 const WRONG_LINES: Array[String] = ["Wrong, little ember!", "Ha! Read it again.", "The scrolls weep.", "Not even close!"]
