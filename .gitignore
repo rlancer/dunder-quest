@@ -30,3 +30,7 @@ deploy/.cloudflare/
 .playwright-mcp/
 tools/generated/
 tools/generation_log.txt
+
+# Local agent tooling
+.claude/
+.grok/
