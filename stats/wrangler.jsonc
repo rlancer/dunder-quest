@@ -28,8 +28,8 @@
     // Where the game is served from, for CORS on /api/events.
     "GAME_ORIGINS": "https://ember-trail.robertlancer.com,https://dev.ember-trail.robertlancer.com",
     // Your Zero Trust team domain and the Access application's AUD tag.
-    "ACCESS_TEAM_DOMAIN": "",
-    "ACCESS_AUD": "",
+    "ACCESS_TEAM_DOMAIN": "single-phase-capital-web-pages.cloudflareaccess.com",
+    "ACCESS_AUD": "d9c9c74e20fa130322c1cad17feec13190c33a2bf309f573e134514ca4fc2471",
     "ALLOWED_EMAILS": "robert.lancer@gmail.com"
   }
 }
