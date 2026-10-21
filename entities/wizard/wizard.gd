@@ -2,9 +2,11 @@ class_name Wizard
 extends Area2D
 
 ## A dark wizard who blocks the route behind a magic barrier. Walking into his
-## zone challenges the player; the stage runs the quiz and then either zaps the
-## player or banishes him, which also dissolves the barrier. As the player
-## draws near he taunts them with a line that gives away the lesson's theme.
+## zone challenges the player to his trial: the stage runs the quiz, and each
+## right answer breaks one of his wards (the pips over his name) while a wrong
+## one gets the player zapped. With the last ward broken he is banished and
+## his barrier dissolves. As the player draws near he taunts them with a line
+## that gives away the lesson's theme.
 
 signal challenged(wizard: Wizard)
 
@@ -12,6 +14,8 @@ const FRAME_TIME := 0.45
 const ORB := Vector2(-6.0, -22.0)
 ## How close (in x) the player must come before the taunt shows.
 const TAUNT_RANGE := 150.0
+const PIP_Y := -49.0
+const PIP_GAP := 7.0
 
 @export var title: String = "Dark Wizard"
 @export var tint: Color = Color(0.55, 0.85, 1.0)
@@ -20,6 +24,9 @@ const TAUNT_RANGE := 150.0
 @export var banish_sound: AudioStream
 
 var banished: bool = false
+## How many right answers the trial takes, and how many are still owed.
+var ward_total: int = 1
+var wards_left: int = 1
 
 @onready var _sprite: Sprite2D = %Sprite
 @onready var _glow: Sprite2D = %Glow
@@ -38,6 +45,30 @@ func _ready() -> void:
 	_nameplate.text = title
 	_nameplate.add_theme_color_override(&"font_color", tint.lerp(Color.WHITE, 0.55))
 	_build_bubble()
+
+
+## Arms the trial: `count` wards, one per question to be answered right.
+func set_wards(count: int) -> void:
+	ward_total = maxi(count, 1)
+	wards_left = ward_total
+	queue_redraw()
+
+
+## One right answer: a ward shatters and the barrier thins. Returns how many
+## are left; at zero the stage banishes him.
+func break_ward() -> int:
+	if wards_left <= 0:
+		return 0
+	wards_left -= 1
+	var pip := global_position + Vector2(_pip_x(wards_left), PIP_Y)
+	Fx.sparks(get_parent(), pip, tint, 8, 40.0)
+	_barrier.weaken(float(wards_left) / float(ward_total))
+	queue_redraw()
+	return wards_left
+
+
+func _pip_x(ward: int) -> float:
+	return (float(ward) - float(ward_total - 1) * 0.5) * PIP_GAP
 
 
 func _build_bubble() -> void:
@@ -69,6 +100,8 @@ func _process(delta: float) -> void:
 		return
 	_clock += delta
 	_update_bubble(delta)
+	if ward_total > 1:
+		queue_redraw()
 	_sprite.frame = int(_clock / FRAME_TIME) % 2
 	# A one-pixel hover every other beat, offset from the frame swap.
 	_sprite.position.y = -14.0 - (1.0 if int(_clock / FRAME_TIME + 0.5) % 2 == 0 else 0.0)
@@ -85,6 +118,23 @@ func _update_bubble(delta: float) -> void:
 		var gap := player.global_position - global_position
 		near = absf(gap.x) < TAUNT_RANGE and absf(gap.y) < 80.0
 	_bubble.modulate.a = move_toward(_bubble.modulate.a, 1.0 if near else 0.0, delta * 4.0)
+
+
+## Small diamonds over the nameplate: bright for wards still standing,
+## hollow for the ones already broken. A one-question trial shows none.
+func _draw() -> void:
+	if banished or ward_total <= 1:
+		return
+	var pulse := 0.75 + 0.25 * sin(_clock * 4.0)
+	for ward in ward_total:
+		var at := Vector2(_pip_x(ward), PIP_Y).round()
+		var standing := ward < wards_left
+		var color := tint.lightened(0.35) if standing else Color(0.3, 0.26, 0.36)
+		color.a = pulse if standing else 0.9
+		draw_rect(Rect2(at + Vector2(-1.0, -2.0), Vector2(3.0, 5.0)), Color(0.06, 0.03, 0.09, 0.9))
+		draw_rect(Rect2(at + Vector2(-2.0, -1.0), Vector2(5.0, 3.0)), Color(0.06, 0.03, 0.09, 0.9))
+		draw_rect(Rect2(at + Vector2(0.0, -1.0), Vector2(1.0, 3.0)), color)
+		draw_rect(Rect2(at + Vector2(-1.0, 0.0), Vector2(3.0, 1.0)), color)
 
 
 func is_taunting() -> bool:
@@ -143,6 +193,8 @@ func banish() -> void:
 	if banished:
 		return
 	banished = true
+	wards_left = 0
+	queue_redraw()
 	set_deferred(&"monitoring", false)
 	StageAudio.play(get_tree(), banish_sound)
 	var center := global_position + Vector2(0.0, -14.0)

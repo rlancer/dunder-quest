@@ -6,7 +6,9 @@ extends Node2D
 ##
 ## Each stage is also a Python lesson (see `Lessons`). Lore scrolls on the
 ## route teach it, a stage gadget lets the player act it out, and the wizard
-## at the end quizzes on the scrolls the player read, with hints on request.
+## at the end puts the player through a trial of several questions on the
+## scrolls they read, with hints on request. Each right answer breaks one of
+## his wards; a wrong one gets the player zapped and a fresh question.
 
 const TILE := 16
 ## How long the results card waits for a press before moving on by itself.
@@ -191,6 +193,28 @@ func _paint_roof(from_x: int, to_x: int, bottom_row: int) -> void:
 	_paint_row(from_x, to_x, bottom_row, StageTileset.SLAB)
 
 
+## Lays tiles one at a time, `beat` seconds apart, with a puff of dust on
+## each: a gadget building a bridge or a stair. Returns false if the stage
+## left the tree partway.
+func _raise_tiles(cells: Array[Vector2i], atlas: Vector2i, beat: float) -> bool:
+	for cell in cells:
+		tiles.set_cell(cell, StageTileset.SOURCE, atlas)
+		Fx.dust(self, tiles.map_to_local(cell) + Vector2(0.0, -8.0), 3)
+		if beat > 0.0:
+			await get_tree().create_timer(beat, false).timeout
+			if not is_inside_tree():
+				return false
+	return true
+
+
+## Takes back tiles a gadget laid, crumbling each into dust.
+func _crumble_tiles(cells: Array[Vector2i]) -> void:
+	for cell in cells:
+		if tiles.get_cell_source_id(cell) != -1:
+			Fx.dust(self, tiles.map_to_local(cell), 4)
+		tiles.erase_cell(cell)
+
+
 func _spawn_shelf(at: Vector2, span: float, shake: float, drop: float) -> void:
 	var shelf := ASH_SHELF.instantiate() as AnimatableBody2D
 	shelf.set(&"span", span)
@@ -311,6 +335,7 @@ func _spawn_wizard(at: Vector2, title: String, tint: Color) -> Wizard:
 	wizard.taunt = str(Lessons.stage(stage_index()).get("taunt", ""))
 	wizard.position = at
 	add_child(wizard)
+	wizard.set_wards(Lessons.trial(stage_index()))
 	wizard.challenged.connect(_on_wizard_challenged)
 	if _quiz == null:
 		_quiz = WizardQuiz.for_stage(stage_index())
@@ -432,14 +457,16 @@ func _on_wizard_challenged(wizard: Wizard) -> void:
 
 
 func _ask_question() -> void:
-	_quiz.focus(GameProgression.known_scrolls(stage_index()))
+	var wizard := _quiz_wizard
+	_quiz.focus(GameProgression.known_scrolls(stage_index()), wizard.ward_total)
 	_hint_level = 0
 	_quiz_question = _quiz.next_question()
 	if _quiz_question.is_empty():
 		# No bank to ask from: the wizard steps aside rather than trap the run.
 		_pass_wizard()
 		return
-	hud.open_quiz(_quiz_wizard.title, _quiz_question, _quiz_wizard.tint)
+	var step := wizard.ward_total - wizard.wards_left + 1
+	hud.open_quiz(wizard.title, _quiz_question, wizard.tint, step, wizard.ward_total)
 
 
 func _on_quiz_answered(index: int) -> void:
@@ -447,7 +474,10 @@ func _on_quiz_answered(index: int) -> void:
 		return
 	var serial := _quiz_serial
 	var correct := index == int(_quiz_question.get("answer", -1))
-	hud.show_quiz_feedback(index, correct)
+	var remaining := _quiz_wizard.wards_left
+	if correct:
+		remaining = _quiz_wizard.break_ward()
+	hud.show_quiz_feedback(index, correct, remaining)
 	if not correct:
 		_quiz_wizard.zap(player)
 		player.camera.shake(4.0)
@@ -457,7 +487,7 @@ func _on_quiz_answered(index: int) -> void:
 	await hud.quiz_feedback_done
 	if serial != _quiz_serial or not is_inside_tree() or _quiz_wizard == null:
 		return
-	if correct:
+	if correct and remaining <= 0:
 		_pass_wizard()
 	else:
 		_ask_question()
@@ -614,7 +644,8 @@ func _respawn_player() -> void:
 	_death_serial += 1
 	_dying = false
 	if _quiz_wizard != null:
-		# A restart while the quiz is up: the wizard keeps his post for next time.
+		# A restart while the quiz is up: the wizard keeps his post, and the
+		# wards already broken stay broken.
 		_end_quiz()
 	player.global_position = spawn.global_position
 	player.revive()

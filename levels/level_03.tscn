@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://entities/player/player.tscn" id="1_player"]
 [ext_resource type="Script" path="res://levels/level_03.gd" id="2_level"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://entities/goal/waygate.tscn" id="9_gate"]
 [ext_resource type="PackedScene" path="res://ui/stage_hud.tscn" id="10_hud"]
 [ext_resource type="Script" path="res://common/stage_audio.gd" id="11_audio"]
+[ext_resource type="PackedScene" path="res://levels/level_04.tscn" id="12_next"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_fall"]
 size = Vector2(2000, 80)
@@ -24,6 +25,7 @@ cache_stone_scene = ExtResource("6_cache")
 clay_brick_scene = ExtResource("7_clay")
 emberseed_scene = ExtResource("8_seed")
 waygate_scene = ExtResource("9_gate")
+next_stage = ExtResource("12_next")
 
 [node name="Tiles" type="TileMapLayer" parent="."]
 unique_name_in_owner = true

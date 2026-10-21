@@ -5,7 +5,8 @@ from this repo or the environment leaks in.
 
 Wizard questions: the marked option must equal the captured stdout exactly
 (one trailing newline stripped), and each must name a scroll from its stage
-and carry a hint.
+and carry a hint. A stage's `trial` (questions the wizard wants right) must
+leave him at least twice that many to ask, so a miss still gets a fresh one.
 
 Scrolls: every `print(...)  # value` line promises its output, and the
 printed lines must match those comments in order. A scroll marked
@@ -28,6 +29,7 @@ BANK = ROOT / "data" / "lessons.json"
 
 MIN_VERSION = (3, 12)
 MIN_PER_STAGE = 6
+MAX_TRIAL = 5
 MAX_CODE_LINES = 8
 MAX_CODE_COLS = 40
 MAX_OPTION_COLS = 28
@@ -154,7 +156,8 @@ def main() -> int:
     problems: list[str] = []
     total = 0
     all_scroll_ids: set[str] = set()
-    for stage in ("1", "2", "3"):
+    stages = sorted(bank, key=int)
+    for stage in stages:
         lesson = bank.get(stage)
         if not isinstance(lesson, dict):
             problems.append(f"stage {stage}: missing lesson")
@@ -174,9 +177,14 @@ def main() -> int:
             all_scroll_ids.add(scroll_id)
             scroll_ids.add(scroll_id)
             problems.extend(check_scroll(stage, scroll))
+        trial = lesson.get("trial")
+        if not isinstance(trial, int) or not 1 <= trial <= MAX_TRIAL:
+            problems.append(f"stage {stage}: trial must be 1-{MAX_TRIAL}, got {trial!r}")
+            trial = 1
         questions = lesson.get("questions")
-        if not isinstance(questions, list) or len(questions) < MIN_PER_STAGE:
-            problems.append(f"stage {stage}: needs at least {MIN_PER_STAGE} questions")
+        wanted = max(MIN_PER_STAGE, trial * 2)
+        if not isinstance(questions, list) or len(questions) < wanted:
+            problems.append(f"stage {stage}: needs at least {wanted} questions")
             continue
         asked: set[str] = set()
         seen_code: set[str] = set()
@@ -192,7 +200,7 @@ def main() -> int:
             problems.append(f"stage {stage}: no question draws on scroll {scroll_id!r}")
     for problem in problems:
         print("  -", problem)
-    counts = ", ".join(f"stage {s}={len(bank.get(s, {}).get('questions', []))}" for s in ("1", "2", "3"))
+    counts = ", ".join(f"stage {s}={len(bank.get(s, {}).get('questions', []))}" for s in stages)
     result = "ok" if not problems else "fail"
     print(f"QUIZ result={result} questions={total} ({counts}) python={sys.version.split()[0]} problems={len(problems)}")
     return 0 if not problems else 1

@@ -2,7 +2,7 @@ extends Node
 
 ## Drives the menus with real input events through real scene changes:
 ## title -> map -> Amber Hollow -> pause/resume -> fall + respawn
-## -> wizard quiz (one wrong answer, then a different question answered right)
+## -> wizard quiz (one wrong answer, then three different questions answered right)
 ## -> pause -> world map -> Esc -> title.
 ## godot --headless --path . res://tests/flow_check.tscn   ->  FLOW result=ok
 
@@ -25,6 +25,7 @@ class _Driver extends Node:
 	var _wait := 0
 	var _fails: PackedStringArray = []
 	var _quiz_taps := 0
+	var _asked: PackedStringArray = []
 	var _first_code := ""
 	var _clock_at_open := 0.0
 
@@ -86,6 +87,7 @@ class _Driver extends Node:
 				if _wait == 20:
 					_expect(hud.is_quiz_open() and not hud.is_quiz_asking(), "wrong answer shows a verdict")
 					_expect(not _wizard(scene).barrier_open(), "barrier holds after a wrong answer")
+					_expect(_wizard(scene).wards_left == _wizard(scene).ward_total, "a wrong answer breaks no ward")
 				elif _wait == 40:
 					# Skip the rest of the verdict with confirm.
 					_tap(&"confirm")
@@ -93,8 +95,13 @@ class _Driver extends Node:
 					_expect(str(hud.quiz_question().get("code", "")) != _first_code, "a different question follows")
 					_next()
 			7:
+				# Answer right until the trial is done; each answer is a fresh question.
 				var hud := scene.get_node(^"Hud") as StageHud
-				if _steer_quiz(hud, hud.quiz_answer_index()):
+				if hud.is_quiz_asking() and _wait > 2:
+					var code := str(hud.quiz_question().get("code", ""))
+					if not _asked.has(code):
+						_asked.append(code)
+				if _steer_quiz(hud, hud.quiz_answer_index()) and _wizard(scene).wards_left <= 1:
 					_next()
 			8:
 				var hud := scene.get_node(^"Hud") as StageHud
@@ -102,6 +109,7 @@ class _Driver extends Node:
 				var wizard := _wizard(scene)
 				if not hud.is_quiz_open() and wizard.barrier_open():
 					_expect(wizard.banished, "wizard banished")
+					_expect(_asked.size() == wizard.ward_total, "each ward took its own question (%d asked)" % _asked.size())
 					# The quiz ran for seconds; a frame or two of slack covers the close.
 					var drift := float(scene.get(&"_elapsed")) - _clock_at_open
 					_expect(absf(drift) < 0.1, "clock held during the quiz (drift %.2f)" % drift)

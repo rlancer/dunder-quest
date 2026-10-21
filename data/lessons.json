@@ -2,6 +2,7 @@
 	"1": {
 		"topic": "Lists & Indexing",
 		"taunt": "Do you count as the scrolls count, little ember?",
+		"trial": 3,
 		"scrolls": [
 			{
 				"id": "list_zero",
@@ -141,6 +142,7 @@
 	"2": {
 		"topic": "Dictionaries & Hashing",
 		"taunt": "Every key knows its bucket. Do you?",
+		"trial": 3,
 		"scrolls": [
 			{
 				"id": "dict_basics",
@@ -290,6 +292,7 @@
 	"3": {
 		"topic": "Loops & range",
 		"taunt": "Round and round the kiln turns. Where does it stop?",
+		"trial": 3,
 		"scrolls": [
 			{
 				"id": "loop_for",
@@ -422,6 +425,553 @@
 				"explanation": "The loop stops as soon as i < 3 is False, which first happens at 3.",
 				"scroll": "loop_while",
 				"hint": "The while asks one question. When is the answer first no?"
+			}
+		]
+	},
+	"4": {
+		"topic": "Booleans & Conditions",
+		"taunt": "True or False, little ember? My gates already know.",
+		"trial": 4,
+		"scrolls": [
+			{
+				"id": "bool_compare",
+				"title": "Yes or No",
+				"code": [
+					"print(3 > 2)   # True",
+					"print(5 == 4)  # False",
+					"print(2 != 2)  # False"
+				],
+				"insight": "A comparison gives back True or False. == asks equal?, != asks not equal?"
+			},
+			{
+				"id": "bool_ops",
+				"title": "and, or, not",
+				"code": [
+					"print(True and False)  # False",
+					"print(True or False)   # True",
+					"print(not True)        # False"
+				],
+				"insight": "and needs both sides True. or needs just one. not flips True and False."
+			},
+			{
+				"id": "bool_elif",
+				"title": "The Fork",
+				"code": [
+					"heat = 4",
+					"if heat > 5: word = \"melt\"",
+					"elif heat > 2: word = \"glow\"",
+					"else: word = \"cold\"",
+					"print(word)  # glow"
+				],
+				"insight": "Python tries each branch from the top and runs only the first one that is True."
+			},
+			{
+				"id": "bool_truthy",
+				"title": "Empty Means False",
+				"code": [
+					"print(bool(0), bool(7))     # False True",
+					"print(bool(\"\"), bool(\"a\"))  # False True",
+					"print(bool([]), bool([0]))  # False True"
+				],
+				"insight": "0, empty strings and empty lists count as False. Nearly everything else is True."
+			},
+			{
+				"id": "bool_chain",
+				"title": "Chains & Remainders",
+				"code": [
+					"x = 5",
+					"print(1 < x < 9)       # True",
+					"print(x % 2 == 1)      # True",
+					"print(not x % 2 == 1)  # False"
+				],
+				"insight": "1 < x < 9 checks both sides at once. x % 2 == 1 is True for odd x. not goes last."
+			}
+		],
+		"questions": [
+			{
+				"code": ["print(7 >= 7, 7 > 7)"],
+				"prompt": "What does this print?",
+				"options": ["True True", "True False", "False True", "False False"],
+				"answer": 1,
+				"explanation": ">= allows equal. > does not.",
+				"scroll": "bool_compare",
+				"hint": "Is seven more than itself? Is it at least itself?"
+			},
+			{
+				"code": ["x = 4", "print(x * 2 == 8)"],
+				"prompt": "What does this print?",
+				"options": ["8", "True", "False", "x * 2 == 8"],
+				"answer": 1,
+				"explanation": "x * 2 is 8, so the comparison is True. == gives a bool, not a number.",
+				"scroll": "bool_compare",
+				"hint": "== asks a question. What kind of thing answers it?"
+			},
+			{
+				"code": ["print(True and not False)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "None", "not False"],
+				"answer": 0,
+				"explanation": "not False is True, and True and True is True.",
+				"scroll": "bool_ops",
+				"hint": "Flip the second one first, then join them."
+			},
+			{
+				"code": ["a = 3", "print(a > 5 or a < 4)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "3", "None"],
+				"answer": 0,
+				"explanation": "a > 5 is False, but a < 4 is True, and or needs only one.",
+				"scroll": "bool_ops",
+				"hint": "or is generous. One True is enough."
+			},
+			{
+				"code": ["print(2 > 1 and 3 > 4)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "1", "4"],
+				"answer": 1,
+				"explanation": "2 > 1 is True but 3 > 4 is False, and and needs both.",
+				"scroll": "bool_ops",
+				"hint": "and is strict. Check both sides."
+			},
+			{
+				"code": [
+					"n = 7",
+					"if n > 10:",
+					"    print(\"big\")",
+					"elif n > 5:",
+					"    print(\"mid\")",
+					"else:",
+					"    print(\"small\")"
+				],
+				"prompt": "What does this print?",
+				"options": ["big", "mid", "small", "big mid"],
+				"answer": 1,
+				"explanation": "n > 10 is False, n > 5 is True, so the elif runs and the rest is skipped.",
+				"scroll": "bool_elif",
+				"hint": "Walk down the fork. Stop at the first True."
+			},
+			{
+				"code": [
+					"t = 3",
+					"if t > 1:",
+					"    print(\"a\")",
+					"elif t > 2:",
+					"    print(\"b\")"
+				],
+				"prompt": "What does this print?",
+				"options": ["a", "b", "a b", "b a"],
+				"answer": 0,
+				"explanation": "t > 1 is True, so the elif is never checked, even though it is True too.",
+				"scroll": "bool_elif",
+				"hint": "Two branches are True. How many run?"
+			},
+			{
+				"code": [
+					"bag = []",
+					"if bag:",
+					"    print(\"full\")",
+					"else:",
+					"    print(\"empty\")"
+				],
+				"prompt": "What does this print?",
+				"options": ["full", "empty", "[]", "False"],
+				"answer": 1,
+				"explanation": "An empty list counts as False, so the else branch runs.",
+				"scroll": "bool_truthy",
+				"hint": "Is there anything in the bag?"
+			},
+			{
+				"code": ["print(bool(\"0\"))"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "0", "None"],
+				"answer": 0,
+				"explanation": "\"0\" is a string with one character in it. Only the empty string is False.",
+				"scroll": "bool_truthy",
+				"hint": "Look at the quotes. Is that a number?"
+			},
+			{
+				"code": ["x = 6", "print(2 < x < 5)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "6", "2 5"],
+				"answer": 1,
+				"explanation": "2 < x is True but x < 5 is False. A chain needs every link.",
+				"scroll": "bool_chain",
+				"hint": "Read it as two checks joined by and."
+			},
+			{
+				"code": [
+					"odd = 0",
+					"for n in range(6):",
+					"    if n % 2 == 1:",
+					"        odd += 1",
+					"print(odd)"
+				],
+				"prompt": "What does this print?",
+				"options": ["2", "3", "5", "6"],
+				"answer": 1,
+				"explanation": "n % 2 == 1 is True for 1, 3 and 5: three odd numbers.",
+				"scroll": "bool_chain",
+				"hint": "Odd numbers leave a remainder of one."
+			}
+		]
+	},
+	"5": {
+		"topic": "Functions & return",
+		"taunt": "A spell that returns nothing builds nothing, little ember.",
+		"trial": 4,
+		"scrolls": [
+			{
+				"id": "func_def",
+				"title": "Naming a Spell",
+				"code": [
+					"def double(n):",
+					"    return n * 2",
+					"print(double(4))   # 8",
+					"print(double(10))  # 20"
+				],
+				"insight": "def names a block of code. Calling double(4) runs it with n set to 4."
+			},
+			{
+				"id": "func_return",
+				"title": "Handing Back",
+				"code": [
+					"def shout(word):",
+					"    return word.upper()",
+					"loud = shout(\"ash\")",
+					"print(loud + \"!\")  # ASH!"
+				],
+				"insight": "return hands a value back to the caller, to store in a name or use at once."
+			},
+			{
+				"id": "func_none",
+				"title": "Nothing Returned",
+				"code": [
+					"def hum():",
+					"    print(\"mm\")  # mm",
+					"print(hum())     # None"
+				],
+				"insight": "print shows a value but hands nothing back. With no return, a call gives None."
+			},
+			{
+				"id": "func_default",
+				"title": "Default Arguments",
+				"code": [
+					"def heat(n, by=2):",
+					"    return n + by",
+					"print(heat(5))      # 7",
+					"print(heat(5, 10))  # 15"
+				],
+				"insight": "by=2 is a default: used when the call leaves it out, replaced when it doesn't."
+			},
+			{
+				"id": "func_scope",
+				"title": "Inside Stays Inside",
+				"code": [
+					"x = 1",
+					"def bump():",
+					"    x = 9",
+					"    return x",
+					"print(bump(), x)  # 9 1"
+				],
+				"insight": "A name set inside a function is its own. The x outside is left alone."
+			}
+		],
+		"questions": [
+			{
+				"code": ["def triple(n):", "    return n * 3", "print(triple(5))"],
+				"prompt": "What does this print?",
+				"options": ["5", "8", "15", "triple(5)"],
+				"answer": 2,
+				"explanation": "Calling triple(5) runs the body with n = 5 and returns 5 * 3.",
+				"scroll": "func_def",
+				"hint": "Put the number in for n, then do the sum."
+			},
+			{
+				"code": ["def add(a, b):", "    return a + b", "print(add(2, 3) * 2)"],
+				"prompt": "What does this print?",
+				"options": ["7", "8", "10", "12"],
+				"answer": 2,
+				"explanation": "add(2, 3) returns 5 first, then 5 * 2 is 10.",
+				"scroll": "func_def",
+				"hint": "The call finishes before the multiplying starts."
+			},
+			{
+				"code": ["def area(w, h):", "    return w * h", "print(area(3, area(1, 2)))"],
+				"prompt": "What does this print?",
+				"options": ["5", "6", "9", "3"],
+				"answer": 1,
+				"explanation": "The inner call returns 2, then area(3, 2) is 6.",
+				"scroll": "func_def",
+				"hint": "Start with the innermost call."
+			},
+			{
+				"code": [
+					"def first(xs):",
+					"    return xs[0]",
+					"    print(\"never\")",
+					"print(first([7, 8]))"
+				],
+				"prompt": "What does this print?",
+				"options": ["7", "never", "7 never", "[7, 8]"],
+				"answer": 0,
+				"explanation": "return ends the function at once, so the print after it never runs.",
+				"scroll": "func_return",
+				"hint": "Does anything happen after return?"
+			},
+			{
+				"code": [
+					"def sign(n):",
+					"    if n < 0:",
+					"        return \"neg\"",
+					"    return \"pos\"",
+					"print(sign(-3), sign(4))"
+				],
+				"prompt": "What does this print?",
+				"options": ["neg pos", "pos pos", "neg neg", "pos neg"],
+				"answer": 0,
+				"explanation": "-3 takes the early return. 4 skips the if and reaches the last line.",
+				"scroll": "func_return",
+				"hint": "Each call takes its own path."
+			},
+			{
+				"code": ["def greet(name):", "    \"hi \" + name", "print(greet(\"ash\"))"],
+				"prompt": "What does this print?",
+				"options": ["hi ash", "None", "hi", "greet"],
+				"answer": 1,
+				"explanation": "The sum is worked out and thrown away. Without return, the call gives None.",
+				"scroll": "func_none",
+				"hint": "Something was made. Was it handed back?"
+			},
+			{
+				"code": ["def f():", "    return", "print(f() is None)"],
+				"prompt": "What does this print?",
+				"options": ["True", "False", "None", "f"],
+				"answer": 0,
+				"explanation": "A bare return hands back None, so the check is True.",
+				"scroll": "func_none",
+				"hint": "return with nothing after it returns... what?"
+			},
+			{
+				"code": ["def lay(bricks=3):", "    return bricks * 2", "print(lay(), lay(5))"],
+				"prompt": "What does this print?",
+				"options": ["6 10", "3 5", "6 6", "10 10"],
+				"answer": 0,
+				"explanation": "lay() uses the default 3. lay(5) replaces it with 5.",
+				"scroll": "func_default",
+				"hint": "When nothing is passed, the default steps in."
+			},
+			{
+				"code": ["def tag(w, end=\"!\"):", "    return w + end", "print(tag(\"ash\", \"?\"))"],
+				"prompt": "What does this print?",
+				"options": ["ash!", "ash?", "ash!?", "ash"],
+				"answer": 1,
+				"explanation": "The call passes \"?\", so the default \"!\" is not used.",
+				"scroll": "func_default",
+				"hint": "A default is only a fallback."
+			},
+			{
+				"code": [
+					"n = 5",
+					"def grow():",
+					"    n = 50",
+					"grow()",
+					"print(n)"
+				],
+				"prompt": "What does this print?",
+				"options": ["5", "50", "55", "None"],
+				"answer": 0,
+				"explanation": "grow sets its own n. The n outside is untouched.",
+				"scroll": "func_scope",
+				"hint": "What happens inside the spell stays inside it."
+			},
+			{
+				"code": [
+					"total = 10",
+					"def show():",
+					"    return total + 1",
+					"print(show())"
+				],
+				"prompt": "What does this print?",
+				"options": ["1", "10", "11", "NameError"],
+				"answer": 2,
+				"explanation": "A function can read a name from outside. It just can't reassign it.",
+				"scroll": "func_scope",
+				"hint": "Reading is allowed. Only setting makes a new name."
+			}
+		]
+	},
+	"6": {
+		"topic": "Comprehensions",
+		"taunt": "Can you read a whole forge in one line, little ember?",
+		"trial": 5,
+		"scrolls": [
+			{
+				"id": "comp_basic",
+				"title": "Lists in One Line",
+				"code": [
+					"squares = [n * n for n in range(4)]",
+					"print(squares)  # [0, 1, 4, 9]"
+				],
+				"insight": "[expr for n in seq] builds a list: one expr for every n, in order."
+			},
+			{
+				"id": "comp_filter",
+				"title": "The Sieve",
+				"code": [
+					"odds = [n for n in range(8) if n % 2 == 1]",
+					"print(odds)  # [1, 3, 5, 7]"
+				],
+				"insight": "An if at the end keeps only the items it says True for."
+			},
+			{
+				"id": "comp_strings",
+				"title": "Words In, Words Out",
+				"code": [
+					"ws = [\"ash\", \"ember\"]",
+					"big = [w.upper() for w in ws]",
+					"print(big)  # ['ASH', 'EMBER']",
+					"print([len(w) for w in ws])  # [3, 5]"
+				],
+				"insight": "Any expression works on the left: a method call, len(), an index, a sum."
+			},
+			{
+				"id": "comp_dict",
+				"title": "Dicts Too",
+				"code": [
+					"heat = {w: len(w) for w in [\"ash\", \"clay\"]}",
+					"print(heat)  # {'ash': 3, 'clay': 4}"
+				],
+				"insight": "Curly braces and key: value build a dict instead of a list."
+			},
+			{
+				"id": "comp_sum",
+				"title": "Still a List",
+				"code": [
+					"nums = [n * 2 for n in range(4)]",
+					"print(nums)       # [0, 2, 4, 6]",
+					"print(sum(nums))  # 12",
+					"print(max(nums))  # 6"
+				],
+				"insight": "A comprehension is still a list, so sum, len and max all work on it."
+			}
+		],
+		"questions": [
+			{
+				"code": ["print([n + 1 for n in range(3)])"],
+				"prompt": "What does this print?",
+				"options": ["[0, 1, 2]", "[1, 2, 3]", "[1, 2, 3, 4]", "[2, 3, 4]"],
+				"answer": 1,
+				"explanation": "range(3) gives 0, 1, 2, and each gets 1 added.",
+				"scroll": "comp_basic",
+				"hint": "List what range gives first. Then change each."
+			},
+			{
+				"code": ["print([x * 10 for x in [1, 2, 3]])"],
+				"prompt": "What does this print?",
+				"options": ["[10, 20, 30]", "[1, 2, 3]", "60", "[1, 2, 3, 10]"],
+				"answer": 0,
+				"explanation": "Each item is multiplied by 10, and the results form a new list.",
+				"scroll": "comp_basic",
+				"hint": "One item in, one item out."
+			},
+			{
+				"code": ["xs = [n * n for n in range(5)]", "print(xs[-1])"],
+				"prompt": "What does this print?",
+				"options": ["25", "16", "9", "4"],
+				"answer": 1,
+				"explanation": "range(5) stops at 4, and the last square is 4 * 4.",
+				"scroll": "comp_basic",
+				"hint": "Where does range(5) stop?"
+			},
+			{
+				"code": ["print([n for n in range(10) if n > 6])"],
+				"prompt": "What does this print?",
+				"options": ["[6, 7, 8, 9]", "[7, 8, 9]", "[7, 8, 9, 10]", "[0, 1, 2, 3, 4, 5, 6]"],
+				"answer": 1,
+				"explanation": "Only items where n > 6 is True are kept: 7, 8 and 9.",
+				"scroll": "comp_filter",
+				"hint": "The if is a sieve. What falls through?"
+			},
+			{
+				"code": ["w = \"banana\"", "print(len([c for c in w if c == \"a\"]))"],
+				"prompt": "What does this print?",
+				"options": ["1", "2", "3", "6"],
+				"answer": 2,
+				"explanation": "Three of the letters are a, so the kept list has three items.",
+				"scroll": "comp_filter",
+				"hint": "Count only the letters that pass the if."
+			},
+			{
+				"code": ["xs = [3, 8, 1, 9]", "print([x for x in xs if x > 2])"],
+				"prompt": "What does this print?",
+				"options": ["[3, 8, 9]", "[8, 9]", "[3, 8, 1, 9]", "[1]"],
+				"answer": 0,
+				"explanation": "Only 1 fails x > 2. The rest are kept in their order.",
+				"scroll": "comp_filter",
+				"hint": "Which ones are bigger than two?"
+			},
+			{
+				"code": ["xs = range(6)", "print([x * 2 for x in xs if x % 2])"],
+				"prompt": "What does this print?",
+				"options": ["[0, 4, 8]", "[2, 6, 10]", "[1, 3, 5]", "[0, 2, 4, 6, 8, 10]"],
+				"answer": 1,
+				"explanation": "x % 2 is 1, which counts as True, for odd x. So 1, 3, 5 are kept, then doubled.",
+				"scroll": "comp_filter",
+				"hint": "The filter runs before the doubling."
+			},
+			{
+				"code": ["ws = [\"fire\", \"ash\"]", "print([w[0] for w in ws])"],
+				"prompt": "What does this print?",
+				"options": ["['f', 'a']", "['fire', 'ash']", "['e', 'h']", "fa"],
+				"answer": 0,
+				"explanation": "w[0] is each word's first letter.",
+				"scroll": "comp_strings",
+				"hint": "Index zero. You learned this in the Hollow."
+			},
+			{
+				"code": ["ws = [\"ox\", \"kiln\", \"ember\"]", "print([len(w) for w in ws])"],
+				"prompt": "What does this print?",
+				"options": ["3", "[2, 4, 5]", "[3, 4, 5]", "11"],
+				"answer": 1,
+				"explanation": "len is called on each word, giving a list of three lengths.",
+				"scroll": "comp_strings",
+				"hint": "One length per word."
+			},
+			{
+				"code": ["d = {n: n * n for n in range(3)}", "print(d)"],
+				"prompt": "What does this print?",
+				"options": ["{0: 0, 1: 1, 2: 4}", "[0, 1, 4]", "{0: 0, 1: 1, 2: 2}", "{1: 1, 2: 4}"],
+				"answer": 0,
+				"explanation": "Each n becomes a key, and n * n its value.",
+				"scroll": "comp_dict",
+				"hint": "Curly braces. key: value."
+			},
+			{
+				"code": ["d = {w: len(w) for w in [\"ab\", \"c\"]}", "print(d[\"ab\"])"],
+				"prompt": "What does this print?",
+				"options": ["1", "2", "ab", "3"],
+				"answer": 1,
+				"explanation": "The key \"ab\" maps to len(\"ab\"), which is 2.",
+				"scroll": "comp_dict",
+				"hint": "Look up the key, get its value."
+			},
+			{
+				"code": ["print(sum([n for n in range(4)]))"],
+				"prompt": "What does this print?",
+				"options": ["4", "6", "10", "[0, 1, 2, 3]"],
+				"answer": 1,
+				"explanation": "The list is [0, 1, 2, 3], and its sum is 6.",
+				"scroll": "comp_sum",
+				"hint": "Build the list, then add it up."
+			},
+			{
+				"code": ["xs = [n % 3 for n in range(5)]", "print(max(xs), len(xs))"],
+				"prompt": "What does this print?",
+				"options": ["2 5", "4 5", "2 3", "3 5"],
+				"answer": 0,
+				"explanation": "The list is [0, 1, 2, 0, 1]: its largest is 2, and it holds five items.",
+				"scroll": "comp_sum",
+				"hint": "Write out the list before you measure it."
 			}
 		]
 	}

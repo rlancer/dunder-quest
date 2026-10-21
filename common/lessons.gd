@@ -3,23 +3,29 @@ extends RefCounted
 
 ## The Python lesson each stage teaches, from `data/lessons.json`: its topic,
 ## the wizard's taunt, the lore scrolls laid along the route, and the quiz.
+## `trial` is how many questions the wizard wants answered right before he goes.
 ## `tools/verify_quiz.py` runs every snippet in it against real Python.
 
 const BANK_PATH := "res://data/lessons.json"
+const DEFAULT_TRIAL := 3
 
 static var _bank: Dictionary = {}
 static var _scrolls: Dictionary = {}
 static var _loaded: bool = false
 
 
-## {topic, taunt, scrolls: Array[Dictionary], questions: Array[Dictionary]}
+## {topic, taunt, trial, scrolls: Array[Dictionary], questions: Array[Dictionary]}
 static func stage(stage_id: int) -> Dictionary:
 	_ensure_loaded()
-	return _bank.get(stage_id, {"topic": "", "taunt": "", "scrolls": [], "questions": []})
+	return _bank.get(stage_id, {"topic": "", "taunt": "", "trial": DEFAULT_TRIAL, "scrolls": [], "questions": []})
 
 
 static func topic(stage_id: int) -> String:
 	return str(stage(stage_id).get("topic", ""))
+
+
+static func trial(stage_id: int) -> int:
+	return int(stage(stage_id).get("trial", DEFAULT_TRIAL))
 
 
 ## {id, title, code, insight, stage}, or {} for an unknown id.
@@ -68,6 +74,7 @@ static func _ensure_loaded() -> void:
 		_bank[stage_id] = {
 			"topic": str(raw.get("topic", "")),
 			"taunt": str(raw.get("taunt", "")),
+			"trial": maxi(int(raw.get("trial", DEFAULT_TRIAL)), 1),
 			"scrolls": scrolls,
 			"questions": questions,
 		}

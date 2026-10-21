@@ -494,10 +494,11 @@ func _audit_identity() -> void:
 		_fail("stage index")
 	else:
 		print("AUDIT pass index")
-	if _level.get(&"next_stage") != null:
-		_fail("next stage is set")
+	var next := _level.get(&"next_stage") as PackedScene
+	if next == null or next.resource_path != "res://levels/level_04.tscn":
+		_fail("next stage is not Smelter's Fork")
 	else:
-		print("AUDIT pass clear-screen")
+		print("AUDIT pass next stage")
 	if int(_level.call(&"_stage_width")) != 121:
 		_fail("width")
 	if _player.global_position.distance_to(_spawn) > 2.0:
