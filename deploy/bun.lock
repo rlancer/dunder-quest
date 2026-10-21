@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "gdot-mario-deploy",
+      "name": "ember-trail-deploy",
       "devDependencies": {
         "cf": "1.0.0-beta.18",
         "wrangler": "^4.151.1",

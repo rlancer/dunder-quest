@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   return {
     accountId,
     worker: {
-      name: dev ? "gdot-mario-dev" : "gdot-mario",
+      name: dev ? "ember-trail-dev" : "ember-trail",
       compatibilityDate: "2026-10-19",
       observability: { enabled: true },
       workersDev: true,
@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => {
         htmlHandling: "auto-trailing-slash",
       },
       domains: dev
-        ? ["dev.gdot.robertlancer.com"]
-        : ["gdot.robertlancer.com"],
+        ? ["dev.ember-trail.robertlancer.com"]
+        : ["ember-trail.robertlancer.com"],
     },
   };
 });
