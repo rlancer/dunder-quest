@@ -109,6 +109,31 @@ func _unhandled_input(event: InputEvent) -> void:
 		_try_enter_stage()
 	elif event.is_action_pressed(&"pause"):
 		_back_to_title()
+	elif OS.is_debug_build():
+		_debug_stage_skip(event)
+
+
+## Debug builds only: number keys 1-9 drop straight into that stage, locked
+## or not, without touching the save. Release exports never reach this.
+func _debug_stage_skip(event: InputEvent) -> void:
+	if not (event is InputEventKey and event.pressed and not event.echo):
+		return
+	var key: Key = event.physical_keycode
+	var stage_id := int(key) - int(KEY_0)
+	if stage_id < 1 or stage_id > mini(GameProgression.get_stage_count(), 9):
+		return
+	selected_stage_id = stage_id
+	GameProgression.current_stage_id = stage_id
+	_update_pebble_position_instant()
+	_update_nodes_appearance()
+	_update_ui()
+	is_entering = true
+	_play_sfx(ENTER_SOUND)
+	var fade_tween := create_tween()
+	fade_tween.tween_property(fade_rect, "modulate:a", 1.0, 0.2)
+	fade_tween.tween_callback(func() -> void:
+		GameProgression.came_from_map = true
+		get_tree().change_scene_to_file(GameProgression.get_stage_data(stage_id).scene))
 
 
 func _is_key(event: InputEvent, keycode: Key) -> bool:
