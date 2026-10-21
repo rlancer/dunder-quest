@@ -2,16 +2,19 @@ extends StageLevel
 
 ## Crucible Crown. Lesson 6: Comprehensions. The last stage.
 ## A two-step climb to a high plateau, a long drop, ember, and an ash shelf
-## over a pit, then the crown wall: eight tiles of sheer stone with the
-## wizard and the waygate on top.
+## over a pit, then the crown wall: eight tiles of sheer stone. Across the
+## crown, a drop into the crucible, where the Crucible King duels.
 ##
 ## Three forge blocks hang before the wall, A, B and C, each running a list
 ## comprehension from the slate above. Bumping one builds a stair of plank
 ## steps up the wall, one step per number in its list, that many tiles high;
 ## a 0 builds nothing. Only B's [2, 4, 6, 8] makes a stair that can be
-## climbed. The Crucible King holds the crown.
+## climbed.
 
-const WIDTH := 150
+const WIDTH := 167
+const ARENA := 131
+## The crown's last column, where it drops into the crucible.
+const CROWN_END := 124
 const STAIR_TINT := Color(1.0, 0.86, 0.4)
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
@@ -79,8 +82,9 @@ func _paint_stage() -> void:
 	_paint_solid(27, 34, 11)
 	_paint_solid(35, 42, 8)
 	_paint_ember(61, 62, true)
-	# The crown: sheer to the top, then flat to the end of the stage.
-	_paint_solid(WALL_X, WIDTH - 1, CROWN_ROW)
+	# The crown: sheer to the top, flat across, then a drop to the arena.
+	_paint_solid(WALL_X, CROWN_END, CROWN_ROW)
+	_paint_solid(CROWN_END + 1, ARENA, 14)
 
 
 func _spawn_actors() -> void:
@@ -88,7 +92,7 @@ func _spawn_actors() -> void:
 	_spawn_checkpoint(Vector2(800, 224))
 	_spawn_shelf(Vector2(1248, 224), 64.0, 0.9, 40.0)
 	_spawn_checkpoint(Vector2(1336, 224))
-	_spawn_crawler(Vector2(1984, 96), 26.0)
+	_spawn_crawler(Vector2(1920, 96), 26.0)
 	_spawn_cache(Vector2(872, 152))
 	_spawn(clay_brick_scene, Vector2(920, 152))
 	var seed_points: Array[Vector2] = [
@@ -107,9 +111,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1360, 222), "comp_dict")
 	_spawn_scroll(Vector2(1856, 94), "comp_sum")
 	_build_forges()
-	# The final exam, on the crown itself.
-	_spawn_wizard(Vector2(2144, 96), "Crucible King", Color(1.0, 0.82, 0.36))
-	_spawn_gate(Vector2(2304, 96))
+	_build_arena(ARENA, "Crucible King", Color(1.0, 0.82, 0.36))
 
 
 func _build_forges() -> void:

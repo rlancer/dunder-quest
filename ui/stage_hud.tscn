@@ -1,8 +1,7 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://ui/stage_hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/sprites/emberseed.png" id="2_seed"]
-[ext_resource type="FontFile" path="res://assets/fonts/VT323.ttf" id="3_mono"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip"]
 content_margin_left = 5.0
@@ -14,33 +13,6 @@ corner_radius_top_left = 2
 corner_radius_top_right = 2
 corner_radius_bottom_right = 2
 corner_radius_bottom_left = 2
-anti_aliasing = false
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_quiz"]
-content_margin_left = 8.0
-content_margin_top = 6.0
-content_margin_right = 8.0
-content_margin_bottom = 6.0
-bg_color = Color(0.07, 0.04, 0.1, 0.96)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.56, 0.4, 0.78, 1)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-anti_aliasing = false
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_code"]
-content_margin_left = 7.0
-content_margin_top = 3.0
-content_margin_right = 6.0
-content_margin_bottom = 4.0
-bg_color = Color(0.02, 0.015, 0.035, 1)
-border_width_left = 2
-border_color = Color(0.4, 0.3, 0.6, 1)
 anti_aliasing = false
 
 [node name="Hud" type="CanvasLayer"]
@@ -149,134 +121,6 @@ theme_override_colors/font_color = Color(0.92, 0.92, 0.98, 0.95)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
 text = "Move A/D  Jump Space  Pause Esc"
-
-[node name="QuizPanel" type="Control" parent="."]
-unique_name_in_owner = true
-visible = false
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Dim" type="ColorRect" parent="QuizPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-color = Color(0.04, 0.02, 0.07, 0.5)
-
-[node name="Center" type="CenterContainer" parent="QuizPanel"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-mouse_filter = 2
-
-[node name="QuizBox" type="PanelContainer" parent="QuizPanel/Center"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(456, 0)
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_quiz")
-
-[node name="Rows" type="VBoxContainer" parent="QuizPanel/Center/QuizBox"]
-layout_mode = 2
-theme_override_constants/separation = 4
-
-[node name="Header" type="HBoxContainer" parent="QuizPanel/Center/QuizBox/Rows"]
-layout_mode = 2
-
-[node name="WizardName" type="Label" parent="QuizPanel/Center/QuizBox/Rows/Header"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.86, 0.78, 1, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 13
-text = "Ash Hexer"
-
-[node name="Prompt" type="Label" parent="QuizPanel/Center/QuizBox/Rows/Header"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_colors/font_color = Color(1, 0.86, 0.5, 1)
-theme_override_font_sizes/font_size = 13
-text = "What does this print?"
-horizontal_alignment = 2
-
-[node name="CodeBox" type="PanelContainer" parent="QuizPanel/Center/QuizBox/Rows"]
-layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_code")
-
-[node name="Code" type="Label" parent="QuizPanel/Center/QuizBox/Rows/CodeBox"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.86, 0.94, 0.88, 1)
-theme_override_constants/line_spacing = -3
-theme_override_fonts/font = ExtResource("3_mono")
-theme_override_font_sizes/font_size = 16
-text = "print(\"hello\")"
-
-[node name="Options" type="GridContainer" parent="QuizPanel/Center/QuizBox/Rows"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/h_separation = 4
-theme_override_constants/v_separation = 3
-columns = 2
-
-[node name="Option0" type="Button" parent="QuizPanel/Center/QuizBox/Rows/Options"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_fonts/font = ExtResource("3_mono")
-theme_override_font_sizes/font_size = 16
-text = "A  answer"
-alignment = 0
-
-[node name="Option1" type="Button" parent="QuizPanel/Center/QuizBox/Rows/Options"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_fonts/font = ExtResource("3_mono")
-theme_override_font_sizes/font_size = 16
-text = "B  answer"
-alignment = 0
-
-[node name="Option2" type="Button" parent="QuizPanel/Center/QuizBox/Rows/Options"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_fonts/font = ExtResource("3_mono")
-theme_override_font_sizes/font_size = 16
-text = "C  answer"
-alignment = 0
-
-[node name="Option3" type="Button" parent="QuizPanel/Center/QuizBox/Rows/Options"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_fonts/font = ExtResource("3_mono")
-theme_override_font_sizes/font_size = 16
-text = "D  answer"
-alignment = 0
-
-[node name="Footer" type="VBoxContainer" parent="QuizPanel/Center/QuizBox/Rows"]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-theme_override_constants/separation = 0
-
-[node name="Verdict" type="Label" parent="QuizPanel/Center/QuizBox/Rows/Footer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.8, 0.78, 0.9, 1)
-theme_override_constants/outline_size = 2
-theme_override_font_sizes/font_size = 13
-text = "Choose an answer"
-
-[node name="Explanation" type="Label" parent="QuizPanel/Center/QuizBox/Rows/Footer"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(440, 0)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.86, 0.84, 0.92, 1)
-theme_override_font_sizes/font_size = 10
-text = "Up/Down/Left/Right to choose, Space to answer"
-autowrap_mode = 2
 
 [node name="PausePanel" type="Control" parent="."]
 unique_name_in_owner = true

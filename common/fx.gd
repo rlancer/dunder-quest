@@ -2,10 +2,13 @@ class_name Fx
 extends RefCounted
 
 ## One-shot pixel effects. CPU particles keep them working on the web renderer.
+## Every `at` is a global position, whatever the parent's own offset.
 
 const DUST := Color(0.94, 0.82, 0.62, 0.9)
 const SPARK := Color(1.0, 0.78, 0.3, 1.0)
 const EMBER := Color(1.0, 0.45, 0.16, 1.0)
+
+static var _hitstop_serial: int = 0
 
 
 ## Puffs of dust at the feet. `side` pushes the puff away from the motion.
@@ -49,8 +52,8 @@ static func float_text(parent: Node, at: Vector2, text: String, color: Color = S
 	label.add_theme_font_size_override(&"font_size", 13)
 	label.add_theme_color_override(&"font_color", color)
 	label.add_theme_constant_override(&"outline_size", 3)
-	label.position = (at + Vector2(-8.0, -20.0)).round()
 	parent.add_child(label)
+	label.global_position = (at + Vector2(-8.0, -20.0)).round()
 	var tween := label.create_tween()
 	tween.tween_property(label, "position:y", label.position.y - 14.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.25).set_delay(0.3)
@@ -66,9 +69,9 @@ static func _burst(parent: Node, at: Vector2, amount: int, lifetime: float) -> C
 	particles.lifetime_randomness = 0.4
 	particles.local_coords = false
 	particles.z_index = 6
-	particles.position = at
 	if parent != null and parent.is_inside_tree():
 		parent.add_child(particles)
+		particles.global_position = at
 		particles.emitting = true
 		particles.finished.connect(particles.queue_free)
 	return particles
@@ -79,3 +82,16 @@ static func _fade(color: Color) -> Gradient:
 	gradient.set_color(0, color)
 	gradient.set_color(1, Color(color.r, color.g, color.b, 0.0))
 	return gradient
+
+
+## Freezes the action for a beat so a hit lands with weight. Real time, so the
+## slowed clock can't stretch it; a newer stop simply extends the freeze.
+static func hitstop(tree: SceneTree, seconds: float, slow: float = 0.05) -> void:
+	if tree == null:
+		return
+	_hitstop_serial += 1
+	var serial := _hitstop_serial
+	Engine.time_scale = slow
+	await tree.create_timer(seconds, true, false, true).timeout
+	if serial == _hitstop_serial:
+		Engine.time_scale = 1.0

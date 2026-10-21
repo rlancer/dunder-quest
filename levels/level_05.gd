@@ -9,9 +9,10 @@ extends StageLevel
 ## Bumping a block calls span with its number and lays a plank bridge as long
 ## as the value returned: short bridges crumble into the chasm, long ones
 ## crash into the far cliff and break, and only span(5) == 14 holds.
-## The Bellows Sage waits at the far end.
+## The Bellows Sage duels in the arena at the far end.
 
-const WIDTH := 160
+const WIDTH := 177
+const ARENA := 141
 const BRIDGE_TINT := Color(1.0, 0.66, 0.36)
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
@@ -68,7 +69,7 @@ func _paint_stage() -> void:
 		Vector2i(69, CHASM.x - 1),
 		Vector2i(CHASM.y + 1, 114),
 		Vector2i(118, 124),
-		Vector2i(133, WIDTH - 1),
+		Vector2i(133, ARENA),
 	]
 	for span in ground:
 		_paint_solid(span.x, span.y, 14)
@@ -103,9 +104,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1168, 222), "func_default")
 	_spawn_scroll(Vector2(1680, 222), "func_scope")
 	_build_calls()
-	# The final exam, on the long last run past the cache floor.
-	_spawn_wizard(Vector2(2400, 224), "Bellows Sage", Color(1.0, 0.62, 0.4))
-	_spawn_gate(Vector2(2496, 224))
+	_build_arena(ARENA, "Bellows Sage", Color(1.0, 0.62, 0.4))
 
 
 func _build_calls() -> void:

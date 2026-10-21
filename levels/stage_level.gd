@@ -2,13 +2,15 @@ class_name StageLevel
 extends Node2D
 
 ## Shared stage flow: tiles, spawn, deaths, checkpoints, the run clock,
-## audio unlock, the pause menu, the wizard's quiz, and the waygate exit.
+## audio unlock, the pause menu, the wizard's arena, and the waygate exit.
 ##
 ## Each stage is also a Python lesson (see `Lessons`). Lore scrolls on the
-## route teach it, a stage gadget lets the player act it out, and the wizard
-## at the end puts the player through a trial of several questions on the
-## scrolls they read, with hints on request. Each right answer breaks one of
-## his wards; a wrong one gets the player zapped and a fresh question.
+## route teach it, and the stage's gadget is the way forward: code the player
+## reads and then runs by bumping blocks, where only the right answer builds
+## the path. At the end the wizard duels the player in a sealed arena (see
+## `WizardDuel`): his questions come from the scrolls they read, they answer
+## by bumping lettered blocks while dodging his spells, and each right answer
+## breaks one of his wards.
 
 const TILE := 16
 ## How long the results card waits for a press before moving on by itself.
@@ -16,11 +18,12 @@ const PASSAGE_TIMEOUT := 4.0
 const DEATH_HOLD := 0.55
 const ASH_SHELF := preload("res://entities/platforms/ash_shelf.tscn")
 const LANTERN := preload("res://entities/checkpoint/lantern.tscn")
-const WIZARD := preload("res://entities/wizard/wizard.tscn")
-## Lets the confirm press that closed the quiz finish before Space means jump again.
-const QUIZ_RELEASE := 0.15
-## Moving hazards hold still while a wizard speaks, the same as the clock.
-const QUIZ_FROZEN_GROUPS: Array[StringName] = [&"copperling", &"ash_shelf"]
+const WIZARD_DUEL := preload("res://entities/wizard/wizard_duel.gd")
+## The arena, in tiles: the duel's floor, the run-up with its lantern, and
+## the stretch past the wizard's barrier where the waygate stands.
+const ARENA_TILES := 28
+const ARENA_RUN_UP := 5
+const ARENA_RUN_OUT := 8
 const SCROLL_TINT := Color(1.0, 0.84, 0.46)
 const LORE_SCROLL := preload("res://entities/lesson/lore_scroll.gd")
 const RUNE_BLOCK := preload("res://entities/lesson/rune_block.gd")
@@ -53,13 +56,7 @@ var _death_serial: int = 0
 var _web_audio_locked: bool = false
 var _elapsed: float = 0.0
 var _clock_running: bool = false
-var _quiz: WizardQuiz
-var _quiz_wizard: Wizard
-var _quiz_question: Dictionary = {}
-## Bumped whenever a quiz opens or is called off, so a stale await can tell.
-var _quiz_serial: int = 0
-## How many hints the wizard has given on the open question (0, 1 or 2).
-var _hint_level: int = 0
+var _duel: WizardDuel
 
 
 func _ready() -> void:
@@ -86,8 +83,6 @@ func _ready() -> void:
 	player.connect(&"respawn_requested", _kill_player)
 	hud.map_requested.connect(return_to_map)
 	hud.restart_requested.connect(_restart_stage)
-	hud.quiz_answered.connect(_on_quiz_answered)
-	hud.quiz_hint_requested.connect(_on_quiz_hint_requested)
 	if OS.has_feature("web") and not StageAudio.web_audio_unlocked:
 		_web_audio_locked = true
 		hud.show_press_to_start()
@@ -107,8 +102,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _process(delta: float) -> void:
-	# The clock waits while a wizard holds the player at his quiz.
-	if not _clock_running or _cleared or _departing or _quiz_wizard != null:
+	# The clock waits while the wizard duels, so reading his code costs nothing.
+	if not _clock_running or _cleared or _departing or (_duel != null and _duel.is_engaged()):
 		return
 	_elapsed += delta
 	hud.set_time(_elapsed)
@@ -326,20 +321,36 @@ func _refresh_scrolls() -> void:
 	hud.set_scrolls(GameProgression.known_scrolls(stage_index()).size(), Lessons.scroll_ids(stage_index()).size())
 
 
-## A wizard standing on the floor at `at`, with his barrier just to the right.
-## The stage's question pool is loaded on first use and lasts the whole visit.
-func _spawn_wizard(at: Vector2, title: String, tint: Color) -> Wizard:
-	var wizard := WIZARD.instantiate() as Wizard
-	wizard.title = title
-	wizard.tint = tint
-	wizard.taunt = str(Lessons.stage(stage_index()).get("taunt", ""))
-	wizard.position = at
-	add_child(wizard)
-	wizard.set_wards(Lessons.trial(stage_index()))
-	wizard.challenged.connect(_on_wizard_challenged)
-	if _quiz == null:
-		_quiz = WizardQuiz.for_stage(stage_index())
-	return wizard
+## The wizard's arena, starting at tile column `left` on `floor_row`: a flat
+## run-up with a lantern, the duel's floor, and the run-out where the waygate
+## stands past his barrier. Stages must be at least `arena_end(left)` wide.
+func _build_arena(left: int, title: String, tint: Color, floor_row: int = 14) -> WizardDuel:
+	_paint_solid(left - ARENA_RUN_UP, arena_end(left) - 1, floor_row)
+	var floor_y := float(floor_row * TILE)
+	_spawn_checkpoint(Vector2(float((left - 3) * TILE + 8), floor_y))
+	var duel := WIZARD_DUEL.new() as WizardDuel
+	duel.stage_id = stage_index()
+	duel.title = title
+	duel.tint = tint
+	duel.taunt = str(Lessons.stage(stage_index()).get("taunt", ""))
+	duel.hud = hud
+	duel.player = player
+	duel.stage_bounds = Rect2i(0, 0, _stage_width() * TILE, _stage_height() * TILE)
+	duel.position = Vector2(float(left * TILE), floor_y)
+	add_child(duel)
+	duel.downed.connect(_kill_player)
+	_duel = duel
+	_spawn_gate(Vector2(float(left * TILE) + WizardDuel.WIZARD_X + 64.0, floor_y))
+	return duel
+
+
+## The first tile column past an arena that starts at `left`.
+static func arena_end(left: int) -> int:
+	return left + ARENA_TILES + ARENA_RUN_OUT
+
+
+func duel() -> WizardDuel:
+	return _duel
 
 
 func _add_parallax(node_name: String, texture: Texture2D, scroll: Vector2, z: int, scale_factor: float = 4.0, tint: Color = Color.WHITE) -> void:
@@ -446,115 +457,6 @@ func _on_checkpoint_lit(at: Vector2) -> void:
 	spawn.global_position = at
 
 
-func _on_wizard_challenged(wizard: Wizard) -> void:
-	if _cleared or _departing or _dying or _quiz_wizard != null or wizard.banished:
-		return
-	_quiz_wizard = wizard
-	_quiz_serial += 1
-	player.set_controls_enabled(false)
-	_freeze_hazards(true)
-	_ask_question()
-
-
-func _ask_question() -> void:
-	var wizard := _quiz_wizard
-	_quiz.focus(GameProgression.known_scrolls(stage_index()), wizard.ward_total)
-	_hint_level = 0
-	_quiz_question = _quiz.next_question()
-	if _quiz_question.is_empty():
-		# No bank to ask from: the wizard steps aside rather than trap the run.
-		_pass_wizard()
-		return
-	var step := wizard.ward_total - wizard.wards_left + 1
-	hud.open_quiz(wizard.title, _quiz_question, wizard.tint, step, wizard.ward_total)
-
-
-func _on_quiz_answered(index: int) -> void:
-	if _quiz_wizard == null:
-		return
-	var serial := _quiz_serial
-	var correct := index == int(_quiz_question.get("answer", -1))
-	var remaining := _quiz_wizard.wards_left
-	if correct:
-		remaining = _quiz_wizard.break_ward()
-	hud.show_quiz_feedback(index, correct, remaining)
-	if not correct:
-		_quiz_wizard.zap(player)
-		player.camera.shake(4.0)
-		player.sprite.modulate = Color(0.75, 0.85, 1.4)
-		var flash := player.create_tween()
-		flash.tween_property(player.sprite, "modulate", Color.WHITE, 0.35)
-	await hud.quiz_feedback_done
-	if serial != _quiz_serial or not is_inside_tree() or _quiz_wizard == null:
-		return
-	if correct and remaining <= 0:
-		_pass_wizard()
-	else:
-		_ask_question()
-
-
-## The wizard helps, grudgingly and never outright. The first hint is his
-## riddle for the question plus the scroll it draws on: its lesson if the
-## player read it, a jab if they walked past it. The second hint, he looks
-## away from one wrong option, which dims out. There is no third.
-func _on_quiz_hint_requested() -> void:
-	if _quiz_wizard == null or _quiz_question.is_empty() or _hint_level >= 2:
-		return
-	_hint_level += 1
-	hud.note_hint()
-	var scroll := Lessons.scroll(str(_quiz_question.get("scroll", "")))
-	var title := str(scroll.get("title", "the old ways"))
-	var detail := "Had you read the scroll %s on the trail, you would not need to ask." % title
-	if GameProgression.knows_scroll(str(scroll.get("id", ""))):
-		detail = "Your scroll, %s: %s" % [title, scroll.get("insight", "")]
-	if _hint_level == 1:
-		hud.show_quiz_hint("\"%s\"" % _quiz_question.get("hint", "Think."), detail, -1, true)
-		return
-	var wrong: Array[int] = []
-	var answer := int(_quiz_question.get("answer", -1))
-	var options: PackedStringArray = _quiz_question.get("options", PackedStringArray())
-	for index in options.size():
-		if index != answer and not hud.quiz_dimmed().has(index):
-			wrong.append(index)
-	if wrong.is_empty():
-		return
-	var dim: int = wrong.pick_random()
-	hud.show_quiz_hint(
-		"%s's eyes slide away from %s... He says no more." % [_quiz_wizard.title, StageHud.QUIZ_LETTERS[dim]],
-		detail,
-		dim,
-		false
-	)
-
-
-## The wizard is banished, his barrier opens, and controls come back.
-func _pass_wizard() -> void:
-	var wizard := _quiz_wizard
-	_end_quiz()
-	wizard.banish()
-	var serial := _quiz_serial
-	await get_tree().create_timer(QUIZ_RELEASE, false).timeout
-	if serial != _quiz_serial or not is_inside_tree() or _dying or _cleared or _departing:
-		return
-	player.set_controls_enabled(true)
-
-
-## Closes the quiz and thaws the stage, leaving the wizard as he is.
-func _end_quiz() -> void:
-	_quiz_wizard = null
-	_quiz_question = {}
-	_quiz_serial += 1
-	hud.close_quiz()
-	_freeze_hazards(false)
-
-
-func _freeze_hazards(frozen: bool) -> void:
-	for group_name in QUIZ_FROZEN_GROUPS:
-		for node in get_tree().get_nodes_in_group(group_name):
-			if is_ancestor_of(node):
-				node.process_mode = Node.PROCESS_MODE_DISABLED if frozen else Node.PROCESS_MODE_INHERIT
-
-
 func _on_waygate_reached() -> void:
 	if _departing or _cleared or _dying:
 		return
@@ -623,6 +525,8 @@ func _kill_player() -> void:
 	if _dying:
 		return
 	_dying = true
+	if _duel != null:
+		_duel.call_off()
 	_death_serial += 1
 	var serial := _death_serial
 	hud.note_fall()
@@ -643,15 +547,15 @@ func _respawn_player() -> void:
 		return
 	_death_serial += 1
 	_dying = false
-	if _quiz_wizard != null:
-		# A restart while the quiz is up: the wizard keeps his post, and the
-		# wards already broken stay broken.
-		_end_quiz()
+	if _duel != null:
+		# The wizard keeps his post, and the wards already broken stay broken.
+		_duel.call_off()
 	player.global_position = spawn.global_position
 	player.revive()
 	player.reset_camera()
 	player.release_respawn_lock()
 	get_tree().call_group(&"ash_shelf", &"reset_piece")
+	get_tree().call_group(&"kiln_lift", &"reset_piece")
 	hud.fade_to(0.0, 0.25)
 
 

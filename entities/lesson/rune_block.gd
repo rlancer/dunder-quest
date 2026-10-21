@@ -2,8 +2,9 @@ class_name RuneBlock
 extends StaticBody2D
 
 ## A stone block that answers a head bump with a lesson. It carries a short
-## label (an index, a bucket number, a keyword) and leaves the reply to the
-## stage, which listens for `bumped`.
+## label (an index, a bucket number, a keyword, an answer letter) and leaves
+## the reply to the stage, which listens for `bumped`. A cracked block is a
+## spent choice: it goes dark and the stage ignores it.
 
 signal bumped(block: RuneBlock)
 
@@ -16,6 +17,9 @@ var label_text: String = "?"
 var tint: Color = Color(0.6, 0.85, 1.0)
 ## Lit blocks glow steadily, e.g. a vault bucket that holds its key.
 var lit: bool = false
+var cracked: bool = false
+## How wide the label may run; a long label spills past the stone's edges.
+var label_width: float = 24.0
 
 var _label: Label
 var _rest_y: float = 0.0
@@ -44,8 +48,8 @@ func _ready() -> void:
 	_label.add_theme_constant_override(&"outline_size", 2)
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_label.size = Vector2(24.0, 16.0)
-	_label.position = Vector2(-12.0, -9.0)
+	_label.size = Vector2(label_width, 16.0)
+	_label.position = Vector2(-label_width * 0.5, -9.0)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_label)
 	set_label(label_text)
@@ -62,11 +66,21 @@ func set_label(text: String) -> void:
 	label_text = text
 	if _label != null:
 		_label.text = text
-		_label.add_theme_color_override(&"font_color", tint.lightened(0.5) if not lit else Color(1.0, 0.97, 0.85))
+		var color := tint.lightened(0.5) if not lit else Color(1.0, 0.97, 0.85)
+		if cracked:
+			color = Color(0.42, 0.38, 0.48)
+		_label.add_theme_color_override(&"font_color", color)
 
 
 func set_lit(on: bool) -> void:
 	lit = on
+	set_label(label_text)
+
+
+func set_cracked(on: bool) -> void:
+	if on and not cracked:
+		Fx.dust(get_parent(), global_position + Vector2(0.0, 6.0), 5)
+	cracked = on
 	set_label(label_text)
 
 
@@ -105,11 +119,17 @@ func _draw() -> void:
 	var glow := 0.5 + 0.5 * sin(_clock * 3.2 + float(index))
 	var edge := tint
 	edge.a = 1.0 if lit else 0.35 + 0.35 * glow
+	if cracked:
+		edge = Color(0.3, 0.26, 0.34, 0.8)
 	draw_rect(Rect2(-8.0, -8.0, 16.0, 1.0), edge)
 	draw_rect(Rect2(-8.0, 7.0, 16.0, 1.0), edge)
 	draw_rect(Rect2(-8.0, -8.0, 1.0, 16.0), edge)
 	draw_rect(Rect2(7.0, -8.0, 1.0, 16.0), edge)
 	if lit:
 		draw_rect(Rect2(-7.0, -7.0, 14.0, 14.0), Color(tint.r, tint.g, tint.b, 0.28))
+	if cracked:
+		draw_rect(Rect2(-7.0, -7.0, 14.0, 14.0), Color(0.0, 0.0, 0.0, 0.35))
+		for crack: Rect2 in [Rect2(-4.0, -6.0, 1.0, 4.0), Rect2(-3.0, -2.0, 3.0, 1.0), Rect2(0.0, -1.0, 1.0, 5.0), Rect2(1.0, 3.0, 3.0, 1.0)]:
+			draw_rect(crack, STONE_DARK)
 	if _flash.a > 0.0:
 		draw_rect(body, _flash)
