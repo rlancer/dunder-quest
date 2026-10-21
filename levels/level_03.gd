@@ -2,7 +2,7 @@ extends StageLevel
 
 ## Kiln Mouth. Lesson 3: Loops & range.
 ## Ember and an ash shelf are taught on solid ground, then both cross a pit.
-## Short by design, with no lantern. The waygate ends the run.
+## Short by design, with no lantern. The waygate leads on to Smelter's Fork.
 ##
 ## On the last run a forge block runs `for i in range(1, 9, 2)`: bumped, it
 ## drops a seed on each number the loop visits along a floor ruler, lighting
@@ -24,6 +24,10 @@ const _NEAR := preload("res://assets/backgrounds/kiln_near.png")
 
 func stage_index() -> int:
 	return 3
+
+
+func _passage_detail() -> String:
+	return "Smelter's Fork awaits"
 
 
 func _stage_width() -> int:

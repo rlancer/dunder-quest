@@ -2,8 +2,8 @@ class_name ArcaneBarrier
 extends StaticBody2D
 
 ## The wizard's wall. Solid on the world layer and tall enough that no jump
-## clears it. Drawn as a shimmering band of light; dissolving fades it out and
-## drops the collision.
+## clears it. Drawn as a shimmering band of light that thins as the wizard's
+## wards break; dissolving fades it out and drops the collision.
 
 const VISIBLE_HEIGHT := 72.0
 const BAND := 6.0
@@ -12,6 +12,8 @@ var tint: Color = Color(0.55, 0.85, 1.0)
 
 var _open: bool = false
 var _fade: float = 1.0
+## How bright the band burns, from 1.0 (every ward up) down toward a faint glow.
+var _power: float = 1.0
 var _clock: float = 0.0
 
 
@@ -26,6 +28,14 @@ func _process(delta: float) -> void:
 
 func is_open() -> bool:
 	return _open
+
+
+## Dims the band to match the share of wards still standing. It stays solid.
+func weaken(share: float) -> void:
+	var target := lerpf(0.35, 1.0, clampf(share, 0.0, 1.0))
+	var center := global_position + Vector2(0.0, -VISIBLE_HEIGHT * 0.4)
+	Fx.sparks(get_parent().get_parent(), center, tint, 8, 40.0)
+	create_tween().tween_property(self, "_power", target, 0.3)
 
 
 func dissolve() -> void:
@@ -56,7 +66,7 @@ func _draw() -> void:
 		var y := -2.0 - float(row) * 2.0
 		var height_fade := 1.0 - float(row) / float(rows)
 		var wave := 0.5 + 0.5 * sin(_clock * 5.0 - float(row) * 0.55)
-		var alpha := (0.18 + 0.5 * wave) * height_fade * _fade
+		var alpha := (0.18 + 0.5 * wave) * height_fade * _fade * _power
 		var core := Color(tint.r, tint.g, tint.b, alpha)
 		draw_rect(Rect2(-BAND * 0.5, y, BAND, 2.0), core)
 		draw_rect(Rect2(-1.0, y, 2.0, 2.0), Color(1.0, 1.0, 1.0, alpha * 0.45))

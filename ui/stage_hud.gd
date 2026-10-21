@@ -57,6 +57,10 @@ var _quiz_buttons: Array[Button] = []
 ## Options the wizard's hint ruled out: index -> true. Selection skips them.
 var _quiz_dimmed: Dictionary = {}
 var _hint_button: Button
+## "1/3" beside the wizard's name: which question of his trial this is.
+var _trial_label: Label
+var _trial_step: int = 1
+var _trial_total: int = 1
 var _lesson_label: Label
 var _card: LessonCard
 var _card_queue: Array[Dictionary] = []
@@ -114,6 +118,13 @@ func _build_lesson_ui() -> void:
 	_hint_button.add_theme_font_size_override(&"font_size", 10)
 	_hint_button.pressed.connect(_on_hint_pressed)
 	%WizardName.get_parent().add_child(_hint_button)
+
+	_trial_label = Label.new()
+	_trial_label.add_theme_font_size_override(&"font_size", 10)
+	_trial_label.add_theme_color_override(&"font_color", Color(0.8, 0.78, 0.9))
+	_trial_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_trial_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	%WizardName.add_sibling(_trial_label)
 
 	_spellbook_button = Button.new()
 	_spellbook_button.text = "Spellbook"
@@ -333,9 +344,13 @@ func fade_to(alpha: float, duration: float) -> Tween:
 	return _fade_tween
 
 
-## Opens the quiz panel on a question from `WizardQuiz`.
-func open_quiz(wizard_title: String, question: Dictionary, tint: Color) -> void:
+## Opens the quiz panel on a question from `WizardQuiz`. `step` counts the
+## right answers so far plus one, out of the `total` his trial demands.
+func open_quiz(wizard_title: String, question: Dictionary, tint: Color, step: int = 1, total: int = 1) -> void:
 	_quiz_question = question
+	_trial_step = step
+	_trial_total = total
+	_trial_label.text = _trial_pips() if total > 1 else ""
 	%WizardName.text = wizard_title
 	%WizardName.add_theme_color_override(&"font_color", tint.lightened(0.5))
 	%Prompt.text = str(question.get("prompt", "What does this print?"))
@@ -349,7 +364,12 @@ func open_quiz(wizard_title: String, question: Dictionary, tint: Color) -> void:
 		button.remove_theme_color_override(&"font_disabled_color")
 	_quiz_dimmed = {}
 	_hint_button.disabled = false
-	%Verdict.text = "%s bars the way. Answer to pass." % wizard_title
+	if total <= 1:
+		%Verdict.text = "%s bars the way. Answer to pass." % wizard_title
+	elif step == 1:
+		%Verdict.text = "%s bars the way. Answer %d to pass." % [wizard_title, total]
+	else:
+		%Verdict.text = "Question %d of %d. Answer to break the next ward." % [step, total]
 	%Verdict.add_theme_color_override(&"font_color", Color(0.8, 0.78, 0.9))
 	%Explanation.text = _quiz_controls_hint()
 	_quiz_state = QuizState.ASKING
@@ -367,8 +387,9 @@ func open_quiz(wizard_title: String, question: Dictionary, tint: Color) -> void:
 
 
 ## Marks the chosen option, reveals the right one and its explanation, then
-## emits `quiz_feedback_done` after a hold or a skip press.
-func show_quiz_feedback(chosen: int, correct: bool) -> void:
+## emits `quiz_feedback_done` after a hold or a skip press. `remaining` is how
+## many right answers the trial still wants after this one.
+func show_quiz_feedback(chosen: int, correct: bool, remaining: int = 0) -> void:
 	_quiz_state = QuizState.FEEDBACK
 	_hint_button.disabled = true
 	_quiz_hold = QUIZ_RIGHT_HOLD if correct else QUIZ_WRONG_HOLD
@@ -382,7 +403,15 @@ func show_quiz_feedback(chosen: int, correct: bool) -> void:
 		elif index == chosen:
 			_paint_quiz_option(button, QUIZ_BAD)
 	var options: PackedStringArray = _quiz_question.get("options", PackedStringArray())
-	if correct:
+	if correct and remaining > 0:
+		_trial_step += 1
+		_trial_label.text = _trial_pips()
+		%Verdict.text = "Correct! A ward breaks. %d more to go." % remaining
+		%Verdict.add_theme_color_override(&"font_color", QUIZ_GOOD)
+	elif correct:
+		if _trial_total > 1:
+			_trial_step = _trial_total + 1
+			_trial_label.text = _trial_pips()
 		%Verdict.text = "Correct! The barrier fades."
 		%Verdict.add_theme_color_override(&"font_color", QUIZ_GOOD)
 	else:
@@ -408,6 +437,16 @@ func show_quiz_hint(whisper: String, detail: String, dim_index: int = -1, more: 
 		if _quiz_selected == dim_index:
 			_step_quiz_selection(1)
 	_hint_button.disabled = not more
+
+
+## "Wards 1/3": how many of the wizard's wards are broken so far.
+func _trial_pips() -> String:
+	return "Wards %d/%d" % [mini(_trial_step - 1, _trial_total), _trial_total]
+
+
+## [question number, questions in the trial] for the open quiz.
+func quiz_progress() -> Vector2i:
+	return Vector2i(_trial_step, _trial_total)
 
 
 func quiz_dimmed() -> Array:

@@ -10,15 +10,29 @@ const ENTER_SOUND := preload("res://assets/audio/goal.wav")
 const REJECT_SOUND := preload("res://assets/audio/bump.wav")
 const UNLOCK_SOUND := preload("res://assets/audio/pickup.wav")
 
-## Stage markers sit on the trail painted into the map art.
+## Stage markers. The first three sit on the trail painted into the map art;
+## past the kiln the trail climbs into the high country, drawn at runtime.
 const STAGE_POSITIONS: Dictionary = {
 	1: Vector2(78.0, 116.0),
 	2: Vector2(240.0, 104.0),
 	3: Vector2(392.0, 132.0),
+	4: Vector2(326.0, 76.0),
+	5: Vector2(214.0, 54.0),
+	6: Vector2(108.0, 52.0),
 }
-## Bezier controls for the hop path between neighbouring stages.
-const PATH_CONTROL_1_2 := Vector2(160.0, 128.0)
-const PATH_CONTROL_2_3 := Vector2(318.0, 134.0)
+## Bezier control for the hop path from each stage to the next.
+const PATH_CONTROLS: Dictionary = {
+	1: Vector2(160.0, 128.0),
+	2: Vector2(318.0, 134.0),
+	3: Vector2(386.0, 90.0),
+	4: Vector2(272.0, 52.0),
+	5: Vector2(160.0, 40.0),
+}
+## Segments (by their first stage) whose trail the map art already paints.
+const PAINTED_SEGMENTS: Array[int] = [1, 2]
+const PATH_STEPS := 7
+const TRAIL_DARK := Color(0.12, 0.07, 0.08, 0.85)
+const TRAIL_DIRT := Color(0.62, 0.42, 0.24, 0.9)
 
 @onready var stage_audio: StageAudio = %StageAudio
 @onready var path_drawer: Node2D = %PathDrawer
@@ -33,10 +47,6 @@ const PATH_CONTROL_2_3 := Vector2(318.0, 134.0)
 @onready var fade_rect: ColorRect = %FadeRect
 @onready var stage_card_button: Button = %StageCardButton
 
-@onready var node_1: Node2D = %StageNode1
-@onready var node_2: Node2D = %StageNode2
-@onready var node_3: Node2D = %StageNode3
-
 var selected_stage_id: int = 1
 var is_moving: bool = false
 var is_entering: bool = false
@@ -48,7 +58,7 @@ var _unlock_from_id: int = 0
 
 func _ready() -> void:
 	GameProgression.load_data()
-	selected_stage_id = clampi(GameProgression.current_stage_id, 1, 3)
+	selected_stage_id = clampi(GameProgression.current_stage_id, 1, GameProgression.get_stage_count())
 	if not GameProgression.is_unlocked(selected_stage_id):
 		selected_stage_id = 1
 	GameProgression.current_stage_id = selected_stage_id
@@ -217,11 +227,13 @@ func _update_pebble_position_instant() -> void:
 	pebble_sprite.position.y = -10.0
 
 
+func _stage_node(id: int) -> Node2D:
+	return get_node_or_null("Nodes/StageNode%d" % id) as Node2D
+
+
 func _update_nodes_appearance() -> void:
-	var nodes: Array[Node2D] = [node_1, node_2, node_3]
-	for i in range(nodes.size()):
-		var id := i + 1
-		var n := nodes[i]
+	for id in range(1, GameProgression.get_stage_count() + 1):
+		var n := _stage_node(id)
 		if n == null:
 			continue
 		var unlocked := GameProgression.is_unlocked(id)
@@ -257,15 +269,13 @@ func _update_nodes_appearance() -> void:
 
 
 func _animate_cleared_seeds() -> void:
-	var nodes: Array[Node2D] = [node_1, node_2, node_3]
-	for i in range(nodes.size()):
-		var id := i + 1
+	for id in range(1, GameProgression.get_stage_count() + 1):
 		if GameProgression.is_cleared(id):
-			var n := nodes[i]
+			var n := _stage_node(id)
 			if n != null:
 				var seed_icon: Sprite2D = n.get_node_or_null("SeedSprite")
 				if seed_icon != null and seed_icon.visible:
-					seed_icon.position.y = -22.0 + sin(anim_time * 4.0 + float(i)) * 1.5
+					seed_icon.position.y = -22.0 + sin(anim_time * 4.0 + float(id - 1)) * 1.5
 
 
 func _update_ui() -> void:
@@ -352,41 +362,24 @@ func _get_bezier_points(p0: Vector2, pctrl: Vector2, p1: Vector2, count: int) ->
 	return result
 
 
+## The hop path from stage `from_id` to the next one.
+func _segment_points(from_id: int) -> Array[Vector2]:
+	return _get_bezier_points(STAGE_POSITIONS[from_id], PATH_CONTROLS[from_id], STAGE_POSITIONS[from_id + 1], PATH_STEPS)
+
+
+## Every point the avatar hops through between two stages, in either direction.
 func _get_path_points_between(from_id: int, to_id: int) -> Array[Vector2]:
-	var p1: Vector2 = STAGE_POSITIONS[1]
-	var p2: Vector2 = STAGE_POSITIONS[2]
-	var p3: Vector2 = STAGE_POSITIONS[3]
-
-	var step_1_2 := _get_bezier_points(p1, PATH_CONTROL_1_2, p2, 7)
-	var step_2_3 := _get_bezier_points(p2, PATH_CONTROL_2_3, p3, 7)
-
-	if from_id == 1 and to_id == 2:
-		return step_1_2
-	elif from_id == 2 and to_id == 1:
-		var rev := step_1_2.duplicate()
-		rev.reverse()
-		return rev
-	elif from_id == 2 and to_id == 3:
-		return step_2_3
-	elif from_id == 3 and to_id == 2:
-		var rev := step_2_3.duplicate()
-		rev.reverse()
-		return rev
-	elif from_id == 1 and to_id == 3:
-		var combined := step_1_2.duplicate()
-		for i in range(1, step_2_3.size()):
-			combined.append(step_2_3[i])
-		return combined
-	elif from_id == 3 and to_id == 1:
-		var rev_2_3 := step_2_3.duplicate()
-		rev_2_3.reverse()
-		var rev_1_2 := step_1_2.duplicate()
-		rev_1_2.reverse()
-		var combined := rev_2_3
-		for i in range(1, rev_1_2.size()):
-			combined.append(rev_1_2[i])
-		return combined
-	return []
+	var low := mini(from_id, to_id)
+	var high := maxi(from_id, to_id)
+	var combined: Array[Vector2] = []
+	for id in range(low, high):
+		var segment := _segment_points(id)
+		if not combined.is_empty():
+			segment.remove_at(0)
+		combined.append_array(segment)
+	if from_id > to_id:
+		combined.reverse()
+	return combined
 
 
 # Background embers / stars
@@ -413,26 +406,29 @@ func _update_particles(delta: float) -> void:
 
 # Custom drawing for path lines, stepping stones, and pedestal bases
 func draw_map_elements(canvas: CanvasItem) -> void:
-	var p1: Vector2 = STAGE_POSITIONS[1]
-	var p2: Vector2 = STAGE_POSITIONS[2]
-	var p3: Vector2 = STAGE_POSITIONS[3]
-
-	var path_1_2 := _get_bezier_points(p1, PATH_CONTROL_1_2, p2, 7)
-	var path_2_3 := _get_bezier_points(p2, PATH_CONTROL_2_3, p3, 7)
-
-	var p1_unlocked := GameProgression.is_unlocked(2)
-	var p2_unlocked := GameProgression.is_unlocked(3)
-
-	_draw_path_segment(canvas, path_1_2, p1_unlocked, 1)
-	_draw_path_segment(canvas, path_2_3, p2_unlocked, 2)
+	var count := GameProgression.get_stage_count()
+	for id in range(1, count):
+		if not PAINTED_SEGMENTS.has(id):
+			_draw_trail(canvas, id)
+	for id in range(1, count):
+		_draw_path_segment(canvas, _segment_points(id), GameProgression.is_unlocked(id + 1), id)
 
 	for p in _particles:
 		var alpha: float = (sin(anim_time * 3.0 + p.phase) * 0.35 + 0.65) * p.color.a
 		var c := Color(p.color.r, p.color.g, p.color.b, alpha)
 		canvas.draw_rect(Rect2(p.pos, Vector2(p.size, p.size)), c)
 
-	for id in [1, 2, 3]:
+	for id in range(1, count + 1):
 		_draw_pedestal_base(canvas, STAGE_POSITIONS[id], id)
+
+
+## A dirt trail where the map art has none: a dark edge with packed earth
+## down the middle, traced finely along the hop curve.
+func _draw_trail(canvas: CanvasItem, from_id: int) -> void:
+	var points := _get_bezier_points(STAGE_POSITIONS[from_id], PATH_CONTROLS[from_id], STAGE_POSITIONS[from_id + 1], 24)
+	var line := PackedVector2Array(points)
+	canvas.draw_polyline(line, TRAIL_DARK, 5.0)
+	canvas.draw_polyline(line, TRAIL_DIRT, 3.0)
 
 
 func _draw_path_segment(canvas: CanvasItem, points: Array[Vector2], is_unlocked: bool, segment_id: int) -> void:

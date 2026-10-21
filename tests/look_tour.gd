@@ -2,10 +2,12 @@ extends Node
 
 ## Opens each screen in a real window and saves one settled capture of it.
 ## godot --path . res://tests/look_tour.tscn   ->  tests/shots/tour_*.png
+## Add `-- --only=fork` to shoot just the steps whose tag contains "fork".
 
 const STEPS: Array[Dictionary] = [
 	{"tag": "title", "scene": "res://ui/title_screen.tscn"},
 	{"tag": "map", "scene": "res://levels/world_map.tscn"},
+	{"tag": "map_high", "scene": "res://levels/world_map.tscn", "cleared": 5},
 	{"tag": "amber_start", "scene": "res://levels/level_01.tscn", "at": Vector2(120, 214)},
 	{"tag": "amber_scroll", "scene": "res://levels/level_01.tscn", "at": Vector2(76, 214)},
 	{"tag": "amber_index", "scene": "res://levels/level_01.tscn", "at": Vector2(150, 214), "bump": [1, 2], "shot_at": 75},
@@ -29,12 +31,31 @@ const STEPS: Array[Dictionary] = [
 	{"tag": "kiln_banish", "scene": "res://levels/level_03.tscn", "at": Vector2(1718, 214), "answer": "right", "skip_at": 70, "shot_at": 80},
 	{"tag": "span_lantern", "scene": "res://levels/level_02.tscn", "at": Vector2(1190, 214)},
 	{"tag": "span_ember", "scene": "res://levels/level_02.tscn", "at": Vector2(2000, 214)},
+	{"tag": "fork_start", "scene": "res://levels/level_04.tscn", "at": Vector2(160, 214)},
+	{"tag": "fork_shelf", "scene": "res://levels/level_04.tscn", "at": Vector2(1200, 214)},
+	{"tag": "fork_gate_shut", "scene": "res://levels/level_04.tscn", "at": Vector2(950, 214), "bump": [0], "shot_at": 50},
+	{"tag": "fork_gate_open", "scene": "res://levels/level_04.tscn", "at": Vector2(950, 214), "bump": [0, 0], "shot_at": 70},
+	{"tag": "fork_gate_two", "scene": "res://levels/level_04.tscn", "at": Vector2(1976, 214), "bump": [1, 1, 1], "shot_at": 70},
+	{"tag": "fork_quiz", "scene": "res://levels/level_04.tscn", "at": Vector2(2226, 214), "open_gates": true, "answer": "right", "skip_at": 70, "shot_at": 110},
+	{"tag": "bridge_start", "scene": "res://levels/level_05.tscn", "at": Vector2(240, 180)},
+	{"tag": "bridge_calls", "scene": "res://levels/level_05.tscn", "at": Vector2(1290, 214)},
+	{"tag": "bridge_short", "scene": "res://levels/level_05.tscn", "at": Vector2(1360, 214), "bump": [4], "shot_at": 72},
+	{"tag": "bridge_built", "scene": "res://levels/level_05.tscn", "at": Vector2(1440, 214), "bump": [5], "shot_at": 90},
+	{"tag": "bridge_wizard", "scene": "res://levels/level_05.tscn", "at": Vector2(2300, 214)},
+	{"tag": "crown_climb", "scene": "res://levels/level_06.tscn", "at": Vector2(600, 118)},
+	{"tag": "crown_forges", "scene": "res://levels/level_06.tscn", "at": Vector2(1420, 214)},
+	{"tag": "crown_steep", "scene": "res://levels/level_06.tscn", "at": Vector2(1600, 214), "bump": [2], "shot_at": 70},
+	{"tag": "crown_stair", "scene": "res://levels/level_06.tscn", "at": Vector2(1600, 214), "bump": [1], "shot_at": 90},
+	{"tag": "crown_wizard", "scene": "res://levels/level_06.tscn", "at": Vector2(2040, 86)},
+	{"tag": "crown_quiz", "scene": "res://levels/level_06.tscn", "at": Vector2(2114, 86)},
 	{"tag": "kiln_final", "scene": "res://levels/level_03.tscn", "at": Vector2(1400, 214), "final": true},
+	{"tag": "crown_final", "scene": "res://levels/level_06.tscn", "at": Vector2(2200, 86), "final": true},
 ]
 
 var _step := -1
 var _frames := 0
 var _current: Node
+var _only := ""
 
 
 func _ready() -> void:
@@ -42,6 +63,9 @@ func _ready() -> void:
 	GameProgression.came_from_map = false
 	StageAudio.web_audio_unlocked = true
 	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://tests/shots"))
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="):
+			_only = arg.trim_prefix("--only=")
 	_next()
 
 
@@ -100,12 +124,18 @@ func _next() -> void:
 	if _current != null:
 		_current.queue_free()
 	_step += 1
+	while _only != "" and _step < STEPS.size() and not str(STEPS[_step]["tag"]).contains(_only):
+		_step += 1
 	_frames = 0
 	if _step >= STEPS.size():
 		print("TOUR done")
 		get_tree().quit(0)
 		return
 	GameProgression.load_data()
+	for stage_id in range(1, int(STEPS[_step].get("cleared", 0)) + 1):
+		GameProgression.mark_cleared(stage_id, GameProgression.get_stage_data(stage_id).get("max_seeds", 0))
+	GameProgression.just_cleared_id = 0
+	GameProgression.current_stage_id = maxi(1, int(STEPS[_step].get("cleared", 0)))
 	for scroll_id: String in STEPS[_step].get("learn", []):
 		GameProgression.learn_scroll(scroll_id)
 	var packed := load(STEPS[_step]["scene"]) as PackedScene
@@ -115,3 +145,5 @@ func _next() -> void:
 	add_child(_current)
 	if STEPS[_step].get("open_vault", false):
 		get_tree().call_group(&"vault_door", &"open_now")
+	if STEPS[_step].get("open_gates", false):
+		get_tree().call_group(&"truth_gate", &"open_now")

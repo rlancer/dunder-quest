@@ -55,6 +55,30 @@ const STAGES: Array[Dictionary] = [
 		"map_pos": Vector2(384.0, 155.0),
 		"max_seeds": 8,
 	},
+	{
+		"id": 4,
+		"name": "Smelter's Fork",
+		"subtitle": "Lesson 4: Booleans & Conditions",
+		"scene": "res://levels/level_04.tscn",
+		"map_pos": Vector2(326.0, 76.0),
+		"max_seeds": 6,
+	},
+	{
+		"id": 5,
+		"name": "Bellows Bridge",
+		"subtitle": "Lesson 5: Functions & return",
+		"scene": "res://levels/level_05.tscn",
+		"map_pos": Vector2(220.0, 58.0),
+		"max_seeds": 6,
+	},
+	{
+		"id": 6,
+		"name": "Crucible Crown",
+		"subtitle": "Lesson 6: Comprehensions",
+		"scene": "res://levels/level_06.tscn",
+		"map_pos": Vector2(112.0, 54.0),
+		"max_seeds": 7,
+	},
 ]
 
 

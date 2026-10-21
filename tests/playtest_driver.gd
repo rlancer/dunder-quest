@@ -128,7 +128,9 @@ func _physics_process(_delta: float) -> void:
 		return
 	if section_limit > 0 and _section_done():
 		return
-	if _stage_index == 3 and _hud.is_cleared():
+	# Kiln Mouth's waygate leads on into the high country, which
+	# high_country_check plays; this bot's run ends at that passage.
+	if _stage_index == 3 and (_hud.is_cleared() or _hud.passage_shown):
 		_finish_soon(_level_one_clear() and _level_two_clear() and _crossed_gap and _stomped and _bumped and _broke and _collected and _wizard_passed and _cards_read >= ROUTE_CARDS)
 		return
 	if _frames > 160 * 60:
@@ -902,7 +904,7 @@ func _report() -> void:
 	_done_frames = -2
 	var goal_open := false
 	if _hud != null and is_instance_valid(_hud):
-		goal_open = _hud.is_cleared()
+		goal_open = _hud.is_cleared() or _hud.passage_shown
 	print(
 		"PLAYTEST result=%s l1=%s,%s,%s,%s,%s,%s l2=%s,%s,%s,%s,%s,%s l3=%s,%s,%s,%s,%s wizards=%s,%s,%s cards=%d goal=%s"
 		% [

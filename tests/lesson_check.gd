@@ -3,6 +3,8 @@ extends Node
 ## Drives each stage's lesson pieces with real bodies and real input events:
 ## Amber Hollow  - a scroll card pauses and resumes play, a known scroll does
 ##                 not, the index row pays out only for row[2], the wizard asks
+##                 a trial of three (each right answer breaks a ward), questions
+##                 spread across scrolls, a thin pool widens to the whole lesson,
 ##                 about read scrolls, both hint tiers, and the Spellbook pages.
 ## Cinder Span   - buckets refuse without keys and for the wrong key, keys go
 ##                 into hash(key) % 4, and the door opens once both are stored.
@@ -99,6 +101,20 @@ func _check_amber() -> void:
 	for _ask in 12:
 		only_zero = only_zero and narrow.next_question().get("scroll") == "list_zero"
 	_expect(only_zero, "a focused quiz asks only about the scrolls read")
+	var spread := WizardQuiz.for_stage(1)
+	spread.focus(PackedStringArray(["list_zero", "list_negative", "list_slice"]), 3)
+	var dealt := {}
+	for _ask in 3:
+		dealt[str(spread.next_question().get("scroll"))] = true
+	_expect(dealt.size() == 3, "a trial's questions come from different scrolls (%d)" % dealt.size())
+	var thin := WizardQuiz.for_stage(1)
+	thin.focus(PackedStringArray(["list_slice"]), 3)
+	var widened := false
+	for _ask in 10:
+		widened = widened or thin.next_question().get("scroll") != "list_slice"
+	_expect(widened, "too few read questions for a trial widens to the whole lesson")
+	_expect(wizard.ward_total == Lessons.trial(1) and Lessons.trial(1) == 3, "the Ash Hexer's trial is three questions")
+	_expect(hud.quiz_progress() == Vector2i(1, 3), "the quiz opens on question 1 of 3 (got %s)" % hud.quiz_progress())
 
 	# Hint one: the riddle and the scroll. Hint two: one wrong option dims.
 	await _tap(&"hint")
@@ -120,8 +136,19 @@ func _check_amber() -> void:
 	while hud.quiz_selected_index() != hud.quiz_answer_index():
 		await _tap(&"move_right")
 	await _tap(&"confirm")
+	await _frames(4)
+	_expect(not wizard.banished and wizard.wards_left == 2, "one right answer breaks one ward (left %d)" % wizard.wards_left)
+	_expect(not wizard.barrier_open(), "the barrier holds while wards remain")
+	await _until(func() -> bool: return hud.is_quiz_asking(), 300)
+	_expect(hud.quiz_progress() == Vector2i(2, 3), "the next question is 2 of 3 (got %s)" % hud.quiz_progress())
+	_expect(hud.quiz_dimmed().is_empty() and hud.hints_used == 2, "hints start over on the new question")
+	for _round in 2:
+		await _until(func() -> bool: return hud.is_quiz_asking(), 300)
+		while hud.quiz_selected_index() != hud.quiz_answer_index():
+			await _tap(&"move_right")
+		await _tap(&"confirm")
 	await _until(func() -> bool: return wizard.banished, 300)
-	_expect(wizard.banished, "right answer banishes the wizard")
+	_expect(wizard.banished and wizard.barrier_open(), "the last ward banishes the wizard")
 
 	# The Spellbook opens from pause on this stage's scrolls and pages through them.
 	await _frames(20)
