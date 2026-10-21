@@ -53,6 +53,8 @@ var _dying: bool = false
 ## Bumped by every death and respawn, so a death still waiting out its
 ## animation knows when something else already put the player back.
 var _death_serial: int = 0
+## Falls this attempt at the stage, for the stats.
+var _deaths: int = 0
 var _web_audio_locked: bool = false
 var _elapsed: float = 0.0
 var _clock_running: bool = false
@@ -470,7 +472,7 @@ func _on_waygate_reached() -> void:
 	Telemetry.track("stage_clear", stage_index(), {
 		"time": snappedf(_elapsed, 0.1),
 		"seeds": hud.seed_count,
-		"deaths": _death_serial,
+		"deaths": _deaths,
 		"best": new_best,
 	})
 	Telemetry.flush()
@@ -496,7 +498,7 @@ func return_to_map() -> void:
 		Telemetry.track("stage_quit", stage_index(), {
 			"x": roundi(player.global_position.x),
 			"elapsed": snappedf(_elapsed, 0.1),
-			"deaths": _death_serial,
+			"deaths": _deaths,
 		})
 	GameProgression.came_from_map = true
 	GameProgression.current_stage_id = stage_index()
@@ -547,6 +549,7 @@ func _kill_player() -> void:
 	})
 	if _duel != null:
 		_duel.call_off()
+	_deaths += 1
 	_death_serial += 1
 	var serial := _death_serial
 	hud.note_fall()
