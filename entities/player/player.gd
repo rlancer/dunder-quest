@@ -3,6 +3,10 @@ extends CharacterBody2D
 
 ## Side-view platformer controller.
 ## Coyote time, jump buffering, variable jump height, and pixel snapping.
+## A held jump hangs a moment at its apex; let go and the fall pulls harder,
+## so holding always carries at least as far as a plain arc and releasing
+## drops quickly. Falls top out at a terminal speed, and a rise that clips a
+## ledge corner slides around it (never around a block made to be bumped).
 
 signal respawn_requested
 
@@ -15,6 +19,17 @@ signal respawn_requested
 @export var jump_buffer_time: float = 0.15
 @export var jump_cut_multiplier: float = 0.45
 @export var stomp_bounce_velocity: float = -260.0
+## A stomp with jump held springs this high instead.
+@export var stomp_bounce_held_velocity: float = -400.0
+@export var fall_gravity_multiplier: float = 1.3
+@export var apex_gravity_multiplier: float = 0.5
+## Below this vertical speed, with jump held, the body is at its apex.
+@export var apex_threshold: float = 60.0
+@export var max_fall_speed: float = 440.0
+## How far a rise may slide sideways to clear a ledge corner, in pixels.
+@export var corner_correction: int = 5
+## How long a knock from a spell or a wizard takes the controls away.
+@export var knock_time: float = 0.3
 @export var jump_sound: AudioStream
 @export var stomp_sound: AudioStream
 
@@ -35,6 +50,7 @@ var _death_tween: Tween
 var _facing: float = 1.0
 var _step_timer: float = 0.0
 var _dead: bool = false
+var _knock_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -64,8 +80,9 @@ func _physics_process(delta: float) -> void:
 		if velocity.y > 0.0:
 			velocity.y = 0.0
 	else:
-		velocity.y += gravity * delta
+		velocity.y = minf(velocity.y + _gravity_now() * delta, max_fall_speed)
 		coyote_timer = maxf(coyote_timer - delta, 0.0)
+	_knock_timer = maxf(_knock_timer - delta, 0.0)
 
 	if controls_enabled and Input.is_action_just_pressed(&"jump"):
 		jump_buffer_timer = jump_buffer_time
@@ -86,7 +103,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y *= jump_cut_multiplier
 
 	var direction := 0.0
-	if controls_enabled:
+	if controls_enabled and _knock_timer <= 0.0:
 		direction = Input.get_axis(&"move_left", &"move_right")
 	var target_speed := direction * speed
 	var rate := acceleration if direction != 0.0 else (friction if is_on_floor() else air_resistance)
@@ -97,6 +114,8 @@ func _physics_process(delta: float) -> void:
 		_facing = -1.0
 
 	var fall_speed := velocity.y
+	if velocity.y < 0.0:
+		_slip_past_corner(delta)
 	var collided := move_and_slide()
 	if is_on_floor() and not _was_on_floor and not jumped:
 		if fall_speed > 220.0:
@@ -162,6 +181,16 @@ func revive() -> void:
 	_was_on_floor = false
 
 
+## Knocked back by a spell or a wizard: a shove, and a beat without controls.
+func knock(push: Vector2) -> void:
+	if _dead:
+		return
+	velocity = push
+	_knock_timer = knock_time
+	jump_buffer_timer = 0.0
+	camera.shake(3.0)
+
+
 func is_dead() -> bool:
 	return _dead
 
@@ -198,10 +227,11 @@ func _handle_contacts() -> void:
 		if collider.is_in_group(&"stompable") and _is_stomp(collision, collider):
 			collider.call(&"receive_stomp")
 			stomped.append(collider)
-			velocity.y = stomp_bounce_velocity
+			velocity.y = stomp_bounce_held_velocity if Input.is_action_pressed(&"jump") and controls_enabled else stomp_bounce_velocity
 			StageAudio.play(get_tree(), stomp_sound)
 			_play_squash(1.2, 0.78)
 			camera.shake(2.0)
+			Fx.hitstop(get_tree(), 0.05)
 	if not controls_enabled:
 		return
 	for index in get_slide_collision_count():
@@ -233,6 +263,39 @@ func _ask_respawn() -> void:
 		return
 	_respawn_locked = true
 	respawn_requested.emit()
+
+
+## A held jump floats for a moment at the top of its arc and falls at the
+## plain rate; without jump held, a fall pulls harder.
+func _gravity_now() -> float:
+	var held := controls_enabled and Input.is_action_pressed(&"jump")
+	if held and absf(velocity.y) < apex_threshold:
+		return gravity * apex_gravity_multiplier
+	if velocity.y > 0.0 and not held:
+		return gravity * fall_gravity_multiplier
+	return gravity
+
+
+## A rise that would clip the corner of a ledge by a few pixels slides around
+## it instead of stopping dead. Blocks that answer a head bump are left alone,
+## so a bump always lands on the block the player aimed at.
+func _slip_past_corner(delta: float) -> void:
+	var rise := Vector2(0.0, velocity.y * delta)
+	var hit := KinematicCollision2D.new()
+	if not test_move(global_transform, rise, hit):
+		return
+	var collider := hit.get_collider() as Node
+	if collider != null and collider.is_in_group(&"head_bump"):
+		return
+	var lean := signf(velocity.x)
+	for nudge in range(1, corner_correction + 1):
+		for side: float in [lean if lean != 0.0 else -1.0, -lean if lean != 0.0 else 1.0]:
+			var shift := Vector2(side * float(nudge), 0.0)
+			if test_move(global_transform, shift):
+				continue
+			if not test_move(global_transform.translated(shift), rise):
+				global_position += shift
+				return
 
 
 func _kick_up_steps(delta: float, direction: float) -> void:

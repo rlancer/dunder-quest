@@ -1,8 +1,8 @@
 class_name RangeRuler
 extends Node2D
 
-## Numbered tick marks along the floor, one per tile, so a range() can be
-## seen: each number the loop visits lights up as it lands.
+## Numbered tick marks along the floor, one per tile, so a list's cells or a
+## range() can be seen: each number lights up as the stage lands on it.
 
 const TILE := 16.0
 const TICK := Color(0.92, 0.86, 1.0, 0.85)
@@ -42,6 +42,14 @@ func light(index: int) -> void:
 	_lit[index] = true
 	if index >= 0 and index < _numbers.size():
 		_numbers[index].add_theme_color_override(&"font_color", HOT)
+	queue_redraw()
+
+
+## Unlights every tick, for a loop about to run again.
+func clear() -> void:
+	_lit.clear()
+	for label in _numbers:
+		label.add_theme_color_override(&"font_color", TICK)
 	queue_redraw()
 
 

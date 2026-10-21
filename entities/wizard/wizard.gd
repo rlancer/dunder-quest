@@ -1,14 +1,15 @@
 class_name Wizard
 extends Area2D
 
-## A dark wizard who blocks the route behind a magic barrier. Walking into his
-## zone challenges the player to his trial: the stage runs the quiz, and each
-## right answer breaks one of his wards (the pips over his name) while a wrong
-## one gets the player zapped. With the last ward broken he is banished and
-## his barrier dissolves. As the player draws near he taunts them with a line
-## that gives away the lesson's theme.
+## A dark wizard who holds the end of every stage behind a magic barrier.
+## His `WizardDuel` runs the fight: each right answer breaks one of his wards
+## (the pips over his name) and staggers him, a wrong one gets the player
+## zapped. With the last ward broken he is banished and his barrier dissolves.
+## As the player draws near he taunts them with a line that gives away the
+## lesson's theme, and mid-duel the same bubble carries his jeers.
+## Touching him knocks the player back; the duel decides what that costs.
 
-signal challenged(wizard: Wizard)
+signal touched(body: Node2D)
 
 const FRAME_TIME := 0.45
 const ORB := Vector2(-6.0, -22.0)
@@ -35,6 +36,9 @@ var wards_left: int = 1
 
 var _clock: float = 0.0
 var _bubble: Label
+## While above zero, the bubble holds a line from `say` instead of the taunt.
+var _line_time: float = 0.0
+var _flash: Tween
 
 
 func _ready() -> void:
@@ -74,6 +78,7 @@ func _pip_x(ward: int) -> float:
 func _build_bubble() -> void:
 	_bubble = Label.new()
 	_bubble.text = taunt
+	_bubble.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_bubble.add_theme_font_size_override(&"font_size", 10)
 	_bubble.add_theme_color_override(&"font_color", tint.lerp(Color.WHITE, 0.7))
 	var box := StyleBoxFlat.new()
@@ -91,8 +96,46 @@ func _build_bubble() -> void:
 	_bubble.z_index = 8
 	_bubble.modulate.a = 0.0
 	add_child(_bubble)
+	_place_bubble()
+
+
+func _place_bubble() -> void:
 	_bubble.reset_size()
-	_bubble.position = Vector2(-_bubble.size.x * 0.5 - 6.0, -62.0).round()
+	# Kept left of center so a long line never runs off the arena's right edge.
+	_bubble.position = Vector2(-_bubble.size.x + 30.0, -62.0).round()
+	_bubble.position.x = minf(_bubble.position.x, -_bubble.size.x * 0.5 - 6.0)
+
+
+## A line in his bubble for `seconds`, in place of the taunt.
+func say(text: String, seconds: float = 2.2) -> void:
+	if banished or _bubble == null:
+		return
+	_bubble.text = text
+	_place_bubble()
+	_bubble.modulate.a = 1.0
+	_line_time = seconds
+
+
+## The staff comes up and the orb flares: a spell is on its way.
+func cast() -> void:
+	if banished:
+		return
+	_glow.scale = Vector2(2.2, 2.2)
+	create_tween().tween_property(_glow, "scale", Vector2.ONE, 0.35)
+	Fx.sparks(get_parent(), global_position + ORB, tint, 6, 30.0)
+
+
+## A right answer lands: he flashes white and reels back a step.
+func stagger() -> void:
+	if banished:
+		return
+	if _flash != null:
+		_flash.kill()
+	_sprite.modulate = Color(2.0, 2.0, 2.0)
+	_flash = create_tween()
+	_flash.tween_property(_sprite, "modulate", Color.WHITE, 0.3)
+	_flash.parallel().tween_property(_sprite, "offset:x", 5.0, 0.06)
+	_flash.tween_property(_sprite, "offset:x", 0.0, 0.2).set_trans(Tween.TRANS_BACK)
 
 
 func _process(delta: float) -> void:
@@ -110,6 +153,13 @@ func _process(delta: float) -> void:
 
 
 func _update_bubble(delta: float) -> void:
+	if _line_time > 0.0:
+		_line_time -= delta
+		if _line_time <= 0.0:
+			_bubble.modulate.a = 0.0
+			_bubble.text = taunt
+			_place_bubble()
+		return
 	if taunt == "":
 		return
 	var near := false
@@ -141,21 +191,6 @@ func is_taunting() -> bool:
 	return _bubble != null and _bubble.modulate.a > 0.5
 
 
-## Zone center in world space, for tests that need to walk into it.
-func zone_position() -> Vector2:
-	return global_position + (%Zone as CollisionShape2D).position
-
-
-## World x from the zone's left edge to the barrier's right edge: the stretch
-## of floor the encounter occupies. Verifiers check it sits on one flat run.
-func blocked_span() -> Vector2:
-	var zone := %Zone as CollisionShape2D
-	var wall := %Wall as CollisionShape2D
-	var zone_half := (zone.shape as RectangleShape2D).size.x * 0.5
-	var wall_half := (wall.shape as RectangleShape2D).size.x * 0.5
-	return Vector2(zone_position().x - zone_half, wall.global_position.x + wall_half)
-
-
 func barrier_open() -> bool:
 	return _barrier.is_open()
 
@@ -166,6 +201,7 @@ func zap(target: Node2D) -> void:
 		return
 	StageAudio.play(get_tree(), zap_sound)
 	var from := global_position + ORB
+	cast()
 	var to := target.global_position + Vector2(0.0, -4.0)
 	var bolt := Line2D.new()
 	bolt.width = 2.0
@@ -224,4 +260,4 @@ func dismiss() -> void:
 func _on_body_entered(body: Node2D) -> void:
 	if banished or not body.is_in_group(&"player"):
 		return
-	challenged.emit(self)
+	touched.emit(body)

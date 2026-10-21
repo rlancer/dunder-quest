@@ -12,7 +12,11 @@ Scrolls: every `print(...)  # value` line promises its output, and the
 printed lines must match those comments in order. A scroll marked
 `"raises": "TypeError"` must end with exactly that error.
 
-The script also checks the shapes and that everything fits the 480x270 panels.
+The script also checks the shapes and that everything fits the 480x270
+screen: the duel's question strip sets the code (left) beside the four
+answers (right) at 6.4px a column, so 40 code columns and 24 answer columns
+share one 456px row, and seven code lines keep the strip clear of the
+answer blocks below it.
 
     python tools/verify_quiz.py
 """
@@ -30,9 +34,9 @@ BANK = ROOT / "data" / "lessons.json"
 MIN_VERSION = (3, 12)
 MIN_PER_STAGE = 6
 MAX_TRIAL = 5
-MAX_CODE_LINES = 8
+MAX_CODE_LINES = 7
 MAX_CODE_COLS = 40
-MAX_OPTION_COLS = 28
+MAX_OPTION_COLS = 24
 MAX_EXPLANATION = 88
 MAX_HINT = 64
 MIN_SCROLLS = 3

@@ -2,7 +2,7 @@ extends Node
 
 ## Drives the menus with real input events through real scene changes:
 ## title -> map -> Amber Hollow -> pause/resume -> fall + respawn
-## -> wizard quiz (one wrong answer, then three different questions answered right)
+## -> wizard duel (one wrong bump, then three different questions bumped right)
 ## -> pause -> world map -> Esc -> title.
 ## godot --headless --path . res://tests/flow_check.tscn   ->  FLOW result=ok
 
@@ -24,7 +24,6 @@ class _Driver extends Node:
 	var _step := 0
 	var _wait := 0
 	var _fails: PackedStringArray = []
-	var _quiz_taps := 0
 	var _asked: PackedStringArray = []
 	var _first_code := ""
 	var _clock_at_open := 0.0
@@ -65,61 +64,56 @@ class _Driver extends Node:
 					_expect(not bool(player.call(&"is_dead")), "player revived")
 					_expect(player.global_position.distance_to(Vector2(56, 214)) < 4.0, "back at spawn")
 					_expect(hud.falls == 1, "fall counted (got %d)" % hud.falls)
-					# Step into the wizard's zone.
-					var wizard := _wizard(scene)
-					_expect(wizard != null and not wizard.barrier_open(), "wizard bars the way")
-					if wizard != null:
-						player.global_position = Vector2(wizard.zone_position().x, 214.0)
+					# Walk into the wizard's arena.
+					var duel := _duel(scene)
+					_expect(duel != null and not duel.wizard.barrier_open(), "wizard bars the way")
+					if duel != null:
+						player.global_position = Vector2(duel.global_position.x + 80.0, 214.0)
 					_next()
 			5:
-				var hud := scene.get_node(^"Hud") as StageHud
+				var duel := _duel(scene)
 				var player := scene.get_node(^"Player") as PlayerBody
-				if hud.is_quiz_asking():
-					if _first_code == "":
-						_first_code = str(hud.quiz_question().get("code", ""))
-						_clock_at_open = float(scene.get(&"_elapsed"))
-						_expect(not player.controls_enabled, "quiz freezes controls")
-					# Pick a wrong option on purpose.
-					if _steer_quiz(hud, posmod(hud.quiz_answer_index() + 1, 4)):
-						_next()
+				if duel.is_asking() and _wait > 10:
+					_first_code = str(duel.question().get("code", ""))
+					_clock_at_open = float(scene.get(&"_elapsed"))
+					_expect(player.controls_enabled, "the duel leaves the controls live")
+					_expect(not (duel.get_node(^"Seal") as ArcaneBarrier).is_open(), "the seal closes behind the player")
+					# Bump a wrong answer on purpose.
+					duel.block(posmod(duel.answer_index() + 1, 4)).receive_head_bump()
+					_next()
 			6:
-				var hud := scene.get_node(^"Hud") as StageHud
+				var duel := _duel(scene)
 				if _wait == 20:
-					_expect(hud.is_quiz_open() and not hud.is_quiz_asking(), "wrong answer shows a verdict")
-					_expect(not _wizard(scene).barrier_open(), "barrier holds after a wrong answer")
-					_expect(_wizard(scene).wards_left == _wizard(scene).ward_total, "a wrong answer breaks no ward")
-				elif _wait == 40:
-					# Skip the rest of the verdict with confirm.
-					_tap(&"confirm")
-				elif _wait > 44 and hud.is_quiz_asking():
-					_expect(str(hud.quiz_question().get("code", "")) != _first_code, "a different question follows")
+					_expect(duel.is_engaged() and not duel.is_asking(), "wrong answer shows a verdict")
+					_expect(not duel.wizard.barrier_open(), "barrier holds after a wrong answer")
+					_expect(duel.wizard.wards_left == duel.wizard.ward_total, "a wrong answer breaks no ward")
+					_expect(duel.sparks == WizardDuel.SPARKS - 1, "a wrong answer costs a spark")
+				elif _wait > 20 and duel.is_asking():
+					_expect(str(duel.question().get("code", "")) != _first_code, "a different question follows")
 					_next()
 			7:
 				# Answer right until the trial is done; each answer is a fresh question.
-				var hud := scene.get_node(^"Hud") as StageHud
-				if hud.is_quiz_asking() and _wait > 2:
-					var code := str(hud.quiz_question().get("code", ""))
+				var duel := _duel(scene)
+				if duel.is_asking() and _wait > 2:
+					var code := str(duel.question().get("code", ""))
 					if not _asked.has(code):
 						_asked.append(code)
-				if _steer_quiz(hud, hud.quiz_answer_index()) and _wizard(scene).wards_left <= 1:
-					_next()
+					duel.block(duel.answer_index()).receive_head_bump()
+					if duel.wizard.wards_left <= 0:
+						_next()
 			8:
-				var hud := scene.get_node(^"Hud") as StageHud
-				var player := scene.get_node(^"Player") as PlayerBody
-				var wizard := _wizard(scene)
-				if not hud.is_quiz_open() and wizard.barrier_open():
-					_expect(wizard.banished, "wizard banished")
-					_expect(_asked.size() == wizard.ward_total, "each ward took its own question (%d asked)" % _asked.size())
-					# The quiz ran for seconds; a frame or two of slack covers the close.
+				var duel := _duel(scene)
+				if duel.is_won():
+					_expect(duel.wizard.banished and duel.wizard.barrier_open(), "wizard banished")
+					_expect(_asked.size() == duel.wizard.ward_total, "each ward took its own question (%d asked)" % _asked.size())
+					# The duel ran for seconds; a frame or two of slack covers the close.
 					var drift := float(scene.get(&"_elapsed")) - _clock_at_open
-					_expect(absf(drift) < 0.1, "clock held during the quiz (drift %.2f)" % drift)
+					_expect(absf(drift) < 0.1, "clock held during the duel (drift %.2f)" % drift)
 					_next()
-				elif _wait == 30:
-					_expect(not hud.is_quiz_asking(), "right answer closes the question")
 			9:
 				var player := scene.get_node(^"Player") as PlayerBody
 				if _wait == 20:
-					_expect(player.controls_enabled, "controls return after the quiz")
+					_expect(player.controls_enabled, "controls stay live after the duel")
 					_expect(float(scene.get(&"_elapsed")) > _clock_at_open, "clock runs again")
 					_tap(&"pause")
 				elif _wait == 26:
@@ -135,25 +129,10 @@ class _Driver extends Node:
 				if _scene_is(scene, "TitleScreen") and _wait > 10:
 					_finish()
 
-	## Steps the real selection with move_right taps, then presses confirm.
-	## True once confirm has been sent.
-	func _steer_quiz(hud: StageHud, target: int) -> bool:
-		if not hud.is_quiz_asking():
-			return false
-		_quiz_taps += 1
-		if _quiz_taps % 6 != 0:
-			return false
-		if hud.quiz_selected_index() != target:
-			_tap(&"move_right")
-			return false
-		_tap(&"confirm")
-		_quiz_taps = 0
-		return true
-
-	func _wizard(scene: Node) -> Wizard:
-		for node in scene.get_tree().get_nodes_in_group(&"wizard"):
+	func _duel(scene: Node) -> WizardDuel:
+		for node in scene.get_tree().get_nodes_in_group(&"wizard_duel"):
 			if scene.is_ancestor_of(node):
-				return node as Wizard
+				return node as WizardDuel
 		return null
 
 	func _scene_is(scene: Node, scene_name: String) -> bool:

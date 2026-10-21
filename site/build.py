@@ -34,11 +34,11 @@ STAGES: list[dict] = [
     {
         "id": 1, "slug": "amber-hollow", "name": "Amber Hollow", "wizard": "Ash Hexer",
         "x": 78, "y": 94, "tint": "#8cd9ff",
-        "shot": "tour_amber_index.png",
-        "puzzle_title": "The index row",
-        "puzzle_code": "loot = row[2]",
-        "puzzle": "Four blocks marked ? hang over the start of the trail, under a slate that asks for row[2]. Each bump shows that block's index and what it holds. Only one of them gives you the bonus scroll, and it isn't the second block.",
-        "spoiler": "Count from zero: row[0], row[1], row[2]. The third block holds the scroll.",
+        "shot": "tour_amber_slice.png",
+        "puzzle_title": "The slice bridge",
+        "puzzle_code": "bridge = planks[?]\n# the pit is cells 1 to 10",
+        "puzzle": "Near the end of the stage, a pit ten tiles wide is too far to jump. A ruler numbers its cells like a list, from 0 on the near edge to 11 on the far edge. Four slice blocks hang in front of it: 1:10, 1:11, 2:11 and :10. Bumping one lays planks on the cells that slice takes. A bridge holds only if it reaches both edges, so a slice that misses even one pit cell crumbles. (Over the start of the stage, a row of ? blocks under a slate reading row[2] hides a bonus scroll.)",
+        "spoiler": "planks[1:11] takes cells 1 to 10, because a slice stops just before its second number. planks[1:10] stops at cell 9 and leaves a gap. For the bonus scroll, count from zero: row[2] is the third block.",
     },
     {
         "id": 2, "slug": "cinder-span", "name": "Cinder Span", "wizard": "Cinder Warlock",
@@ -53,10 +53,10 @@ STAGES: list[dict] = [
         "id": 3, "slug": "kiln-mouth", "name": "Kiln Mouth", "wizard": "Kiln Archmage",
         "x": 392, "y": 110, "tint": "#80ffa6",
         "shot": "tour_kiln_forge.png",
-        "puzzle_title": "The loop forge",
-        "puzzle_code": "for i in range(1, 9, 2):\n    seed(i)",
-        "puzzle": "A forge block runs a for loop over a numbered ruler on the floor. Bump it and it drops a seed on every number the loop visits, one beat at a time, so you can watch range step along.",
-        "spoiler": "It lights 1, 3, 5 and 7. range stops before 9, so 9 never lights.",
+        "puzzle_title": "The loop lift",
+        "puzzle_code": "for i in ?:\n    lift.rise()  # one notch\nA: range(1, 9, 3)\nB: range(4)\nC: range(10, 13)",
+        "puzzle": "The kiln wall is ten tiles of sheer brick. At its foot, an iron lift runs a for loop and rises one notch for every lap, and a gauge on the wall numbers the notches. Three forge blocks each load a different range into the lift. Stand on the plate to run the loop and watch i count off each lap. You need four notches to jump onto the wall.",
+        "spoiler": "range(4) runs four laps: 0, 1, 2, 3. The other two have bigger numbers but only three laps each: 1, 4, 7 and 10, 11, 12. Count the laps, not the size of the numbers.",
     },
     {
         "id": 4, "slug": "smelters-fork", "name": "Smelter's Fork", "wizard": "Smelt Oracle",
@@ -102,7 +102,7 @@ IMAGES = {
     "icon.svg": "icon.svg",
 }
 SHOTS = [
-    "tour_amber_scroll.png", "tour_amber_quiz.png", "tour_amber_hint2.png",
+    "tour_amber_scroll.png", "tour_amber_duel.png", "tour_amber_hint2.png",
     "tour_amber_book.png", "tour_bridge_built.png",
 ]
 FONTS = {
@@ -252,7 +252,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <div class="hero-copy">
     <h1>Ember Trail</h1>
     <p class="tag">A platformer where every stage teaches you a piece of Python.</p>
-    <p class="hero-sub">Guide a pebble across six stages to the kiln. Read the lore scrolls on the way, solve each stage's puzzle with real code, then beat the wizard blocking the exit by answering his questions.</p>
+    <p class="hero-sub">Guide a pebble across six stages to the kiln. Read the lore scrolls on the way, and use real code to open the path through each stage. Then duel the wizard at the exit: jump into the block with the right answer while you dodge his spells.</p>
     <div class="cta">
       <a class="btn" href="{prefix}play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#download">Download for desktop</a>
@@ -279,9 +279,9 @@ def build_home(bank: dict, prefix: str = "") -> str:
     <li><img src="{prefix}static/img/shots/tour_amber_scroll.png" alt="A lore scroll card titled Counting from Zero, showing a short list example" width="480" height="270" loading="lazy">
       <h3>Read the scrolls</h3><p>Lore scrolls lie along the route. Touch one and it opens a card with a few lines of code and the idea behind them. Every scroll you read goes into your Spellbook.</p></li>
     <li><img src="{prefix}static/img/shots/tour_bridge_built.png" alt="A plank bridge built by calling span(5) across the Bellows Bridge chasm" width="480" height="270" loading="lazy">
-      <h3>Solve the puzzle</h3><p>Each stage has a gadget that runs real Python. You bump the right index, store keys in hash buckets, or call the function that builds a bridge the exact length of the gap.</p></li>
-    <li><img src="{prefix}static/img/shots/tour_amber_quiz.png" alt="The Ash Hexer's quiz panel asking what a snippet prints" width="480" height="270" loading="lazy">
-      <h3>Face the wizard</h3><p>A wizard blocks every exit. Each right answer breaks one of his wards. A wrong answer gets you zapped and a new question. He'll give you a hint if you ask.</p></li>
+      <h3>Code the way forward</h3><p>The only way through each stage is a gadget that runs real Python. You slice planks into a bridge, store keys in hash buckets, load a loop into a lift, or call the function that builds a bridge the exact length of the gap. Only the right code gets you across.</p></li>
+    <li><img src="{prefix}static/img/shots/tour_amber_duel.png" alt="The Ash Hexer's duel: his question across the top of the screen and four lettered answer blocks over the arena floor" width="480" height="270" loading="lazy">
+      <h3>Duel the wizard</h3><p>A wizard holds every exit. His question shows at the top of the screen, and you answer by jumping into the lettered block while you dodge his spells. Each right answer breaks a ward. A wrong one gets you zapped and a new question. He'll give you a hint if you ask.</p></li>
   </ol>
   <p class="count"><b>{total_s}</b> lore scrolls · <b>{total_q}</b> trial questions · every snippet checked against real Python</p>
 </section>
@@ -355,7 +355,7 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
 
   <section class="section" aria-labelledby="trial-h">
     <h2 id="trial-h">Practice the {esc(stage['wizard'])}'s trial</h2>
-    <p class="lede">In the game, you need {lesson['trial']} right answers to banish the {esc(stage['wizard'])}. These are his questions, drawn from all {len(questions)} in his bank. The hints work the same as in the game: ask once for his riddle, and ask again for him to rule out a wrong answer.</p>
+    <p class="lede">In the game, the {esc(stage['wizard'])} duels you in a sealed arena. His question shows across the top of the screen, and you answer by jumping up into the lettered block, A to D, while you dodge his spells. You need {lesson['trial']} right answers to banish him. These are his questions, drawn from all {len(questions)} in his bank. The hints work the same as in the game: ask once for his riddle, and ask again for him to rule out a wrong answer.</p>
     <div class="trial" data-trial>
       <noscript><p>The practice trial needs JavaScript. You can still play the game to sit the real one.</p></noscript>
     </div>
@@ -394,7 +394,7 @@ def build_lessons_index(bank: dict, prefix: str) -> str:
 def build_guide(prefix: str) -> str:
     controls = [
         ("Move", "A / D or ← / →", "D-pad or left stick"),
-        ("Jump", "Space, W or ↑ (hold to jump higher)", "A / Cross"),
+        ("Jump", "Space, W or ↑ (hold to jump higher and float)", "A / Cross"),
         ("Confirm, next card", "Space or Enter", "A / Cross"),
         ("Pause and Spellbook", "Esc or P", "Start / Options"),
         ("Back to world map", "M", "LB / L1"),
@@ -409,8 +409,8 @@ def build_guide(prefix: str) -> str:
         ("copperling.png", 20, 12, "Copperling", "Walks back and forth on its ledge. Landing on it beats it. Touching it from the side knocks you out."),
         ("tile_ash.png", 16, 16, "Ash shelf", "Cracks under your feet, then falls. Keep moving. It comes back when you respawn."),
         ("lantern_lit.png", 12, 28, "Lantern", "A checkpoint. Walk past it to light it, and that's where you come back after a fall."),
-        ("waygate.png", 24, 40, "Waygate", "The exit. It's behind the wizard's barrier, so you have to pass his trial before you can reach it."),
-        ("wizard.png", 18, 28, "Wizard", "Each stage has one. Walk up to him to start his trial, and see the section below."),
+        ("waygate.png", 24, 40, "Waygate", "The exit. It's behind the wizard's barrier, so you have to win his duel before you can reach it."),
+        ("wizard.png", 18, 28, "Wizard", "Each stage ends in his arena. Walk in and the duel starts. See the section below. Touching him knocks you back."),
     ]
     cards = "".join(
         f'<li><span class="sprite"><img src="{prefix}static/img/{img}" alt="" width="{w * 3}" height="{h * 3}"></span><div><h3>{name}</h3><p>{text}</p></div></li>'
@@ -430,7 +430,7 @@ def build_guide(prefix: str) -> str:
     <thead><tr><th scope=col>Action</th><th scope=col>Keyboard</th><th scope=col>Gamepad</th></tr></thead>
     <tbody>{rows}</tbody>
   </table></div>
-  <p class="fine">In the browser, the game can't play sound until you press a key or click once. The title screen takes care of that with your first press.</p>
+  <p class="fine">Holding jump floats you for a moment at the top and carries you further. Let go and you drop fast. In the browser, the game can't play sound until you press a key or click once. The title screen takes care of that with your first press.</p>
 </section>
 
 <section class="section" aria-labelledby="things-h">
@@ -440,14 +440,15 @@ def build_guide(prefix: str) -> str:
 </section>
 
 <section class="section" aria-labelledby="lessons-h">
-  <h2 id="lessons-h">Lessons, puzzles and the wizard's trial</h2>
+  <h2 id="lessons-h">Lessons, puzzles and the wizard's duel</h2>
   <div class="two">
-    <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_hint2.png" alt="The wizard's quiz with one wrong option dimmed after a second hint" width="480" height="270" loading="lazy"><figcaption>After a second hint, the wizard rules out one wrong answer.</figcaption></figure>
+    <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_hint2.png" alt="The wizard's duel with one wrong answer dimmed and its block cracked after a second hint" width="480" height="270" loading="lazy"><figcaption>After a second hint, the wizard rules out one wrong answer and its block cracks.</figcaption></figure>
     <div>
       <p><b>Lore scrolls</b> teach the stage's topic. Touching one pauses the game and opens its card. Press Space to keep going.</p>
-      <p><b>The stage puzzle</b> uses that topic. Slates in the scenery show its code, and blocks you bump from below act it out. The <a href="{prefix}lessons/">lesson pages</a> explain each one.</p>
-      <p><b>The wizard's trial</b> starts when you walk up to him. Pick an answer with move and Jump. Each right answer breaks one ward, the pips above his name. A wrong answer zaps you and he asks a different question. He mostly asks about scrolls you've read, so reading them on the way pays off.</p>
-      <p><b>Hints:</b> press H once for his riddle and a reminder of the scroll the question comes from. Press it again and he rules out one wrong option. There's no third hint.</p>
+      <p><b>The stage puzzle</b> is the way forward. Slates in the scenery show its code, and blocks you bump from below run it. Only the right answer builds the path. The <a href="{prefix}lessons/">lesson pages</a> explain each one.</p>
+      <p><b>The wizard's duel</b> starts when you walk into his arena at the end of the stage. A seal closes behind you, his question appears across the top of the screen, and four lettered blocks hang over the floor. Jump up into the block with the right answer. Each right answer breaks one ward, the pips above his name. A wrong answer cracks that block, zaps you, and brings a different question. He mostly asks about scrolls you've read, so reading them on the way pays off.</p>
+      <p><b>His spells:</b> after giving you a moment to read, he casts. Ward waves roll along the floor, so jump them. From Kiln Mouth on, hexes mark a spot and then strike, so step aside. You have three sparks, shown next to his name. A spell, a zap or bumping into him costs one. Lose all three and you wake at the lantern outside, but the wards you broke stay broken. The clock stops for the whole duel.</p>
+      <p><b>Hints:</b> press H once for his riddle and a reminder of the scroll the question comes from. Press it again and he rules out one wrong answer, and its block cracks. There's no third hint.</p>
     </div>
   </div>
 </section>
@@ -468,12 +469,9 @@ def build_guide(prefix: str) -> str:
 
 def build_admin(prefix: str) -> str:
     tests = [
-        ("tests/flow_check.tscn", "Drives the menus through real scene changes: title, map, Amber Hollow, pause, a fall and respawn, a full wizard trial, and back. Prints <code>FLOW result=ok</code>."),
-        ("tests/lesson_check.tscn", "Drives each stage's lesson gadgets with real input: scroll cards, the index row, the vault, the forges, the gates, hints and the Spellbook."),
-        ("tests/high_country_check.tscn", "A bot plays stages 4 to 6 from start to finish, solving each gadget and sitting each trial."),
-        ("tests/playtest.tscn", "A bot plays stages 1 to 3 section by section and saves screenshots of key moments to <code>tests/shots</code>."),
-        ("tests/span_verify.tscn", "Checks that Cinder Span's route can be completed, using real jump heights."),
-        ("tests/kiln_verify.tscn", "The same route check for Kiln Mouth."),
+        ("tests/flow_check.tscn", "Drives the menus through real scene changes: title, map, Amber Hollow, pause, a fall and respawn, a full wizard duel, and back. Prints <code>FLOW result=ok</code>."),
+        ("tests/lesson_check.tscn", "Drives each stage's lesson pieces with real input: scroll cards, the index row, the duel (seal, clock, hints, sparks and a knockout), the vault, the kiln lift and the Spellbook."),
+        ("tests/trail_check.tscn", "A bot plays all six stages start to finish with real input. It reads every card, solves each gadget, fights each duel while dodging spells, and chains through the waygates. Then it checks that the wrong answers really fail and that each stage's seeds match the map. Add <code>-- --from=4</code> to start later, or <code>-- --checks</code> for just the checks."),
         ("tests/look_tour.tscn", "Opens each screen in a real window and saves a screenshot to <code>tests/shots/tour_*.png</code>. Add <code>-- --only=fork</code> to capture only matching steps."),
     ]
     test_rows = "".join(f"<tr><th scope=row><code>{t}</code></th><td>{d}</td></tr>" for t, d in tests)

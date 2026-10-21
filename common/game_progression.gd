@@ -28,8 +28,7 @@ static var _total_deaths: int = 0
 static var _scrolls: Dictionary = {}
 static var _initialized: bool = false
 
-## max_seeds counts the loose seeds, the one inside each stage's cache stone,
-## and any a lesson gadget hands out (Kiln Mouth's loop forge drops four).
+## max_seeds counts the loose seeds and the one inside each stage's cache stone.
 const STAGES: Array[Dictionary] = [
 	{
 		"id": 1,
@@ -37,7 +36,7 @@ const STAGES: Array[Dictionary] = [
 		"subtitle": "Lesson 1: Lists & Indexing",
 		"scene": "res://levels/level_01.tscn",
 		"map_pos": Vector2(96.0, 155.0),
-		"max_seeds": 6,
+		"max_seeds": 8,
 	},
 	{
 		"id": 2,
@@ -53,7 +52,7 @@ const STAGES: Array[Dictionary] = [
 		"subtitle": "Lesson 3: Loops & range",
 		"scene": "res://levels/level_03.tscn",
 		"map_pos": Vector2(384.0, 155.0),
-		"max_seeds": 8,
+		"max_seeds": 7,
 	},
 	{
 		"id": 4,

@@ -1,15 +1,17 @@
 extends StageLevel
 
 ## Cinder Span. Lesson 2: Dictionaries & Hashing.
-## Short floors, a full-jump pit, a tap-only pad, and a low roof.
+## Short floors, a low-roofed pit, a stair of planks over the long drop.
 ## Ember tiles kill on touch. Ash shelves crack, then fall. Both reset on respawn.
 ## The longest stage, so two lanterns hold the respawn point.
 ##
 ## Two rune keys lie on the route. The vault near the end has four bucket
 ## blocks; bumping the bucket a key hashes to stores it and lights a lock on
-## the door. With both stored the door opens, and the Cinder Warlock waits past it.
+## the door. With both stored the door opens, and the Cinder Warlock duels in
+## the arena past it.
 
-const WIDTH := 187
+const WIDTH := 212
+const ARENA := 176
 const VAULT_TINT := Color(1.0, 0.8, 0.36)
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
@@ -64,10 +66,10 @@ func _paint_stage() -> void:
 		Vector2i(20, 23),
 		Vector2i(27, 28),
 		Vector2i(35, 42),
-		Vector2i(47, 51),
+		Vector2i(46, 51),
 		Vector2i(59, 62),
 		Vector2i(73, 80),
-		Vector2i(106, 109),
+		Vector2i(104, 109),
 		Vector2i(113, 116),
 		Vector2i(121, 125),
 		Vector2i(132, 136),
@@ -81,12 +83,10 @@ func _paint_stage() -> void:
 	_paint_ember(127, 130, false)
 	_paint_solid(52, 58, 15)
 	_paint_roof(40, 46, 10)
-	_paint_roof(79, 82, 10)
-	_paint_row(83, 85, 13, StageTileset.ONE_WAY)
-	_paint_row(88, 91, 12, StageTileset.ONE_WAY)
-	_paint_row(93, 96, 9, StageTileset.SLAB)
-	_paint_row(95, 98, 14, StageTileset.ONE_WAY)
-	_paint_row(101, 103, 14, StageTileset.ONE_WAY)
+	# Planks up and over the long drop, then down to the far ground.
+	_paint_row(83, 86, 12, StageTileset.ONE_WAY)
+	_paint_row(90, 93, 11, StageTileset.ONE_WAY)
+	_paint_row(97, 100, 12, StageTileset.ONE_WAY)
 
 
 func _spawn_actors() -> void:
@@ -99,9 +99,9 @@ func _spawn_actors() -> void:
 	_spawn_cache(Vector2(2248, 152))
 	_spawn(clay_brick_scene, Vector2(2392, 152))
 	var seed_points: Array[Vector2] = [
-		Vector2(1496, 132),
-		Vector2(1512, 132),
-		Vector2(1536, 132),
+		Vector2(1456, 150),
+		Vector2(1472, 150),
+		Vector2(1488, 150),
 	]
 	for point in seed_points:
 		_bind_seed(_spawn(emberseed_scene, point))
@@ -111,9 +111,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(2128, 222), "dict_get")
 	_spawn_scroll(Vector2(2176, 222), "dict_unhashable")
 	_build_vault()
-	# The final exam, on the long last run past the vault.
-	_spawn_wizard(Vector2(2800, 224), "Cinder Warlock", Color(0.95, 0.55, 1.0))
-	_spawn_gate(Vector2(2904, 224))
+	_build_arena(ARENA, "Cinder Warlock", Color(0.95, 0.55, 1.0))
 
 
 func _build_vault() -> void:

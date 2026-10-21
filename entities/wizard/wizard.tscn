@@ -24,7 +24,7 @@ blend_mode = 1
 blend_mode = 1
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_zone"]
-size = Vector2(40, 40)
+size = Vector2(14, 26)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
 size = Vector2(8, 256)
@@ -63,9 +63,9 @@ theme_override_font_sizes/font_size = 10
 text = "Dark Wizard"
 horizontal_alignment = 1
 
-[node name="Zone" type="CollisionShape2D" parent="."]
+[node name="Body" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(-26, -20)
+position = Vector2(0, -13)
 shape = SubResource("RectangleShape2D_zone")
 
 [node name="Barrier" type="StaticBody2D" parent="."]

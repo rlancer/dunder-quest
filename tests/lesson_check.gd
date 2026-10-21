@@ -2,14 +2,18 @@ extends Node
 
 ## Drives each stage's lesson pieces with real bodies and real input events:
 ## Amber Hollow  - a scroll card pauses and resumes play, a known scroll does
-##                 not, the index row pays out only for row[2], the wizard asks
-##                 a trial of three (each right answer breaks a ward), questions
-##                 spread across scrolls, a thin pool widens to the whole lesson,
-##                 about read scrolls, both hint tiers, and the Spellbook pages.
+##                 not, the index row pays out only for row[2], and the duel:
+##                 walking in seals the arena and holds the clock, the wizard
+##                 asks about read scrolls, a thin pool widens to the whole
+##                 lesson, both hint tiers (the second cracks a wrong block),
+##                 a wrong bump costs a spark and brings a new question, each
+##                 right bump breaks a ward, spells hurt, and losing every
+##                 spark knocks the player out with the wards kept. Then the
+##                 Spellbook pages.
 ## Cinder Span   - buckets refuse without keys and for the wrong key, keys go
 ##                 into hash(key) % 4, and the door opens once both are stored.
-## Kiln Mouth    - the forge counts in the seed total and drops seeds on
-##                 range(1, 9, 2) along the ruler, and never on 9.
+## Kiln Mouth    - each forge loads its range into the lift, which runs only
+##                 when ridden, one notch per lap, and a new loop sinks it first.
 ## godot --headless --path . res://tests/lesson_check.tscn   ->  LESSON result=ok
 
 const AMBER := preload("res://levels/level_01.tscn")
@@ -81,19 +85,27 @@ func _check_amber() -> void:
 
 	# A scroll already in the Spellbook is picked up without a card.
 	GameProgression.learn_scroll("list_negative")
-	_place(Vector2(288.0, FLOOR_Y))
+	_place(Vector2(488.0, FLOOR_Y - 32.0))
 	await _frames(4)
 	_expect(not hud.is_card_open(), "a known scroll opens no card")
 	_expect(_scroll("list_negative") == null, "a known scroll is still picked up")
 
-	# The wizard only asks about scrolls the player has read.
+	# Walking into the arena seals it and starts the duel.
 	GameProgression.learn_scroll("list_slice")
-	var wizard := get_tree().get_first_node_in_group(&"wizard") as Wizard
-	_place(Vector2(wizard.zone_position().x, FLOOR_Y))
-	await _until(func() -> bool: return hud.is_quiz_asking(), 60)
-	_expect(hud.is_quiz_asking(), "wizard opens the quiz")
-	var question := hud.quiz_question()
+	var duel := _stage.duel()
+	var wizard := duel.wizard
+	_expect(wizard.ward_total == Lessons.trial(1) and Lessons.trial(1) == 3, "the Ash Hexer's trial is three questions")
+	_place(Vector2(duel.global_position.x + 80.0, FLOOR_Y))
+	await _until(func() -> bool: return duel.is_asking(), 180)
+	_expect(duel.is_asking() and hud.is_duel_open(), "the duel opens its question strip")
+	var seal := duel.get_node(^"Seal") as ArcaneBarrier
+	_expect(not seal.is_open(), "the seal rises behind the player")
+	var clock := float(_stage.get(&"_elapsed"))
+	await _frames(30)
+	_expect(is_equal_approx(float(_stage.get(&"_elapsed")), clock), "the clock holds during the duel")
+	var question := duel.question()
 	_expect(GameProgression.knows_scroll(str(question.get("scroll", ""))), "question draws on a read scroll (%s)" % question.get("scroll", ""))
+	_expect(hud.duel_status() == str(question.get("prompt", "")), "the strip shows the prompt (got %s)" % hud.duel_status())
 
 	var narrow := WizardQuiz.for_stage(1)
 	narrow.focus(PackedStringArray(["list_zero"]))
@@ -113,42 +125,71 @@ func _check_amber() -> void:
 	for _ask in 10:
 		widened = widened or thin.next_question().get("scroll") != "list_slice"
 	_expect(widened, "too few read questions for a trial widens to the whole lesson")
-	_expect(wizard.ward_total == Lessons.trial(1) and Lessons.trial(1) == 3, "the Ash Hexer's trial is three questions")
-	_expect(hud.quiz_progress() == Vector2i(1, 3), "the quiz opens on question 1 of 3 (got %s)" % hud.quiz_progress())
 
-	# Hint one: the riddle and the scroll. Hint two: one wrong option dims.
+	# Hint one: the riddle and the scroll. Hint two: a wrong block cracks.
 	await _tap(&"hint")
-	var verdict := (hud.get_node("%Verdict") as Label).text
-	var detail := (hud.get_node("%Explanation") as Label).text
-	_expect(verdict.contains(str(question.get("hint", "?"))), "first hint whispers the riddle")
+	var speech := hud.duel_speech()
+	_expect(speech.contains(str(question.get("hint", "?"))), "first hint whispers the riddle")
 	var scroll_title := str(Lessons.scroll(str(question.get("scroll", ""))).get("title", "?"))
-	_expect(detail.contains(scroll_title), "first hint names the scroll")
-	_expect(hud.quiz_dimmed().is_empty(), "first hint dims nothing")
+	_expect(speech.contains(scroll_title), "first hint names the scroll")
+	_expect(hud.duel_dimmed().is_empty() and _cracked(duel).is_empty(), "first hint cracks nothing")
 	await _tap(&"hint")
-	var dimmed := hud.quiz_dimmed()
-	_expect(dimmed.size() == 1 and int(dimmed[0]) != hud.quiz_answer_index(), "second hint dims one wrong option")
+	var cracked := _cracked(duel)
+	_expect(cracked.size() == 1 and cracked[0] != duel.answer_index(), "second hint cracks one wrong block")
+	_expect(hud.duel_dimmed() == cracked, "the strip dims the same answer")
 	await _tap(&"hint")
-	_expect(hud.quiz_dimmed().size() == 1 and hud.hints_used == 2, "no third hint (used %d)" % hud.hints_used)
-	# Selection never rests on the dimmed option.
-	for _step in 4:
-		await _tap(&"move_right")
-		_expect(not dimmed.has(hud.quiz_selected_index()), "selection skips the dimmed option")
-	while hud.quiz_selected_index() != hud.quiz_answer_index():
-		await _tap(&"move_right")
-	await _tap(&"confirm")
+	_expect(_cracked(duel).size() == 1 and hud.hints_used == 2, "no third hint (used %d)" % hud.hints_used)
+	duel.block(cracked[0]).receive_head_bump()
+	await _frames(2)
+	_expect(duel.is_asking() and duel.answers == 0, "a cracked block is no answer")
+
+	# A wrong bump: zapped, a spark gone, the block cracked, a fresh question.
+	var first_code := str(question.get("code", ""))
+	var wrong := posmod(duel.answer_index() + 1, 4)
+	if wrong == cracked[0]:
+		wrong = posmod(wrong + 1, 4)
+	duel.block(wrong).receive_head_bump()
+	await _frames(2)
+	_expect(not duel.is_asking() and duel.sparks == WizardDuel.SPARKS - 1, "a wrong answer costs a spark (left %d)" % duel.sparks)
+	_expect(duel.block(wrong).cracked and wizard.wards_left == 3, "a wrong answer cracks its block and breaks no ward")
+	_expect(hud.duel_status().begins_with("Zapped!"), "the strip says zapped (got %s)" % hud.duel_status())
+	await _until(func() -> bool: return duel.is_asking(), 400)
+	_expect(str(duel.question().get("code", "")) != first_code, "a different question follows")
+	_expect(_cracked(duel).is_empty(), "blocks mend for the new question")
+
+	# A right bump breaks one ward; the barrier holds while wards remain.
+	duel.block(duel.answer_index()).receive_head_bump()
 	await _frames(4)
-	_expect(not wizard.banished and wizard.wards_left == 2, "one right answer breaks one ward (left %d)" % wizard.wards_left)
+	_expect(wizard.wards_left == 2, "one right answer breaks one ward (left %d)" % wizard.wards_left)
 	_expect(not wizard.barrier_open(), "the barrier holds while wards remain")
-	await _until(func() -> bool: return hud.is_quiz_asking(), 300)
-	_expect(hud.quiz_progress() == Vector2i(2, 3), "the next question is 2 of 3 (got %s)" % hud.quiz_progress())
-	_expect(hud.quiz_dimmed().is_empty() and hud.hints_used == 2, "hints start over on the new question")
+	await _until(func() -> bool: return duel.is_asking(), 400)
+
+	# His spells hurt once per grace period; the last spark knocks the player out.
+	var falls := hud.falls
+	await _frames(int(WizardDuel.INVULNERABLE * 60.0) + 4)
+	duel.call(&"_on_spell_hit", _stage.player, _stage.player)
+	duel.call(&"_on_spell_hit", _stage.player, _stage.player)
+	_expect(duel.sparks == WizardDuel.SPARKS - 2, "a spell costs one spark, then grace (left %d)" % duel.sparks)
+	await _frames(int(WizardDuel.INVULNERABLE * 60.0) + 4)
+	duel.call(&"_on_spell_hit", _stage.player, _stage.player)
+	await _until(func() -> bool: return hud.falls > falls, 30)
+	_expect(hud.falls == falls + 1 and not duel.is_engaged(), "the last spark knocks the player out")
+	await _until(func() -> bool: return not _stage.player.is_dead() and _stage.player.controls_enabled and _stage.player.global_position.x < duel.global_position.x, 180)
+	_expect(seal.is_open() and not hud.is_duel_open(), "a knockout drops the seal and the strip")
+	_expect(_stage.player.global_position.x < duel.global_position.x, "the player wakes at the lantern outside")
+	_expect(wizard.wards_left == 2, "broken wards stay broken (left %d)" % wizard.wards_left)
+
+	# Walking back in starts again with full sparks; two right answers end it.
+	_place(Vector2(duel.global_position.x + 80.0, FLOOR_Y))
+	await _until(func() -> bool: return duel.is_asking(), 240)
+	_expect(duel.sparks == WizardDuel.SPARKS, "sparks refill for a new attempt")
 	for _round in 2:
-		await _until(func() -> bool: return hud.is_quiz_asking(), 300)
-		while hud.quiz_selected_index() != hud.quiz_answer_index():
-			await _tap(&"move_right")
-		await _tap(&"confirm")
-	await _until(func() -> bool: return wizard.banished, 300)
-	_expect(wizard.banished and wizard.barrier_open(), "the last ward banishes the wizard")
+		await _until(func() -> bool: return duel.is_asking(), 400)
+		duel.block(duel.answer_index()).receive_head_bump()
+		await _frames(2)
+	await _until(func() -> bool: return duel.is_won(), 400)
+	_expect(wizard.banished and wizard.barrier_open() and seal.is_open(), "the last ward banishes the wizard and opens both walls")
+	_expect(not hud.is_duel_open(), "the strip closes")
 
 	# The Spellbook opens from pause on this stage's scrolls and pages through them.
 	await _frames(20)
@@ -205,25 +246,25 @@ func _check_span() -> void:
 func _check_kiln() -> void:
 	await _open(KILN)
 	var hud := _stage.hud
-	_expect(hud.seed_total == int(GameProgression.get_stage_data(3).get("max_seeds", 0)), "forge seeds count in the total (%d)" % hud.seed_total)
-	var before := _seed_xs()
-	var forge := _block(0)
-	_place(Vector2(forge.global_position.x, FLOOR_Y))
+	_expect(hud.seed_total == int(GameProgression.get_stage_data(3).get("max_seeds", 0)), "seed total matches the map (%d)" % hud.seed_total)
+	var lift := _stage.call(&"lift") as KilnLift
+	_place(Vector2(lift.global_position.x, FLOOR_Y))
+	await _frames(30)
+	_expect(lift.state == KilnLift.State.REST, "an empty lift stays put")
+	_place(Vector2(lift.global_position.x - 80.0, FLOOR_Y))
+	_block(0).receive_head_bump()
+	await _frames(4)
+	_expect(lift.values == [1, 4, 7] and lift.state == KilnLift.State.REST, "forge A loads range(1, 9, 3): %s" % [lift.values])
+	await _frames(30)
+	_expect(lift.height() == 0.0, "a loaded lift waits to be ridden")
+	_place(Vector2(lift.global_position.x, FLOOR_Y))
+	await _until(func() -> bool: return lift.is_topped(), 240)
+	_expect(lift.is_topped() and is_equal_approx(lift.height(), KilnLift.LAP_RISE * 3.0), "three laps raise three notches (%.0f)" % lift.height())
+	_block(1).receive_head_bump()
 	await _frames(2)
-	forge.receive_head_bump()
-	await _frames(130)
-	var dropped: Array[float] = []
-	for x in _seed_xs():
-		if not before.has(x):
-			dropped.append(roundf(x))
-	dropped.sort()
-	var expected: Array[float] = []
-	for i in range(1, 9, 2):
-		expected.append(1512.0 + 16.0 * i)
-	_expect(dropped == expected, "forge drops seeds on 1, 3, 5, 7 (got %s)" % [dropped])
-	forge.receive_head_bump()
-	await _frames(130)
-	_expect(_seed_xs().size() == before.size() + 4, "the forge runs once")
+	_expect(lift.values == [0, 1, 2, 3] and lift.state == KilnLift.State.SINKING, "loading range(4) sinks the lift first")
+	await _until(func() -> bool: return lift.is_topped(), 400)
+	_expect(is_equal_approx(lift.height(), KilnLift.LAP_RISE * 4.0), "four laps raise four notches (%.0f)" % lift.height())
 
 
 func _collect_key(key_name: String) -> void:
@@ -259,6 +300,14 @@ func _open(packed: PackedScene) -> void:
 func _place(at: Vector2) -> void:
 	_stage.player.global_position = at
 	_stage.player.velocity = Vector2.ZERO
+
+
+func _cracked(duel: WizardDuel) -> Array:
+	var found: Array = []
+	for index in 4:
+		if duel.block(index).cracked:
+			found.append(index)
+	return found
 
 
 func _block(index: int) -> RuneBlock:

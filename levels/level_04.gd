@@ -8,9 +8,10 @@ extends StageLevel
 ## block before it: every bump turns heat through 0, 1, 2, 3 and the gate
 ## re-checks its condition, opening only while it is True. The first needs
 ## `heat > 1 and heat != 3`; the second `heat % 2 == 1 and not heat == 1`.
-## The Smelt Oracle waits past the second.
+## The Smelt Oracle duels in the arena past the second.
 
-const WIDTH := 150
+const WIDTH := 179
+const ARENA := 143
 const GATE_TINT := Color(0.7, 0.8, 1.0)
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
@@ -65,7 +66,7 @@ func _paint_stage() -> void:
 		Vector2i(83, 90),
 		Vector2i(100, 104),
 		Vector2i(109, 134),
-		Vector2i(137, WIDTH - 1),
+		Vector2i(137, ARENA),
 	]
 	for span in ground:
 		_paint_solid(span.x, span.y, 14)
@@ -100,9 +101,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1488, 174), "bool_truthy")
 	_spawn_scroll(Vector2(1800, 222), "bool_chain")
 	_build_gates()
-	# The final exam, on the long last run past the second gate.
-	_spawn_wizard(Vector2(2256, 224), "Smelt Oracle", Color(0.6, 0.78, 1.0))
-	_spawn_gate(Vector2(2352, 224))
+	_build_arena(ARENA, "Smelt Oracle", Color(0.6, 0.78, 1.0))
 
 
 func _build_gates() -> void:

@@ -2,37 +2,22 @@ class_name StageHud
 extends CanvasLayer
 
 ## Stage overlay: name and lesson, seeds, clock, falls, the pause menu and its
-## Spellbook, the results card, lesson cards (scrolls, keys), the wizard's quiz
-## panel with its hints, and the full-screen fade used for deaths and scene changes.
+## Spellbook, the results card, lesson cards (scrolls, keys), the wizard duel's
+## question strips, and the full-screen fade used for deaths and scene changes.
 ## Runs while the tree is paused so the pause menu and cards can answer.
 
 signal map_requested
 signal restart_requested
 signal continue_requested
-## The player picked option `index` on the open quiz question.
-signal quiz_answered(index: int)
-## The verdict has been read (timed out or skipped); the stage moves on.
-signal quiz_feedback_done
-## The player asked the wizard for a hint on the open question.
-signal quiz_hint_requested
+## The player asked the wizard for a hint mid-duel.
+signal duel_hint_requested
 ## The last queued lesson card was dismissed and play resumes.
 signal card_closed
 
 const CONTINUE_LOCK := 0.6
-const QUIZ_LETTERS: Array[String] = ["A", "B", "C", "D"]
-## How long a verdict stays up before moving on by itself.
-const QUIZ_RIGHT_HOLD := 2.6
-const QUIZ_WRONG_HOLD := 4.2
-## A press this soon after answering is the same press, not a skip.
-const QUIZ_SKIP_LOCK := 0.45
-const QUIZ_GOOD := Color(0.5, 0.92, 0.6)
-const QUIZ_BAD := Color(1.0, 0.46, 0.4)
-const QUIZ_WHISPER := Color(0.78, 0.66, 1.0)
-const QUIZ_DIMMED := Color(0.42, 0.4, 0.48)
 ## A press this soon after a card opens is the press that was already held.
 const CARD_LOCK := 0.35
-
-enum QuizState { CLOSED, ASKING, FEEDBACK, DONE }
+const WHISPER := Color(0.78, 0.66, 1.0)
 
 var seed_count: int = 0
 var seed_total: int = 0
@@ -48,19 +33,6 @@ var _paused: bool = false
 var _continue_sent: bool = false
 var _continue_at: float = 0.0
 var _fade_tween: Tween
-var _quiz_state: QuizState = QuizState.CLOSED
-var _quiz_question: Dictionary = {}
-var _quiz_selected: int = 0
-var _quiz_hold: float = 0.0
-var _quiz_lock: float = 0.0
-var _quiz_buttons: Array[Button] = []
-## Options the wizard's hint ruled out: index -> true. Selection skips them.
-var _quiz_dimmed: Dictionary = {}
-var _hint_button: Button
-## "1/3" beside the wizard's name: which question of his trial this is.
-var _trial_label: Label
-var _trial_step: int = 1
-var _trial_total: int = 1
 var _lesson_label: Label
 var _card: LessonCard
 var _card_queue: Array[Dictionary] = []
@@ -71,6 +43,9 @@ var _book_open: bool = false
 var _book_pages: Array[Dictionary] = []
 var _book_index: int = 0
 var _spellbook_button: Button
+var _duel: DuelPanel
+## The top-bar pieces the duel's question strip covers while it is up.
+var _bar: Array[CanvasItem] = []
 
 
 func _ready() -> void:
@@ -89,12 +64,6 @@ func _ready() -> void:
 	%RestartButton.pressed.connect(_on_restart_pressed)
 	%QuitButton.pressed.connect(_on_map_pressed)
 	%ClearMapButton.pressed.connect(_on_map_pressed)
-	for child in %Options.get_children():
-		var button := child as Button
-		var index := _quiz_buttons.size()
-		_quiz_buttons.append(button)
-		button.pressed.connect(_on_quiz_option_pressed.bind(index))
-		button.mouse_entered.connect(_on_quiz_option_hovered.bind(index))
 	%Falls.text = ""
 	_build_lesson_ui()
 	_update_seed_label()
@@ -102,7 +71,7 @@ func _ready() -> void:
 
 
 ## The pieces the lessons add to the scene's layout: the lesson topic beside
-## the stage name, the quiz's hint button, the Spellbook entry, and the card.
+## the stage name, the Spellbook entry, the duel strips, and the card.
 func _build_lesson_ui() -> void:
 	_lesson_label = Label.new()
 	_lesson_label.add_theme_font_size_override(&"font_size", 10)
@@ -112,24 +81,16 @@ func _build_lesson_ui() -> void:
 	add_child(_lesson_label)
 	move_child(_lesson_label, %Title.get_index() + 1)
 
-	_hint_button = Button.new()
-	_hint_button.text = "Hint"
-	_hint_button.focus_mode = Control.FOCUS_NONE
-	_hint_button.add_theme_font_size_override(&"font_size", 10)
-	_hint_button.pressed.connect(_on_hint_pressed)
-	%WizardName.get_parent().add_child(_hint_button)
-
-	_trial_label = Label.new()
-	_trial_label.add_theme_font_size_override(&"font_size", 10)
-	_trial_label.add_theme_color_override(&"font_color", Color(0.8, 0.78, 0.9))
-	_trial_label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-	_trial_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	%WizardName.add_sibling(_trial_label)
-
 	_spellbook_button = Button.new()
 	_spellbook_button.text = "Spellbook"
 	_spellbook_button.pressed.connect(_open_spellbook)
 	%ResumeButton.add_sibling(_spellbook_button)
+
+	_duel = DuelPanel.new()
+	_duel.hide()
+	add_child(_duel)
+	move_child(_duel, %PausePanel.get_index())
+	_bar = [%Title, _lesson_label, $SeedChip, %Clock, %Falls, %MapButton]
 
 	_card = LessonCard.new()
 	_card.hide()
@@ -137,52 +98,19 @@ func _build_lesson_ui() -> void:
 	move_child(_card, %Fade.get_index())
 
 
-## The quiz reads input before the GUI so arrows/WASD, the d-pad and confirm
-## all drive the same selection, and focus navigation never double-steps.
+## Lesson cards and the Spellbook read input before the GUI. Mid-duel, the
+## hint key goes to the wizard.
 func _input(event: InputEvent) -> void:
 	if _card != null and _card.visible:
 		_card_input(event)
 		return
-	if _quiz_state == QuizState.CLOSED or _paused:
-		return
-	var confirm := event.is_action_pressed(&"confirm") or event.is_action_pressed(&"ui_accept")
-	if _quiz_state == QuizState.ASKING:
-		if event.is_action_pressed(&"hint"):
-			get_viewport().set_input_as_handled()
-			quiz_hint_requested.emit()
-			return
-		var step := 0
-		if event.is_action_pressed(&"move_up"):
-			step = -2
-		elif event.is_action_pressed(&"move_down"):
-			step = 2
-		elif event.is_action_pressed(&"move_left"):
-			step = -1
-		elif event.is_action_pressed(&"move_right"):
-			step = 1
-		if step != 0:
-			get_viewport().set_input_as_handled()
-			_step_quiz_selection(step)
-		elif confirm:
-			get_viewport().set_input_as_handled()
-			_submit_quiz(_quiz_selected)
-		return
-	if _quiz_state == QuizState.FEEDBACK:
-		var mouse := event as InputEventMouseButton
-		var click := mouse != null and mouse.pressed and mouse.button_index == MOUSE_BUTTON_LEFT
-		if (confirm or click) and _quiz_lock <= 0.0:
-			get_viewport().set_input_as_handled()
-			_finish_quiz_feedback()
+	if is_duel_open() and not _paused and event.is_action_pressed(&"hint"):
+		get_viewport().set_input_as_handled()
+		duel_hint_requested.emit()
 
 
 func _process(delta: float) -> void:
 	_card_lock -= delta
-	if _quiz_state != QuizState.FEEDBACK or _paused:
-		return
-	_quiz_lock -= delta
-	_quiz_hold -= delta
-	if _quiz_hold <= 0.0:
-		_finish_quiz_feedback()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -276,8 +204,6 @@ func close_pause() -> void:
 	_paused = false
 	%PausePanel.hide()
 	get_tree().paused = false
-	if _quiz_state == QuizState.ASKING:
-		_select_quiz_option(_quiz_selected)
 
 
 func show_press_to_start() -> void:
@@ -344,219 +270,57 @@ func fade_to(alpha: float, duration: float) -> Tween:
 	return _fade_tween
 
 
-## Opens the quiz panel on a question from `WizardQuiz`. `step` counts the
-## right answers so far plus one, out of the `total` his trial demands.
-func open_quiz(wizard_title: String, question: Dictionary, tint: Color, step: int = 1, total: int = 1) -> void:
-	_quiz_question = question
-	_trial_step = step
-	_trial_total = total
-	_trial_label.text = _trial_pips() if total > 1 else ""
-	%WizardName.text = wizard_title
-	%WizardName.add_theme_color_override(&"font_color", tint.lightened(0.5))
-	%Prompt.text = str(question.get("prompt", "What does this print?"))
-	%Code.text = str(question.get("code", ""))
-	var options: PackedStringArray = question.get("options", PackedStringArray())
-	for index in _quiz_buttons.size():
-		var button := _quiz_buttons[index]
-		button.text = "%s  %s" % [QUIZ_LETTERS[index], options[index] if index < options.size() else ""]
-		button.disabled = false
-		button.remove_theme_stylebox_override(&"disabled")
-		button.remove_theme_color_override(&"font_disabled_color")
-	_quiz_dimmed = {}
-	_hint_button.disabled = false
-	if total <= 1:
-		%Verdict.text = "%s bars the way. Answer to pass." % wizard_title
-	elif step == 1:
-		%Verdict.text = "%s bars the way. Answer %d to pass." % [wizard_title, total]
-	else:
-		%Verdict.text = "Question %d of %d. Answer to break the next ward." % [step, total]
-	%Verdict.add_theme_color_override(&"font_color", Color(0.8, 0.78, 0.9))
-	%Explanation.text = _quiz_controls_hint()
-	_quiz_state = QuizState.ASKING
-	var was_open: bool = %QuizPanel.visible
-	%QuizPanel.show()
-	_select_quiz_option(0)
-	if not was_open:
-		var box := %QuizBox as Control
-		box.pivot_offset = box.size * 0.5
-		box.scale = Vector2(0.9, 0.9)
-		box.modulate.a = 0.0
-		var tween := create_tween()
-		tween.tween_property(box, "scale", Vector2.ONE, 0.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tween.parallel().tween_property(box, "modulate:a", 1.0, 0.12)
+## Opens the duel's strips over the arena and tucks the top bar away.
+func open_duel(wizard_title: String, tint: Color, broken: int, total: int, sparks: int) -> void:
+	%Hint.hide()
+	for item in _bar:
+		item.hide()
+	_duel.open(wizard_title, tint, broken, total, sparks)
 
 
-## Marks the chosen option, reveals the right one and its explanation, then
-## emits `quiz_feedback_done` after a hold or a skip press. `remaining` is how
-## many right answers the trial still wants after this one.
-func show_quiz_feedback(chosen: int, correct: bool, remaining: int = 0) -> void:
-	_quiz_state = QuizState.FEEDBACK
-	_hint_button.disabled = true
-	_quiz_hold = QUIZ_RIGHT_HOLD if correct else QUIZ_WRONG_HOLD
-	_quiz_lock = QUIZ_SKIP_LOCK
-	var answer := int(_quiz_question.get("answer", 0))
-	for index in _quiz_buttons.size():
-		var button := _quiz_buttons[index]
-		button.disabled = true
-		if index == answer:
-			_paint_quiz_option(button, QUIZ_GOOD)
-		elif index == chosen:
-			_paint_quiz_option(button, QUIZ_BAD)
-	var options: PackedStringArray = _quiz_question.get("options", PackedStringArray())
-	if correct and remaining > 0:
-		_trial_step += 1
-		_trial_label.text = _trial_pips()
-		%Verdict.text = "Correct! A ward breaks. %d more to go." % remaining
-		%Verdict.add_theme_color_override(&"font_color", QUIZ_GOOD)
-	elif correct:
-		if _trial_total > 1:
-			_trial_step = _trial_total + 1
-			_trial_label.text = _trial_pips()
-		%Verdict.text = "Correct! The barrier fades."
-		%Verdict.add_theme_color_override(&"font_color", QUIZ_GOOD)
-	else:
-		%Verdict.text = "Zapped! It prints  %s" % (options[answer] if answer < options.size() else "?")
-		%Verdict.add_theme_color_override(&"font_color", QUIZ_BAD)
-		_shake_quiz()
-	%Explanation.text = str(_quiz_question.get("explanation", ""))
+## The wizard's next question; `step` is the right answers so far plus one.
+func duel_question(question: Dictionary, step: int, total: int) -> void:
+	_duel.show_question(question, step, total)
 
 
-## The wizard's hint: a whisper in the verdict line, a detail under it, and
-## optionally one wrong option he refuses to look at, which dims out.
-func show_quiz_hint(whisper: String, detail: String, dim_index: int = -1, more: bool = true) -> void:
-	if _quiz_state != QuizState.ASKING:
-		return
-	%Verdict.text = whisper
-	%Verdict.add_theme_color_override(&"font_color", QUIZ_WHISPER)
-	%Explanation.text = detail
-	if dim_index >= 0 and dim_index < _quiz_buttons.size():
-		_quiz_dimmed[dim_index] = true
-		var button := _quiz_buttons[dim_index]
-		button.disabled = true
-		_paint_quiz_option(button, QUIZ_DIMMED)
-		if _quiz_selected == dim_index:
-			_step_quiz_selection(1)
-	_hint_button.disabled = not more
+## The verdict on a bumped answer. `remaining` is the wards still standing.
+func duel_verdict(chosen: int, correct: bool, remaining: int) -> void:
+	_duel.show_verdict(chosen, correct, remaining)
 
 
-## "Wards 1/3": how many of the wizard's wards are broken so far.
-func _trial_pips() -> String:
-	return "Wards %d/%d" % [mini(_trial_step - 1, _trial_total), _trial_total]
+func duel_hint(whisper: String, detail: String, dim_index: int = -1, more: bool = true) -> void:
+	_duel.show_hint(whisper, detail, dim_index, more)
 
 
-## [question number, questions in the trial] for the open quiz.
-func quiz_progress() -> Vector2i:
-	return Vector2i(_trial_step, _trial_total)
+func duel_say(text: String) -> void:
+	_duel.say(text)
 
 
-func quiz_dimmed() -> Array:
-	return _quiz_dimmed.keys()
+func duel_sparks(count: int) -> void:
+	_duel.set_sparks(count)
 
 
-func close_quiz() -> void:
-	_quiz_state = QuizState.CLOSED
-	_quiz_question = {}
-	%QuizPanel.hide()
-	var focused := get_viewport().gui_get_focus_owner()
-	if focused != null and %QuizPanel.is_ancestor_of(focused):
-		focused.release_focus()
+func close_duel() -> void:
+	_duel.hide()
+	for item in _bar:
+		item.show()
 
 
-func is_quiz_open() -> bool:
-	return _quiz_state != QuizState.CLOSED
+func is_duel_open() -> bool:
+	return _duel != null and _duel.visible
 
 
-func is_quiz_asking() -> bool:
-	return _quiz_state == QuizState.ASKING
+## Test hook: the answers a hint struck out on the open question.
+func duel_dimmed() -> Array:
+	return _duel.dimmed()
 
 
-func quiz_selected_index() -> int:
-	return _quiz_selected
+func duel_status() -> String:
+	return _duel.status_text()
 
 
-## Test hook: the marked answer of the open question, so bots can steer the
-## real selection to it (or away from it) and press confirm.
-func quiz_answer_index() -> int:
-	return int(_quiz_question.get("answer", -1))
-
-
-func quiz_question() -> Dictionary:
-	return _quiz_question
-
-
-## Moves the selection by `step`, passing over options a hint dimmed out.
-func _step_quiz_selection(step: int) -> void:
-	var count := _quiz_buttons.size()
-	var target := _quiz_selected
-	for _attempt in count:
-		target = posmod(target + step, count)
-		if not _quiz_dimmed.has(target):
-			break
-		# Vertical steps that land on a dimmed option slide sideways instead.
-		step = signi(step)
-	_select_quiz_option(target)
-
-
-func _select_quiz_option(index: int) -> void:
-	if _quiz_buttons.is_empty():
-		return
-	_quiz_selected = clampi(index, 0, _quiz_buttons.size() - 1)
-	_quiz_buttons[_quiz_selected].grab_focus()
-
-
-func _submit_quiz(index: int) -> void:
-	if _quiz_state != QuizState.ASKING:
-		return
-	_select_quiz_option(index)
-	# The stage replies with show_quiz_feedback; until then nothing else may pick.
-	_quiz_state = QuizState.DONE
-	quiz_answered.emit(index)
-
-
-func _finish_quiz_feedback() -> void:
-	if _quiz_state != QuizState.FEEDBACK:
-		return
-	_quiz_state = QuizState.DONE
-	quiz_feedback_done.emit()
-
-
-func _paint_quiz_option(button: Button, color: Color) -> void:
-	var base := button.get_theme_stylebox(&"normal") as StyleBoxFlat
-	if base != null:
-		var box := base.duplicate() as StyleBoxFlat
-		box.border_color = color
-		box.bg_color = Color(color.r * 0.22, color.g * 0.22, color.b * 0.22, 0.96)
-		button.add_theme_stylebox_override(&"disabled", box)
-	button.add_theme_color_override(&"font_disabled_color", color.lightened(0.3))
-
-
-func _shake_quiz() -> void:
-	var center := %QuizPanel.get_node(^"Center") as Control
-	var tween := create_tween()
-	for offset: float in [-5.0, 4.0, -3.0, 2.0, 0.0]:
-		tween.tween_property(center, "position:x", offset, 0.04)
-
-
-func _quiz_controls_hint() -> String:
-	if Input.get_connected_joypads().is_empty():
-		return "Arrows or WASD to choose, Space or Enter to answer. H asks for a hint."
-	return "D-pad to choose, A to answer. Y asks for a hint."
-
-
-func _on_quiz_option_pressed(index: int) -> void:
-	if _paused or _quiz_dimmed.has(index):
-		return
-	_submit_quiz(index)
-
-
-func _on_quiz_option_hovered(index: int) -> void:
-	if _quiz_state == QuizState.ASKING and not _paused and not _quiz_dimmed.has(index):
-		_select_quiz_option(index)
-
-
-func _on_hint_pressed() -> void:
-	if _quiz_state == QuizState.ASKING and not _paused:
-		quiz_hint_requested.emit()
+func duel_speech() -> String:
+	return _duel.speech_text()
 
 
 ## Shows a lesson card and holds the stage until it is read. Cards that arrive
@@ -652,7 +416,7 @@ func _open_spellbook() -> void:
 			"kicker": "Spellbook",
 			"title": "No scrolls yet",
 			"code": "",
-			"body": "Lore scrolls lie along the trail. Each one you read is kept here, and the wizards only ask about what you have read.",
+			"body": "Lore scrolls lie along the trail. Each one you read is kept here, and the wizards mostly ask about what you have read.",
 		})
 	_book_open = true
 	%PausePanel.hide()
@@ -664,7 +428,7 @@ func _show_book_page(index: int) -> void:
 	var page := _book_pages[_book_index].duplicate()
 	var arrows := "<  %d / %d  >     " % [_book_index + 1, _book_pages.size()] if _book_pages.size() > 1 else ""
 	page["footer"] = "%sEsc to close" % arrows
-	page["tint"] = QUIZ_WHISPER
+	page["tint"] = WHISPER
 	_card.show_card(page)
 
 
