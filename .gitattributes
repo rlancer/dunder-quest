@@ -1,0 +1,9 @@
+# Godot always writes LF, so keep every text file LF on all platforms.
+# This overrides core.autocrlf=true and stops mixed CRLF/LF working trees.
+* text=auto eol=lf
+
+# Binary assets
+*.png binary
+*.wav binary
+*.ogg binary
+*.ttf binary
