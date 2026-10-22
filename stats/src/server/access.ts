@@ -2,7 +2,7 @@ import { createRemoteJWKSet, jwtVerify } from "jose";
 
 /**
  * Cloudflare Access signs in the viewer before a request reaches the Worker
- * and attaches a signed token. Checking it here means the dashboard stays shut
+ * and attaches a signed token. Checking it here means the admin area stays shut
  * even if the Access policy is ever removed or the workers.dev URL is used.
  */
 const keySets = new Map<string, ReturnType<typeof createRemoteJWKSet>>();
