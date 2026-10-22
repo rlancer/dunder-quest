@@ -29,7 +29,7 @@ SITE_URL = "https://ember-trail.robertlancer.com/"
 ## Cloudflare Web Analytics site token (dashboard: Analytics & Logs, Web
 ## Analytics). It's public, since it ships in every page. Empty leaves the
 ## beacon out.
-CF_ANALYTICS_TOKEN = ""
+CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
 ## A rolling release CI refreshes on every push to main.
 DOWNLOADS = f"{REPO}/releases/download/builds"
 RELEASE_PAGE = f"{REPO}/releases/tag/builds"
