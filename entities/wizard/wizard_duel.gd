@@ -238,6 +238,16 @@ func _ready_to_engage() -> bool:
 	return x > ENGAGE_X and x < WIZARD_X - 20.0 and player.is_on_floor()
 
 
+## The arena is one 480-wide screen. A wider view (a phone in a stage) stays
+## centered on it, kept inside the stage where the stage allows.
+func _arena_bounds() -> Rect2i:
+	var width := maxi(480, int(get_viewport_rect().size.x))
+	var left := int(global_position.x) - 16 - (width - 480) / 2
+	if width > 480:
+		left = maxi(mini(left, stage_bounds.end.x - width), stage_bounds.position.x)
+	return Rect2i(left, stage_bounds.position.y, width, stage_bounds.size.y)
+
+
 func _engage() -> void:
 	state = State.INTRO
 	_timer = INTRO_TIME
@@ -245,7 +255,7 @@ func _engage() -> void:
 	_invulnerable = 0.0
 	_spell_turn = 0
 	_seal.rise()
-	player.set_camera_bounds(Rect2i(int(global_position.x) - 16, stage_bounds.position.y, 480, stage_bounds.size.y))
+	player.set_camera_bounds(_arena_bounds())
 	wizard.say("Bump your answer, if you dare!" if wizard.wards_left == wizard.ward_total else "Back for more?", INTRO_TIME + 0.6)
 	if hud != null:
 		hud.open_duel(title, tint, wizard.ward_total - wizard.wards_left, wizard.ward_total, sparks)

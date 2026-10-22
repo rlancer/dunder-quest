@@ -60,11 +60,11 @@ func _run() -> void:
 	_check(not Input.is_action_pressed(&"move_left"), "lifting the finger releases move_left")
 
 	await _frames(30)
-	_touch(1, TouchControls.JUMP_CENTER, true)
+	_touch(1, TouchControls.jump_center(), true)
 	await _frames(12)
 	_check(Input.is_action_pressed(&"jump"), "holding the jump button holds jump")
 	_check(not player.is_on_floor(), "the pebble jumps")
-	_touch(1, TouchControls.JUMP_CENTER, false)
+	_touch(1, TouchControls.jump_center(), false)
 	await _frames(2)
 	_check(not Input.is_action_pressed(&"jump"), "lifting the finger releases jump")
 
