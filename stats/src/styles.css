@@ -204,3 +204,32 @@ button.sort {
 button.sort:focus-visible {
   outline: 2px solid var(--ember);
 }
+
+@media (max-width: 600px) {
+  .bar nav {
+    gap: 4px 14px;
+    flex-wrap: wrap;
+  }
+  .bar nav a,
+  .range a {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  main {
+    padding: 16px 12px 40px;
+  }
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .stat,
+  .card {
+    padding: 12px;
+  }
+  .stat-value {
+    font-size: 1.35rem;
+  }
+  td.question {
+    min-width: 220px;
+  }
+}

@@ -28,6 +28,8 @@ func _ready() -> void:
 	new_button.visible = GameProgression.has_progress()
 	var desktop := not OS.has_feature("web")
 	quit_button.visible = desktop
+	# iPhone browsers can't take the page fullscreen.
+	fullscreen_button.visible = not OS.has_feature("web_ios")
 	start_button.pressed.connect(_on_start)
 	new_button.pressed.connect(_on_new_game)
 	fullscreen_button.pressed.connect(_toggle_fullscreen)
@@ -119,7 +121,7 @@ func _update_stats_button() -> void:
 
 func _update_footer() -> void:
 	if not GameProgression.has_progress():
-		footer.text = "Arrows / WASD / gamepad   Jump: Space or A"
+		footer.text = "Tap to choose" if TouchControls.active else "Arrows / WASD / gamepad   Jump: Space or A"
 		return
 	footer.text = "Seeds %d/%d   Stages cleared %d/%d" % [
 		GameProgression.get_total_seeds_collected(),

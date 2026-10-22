@@ -22,6 +22,7 @@ config/icon="res://icon.svg"
 GameProgression="*res://common/game_progression.gd"
 MusicDirector="*res://common/music_director.gd"
 Telemetry="*res://common/telemetry.gd"
+TouchControls="*res://common/touch_controls.gd"
 
 [audio]
 
