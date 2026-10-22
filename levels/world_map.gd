@@ -330,7 +330,7 @@ func _update_ui() -> void:
 	]
 
 	if unlocked:
-		enter_prompt_label.text = "Press Jump or Enter to play"
+		enter_prompt_label.text = "Tap the stage to play" if TouchControls.active else "Press Jump or Enter to play"
 		enter_prompt_label.modulate = Color(1.0, 0.95, 0.75)
 		stage_card_button.disabled = false
 	else:

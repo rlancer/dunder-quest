@@ -36,7 +36,7 @@
 }
 
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -95,8 +95,10 @@ p { margin: 0 0 1em; }
 .bar nav a { color: var(--ash); text-decoration: none; font: 1.35rem/1 var(--label); letter-spacing: 0.02em; }
 .bar nav a:hover, .bar nav a[aria-current] { color: var(--gold); }
 @media (max-width: 760px) {
-  .bar { flex-wrap: wrap; gap: 8px 16px; }
-  .bar nav { order: 3; width: 100%; margin: 0; gap: 16px; }
+  /* On a phone the bar wraps to two rows; sticky, it would eat the screen. */
+  .bar { position: static; flex-wrap: wrap; gap: 8px 16px; }
+  .bar nav { order: 3; width: 100%; margin: 0; gap: 4px 18px; }
+  .bar nav a { padding: 6px 0; }
   .bar .btn-small { margin-left: auto; }
 }
 
@@ -191,6 +193,7 @@ main { display: block; }
 @media (max-width: 760px) {
   .trail-list { grid-template-columns: 1fr; }
   .pin-label { display: none; }
+  .pin { width: 11%; }
 }
 
 /* Learn, use, prove */
@@ -253,7 +256,7 @@ main { display: block; }
 .puzzle-grid img { width: 100%; border: 2px solid var(--line); }
 details { border: 2px dashed var(--line); padding: 10px 14px; }
 details[open] { border-style: solid; border-color: var(--moss); }
-summary { cursor: pointer; font: 1.3rem var(--label); color: var(--moss); }
+summary { cursor: pointer; font: 1.3rem var(--label); color: var(--moss); padding: 4px 0; }
 details p { margin: 10px 0 0; }
 @media (max-width: 860px) { .puzzle-grid { grid-template-columns: 1fr; } }
 
@@ -272,7 +275,8 @@ details p { margin: 10px 0 0; }
 .options button {
   width: 100%; text-align: left; display: flex; gap: 12px; align-items: baseline;
   background: var(--dusk); color: var(--parchment); border: 2px solid var(--line);
-  padding: 10px 14px; font: 0.98rem var(--mono); cursor: pointer; white-space: pre-wrap;
+  padding: 10px 14px; min-height: 44px; font: 0.98rem var(--mono); cursor: pointer; white-space: pre-wrap;
+  overflow-wrap: anywhere; touch-action: manipulation;
 }
 .options button:hover:not(:disabled) { border-color: var(--gold); }
 .options button:disabled { cursor: default; }
@@ -290,7 +294,7 @@ details p { margin: 10px 0 0; }
 .hint q { font: 1.35rem var(--label); display: block; color: var(--tint); }
 .trial-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
 .trial-actions button {
-  font: 600 1rem/1 var(--display); padding: 10px 16px 9px; cursor: pointer;
+  font: 600 1rem/1 var(--display); padding: 12px 18px 11px; min-height: 44px; cursor: pointer;
   border: 2px solid var(--gold); background: var(--gold); color: var(--night);
 }
 .trial-actions button.quiet { background: transparent; color: var(--parchment); border-color: var(--line); }
@@ -306,6 +310,10 @@ details p { margin: 10px 0 0; }
 .pager a:hover { border-color: var(--gold); }
 .pager small { display: block; font: 1.1rem var(--label); color: var(--ash); }
 .pager [rel="next"] { text-align: right; margin-left: auto; }
+@media (max-width: 560px) {
+  .pager { flex-direction: column; }
+  .pager [rel="next"] { margin-left: 0; }
+}
 
 /* Lesson index */
 .lesson-list { list-style: none; max-width: 1100px; margin: 24px auto 0; padding: 0 var(--gutter); display: grid; gap: 14px; }
@@ -326,6 +334,14 @@ table { border-collapse: collapse; width: 100%; font-size: 1rem; }
 th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
 thead th { font: 1.25rem var(--label); color: var(--ember); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 400; border-bottom: 2px solid var(--gold); }
 tbody th { font-weight: 700; color: var(--parchment); }
+/* On a phone the controls table stacks: one block per action, each cell labeled. */
+@media (max-width: 600px) {
+  .controls thead { display: none; }
+  .controls tr { display: block; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .controls th, .controls td { display: block; border: 0; padding: 2px 0; }
+  .controls tbody th { font: 600 1.15rem var(--display); margin-bottom: 4px; }
+  .controls td::before { content: attr(data-label) " · "; font: 1.15rem var(--label); color: var(--ember); }
+}
 .things { list-style: none; padding: 0; margin: 20px 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 32px; }
 .things li { display: flex; gap: 16px; align-items: flex-start; }
 .things h3 { font-size: 1.15rem; margin-bottom: 0.2em; }

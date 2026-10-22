@@ -257,7 +257,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
       <a class="btn" href="{prefix}play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#download">Download for desktop</a>
     </div>
-    <p class="fine">Keyboard or gamepad. Works best in Chrome, Edge or Firefox on a computer.</p>
+    <p class="fine">Keyboard, gamepad or touch. On a phone, turn it sideways and use the on-screen buttons.</p>
   </div>
 </section>
 
@@ -393,15 +393,15 @@ def build_lessons_index(bank: dict, prefix: str) -> str:
 
 def build_guide(prefix: str) -> str:
     controls = [
-        ("Move", "A / D or ← / →", "D-pad or left stick"),
-        ("Jump", "Space, W or ↑ (hold to jump higher and float)", "A / Cross"),
-        ("Confirm, next card", "Space or Enter", "A / Cross"),
-        ("Pause and Spellbook", "Esc or P", "Start / Options"),
-        ("Back to world map", "M", "LB / L1"),
-        ("Ask the wizard for a hint", "H", "Y / Triangle"),
-        ("Fullscreen", "F11", ""),
+        ("Move", "A / D or ← / →", "D-pad or left stick", "Arrow buttons, bottom left"),
+        ("Jump", "Space, W or ↑ (hold to jump higher and float)", "A / Cross", "Jump button, bottom right"),
+        ("Confirm, next card", "Space or Enter", "A / Cross", "Tap anywhere"),
+        ("Pause and Spellbook", "Esc or P", "Start / Options", "Pause, top right"),
+        ("Back to world map", "M", "LB / L1", "Pause, then World map"),
+        ("Ask the wizard for a hint", "H", "Y / Triangle", "? button, during a duel"),
+        ("Fullscreen", "F11", "", "Fullscreen on the title screen (not on iPhone)"),
     ]
-    rows = "".join(f"<tr><th scope=row>{a}</th><td>{k}</td><td>{p or '-'}</td></tr>" for a, k, p in controls)
+    rows = "".join(f"<tr><th scope=row>{a}</th><td data-label=Keyboard>{k}</td><td data-label=Gamepad>{p or '-'}</td><td data-label=Touch>{t}</td></tr>" for a, k, p, t in controls)
     things = [
         ("emberseed.png", 12, 12, "Emberseed", "The collectible. Each stage counts how many you found, and your best count shows on the world map."),
         ("cache_stone.png", 16, 16, "Cache stone", "Bump it from below and it gives you its seed. It only does this once."),
@@ -427,10 +427,10 @@ def build_guide(prefix: str) -> str:
 <section class="section" aria-labelledby="controls-h">
   <h2 id="controls-h">Controls</h2>
   <div class="table-wrap"><table class="controls">
-    <thead><tr><th scope=col>Action</th><th scope=col>Keyboard</th><th scope=col>Gamepad</th></tr></thead>
+    <thead><tr><th scope=col>Action</th><th scope=col>Keyboard</th><th scope=col>Gamepad</th><th scope=col>Touch</th></tr></thead>
     <tbody>{rows}</tbody>
   </table></div>
-  <p class="fine">Holding jump floats you for a moment at the top and carries you further. Let go and you drop fast. In the browser, the game can't play sound until you press a key or click once. The title screen takes care of that with your first press.</p>
+  <p class="fine">Holding jump floats you for a moment at the top and carries you further. Let go and you drop fast. In the browser, the game can't play sound until you press a key, click or tap once. The title screen takes care of that with your first press. On a phone, the buttons appear once you start a stage; in the Spellbook, tap the sides of the screen to turn pages.</p>
 </section>
 
 <section class="section" aria-labelledby="things-h">
@@ -444,11 +444,11 @@ def build_guide(prefix: str) -> str:
   <div class="two">
     <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_hint2.png" alt="The wizard's duel with one wrong answer dimmed and its block cracked after a second hint" width="480" height="270" loading="lazy"><figcaption>After a second hint, the wizard rules out one wrong answer and its block cracks.</figcaption></figure>
     <div>
-      <p><b>Lore scrolls</b> teach the stage's topic. Touching one pauses the game and opens its card. Press Space to keep going.</p>
+      <p><b>Lore scrolls</b> teach the stage's topic. Touching one pauses the game and opens its card. Press Space or tap to keep going.</p>
       <p><b>The stage puzzle</b> is the way forward. Slates in the scenery show its code, and blocks you bump from below run it. Only the right answer builds the path. The <a href="{prefix}lessons/">lesson pages</a> explain each one.</p>
       <p><b>The wizard's duel</b> starts when you walk into his arena at the end of the stage. A seal closes behind you, his question appears across the top of the screen, and four lettered blocks hang over the floor. Jump up into the block with the right answer. Each right answer breaks one ward, the pips above his name. A wrong answer cracks that block, zaps you, and brings a different question. He mostly asks about scrolls you've read, so reading them on the way pays off.</p>
       <p><b>His spells:</b> after giving you a moment to read, he casts. Ward waves roll along the floor, so jump them. From Kiln Mouth on, hexes mark a spot and then strike, so step aside. You have three sparks, shown next to his name. A spell, a zap or bumping into him costs one. Lose all three and you wake at the lantern outside, but the wards you broke stay broken. The clock stops for the whole duel.</p>
-      <p><b>Hints:</b> press H once for his riddle and a reminder of the scroll the question comes from. Press it again and he rules out one wrong answer, and its block cracks. There's no third hint.</p>
+      <p><b>Hints:</b> press H (or tap the ? button) once for his riddle and a reminder of the scroll the question comes from. Press it again and he rules out one wrong answer, and its block cracks. There's no third hint.</p>
     </div>
   </div>
 </section>
@@ -457,7 +457,7 @@ def build_guide(prefix: str) -> str:
   <h2 id="book-h">Spellbook, results and saving</h2>
   <div class="two">
     <div>
-      <p><b>Spellbook:</b> pause with Esc to open it. It keeps every scroll you've read, so you can study before a trial.</p>
+      <p><b>Spellbook:</b> pause with Esc or the Pause button to open it. It keeps every scroll you've read, so you can study before a trial.</p>
       <p><b>Results:</b> when you clear a stage, you see your seeds, time and falls. Your best time and seed count for each stage show on the world map.</p>
       <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file in the Godot user folder: <code>%APPDATA%\\Godot\\app_userdata\\Ember Trail\\</code> on Windows, <code>~/Library/Application Support/Godot/app_userdata/Ember Trail/</code> on macOS, and <code>~/.local/share/godot/app_userdata/Ember Trail/</code> on Linux. To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
     </div>

@@ -44,6 +44,8 @@ var _book_pages: Array[Dictionary] = []
 var _book_index: int = 0
 var _spellbook_button: Button
 var _duel: DuelPanel
+## Whether the labels currently read for touch (no key names).
+var _touch_labels: bool = false
 ## The top-bar pieces the duel's question strip covers while it is up.
 var _bar: Array[CanvasItem] = []
 
@@ -58,6 +60,8 @@ func _ready() -> void:
 	timer.start()
 	_refresh_hint()
 	Input.joy_connection_changed.connect(func(_device: int, _connected: bool) -> void: _refresh_hint())
+	if TouchControls.active:
+		%Hint.hide()
 
 	%MapButton.pressed.connect(open_pause)
 	%ResumeButton.pressed.connect(close_pause)
@@ -111,6 +115,11 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_card_lock -= delta
+	if TouchControls.active != _touch_labels:
+		_touch_labels = TouchControls.active
+		%MapButton.text = "Pause" if _touch_labels else "Pause [Esc]"
+		if _touch_labels and not waiting_for_start and not cleared:
+			%Hint.hide()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -135,6 +144,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func _accepts_continue(event: InputEvent) -> bool:
 	if Time.get_ticks_msec() / 1000.0 < _continue_at:
 		return false
+	if event is InputEventScreenTouch and event.pressed:
+		return true
 	return event.is_action_pressed(&"jump") or event.is_action_pressed(&"confirm")
 
 
@@ -208,14 +219,14 @@ func close_pause() -> void:
 
 func show_press_to_start() -> void:
 	waiting_for_start = true
-	%Hint.text = "Press any key to play"
+	%Hint.text = "Tap to play" if TouchControls.active else "Press any key to play"
 	%Hint.show()
 
 
 func hide_press_to_start() -> void:
 	waiting_for_start = false
 	_refresh_hint()
-	if not cleared:
+	if not cleared and not TouchControls.active:
 		%Hint.show()
 
 
@@ -229,7 +240,7 @@ func show_passage(detail: String, time: float = 0.0, new_best: bool = false) -> 
 	%Subhead.text = detail
 	_fill_stats(time)
 	%Best.visible = new_best
-	%ContinueHint.text = "Press Jump to continue"
+	%ContinueHint.text = "Tap to continue" if TouchControls.active else "Press Jump to continue"
 	%ClearMapButton.hide()
 	_show_card()
 
@@ -244,7 +255,7 @@ func show_clear(time: float = 0.0, new_best: bool = false) -> void:
 	%Subhead.text = "%s cleared. Thanks for playing!" % %Title.text
 	_fill_stats(time)
 	%Best.visible = new_best
-	%ContinueHint.text = "Press Jump for the map"
+	%ContinueHint.text = "Tap for the map" if TouchControls.active else "Press Jump for the map"
 	%ClearMapButton.show()
 	_show_card()
 
@@ -356,6 +367,15 @@ func _card_input(event: InputEvent) -> void:
 		return
 	get_viewport().set_input_as_handled()
 	if _book_open:
+		# By touch, the outer thirds of the screen turn pages; the middle closes.
+		if mouse != null and _book_pages.size() > 1:
+			var third := get_viewport().get_visible_rect().size.x / 3.0
+			if mouse.position.x < third:
+				_show_book_page(_book_index - 1)
+				return
+			if mouse.position.x > third * 2.0:
+				_show_book_page(_book_index + 1)
+				return
 		if event.is_action_pressed(&"move_left"):
 			_show_book_page(_book_index - 1)
 		elif event.is_action_pressed(&"move_right"):
@@ -389,7 +409,10 @@ func _with_footer(card: Dictionary) -> Dictionary:
 	var shown := card.duplicate()
 	if not shown.has("footer"):
 		var joypad := not Input.get_connected_joypads().is_empty()
-		shown["footer"] = "Press A to continue" if joypad else "Press Space to continue"
+		if TouchControls.active:
+			shown["footer"] = "Tap to continue"
+		else:
+			shown["footer"] = "Press A to continue" if joypad else "Press Space to continue"
 	return shown
 
 
@@ -427,7 +450,7 @@ func _show_book_page(index: int) -> void:
 	_book_index = clampi(index, 0, _book_pages.size() - 1)
 	var page := _book_pages[_book_index].duplicate()
 	var arrows := "<  %d / %d  >     " % [_book_index + 1, _book_pages.size()] if _book_pages.size() > 1 else ""
-	page["footer"] = "%sEsc to close" % arrows
+	page["footer"] = "%s%s" % [arrows, "Tap the middle to close" if TouchControls.active else "Esc to close"]
 	page["tint"] = WHISPER
 	_card.show_card(page)
 

@@ -251,6 +251,8 @@ func _paint_option(index: int, text: Color, back: Color) -> void:
 
 
 func _hint_key() -> String:
+	if TouchControls.active:
+		return "?: hint"
 	return "Y: hint" if not Input.get_connected_joypads().is_empty() else "H: hint"
 
 
