@@ -6,20 +6,26 @@ extends CanvasLayer
 ## is pressed. Presses go in as actions, so the player, cards and menus read
 ## them exactly like keys. Menus, the map and cards need no pad: taps on their
 ## buttons arrive as mouse clicks.
+##
+## Playing by touch, the picture scales smoothly to fill the screen, and in a
+## stage the view widens to the phone's shape instead of showing black bars.
+## The title and world map are drawn for 16:9, so they stay that shape.
 
 const FONT := preload("res://assets/fonts/PixelifySans.ttf")
-## Drawn buttons, in the 480x270 viewport. Hit zones are wider than these.
+## Drawn buttons, in viewport pixels. Jump and hint sit this far in from the
+## right edge, which moves when a stage widens the view. Hit zones are wider.
 const LEFT_CENTER := Vector2(34.0, 232.0)
 const RIGHT_CENTER := Vector2(92.0, 232.0)
-const JUMP_CENTER := Vector2(440.0, 226.0)
-const HINT_CENTER := Vector2(440.0, 168.0)
+const JUMP_FROM_RIGHT := Vector2(40.0, 226.0)
+const HINT_FROM_RIGHT := Vector2(40.0, 168.0)
 const MOVE_RADIUS := 22.0
 const JUMP_RADIUS := 28.0
 const HINT_RADIUS := 15.0
 ## Touches below this line in the outer columns drive the pad.
 const PAD_TOP := 150.0
 const MOVE_ZONE_RIGHT := 150.0
-const JUMP_ZONE_LEFT := 370.0
+## The jump zone starts this far in from the right edge.
+const JUMP_ZONE_WIDTH := 110.0
 const FILL := Color(0.08, 0.06, 0.16, 0.38)
 const RIM := Color(1.0, 0.86, 0.55, 0.55)
 const LIT := Color(1.0, 0.72, 0.3, 0.55)
@@ -51,6 +57,7 @@ func _notification(what: int) -> void:
 
 
 func _process(_delta: float) -> void:
+	_fit_screen()
 	var shown := active and _pad_wanted()
 	if shown != _shown:
 		_shown = shown
@@ -113,19 +120,43 @@ func _hud() -> StageHud:
 	return get_tree().get_first_node_in_group(&"stage_hud") as StageHud
 
 
+## Keys and gamepads keep the crisp whole-number scale and 16:9 view.
+func _fit_screen() -> void:
+	var window := get_window()
+	var stretch := Window.CONTENT_SCALE_STRETCH_FRACTIONAL if active else Window.CONTENT_SCALE_STRETCH_INTEGER
+	var wide := active and get_tree().current_scene is StageLevel
+	var aspect := Window.CONTENT_SCALE_ASPECT_EXPAND if wide else Window.CONTENT_SCALE_ASPECT_KEEP
+	if window.content_scale_stretch != stretch:
+		window.content_scale_stretch = stretch
+	if window.content_scale_aspect != aspect:
+		window.content_scale_aspect = aspect
+
+
+func jump_center() -> Vector2:
+	return Vector2(_view_width() - JUMP_FROM_RIGHT.x, JUMP_FROM_RIGHT.y)
+
+
+func hint_center() -> Vector2:
+	return Vector2(_view_width() - HINT_FROM_RIGHT.x, HINT_FROM_RIGHT.y)
+
+
+func _view_width() -> float:
+	return _pad.get_viewport_rect().size.x
+
+
 func _duel_open() -> bool:
 	var hud := _hud()
 	return hud != null and hud.is_duel_open()
 
 
 func _action_at(pos: Vector2) -> StringName:
-	if _duel_open() and pos.distance_to(HINT_CENTER) <= HINT_RADIUS + 10.0:
+	if _duel_open() and pos.distance_to(hint_center()) <= HINT_RADIUS + 10.0:
 		return &"hint"
 	if pos.y < PAD_TOP:
 		return &""
 	if pos.x < MOVE_ZONE_RIGHT:
 		return &"move_left" if pos.x < (LEFT_CENTER.x + RIGHT_CENTER.x) / 2.0 else &"move_right"
-	if pos.x > JUMP_ZONE_LEFT:
+	if pos.x > _view_width() - JUMP_ZONE_WIDTH:
 		return &"jump"
 	return &""
 
@@ -172,12 +203,12 @@ func _draw_pad() -> void:
 	_draw_arrow(LEFT_CENTER, -1.0)
 	_draw_button(RIGHT_CENTER, MOVE_RADIUS, _is_held(&"move_right"))
 	_draw_arrow(RIGHT_CENTER, 1.0)
-	_draw_button(JUMP_CENTER, JUMP_RADIUS, _is_held(&"jump"))
-	var c := JUMP_CENTER
+	var c := jump_center()
+	_draw_button(c, JUMP_RADIUS, _is_held(&"jump"))
 	_pad.draw_colored_polygon(PackedVector2Array([c + Vector2(0, -11), c + Vector2(11, 5), c + Vector2(-11, 5)]), GLYPH)
 	if _duel_open():
-		_draw_button(HINT_CENTER, HINT_RADIUS, _is_held(&"hint"))
-		_pad.draw_string(FONT, HINT_CENTER + Vector2(-8, 5), "?", HORIZONTAL_ALIGNMENT_CENTER, 16, 14, GLYPH)
+		_draw_button(hint_center(), HINT_RADIUS, _is_held(&"hint"))
+		_pad.draw_string(FONT, hint_center() + Vector2(-8, 5), "?", HORIZONTAL_ALIGNMENT_CENTER, 16, 14, GLYPH)
 
 
 func _draw_button(center: Vector2, radius: float, held: bool) -> void:
