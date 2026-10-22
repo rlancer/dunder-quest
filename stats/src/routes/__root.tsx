@@ -11,7 +11,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "robots", content: "noindex" },
-      { title: "Ember Trail Stats" },
+      { title: "Ember Trail Admin" },
     ],
     links: [
       { rel: "stylesheet", href: styles },
@@ -29,7 +29,7 @@ function Root() {
     <Document>
       <header className="bar">
         <Link to="/" className="brand">
-          Ember Trail <span>stats</span>
+          Ember Trail <span>admin</span>
         </Link>
         <nav>
           <Link to="/" search={true} activeOptions={{ exact: true, includeSearch: false }}>
@@ -38,6 +38,7 @@ function Root() {
           <Link to="/questions" search={true} activeOptions={{ includeSearch: false }}>
             Duel questions
           </Link>
+          <Link to="/dev">Dev notes</Link>
         </nav>
       </header>
       <main>

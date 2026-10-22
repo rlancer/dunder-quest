@@ -169,7 +169,7 @@ def stage_url(stage: dict, prefix: str) -> str:
     return f"{prefix}lessons/{stage['slug']}/"
 
 
-NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("admin/", "Admin & testing"), ("#download", "Download")]
+NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("#download", "Download")]
 
 
 def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "") -> str:
@@ -205,7 +205,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 </main>
 <footer class="foot">
   <p><img src="{prefix}static/img/emberseed.png" alt="" width="12" height="12"> Ember Trail. A pebble's journey to the kiln, and six lessons of Python on the way.</p>
-  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}admin/">Admin &amp; testing</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{REPO}">Source on GitHub</a></p>
 </footer>
 {scripts}
 </body>
@@ -459,90 +459,12 @@ def build_guide(prefix: str) -> str:
     <div>
       <p><b>Spellbook:</b> pause with Esc to open it. It keeps every scroll you've read, so you can study before a trial.</p>
       <p><b>Results:</b> when you clear a stage, you see your seeds, time and falls. Your best time and seed count for each stage show on the world map.</p>
-      <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file (the <a href="{prefix}admin/#save">admin page</a> says where). To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
+      <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file in the Godot user folder: <code>%APPDATA%\\Godot\\app_userdata\\Ember Trail\\</code> on Windows, <code>~/Library/Application Support/Godot/app_userdata/Ember Trail/</code> on macOS, and <code>~/.local/share/godot/app_userdata/Ember Trail/</code> on Linux. To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
     </div>
     <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_book.png" alt="The Spellbook in the pause menu listing scrolls read so far" width="480" height="270" loading="lazy"><figcaption>The Spellbook, from the pause menu.</figcaption></figure>
   </div>
 </section>"""
     return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Ember Trail.")
-
-
-def build_admin(prefix: str) -> str:
-    tests = [
-        ("tests/flow_check.tscn", "Drives the menus through real scene changes: title, map, Amber Hollow, pause, a fall and respawn, a full wizard duel, and back. Prints <code>FLOW result=ok</code>."),
-        ("tests/lesson_check.tscn", "Drives each stage's lesson pieces with real input: scroll cards, the index row, the duel (seal, clock, hints, sparks and a knockout), the vault, the kiln lift and the Spellbook."),
-        ("tests/trail_check.tscn", "A bot plays all six stages start to finish with real input. It reads every card, solves each gadget, fights each duel while dodging spells, and chains through the waygates. Then it checks that the wrong answers really fail and that each stage's seeds match the map. Add <code>-- --from=4</code> to start later, or <code>-- --checks</code> for just the checks."),
-        ("tests/look_tour.tscn", "Opens each screen in a real window and saves a screenshot to <code>tests/shots/tour_*.png</code>. Add <code>-- --only=fork</code> to capture only matching steps."),
-    ]
-    test_rows = "".join(f"<tr><th scope=row><code>{t}</code></th><td>{d}</td></tr>" for t, d in tests)
-    stage_rows = "".join(
-        f"<tr><td><kbd>{s['id']}</kbd></td><td>{esc(s['name'])}</td><td><code>res://levels/level_0{s['id']}.tscn</code></td></tr>"
-        for s in STAGES
-    )
-    body = f"""
-<section class="section page-head">
-  <p class="kicker">Admin &amp; testing</p>
-  <h1>Developer controls</h1>
-  <p class="lede">Shortcuts for testing the game without playing through it. They work only in <b>debug builds</b>, meaning a run started from the Godot editor or with the <code>godot</code> command. The game on this site and the downloads are release builds, so players can't use them.</p>
-</section>
-
-<section class="section" aria-labelledby="skip-h">
-  <h2 id="skip-h">Skip to any stage</h2>
-  <p>On the world map, press a <b>number key</b> to go straight into that stage, even if it's locked. Your save doesn't change, so locked stages stay locked on the map. Clearing a stage this way records the clear as usual and unlocks the next stage.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th scope=col>Key</th><th scope=col>Stage</th><th scope=col>Scene</th></tr></thead>
-    <tbody>{stage_rows}</tbody>
-  </table></div>
-  <p class="fine">This is <code>_debug_stage_skip</code> in <code>levels/world_map.gd</code>, gated on <code>OS.is_debug_build()</code>.</p>
-</section>
-
-<section class="section" aria-labelledby="cli-h">
-  <h2 id="cli-h">Launch a scene directly</h2>
-  <p>Pass a scene path to skip the title and map. Each stage scene runs on its own.</p>
-  {code_block('godot --path . res://levels/level_04.tscn      # straight into Smelter\'s Fork' + chr(10) + 'godot --path . res://levels/world_map.tscn     # straight to the map' + chr(10) + 'godot --path .                                 # normal start, title screen', 'Terminal, from the repo root')}
-  <p>In the editor, open a stage scene and press <kbd>F6</kbd> (Run Current Scene) to do the same thing.</p>
-</section>
-
-<section class="section" aria-labelledby="save-h" id="save">
-  <h2 id="save-h">Progress and the save file</h2>
-  <p>Progress lives in <code>user://cinder_progression.json</code>. It stores unlocked and cleared stages, best seeds and times, total falls, and the scrolls you've read.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th scope=col>Where it runs</th><th scope=col>Location</th></tr></thead>
-    <tbody>
-      <tr><th scope=row>Windows</th><td><code>%APPDATA%\\Godot\\app_userdata\\Ember Trail\\</code></td></tr>
-      <tr><th scope=row>macOS</th><td><code>~/Library/Application Support/Godot/app_userdata/Ember Trail/</code></td></tr>
-      <tr><th scope=row>Linux</th><td><code>~/.local/share/godot/app_userdata/Ember Trail/</code></td></tr>
-      <tr><th scope=row>Browser</th><td>The browser's IndexedDB for this site. Clear the site data to reset it.</td></tr>
-    </tbody>
-  </table></div>
-  <p><b>Reset:</b> on the title screen, choose <em>New game</em> and press it again to confirm. That deletes the file.</p>
-  <p><b>Unlock everything:</b> with the game closed, edit the file and set every stage under <code>"unlocked"</code> to <code>true</code>.</p>
-  {code_block('"unlocked": {"1": true, "2": true, "3": true, "4": true, "5": true, "6": true}', 'cinder_progression.json')}
-  <p class="fine">Tests set <code>GameProgression.persist = false</code> so a bot run never overwrites your real save.</p>
-</section>
-
-<section class="section" aria-labelledby="tests-h">
-  <h2 id="tests-h">Test scenes</h2>
-  <p>Run any of these headless from the repo root with <code>godot --headless --path . res://&lt;scene&gt;</code>. <code>look_tour</code> needs a real window, so leave out <code>--headless</code>.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th scope=col>Scene</th><th scope=col>What it checks</th></tr></thead>
-    <tbody>{test_rows}</tbody>
-  </table></div>
-  <h3>Lesson bank</h3>
-  <p><code>python tools/verify_quiz.py</code> runs every scroll and question snippet in <code>data/lessons.json</code> in a fresh Python process. It checks that each marked answer matches what Python actually prints, and that every card fits on the game's screen. Run it after any change to the lessons. This site is built from the same file.</p>
-</section>
-
-<section class="section" aria-labelledby="deploy-h">
-  <h2 id="deploy-h">Builds and deploys</h2>
-  <ul class="plain">
-    <li><b>Push to <code>main</code>:</b> deploys this site and the browser game to production, and replaces the desktop downloads on the <a href="{RELEASE_PAGE}"><code>builds</code> release</a>.</li>
-    <li><b>Push to <code>dev</code>:</b> deploys to the dev site.</li>
-    <li><b>Pull request:</b> builds everything, including the desktop exports, and runs a deploy dry run. Nothing is published.</li>
-  </ul>
-  {code_block('bash scripts/export_web.sh       # site + browser game into build/site' + chr(10) + 'bash scripts/export_desktop.sh   # desktop zips into build/downloads', 'Build locally on Linux (needs bash, curl, zip and unzip; fetches Godot 4.7.2)')}
-  <p class="fine">To preview only the site, run <code>python site/build.py build/site</code>, then <code>python -m http.server -d build/site</code>, and open <code>localhost:8000</code>. The play link works only after a web export.</p>
-</section>"""
-    return page("Admin & testing", body, prefix, "admin/", "Debug-build stage skip, launching scenes directly, the save file, test scenes and the build pipeline for Ember Trail.")
 
 
 def build_404(prefix: str) -> str:
@@ -584,7 +506,6 @@ def main() -> None:
     for stage in STAGES:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
     write(out / "guide" / "index.html", build_guide("../"))
-    write(out / "admin" / "index.html", build_admin("../"))
     write(out / "404.html", build_404("/"))
     print(f"site built into {out}")
 

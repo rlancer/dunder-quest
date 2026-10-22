@@ -1,5 +1,6 @@
-// The stats dashboard and the endpoint the game reports to.
-// Cloudflare Access guards the whole host except /api/events; see README.md.
+// The admin area (ember-trail.robertlancer.com/admin) and the endpoint the game
+// reports to (stats.ember-trail.robertlancer.com/api/events). Cloudflare Access
+// guards both hosts except /api/events; see README.md.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ember-trail-stats",
@@ -11,7 +12,15 @@
   // Only the custom domain, which Access guards; no workers.dev or preview URLs.
   "workers_dev": false,
   "preview_urls": false,
-  "routes": [{ "pattern": "stats.ember-trail.robertlancer.com", "custom_domain": true }],
+  "routes": [
+    { "pattern": "stats.ember-trail.robertlancer.com", "custom_domain": true },
+    // Path routes win over the game site's custom domain, so /admin lands here.
+    { "pattern": "ember-trail.robertlancer.com/admin", "zone_name": "robertlancer.com" },
+    { "pattern": "ember-trail.robertlancer.com/admin/*", "zone_name": "robertlancer.com" }
+  ],
+  // The Vite plugin fills in the directory; the binding lets the Worker serve
+  // the build under /admin.
+  "assets": { "binding": "ASSETS" },
   "d1_databases": [
     {
       "binding": "DB",
