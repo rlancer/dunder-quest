@@ -10,4 +10,5 @@ rm -rf build/site
 mkdir -p build/site/play
 python3 "${ROOT}/site/build.py" "${ROOT}/build/site"
 "$GODOT" --headless --path "$ROOT" --export-release "Web" "build/site/play/index.html"
+python3 "${ROOT}/site/build.py" --play "${ROOT}/build/site/play/index.html"
 python3 "${ROOT}/scripts/fit_pages_limit.py" "${ROOT}/build/site/play"

@@ -6,6 +6,7 @@ the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there).
 
     python site/build.py build/site
+    python site/build.py --play build/site/play/index.html
 """
 
 from __future__ import annotations
@@ -22,6 +23,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SITE = Path(__file__).resolve().parent
 REPO = "https://github.com/rlancer/ember-trail"
+## Social previews need absolute URLs, so every page points at production,
+## even when built for the dev deploy.
+SITE_URL = "https://ember-trail.robertlancer.com/"
+## Cloudflare Web Analytics site token (dashboard: Analytics & Logs, Web
+## Analytics). It's public, since it ships in every page. Empty leaves the
+## beacon out.
+CF_ANALYTICS_TOKEN = ""
 ## A rolling release CI refreshes on every push to main.
 DOWNLOADS = f"{REPO}/releases/download/builds"
 RELEASE_PAGE = f"{REPO}/releases/tag/builds"
@@ -172,7 +180,34 @@ def stage_url(stage: dict, prefix: str) -> str:
 NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("#download", "Download")]
 
 
-def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "") -> str:
+def head_tags(title: str, description: str, path: str | None, image: str, alt: str) -> str:
+    """Social preview and analytics tags. `path` is the page's address under
+    the site root, or None for pages with no address of their own (the 404)."""
+    url = f"{SITE_URL}{path}" if path is not None else ""
+    tags = [
+        f'<link rel="canonical" href="{url}">' if url else "",
+        '<meta property="og:type" content="website">',
+        '<meta property="og:site_name" content="Ember Trail">',
+        f'<meta property="og:title" content="{esc(title)}">',
+        f'<meta property="og:description" content="{esc(description)}">',
+        f'<meta property="og:url" content="{url}">' if url else "",
+        f'<meta property="og:image" content="{SITE_URL}static/img/og/{image}">',
+        '<meta property="og:image:width" content="1200">',
+        '<meta property="og:image:height" content="630">',
+        f'<meta property="og:image:alt" content="{esc(alt)}">',
+        '<meta name="twitter:card" content="summary_large_image">',
+        '<meta name="theme-color" content="#15122a">',
+    ]
+    if CF_ANALYTICS_TOKEN:
+        tags.append(f"""<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{{"token": "{CF_ANALYTICS_TOKEN}"}}'></script>""")
+    return "\n".join(t for t in tags if t)
+
+
+HOME_ALT = "Ember Trail title art: a pebble looks out over a valley of ruins toward a smoking kiln volcano."
+
+
+def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "",
+         path: str | None = None, image: str = "home.png", image_alt: str = HOME_ALT) -> str:
     links = []
     for href, label in NAV:
         target = f"{prefix}{href}" if not href.startswith("#") else f"{prefix}{href}"
@@ -187,6 +222,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{esc(full_title)}</title>
 <meta name="description" content="{esc(desc)}">
+{head_tags(full_title, desc, path, image, image_alt)}
 <link rel="icon" href="{prefix}static/img/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -287,7 +323,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
 </section>
 {downloads_section(prefix)}
 """
-    return page("", body, prefix)
+    return page("", body, prefix, path="")
 
 
 def scroll_card(scroll: dict, topic: str) -> str:
@@ -367,6 +403,8 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
         f"{lesson['topic']} ({stage['name']})", body, prefix, "lessons/",
         f"Stage {stage['id']} of Ember Trail teaches {lesson['topic']}: the lore scrolls, the stage puzzle, and a practice run of the {stage['wizard']}'s trial.",
         f'<script src="{prefix}static/trial.js"></script>',
+        path=f"lessons/{stage['slug']}/", image=f"{stage['slug']}.png",
+        image_alt=f"Stage {stage['id']}, {stage['name']}: {lesson['topic']}, with the {stage['wizard']}'s duel question on screen.",
     )
 
 
@@ -388,7 +426,8 @@ def build_lessons_index(bank: dict, prefix: str) -> str:
   <p class="lede">Every scroll, puzzle and wizard question from the game, one stage per page. Read them before you play, or come back after a stage to review. All the code is plain Python 3, so you can paste any snippet into a Python prompt and run it.</p>
 </section>
 <ol class="lesson-list">{"".join(items)}</ol>"""
-    return page("Lessons", body, prefix, "lessons/", "All six Python lessons from Ember Trail: lists, dictionaries, loops, conditions, functions and comprehensions.")
+    return page("Lessons", body, prefix, "lessons/", "All six Python lessons from Ember Trail: lists, dictionaries, loops, conditions, functions and comprehensions.",
+                path="lessons/", image="lessons.png", image_alt="The six Python topics in Ember Trail, one per stage.")
 
 
 def build_guide(prefix: str) -> str:
@@ -464,7 +503,7 @@ def build_guide(prefix: str) -> str:
     <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_book.png" alt="The Spellbook in the pause menu listing scrolls read so far" width="480" height="270" loading="lazy"><figcaption>The Spellbook, from the pause menu.</figcaption></figure>
   </div>
 </section>"""
-    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Ember Trail.")
+    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Ember Trail.", path="guide/")
 
 
 def build_404(prefix: str) -> str:
@@ -483,7 +522,23 @@ def write(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+def tag_play_page(index: Path) -> None:
+    """Give the game's exported page the same preview and analytics tags as
+    the site. Godot writes play/index.html after this script builds the
+    pages, so `scripts/export_web.sh` runs this as a second step."""
+    desc = "Play Ember Trail, a pixel-art platformer that teaches Python, right in your browser."
+    text = index.read_text(encoding="utf-8")
+    if 'property="og:title"' in text:
+        return
+    tags = f'<meta name="description" content="{esc(desc)}">\n{head_tags("Play Ember Trail", desc, "play/", "home.png", HOME_ALT)}\n'
+    index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
+    print(f"tagged {index}")
+
+
 def main() -> None:
+    if sys.argv[1:2] == ["--play"]:
+        tag_play_page(Path(sys.argv[2]))
+        return
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "build" / "site").resolve()
     out.mkdir(parents=True, exist_ok=True)
     bank = json.loads((ROOT / "data" / "lessons.json").read_text(encoding="utf-8"))
