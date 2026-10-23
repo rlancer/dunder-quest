@@ -65,5 +65,10 @@ In rough priority order. Tick items off here as they land.
 - [ ] **Vertical Short** (1080×1920, ≤ 60 s). The compositor can do it with new `W`/`H` and per-shot crops; see PLAN.md §8 for the two layouts.
 - [ ] **GIF loops** (3–6 s) of the bridge build and a duel, for the site and social posts.
 - [ ] **Re-capture after game fixes.** Several items in GAME_IMPROVEMENTS.md (bridge text, duel framing, "Ward broken!") change how shots read, so re-capture once they land.
+  - Landed in #23 and #25 (items 1–4). Shots in `tools/make_trailer.py` that change:
+    - `BRIDGE = 9290`: the `span(5) returns 14` text now floats up from under the span blocks, not over the `def span(n)` sign. Check the shake still lines up with the bump at 9356.
+    - The six finale `duels` (1000, 3322, 5683, 7770, 9876, 12075), `ARENA = 5560` and the thumbnail at 5732: while a question is open, the camera now eases in (up to about ×1.2) on the blocks and both figures, and "Ward broken!" holds about 1 s with a thicker outline.
+    - Every running shot: the run bob now follows game time, so it no longer drifts against Movie Maker frames.
+  - The changes are visual only and gameplay timing is the same, so the source frame numbers above should still match a fresh capture. Spot-check them against the new contact sheets before re-rendering.
 - [ ] **Upload.** Use the YouTube checklist in PLAN.md §8, then embed the video on dunderquest.com. Don't host video files on Cloudflare Pages.
 - [ ] **Steam (later).** Raise the bitrate to at least 5 Mbps (the current 1080p is ~2.3 Mbps) and remove any text that says "free in your browser".
