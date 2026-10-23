@@ -317,6 +317,14 @@ func close_duel() -> void:
 		item.show()
 
 
+## The part of the screen the duel's strips and the touch buttons leave clear.
+func duel_clear_rect() -> Rect2:
+	var rows := _duel.clear_band()
+	var sides := TouchControls.covered_sides()
+	var width := get_viewport().get_visible_rect().size.x
+	return Rect2(sides.x, rows.x, width - sides.x - sides.y, rows.y - rows.x)
+
+
 func is_duel_open() -> bool:
 	return _duel != null and _duel.visible
 

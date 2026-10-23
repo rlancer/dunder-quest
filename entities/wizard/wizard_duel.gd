@@ -46,6 +46,14 @@ const RIGHT_HOLD := 2.4
 const WRONG_HOLD := 3.6
 ## Extra time "Ward broken!" stays fully visible, so it reads for about a second.
 const WARD_TEXT_HOLD := 0.5
+## How long the camera stays in on a right answer before easing back out.
+const FRAME_HOLD := 0.6
+## Room kept around the blocks, the wizard and the pebble when framing them.
+const FRAME_PAD := 10.0
+## Above a block, the room "Ward broken!" floats up into.
+const FRAME_TEXT_ROOM := 50.0
+## Right of and above the wizard, the room his speech bubble takes.
+const FRAME_BUBBLE := Vector2(30.0, -62.0)
 ## Quiet time after a question appears, before spells start: a base plus a
 ## beat per line of code, so a longer snippet gets longer to read.
 const READ_BASE := 3.5
@@ -95,6 +103,8 @@ var _calm: float = 0.0
 var _spell_clock: float = 0.0
 var _spell_turn: int = 0
 var _invulnerable: float = 0.0
+## Time left framing the arena after a right answer.
+var _frame_hold: float = 0.0
 
 
 func _ready() -> void:
@@ -159,6 +169,7 @@ func _physics_process(delta: float) -> void:
 				_ask()
 		State.ASKING:
 			_tick_guard(delta)
+			_frame_view()
 			_calm -= delta
 			if _calm <= 0.0:
 				_spell_clock -= delta
@@ -167,6 +178,11 @@ func _physics_process(delta: float) -> void:
 					_spell_clock = float(_pace()[0])
 		State.VERDICT:
 			_tick_guard(delta)
+			_frame_hold -= delta
+			if _frame_hold > 0.0:
+				_frame_view()
+			else:
+				player.camera.release_focus()
 			_timer -= delta
 			if _timer <= 0.0:
 				if wizard.wards_left <= 0:
@@ -302,6 +318,7 @@ func _on_block_bumped(answer_block: RuneBlock) -> void:
 		player.camera.shake(3.0)
 		Fx.hitstop(get_tree(), 0.07)
 		_timer = RIGHT_HOLD
+		_frame_hold = FRAME_HOLD
 	else:
 		misses += 1
 		answer_block.flash(BAD)
@@ -310,6 +327,7 @@ func _on_block_bumped(answer_block: RuneBlock) -> void:
 		wizard.zap(player)
 		_hurt(Vector2(-140.0 if player.global_position.x > answer_block.global_position.x else 140.0, -200.0), true)
 		_timer = WRONG_HOLD
+		_frame_hold = 0.0
 	state = State.VERDICT
 	Telemetry.track("duel_answer", stage_id, {
 		"q": _question_index(),
@@ -458,7 +476,19 @@ func _tick_guard(delta: float) -> void:
 	player.sprite.modulate.a = 0.35 if blink else 1.0
 
 
+## Eases the camera in on the answer blocks, the wizard and the pebble, in
+## the screen the duel's strips and the touch buttons leave clear.
+func _frame_view() -> void:
+	# The pebble's feet, 8 px below its middle.
+	var box := Rect2(player.global_position + Vector2(0.0, 8.0), Vector2.ZERO).expand(wizard.global_position + FRAME_BUBBLE)
+	for answer_block in _blocks:
+		box = box.expand(answer_block.global_position + Vector2(-8.0, -FRAME_TEXT_ROOM))
+	var clear := hud.duel_clear_rect() if hud != null else get_viewport_rect()
+	player.camera.focus_on(box.grow(FRAME_PAD), clear)
+
+
 func _restore_view() -> void:
 	if player != null:
 		player.sprite.modulate.a = 1.0
+		player.camera.release_focus(true)
 		player.set_camera_bounds(stage_bounds)

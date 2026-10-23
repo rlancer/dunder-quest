@@ -229,6 +229,13 @@ func say(text: String, color: Color = SPEECH) -> void:
 	_sub.position = Vector2(6.0, 268.0 - _sub.size.y).round()
 
 
+## The screen rows the arena shows through, between the question strip and
+## the speech strip, as (top, bottom).
+func clear_band() -> Vector2:
+	var bottom := _sub.position.y if _sub.visible else size.y
+	return Vector2(_top.position.y + _top.size.y, bottom)
+
+
 func dimmed() -> Array:
 	return _dimmed.keys()
 

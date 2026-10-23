@@ -32,12 +32,13 @@ Suggested order: 1, 2 and 4 are quick one-file fixes and can share a PR. Item 3 
 - **Check:** Trigger hitstop while running; the sprite should freeze in place. The run bob should look the same as before at normal speed.
 - **Done:** `_bob_time` accumulates game-time `delta` while running on the ground and resets otherwise, so each run starts on the up step. Same 0.14 s step. In a 1 s hitstop mid-run the sprite no longer moves (it flipped 3 times before).
 
-### 3. [ ] Duels are hard to read
+### 3. [x] Duels are hard to read
 
 - **Problem:** The pebble and the wizard are about 12–16 px tall, at opposite edges of a 480 px arena. While a question is open, the eye has nowhere to land, and in a video (or on a phone) it's hard to tell what's happening.
 - **Where:** `entities/wizard/wizard_duel.gd` (engage/asking states) and the player camera.
 - **Fix:** While `is_asking()` is true, tween the camera toward the midpoint between the pebble and the wizard, with a slight zoom (×1.25–1.5 at integer-friendly steps). Ease back out when the ward breaks. Keep both figures and the answer blocks in frame.
 - **Check:** Play a duel at phone size. You should be able to read the question, the answer blocks and both figures without searching for them.
+- **Done:** While a question is open, `PlayerCamera.focus_on` eases (0.5 s, sine out) onto a box around the four blocks, the wizard with his speech bubble, the pebble's feet, and the room "Ward broken!" floats into. It zooms in as far as that box fits in the screen the duel's strips (and, on touch, the buttons) leave clear, capped at ×1.25. After a right answer it holds 0.6 s, then eases out (0.6 s, sine in-out). A wrong answer eases out right away. The fight ending or being called off snaps the camera back. In practice it reaches about ×1.19 on desktop (the wizard's bubble is the limit), about ×1.13 with the pebble far left, and stays at about ×1.0 on a phone, where zooming would push the pebble under the move buttons. Non-integer zoom makes some pixel columns uneven, which was the accepted trade-off.
 
 ### 4. [x] "Ward broken!" vanishes too fast
 

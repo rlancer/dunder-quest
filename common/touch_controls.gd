@@ -132,6 +132,13 @@ func _fit_screen() -> void:
 		window.content_scale_aspect = aspect
 
 
+## How far the shown buttons reach in from the left and right screen edges.
+func covered_sides() -> Vector2:
+	if not _shown:
+		return Vector2.ZERO
+	return Vector2(RIGHT_CENTER.x + MOVE_RADIUS, JUMP_FROM_RIGHT.x + JUMP_RADIUS)
+
+
 func jump_center() -> Vector2:
 	return Vector2(_view_width() - JUMP_FROM_RIGHT.x, JUMP_FROM_RIGHT.y)
 
