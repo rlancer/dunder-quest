@@ -30,6 +30,9 @@ SITE_URL = "https://dunderquest.com/"
 ## Analytics). It's public, since it ships in every page. Empty leaves the
 ## beacon out.
 CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
+## The trailer on YouTube (built by tools/make_trailer.py). The home page shows
+## its thumbnail and only loads the player once someone clicks it.
+TRAILER_ID = "dXOdBei8838"
 ## A rolling release CI refreshes on every push to main.
 DOWNLOADS = f"{REPO}/releases/download/builds"
 RELEASE_PAGE = f"{REPO}/releases/tag/builds"
@@ -301,9 +304,20 @@ def build_home(bank: dict, prefix: str = "") -> str:
     <div class="cta">
       <a class="btn" href="{prefix}play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#download">Download for desktop</a>
+      <a class="btn btn-ghost" href="#trailer">Watch the trailer</a>
     </div>
     <p class="fine">Keyboard, gamepad or touch. On a phone, turn it sideways and use the on-screen buttons.</p>
   </div>
+</section>
+
+<section class="section" id="trailer" aria-labelledby="trailer-h">
+  <p class="kicker">The trailer</p>
+  <h2 id="trailer-h">One minute on the trail</h2>
+  <a class="trailer" href="https://www.youtube.com/watch?v={TRAILER_ID}" data-yt="{TRAILER_ID}">
+    <img src="{prefix}static/img/trailer.png" alt="Trailer thumbnail: the Kiln Archmage's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
+    <span class="trailer-play" aria-hidden="true"></span>
+    <span class="sr">Play the Dunder Quest trailer</span>
+  </a>
 </section>
 
 <section class="section" aria-labelledby="trail-h">
@@ -332,7 +346,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
 </section>
 {downloads_section(prefix)}
 """
-    return page("", body, prefix, path="")
+    return page("", body, prefix, scripts=f'<script src="{prefix}static/trailer.js"></script>', path="")
 
 
 def scroll_card(scroll: dict, topic: str) -> str:
