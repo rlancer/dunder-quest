@@ -158,8 +158,8 @@ def logo() -> Image.Image:
     draw.rounded_rectangle((0, 0, 128 * s - 1, 128 * s - 1), 16 * s, fill=NIGHT)
     draw.rounded_rectangle((4 * s, 4 * s, 124 * s - 1, 124 * s - 1), 12 * s, outline=GOLD, width=4 * s)
     for x, y, w, h, fill in [
-        (56, 28, 24, 8, PARCHMENT), (48, 36, 8, 24, PARCHMENT), (72, 36, 8, 64, PARCHMENT), (56, 60, 16, 8, PARCHMENT),
-        (12, 84, 14, 8, EMBER), (29, 84, 14, 8, EMBER), (85, 84, 14, 8, EMBER), (102, 84, 14, 8, EMBER),
+        (56, 24, 24, 8, PARCHMENT), (48, 32, 8, 24, PARCHMENT), (72, 32, 8, 72, PARCHMENT), (56, 56, 16, 8, PARCHMENT),
+        (12, 80, 14, 8, EMBER), (29, 80, 14, 8, EMBER), (85, 80, 14, 8, EMBER), (102, 80, 14, 8, EMBER),
     ]:
         draw.rectangle((x * s, y * s, (x + w) * s - 1, (y + h) * s - 1), fill=fill)
     return img

@@ -2,15 +2,15 @@
   <rect width="128" height="128" rx="16" fill="#15122a"/>
   <rect x="4" y="4" width="120" height="120" rx="12" fill="none" stroke="#f2b544" stroke-width="4"/>
   <g fill="#f4e4c4">
-    <rect x="56" y="28" width="24" height="8"/>
-    <rect x="48" y="36" width="8" height="24"/>
-    <rect x="72" y="36" width="8" height="64"/>
-    <rect x="56" y="60" width="16" height="8"/>
+    <rect x="56" y="24" width="24" height="8"/>
+    <rect x="48" y="32" width="8" height="24"/>
+    <rect x="72" y="32" width="8" height="72"/>
+    <rect x="56" y="56" width="16" height="8"/>
   </g>
   <g fill="#ff8a3d">
-    <rect x="12" y="84" width="14" height="8"/>
-    <rect x="29" y="84" width="14" height="8"/>
-    <rect x="85" y="84" width="14" height="8"/>
-    <rect x="102" y="84" width="14" height="8"/>
+    <rect x="12" y="80" width="14" height="8"/>
+    <rect x="29" y="80" width="14" height="8"/>
+    <rect x="85" y="80" width="14" height="8"/>
+    <rect x="102" y="80" width="14" height="8"/>
   </g>
 </svg>
