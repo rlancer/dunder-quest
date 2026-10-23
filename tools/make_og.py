@@ -68,17 +68,17 @@ def shadowed(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, fnt, fil
 
 
 def wordmark(draw: ImageDraw.ImageDraw, xy: tuple[int, int], fnt, offset: int = 4) -> int:
-    """`__Dunder Quest__`, the logo: gold letters between ember underscores,
+    """`__dunder_quest__`, the logo: gold letters between ember underscores,
     the way Python's dunder names sit between theirs. Returns the width drawn."""
     x, y = xy
-    for part, fill in (("__", EMBER), ("Dunder Quest", GOLD), ("__", EMBER)):
+    for part, fill in (("__", EMBER), ("dunder_quest", GOLD), ("__", EMBER)):
         shadowed(draw, (x, y), part, fnt, fill, offset)
         x += int(draw.textlength(part, font=fnt))
     return x - xy[0]
 
 
 def wordmark_width(draw: ImageDraw.ImageDraw, fnt) -> int:
-    return int(sum(draw.textlength(part, font=fnt) for part in ("__", "Dunder Quest", "__")))
+    return int(sum(draw.textlength(part, font=fnt) for part in ("__", "dunder_quest", "__")))
 
 
 def gradient_left(img: Image.Image, width: int, strength: int) -> None:
@@ -105,7 +105,7 @@ def home_card() -> Image.Image:
 def lessons_card(bank: dict) -> Image.Image:
     img = backdrop(0.72)
     d = ImageDraw.Draw(img)
-    shadowed(d, (72, 56), "__DUNDER QUEST__ · LESSONS", font(LABEL, 44), GOLD, 3)
+    shadowed(d, (72, 56), "__dunder_quest__ · LESSONS", font(LABEL, 44), GOLD, 3)
     shadowed(d, (72, 104), "The Python you learn on the trail", font(PIXEL, 60), PARCHMENT)
     topics = [bank[str(s["id"])]["topic"] for s in STAGES]
     row = font(PIXEL, 38)
