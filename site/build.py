@@ -1,4 +1,4 @@
-"""Build the Ember Trail website into a static folder.
+"""Build the Dunder Quest website into a static folder.
 
 Every lesson page comes from `data/lessons.json`, the same bank the game
 reads, so the scrolls and the wizard's questions on the site are the ones
@@ -25,7 +25,7 @@ SITE = Path(__file__).resolve().parent
 REPO = "https://github.com/rlancer/ember-trail"
 ## Social previews need absolute URLs, so every page points at production,
 ## even when built for the dev deploy.
-SITE_URL = "https://ember-trail.robertlancer.com/"
+SITE_URL = "https://dunderquest.com/"
 ## Cloudflare Web Analytics site token (dashboard: Analytics & Logs, Web
 ## Analytics). It's public, since it ships in every page. Empty leaves the
 ## beacon out.
@@ -177,6 +177,11 @@ def stage_url(stage: dict, prefix: str) -> str:
     return f"{prefix}lessons/{stage['slug']}/"
 
 
+## The logo, `__Dunder Quest__`: the name between a dunder's underscores.
+## Screen readers get the name without them.
+WORDMARK = ('<span class="wordmark"><span class="sr">Dunder Quest</span>'
+            '<span aria-hidden="true"><i>__</i>Dunder Quest<i>__</i></span></span>')
+
 NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("#download", "Download")]
 
 
@@ -187,7 +192,7 @@ def head_tags(title: str, description: str, path: str | None, image: str, alt: s
     tags = [
         f'<link rel="canonical" href="{url}">' if url else "",
         '<meta property="og:type" content="website">',
-        '<meta property="og:site_name" content="Ember Trail">',
+        '<meta property="og:site_name" content="Dunder Quest">',
         f'<meta property="og:title" content="{esc(title)}">',
         f'<meta property="og:description" content="{esc(description)}">',
         f'<meta property="og:url" content="{url}">' if url else "",
@@ -204,7 +209,7 @@ def head_tags(title: str, description: str, path: str | None, image: str, alt: s
     return "\n".join(t for t in tags if t)
 
 
-HOME_ALT = "Ember Trail title art: a pebble looks out over a valley of ruins toward a smoking kiln volcano."
+HOME_ALT = "Dunder Quest title art: a pebble looks out over a valley of ruins toward a smoking kiln volcano."
 
 
 def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "",
@@ -214,8 +219,8 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
         target = f"{prefix}{href}" if not href.startswith("#") else f"{prefix}{href}"
         current = ' aria-current="page"' if active == href else ""
         links.append(f'<a href="{target}"{current}>{label}</a>')
-    full_title = "Ember Trail" if not title else f"{title} · Ember Trail"
-    desc = description or "Ember Trail is a pixel-art platformer that teaches Python. Play it in your browser or download it."
+    full_title = "Dunder Quest" if not title else f"{title} · Dunder Quest"
+    desc = description or "Dunder Quest is a pixel-art platformer that teaches Python. Play it in your browser or download it."
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -233,7 +238,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
-  <a class="brand" href="{prefix}"><img src="{prefix}static/img/pebble.png" alt="" width="16" height="24">Ember Trail</a>
+  <a class="brand" href="{prefix}"><img src="{prefix}static/img/pebble.png" alt="" width="16" height="24">{WORDMARK}</a>
   <nav aria-label="Site">{"".join(links)}</nav>
   <a class="btn btn-small" href="{prefix}play/">Play</a>
 </header>
@@ -241,7 +246,8 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 {body}
 </main>
 <footer class="foot">
-  <p><img src="{prefix}static/img/emberseed.png" alt="" width="12" height="12"> Ember Trail. A pebble's journey to the kiln, and six lessons of Python on the way.</p>
+  <p><img src="{prefix}static/img/emberseed.png" alt="" width="12" height="12"> Dunder Quest. A pebble's journey to the kiln, and six lessons of Python on the way.</p>
+  <p class="fine">Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
   <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{REPO}">Source on GitHub</a></p>
 </footer>
 {scripts}
@@ -252,9 +258,9 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 
 def downloads_section(prefix: str) -> str:
     rows = [
-        ("Windows", "ember-trail-windows.zip", "64-bit. Unzip and run <code>Ember Trail.exe</code>. If SmartScreen warns about an unknown app, choose <em>More info</em>, then <em>Run anyway</em>. The build isn't code-signed."),
-        ("macOS", "ember-trail-macos.zip", "Universal, so it runs on Apple silicon and Intel. Unzip and move the app to Applications. The first time, right-click it and choose <em>Open</em>, because the build isn't notarized."),
-        ("Linux", "ember-trail-linux.zip", "x86_64. Unzip, then run <code>./ember-trail.x86_64</code>. If it won't start, run <code>chmod +x</code> on the file first."),
+        ("Windows", "dunder-quest-windows.zip", "64-bit. Unzip and run <code>Dunder Quest.exe</code>. If SmartScreen warns about an unknown app, choose <em>More info</em>, then <em>Run anyway</em>. The build isn't code-signed."),
+        ("macOS", "dunder-quest-macos.zip", "Universal, so it runs on Apple silicon and Intel. Unzip and move the app to Applications. The first time, right-click it and choose <em>Open</em>, because the build isn't notarized."),
+        ("Linux", "dunder-quest-linux.zip", "x86_64. Unzip, then run <code>./dunder-quest.x86_64</code>. If it won't start, run <code>chmod +x</code> on the file first."),
     ]
     items = "".join(
         f'<li><a class="dl" href="{DOWNLOADS}/{file}"><span class="dl-os">{os_name}</span><span class="dl-file">{file}</span></a><p>{note}</p></li>'
@@ -287,7 +293,8 @@ def build_home(bank: dict, prefix: str = "") -> str:
 <section class="hero">
   <img class="hero-art" src="{prefix}static/img/title_art.png" alt="Pixel art of a small pebble on a cliff, looking out over an autumn valley toward a smoking kiln" width="480" height="270">
   <div class="hero-copy">
-    <h1>Ember Trail</h1>
+    <p class="prompt" aria-hidden="true">&gt;&gt;&gt; pebble.__quest__()</p>
+    <h1>{WORDMARK}</h1>
     <p class="tag">A platformer where every stage teaches you a piece of Python.</p>
     <p class="hero-sub">Guide a pebble across six stages to the kiln. Read the lore scrolls on the way, and use real code to open the path through each stage. Then duel the wizard at the exit: jump into the block with the right answer while you dodge his spells.</p>
     <div class="cta">
@@ -303,7 +310,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <h2 id="trail-h">Six stages, six lessons</h2>
   <p class="lede">Each stop on the map is a Python topic, and they build on each other: lists first, comprehensions last. Pick a stage to read its lesson and practice its trial here on the site.</p>
   <div class="map">
-    <img src="{prefix}static/img/trail_map.png" alt="The Ember Trail world map: six stages along a dirt trail from Amber Hollow to Crucible Crown" width="480" height="168">
+    <img src="{prefix}static/img/trail_map.png" alt="The Dunder Quest world map: six stages along a dirt trail from Amber Hollow to Crucible Crown" width="480" height="168">
     {markers}
   </div>
   <ol class="trail-list">{trail_list}</ol>
@@ -402,7 +409,7 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
 </article>"""
     return page(
         f"{lesson['topic']} ({stage['name']})", body, prefix, "lessons/",
-        f"Stage {stage['id']} of Ember Trail teaches {lesson['topic']}: the lore scrolls, the stage puzzle, and a practice run of the {stage['wizard']}'s trial.",
+        f"Stage {stage['id']} of Dunder Quest teaches {lesson['topic']}: the lore scrolls, the stage puzzle, and a practice run of the {stage['wizard']}'s trial.",
         f'<script src="{prefix}static/trial.js"></script>',
         path=f"lessons/{stage['slug']}/", image=f"{stage['slug']}.png",
         image_alt=f"Stage {stage['id']}, {stage['name']}: {lesson['topic']}, with the {stage['wizard']}'s duel question on screen.",
@@ -427,8 +434,8 @@ def build_lessons_index(bank: dict, prefix: str) -> str:
   <p class="lede">Every scroll, puzzle and wizard question from the game, one stage per page. Read them before you play, or come back after a stage to review. All the code is plain Python 3, so you can paste any snippet into a Python prompt and run it.</p>
 </section>
 <ol class="lesson-list">{"".join(items)}</ol>"""
-    return page("Lessons", body, prefix, "lessons/", "All six Python lessons from Ember Trail: lists, dictionaries, loops, conditions, functions and comprehensions.",
-                path="lessons/", image="lessons.png", image_alt="The six Python topics in Ember Trail, one per stage.")
+    return page("Lessons", body, prefix, "lessons/", "All six Python lessons from Dunder Quest: lists, dictionaries, loops, conditions, functions and comprehensions.",
+                path="lessons/", image="lessons.png", image_alt="The six Python topics in Dunder Quest, one per stage.")
 
 
 def build_guide(prefix: str) -> str:
@@ -460,7 +467,7 @@ def build_guide(prefix: str) -> str:
 <section class="section page-head">
   <p class="kicker">How to play</p>
   <h1>Field guide to the trail</h1>
-  <p class="lede">Ember Trail is a side-scrolling platformer. You play as a pebble, and you clear a stage by reaching its waygate. There are six stages, and clearing one opens the next on the world map.</p>
+  <p class="lede">Dunder Quest is a side-scrolling platformer. You play as a pebble, and you clear a stage by reaching its waygate. There are six stages, and clearing one opens the next on the world map.</p>
   <a class="btn" href="{prefix}play/">Play in your browser</a>
 </section>
 
@@ -499,12 +506,12 @@ def build_guide(prefix: str) -> str:
     <div>
       <p><b>Spellbook:</b> pause with Esc or the Pause button to open it. It keeps every scroll you've read, so you can study before a trial.</p>
       <p><b>Results:</b> when you clear a stage, you see your seeds, time and falls. Your best time and seed count for each stage show on the world map.</p>
-      <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file in the Godot user folder: <code>%APPDATA%\\Godot\\app_userdata\\Ember Trail\\</code> on Windows, <code>~/Library/Application Support/Godot/app_userdata/Ember Trail/</code> on macOS, and <code>~/.local/share/godot/app_userdata/Ember Trail/</code> on Linux. To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
+      <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file in the Godot user folder: <code>%APPDATA%\\Godot\\app_userdata\\Dunder Quest\\</code> on Windows, <code>~/Library/Application Support/Godot/app_userdata/Dunder Quest/</code> on macOS, and <code>~/.local/share/godot/app_userdata/Dunder Quest/</code> on Linux. To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
     </div>
     <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_book.png" alt="The Spellbook in the pause menu listing scrolls read so far" width="480" height="270" loading="lazy"><figcaption>The Spellbook, from the pause menu.</figcaption></figure>
   </div>
 </section>"""
-    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Ember Trail.", path="guide/")
+    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Dunder Quest.", path="guide/")
 
 
 def build_404(prefix: str) -> str:
@@ -512,6 +519,10 @@ def build_404(prefix: str) -> str:
 <section class="section page-head lost">
   <p class="kicker">404</p>
   <h1>That page isn't on the trail</h1>
+  <figure class="code traceback"><pre><code>Traceback (most recent call last):
+  File "quest.py", line 404, in &lt;module&gt;
+    page = trail.pages[address]
+<span class="err">KeyError</span>: 'this page'</code></pre></figure>
   <p class="lede">Check the address for a typo, or start again from one of these.</p>
   <div class="cta"><a class="btn" href="{prefix}">Home</a><a class="btn btn-ghost" href="{prefix}lessons/">Lessons</a><a class="btn btn-ghost" href="{prefix}play/">Play</a></div>
 </section>"""
@@ -527,11 +538,11 @@ def tag_play_page(index: Path) -> None:
     """Give the game's exported page the same preview and analytics tags as
     the site. Godot writes play/index.html after this script builds the
     pages, so `scripts/export_web.sh` runs this as a second step."""
-    desc = "Play Ember Trail, a pixel-art platformer that teaches Python, right in your browser."
+    desc = "Play Dunder Quest, a pixel-art platformer that teaches Python, right in your browser."
     text = index.read_text(encoding="utf-8")
     if 'property="og:title"' in text:
         return
-    tags = f'<meta name="description" content="{esc(desc)}">\n{head_tags("Play Ember Trail", desc, "play/", "home.png", HOME_ALT)}\n'
+    tags = f'<meta name="description" content="{esc(desc)}">\n{head_tags("Play Dunder Quest", desc, "play/", "home.png", HOME_ALT)}\n'
     index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
     print(f"tagged {index}")
 

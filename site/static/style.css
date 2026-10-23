@@ -1,4 +1,4 @@
-/* Ember Trail site. Colors come from the game: the dusk clear color, the
+/* Dunder Quest site. Colors come from the game: the dusk clear color, the
    gold card borders, ember orange, and the green of a cleared stage. */
 
 @font-face {
@@ -74,6 +74,11 @@ h2 { font-size: clamp(1.6rem, 3.6vw, 2.2rem); }
 h3 { font-size: 1.3rem; }
 p { margin: 0 0 1em; }
 
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+/* The logo, __Dunder Quest__: ember underscores around the name, like a dunder method */
+.wordmark i { font-style: normal; color: var(--ember); }
+
 .skip { position: absolute; left: -999px; top: 8px; background: var(--gold); color: var(--night); padding: 8px 12px; z-index: 10; }
 .skip:focus { left: 8px; }
 
@@ -145,11 +150,16 @@ main { display: block; }
 }
 .hero-copy { position: relative; z-index: 1; max-width: 1100px; width: 100%; margin: 0 auto; padding: 0 var(--gutter) 40px; }
 .hero h1 {
-  font-size: clamp(3rem, 11vw, 7rem);
+  font-size: clamp(2.6rem, 8.5vw, 6rem);
   color: #ffe08a;
   text-shadow: 0 4px 0 #8a3b12, 0 8px 0 rgba(21, 18, 42, 0.6);
   margin-bottom: 0.15em;
 }
+.hero h1 .wordmark i { text-shadow: 0 4px 0 #6e2a0c, 0 8px 0 rgba(21, 18, 42, 0.6); }
+/* The REPL line above the logo, with a blinking cursor */
+.prompt { font: clamp(1.3rem, 2.4vw, 1.7rem)/1 var(--label); color: var(--ash); margin: 0 0 4px; letter-spacing: 0.02em; }
+.prompt::after { content: ""; display: inline-block; width: 0.5em; height: 0.9em; margin-left: 0.25em; vertical-align: -0.1em; background: var(--gold); animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
 .tag { font: 600 clamp(1.25rem, 2.6vw, 1.7rem)/1.3 var(--display); color: var(--parchment); max-width: 30ch; }
 .hero-sub { max-width: 58ch; font-size: 1.08rem; }
 
@@ -359,6 +369,8 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .plain li { margin-bottom: 8px; }
 
 .lost { min-height: 50vh; }
+.traceback { max-width: var(--measure); margin: 8px 0 24px; }
+.traceback .err { color: var(--zap); }
 
 /* Footer */
 .foot { margin-top: 80px; padding: 28px var(--gutter) 40px; border-top: 2px solid var(--line); color: var(--ash); font-size: 0.95rem; text-align: center; }

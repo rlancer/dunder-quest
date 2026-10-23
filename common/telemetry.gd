@@ -1,11 +1,11 @@
 extends Node
 
-## Anonymous gameplay stats for the Ember Trail stats dashboard (stats/).
+## Anonymous gameplay stats for the Dunder Quest stats dashboard (stats/).
 ## A player is a random install id and nothing more: no names, no accounts.
 ## Events queue up and go out in small batches; when the network is down or
 ## the player switches stats off on the title screen, the game plays on.
 
-const ENDPOINT := "https://stats.ember-trail.robertlancer.com/api/events"
+const ENDPOINT := "https://stats.dunderquest.com/api/events"
 const SETTINGS_PATH := "user://telemetry.json"
 const FLUSH_SECONDS := 10.0
 const BATCH_MAX := 50

@@ -27,6 +27,7 @@ LABEL = ROOT / "assets" / "fonts" / "VT323.ttf"
 GOLD = (242, 181, 68)
 PARCHMENT = (244, 228, 196)
 ASH = (176, 169, 208)
+EMBER = (255, 138, 61)
 NIGHT = (21, 18, 42)
 LINE = (74, 79, 134)
 
@@ -66,6 +67,20 @@ def shadowed(draw: ImageDraw.ImageDraw, xy: tuple[int, int], text: str, fnt, fil
     draw.text((x, y), text, font=fnt, fill=fill)
 
 
+def wordmark(draw: ImageDraw.ImageDraw, xy: tuple[int, int], fnt, offset: int = 4) -> int:
+    """`__Dunder Quest__`, the logo: gold letters between ember underscores,
+    the way Python's dunder names sit between theirs. Returns the width drawn."""
+    x, y = xy
+    for part, fill in (("__", EMBER), ("Dunder Quest", GOLD), ("__", EMBER)):
+        shadowed(draw, (x, y), part, fnt, fill, offset)
+        x += int(draw.textlength(part, font=fnt))
+    return x - xy[0]
+
+
+def wordmark_width(draw: ImageDraw.ImageDraw, fnt) -> int:
+    return int(sum(draw.textlength(part, font=fnt) for part in ("__", "Dunder Quest", "__")))
+
+
 def gradient_left(img: Image.Image, width: int, strength: int) -> None:
     """Darken the left side so the headline reads over the art."""
     mask = Image.new("L", img.size, 0)
@@ -79,7 +94,8 @@ def home_card() -> Image.Image:
     img = backdrop(0.1)
     gradient_left(img, 900, 215)
     d = ImageDraw.Draw(img)
-    shadowed(d, (72, 150), "Ember Trail", font(PIXEL, 132), GOLD, 6)
+    shadowed(d, (80, 96), ">>> pebble.__quest__()", font(LABEL, 44), ASH, 3)
+    wordmark(d, (72, 158), font(PIXEL, 100), 6)
     shadowed(d, (78, 310), "A pixel-art platformer", font(PIXEL, 54), PARCHMENT)
     shadowed(d, (78, 372), "that teaches Python", font(PIXEL, 54), PARCHMENT)
     shadowed(d, (80, 470), "Six stages · free in your browser", font(LABEL, 44), ASH, 3)
@@ -89,7 +105,7 @@ def home_card() -> Image.Image:
 def lessons_card(bank: dict) -> Image.Image:
     img = backdrop(0.72)
     d = ImageDraw.Draw(img)
-    shadowed(d, (72, 56), "EMBER TRAIL · LESSONS", font(LABEL, 44), GOLD, 3)
+    shadowed(d, (72, 56), "__DUNDER QUEST__ · LESSONS", font(LABEL, 44), GOLD, 3)
     shadowed(d, (72, 104), "The Python you learn on the trail", font(PIXEL, 60), PARCHMENT)
     topics = [bank[str(s["id"])]["topic"] for s in STAGES]
     row = font(PIXEL, 38)
@@ -111,8 +127,7 @@ def stage_card(stage: dict, topic: str) -> Image.Image:
     shadowed(d, (64, 40), f"STAGE {stage['id']} · {stage['name'].upper()}", font(LABEL, 44), tint, 3)
     shadowed(d, (64, 84), topic, font(PIXEL, 76), PARCHMENT, 5)
     brand = font(PIXEL, 40)
-    bw = d.textlength("Ember Trail", font=brand)
-    shadowed(d, (int(W - 64 - bw), 50), "Ember Trail", brand, GOLD, 3)
+    wordmark(d, (W - 64 - wordmark_width(d, brand), 50), brand, 3)
 
     duel = Image.open(ROOT / "tests" / "shots" / DUELS[stage["slug"]]).convert("RGB")
     shot = duel.resize((duel.width * 2, duel.height * 2), Image.NEAREST)
@@ -126,14 +141,18 @@ def stage_card(stage: dict, topic: str) -> Image.Image:
 
 
 def logo() -> Image.Image:
-    """icon.svg as a 512px PNG for og:logo, which crawlers want raster."""
+    """icon.svg as a 512px PNG for og:logo, which crawlers want raster. Keep
+    the rects in step with the SVG: a pixel q between two pairs of underscores."""
     s = 4
     img = Image.new("RGBA", (128 * s, 128 * s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle((0, 0, 128 * s - 1, 128 * s - 1), 16 * s, fill="#2b2d42")
-    draw.rounded_rectangle((36 * s, 28 * s, 92 * s - 1, 100 * s - 1), 8 * s, fill="#e85d4c")
-    for x in (48, 68):
-        draw.rectangle((x * s, 44 * s, (x + 12) * s - 1, 56 * s - 1), fill="#f7f3e9")
+    draw.rounded_rectangle((0, 0, 128 * s - 1, 128 * s - 1), 16 * s, fill=NIGHT)
+    draw.rounded_rectangle((4 * s, 4 * s, 124 * s - 1, 124 * s - 1), 12 * s, outline=GOLD, width=4 * s)
+    for x, y, w, h, fill in [
+        (56, 32, 24, 8, PARCHMENT), (48, 40, 8, 24, PARCHMENT), (72, 40, 8, 56, PARCHMENT), (56, 64, 16, 8, PARCHMENT),
+        (12, 88, 14, 8, EMBER), (29, 88, 14, 8, EMBER), (85, 88, 14, 8, EMBER), (102, 88, 14, 8, EMBER),
+    ]:
+        draw.rectangle((x * s, y * s, (x + w) * s - 1, (y + h) * s - 1), fill=fill)
     return img
 
 

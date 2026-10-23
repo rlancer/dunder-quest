@@ -9,7 +9,7 @@ declare namespace Cloudflare {
 		DB: D1Database;
 		EVENT_LIMITER: RateLimit;
 		ASSETS: Fetcher;
-		GAME_ORIGINS: "https://ember-trail.robertlancer.com,https://dev.ember-trail.robertlancer.com";
+		GAME_ORIGINS: "https://dunderquest.com,https://www.dunderquest.com,https://dev.dunderquest.com,https://ember-trail.robertlancer.com";
 		ACCESS_TEAM_DOMAIN: "single-phase-capital-web-pages.cloudflareaccess.com";
 		ACCESS_AUD: "d9c9c74e20fa130322c1cad17feec13190c33a2bf309f573e134514ca4fc2471";
 		ALLOWED_EMAILS: "robert.lancer@gmail.com";

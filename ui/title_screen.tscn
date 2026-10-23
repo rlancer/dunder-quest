@@ -69,7 +69,7 @@ theme_override_constants/outline_size = 6
 theme_override_constants/shadow_offset_x = 0
 theme_override_constants/shadow_offset_y = 3
 theme_override_font_sizes/font_size = 39
-text = "Ember Trail"
+text = "__Dunder Quest__"
 horizontal_alignment = 1
 
 [node name="Tagline" type="Label" parent="LogoHolder/Logo"]
