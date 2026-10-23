@@ -197,45 +197,6 @@ pre {
   border-radius: 6px;
   white-space: pre-wrap;
 }
-.og h2 .sub {
-  font-weight: 400;
-  margin-left: 6px;
-}
-.og-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  margin-top: 12px;
-}
-.og-full {
-  flex: 1;
-  min-width: 0;
-}
-.og-full img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-}
-.og figure {
-  margin: 0;
-}
-/* Roughly what Slack shows when it doesn't use the large card: a small
-   square cropped from the middle. */
-.og-thumb {
-  width: 96px;
-  height: 96px;
-  overflow: hidden;
-  border-radius: 6px;
-}
-.og-thumb img {
-  height: 100%;
-  margin-left: -43px;
-}
-.og-logo {
-  margin-top: 10px;
-  image-rendering: pixelated;
-}
 button.sort {
   all: unset;
   cursor: pointer;

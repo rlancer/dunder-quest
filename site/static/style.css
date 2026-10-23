@@ -393,4 +393,67 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .foot { margin-top: 80px; padding: 28px var(--gutter) 40px; border-top: 2px solid var(--line); color: var(--ash); font-size: 0.95rem; text-align: center; }
 .foot img { vertical-align: -1px; width: 12px; height: 12px; }
 .foot p { margin: 0 0 8px; }
+/* The way into the brand kit: a REPL line, like the home page's. */
+.foot .help { font: 1.3rem var(--label); color: var(--ash); text-decoration: none; letter-spacing: 0.02em; }
+.foot .help:hover, .foot .help:focus-visible { color: var(--gold); }
+.foot .help:hover::after { content: "▌"; color: var(--gold); animation: blink 1.1s steps(1) infinite; }
 .banished .wards { justify-content: center; }
+
+/* Brand kit: what help(dunder_quest) prints */
+.pydoc { max-width: var(--measure); margin-top: 20px; }
+.pydoc pre { font: 1.3rem/1.25 var(--label); color: var(--parchment); }
+.kit { padding-top: 48px; }
+.kit .kicker { text-transform: none; letter-spacing: 0.02em; }
+.kit td code { white-space: nowrap; }
+.kit-logo {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 24px;
+  margin: 24px 0 12px; padding: clamp(24px, 5vw, 48px);
+  background: var(--night); border: 2px solid var(--gold);
+}
+.kit-mark {
+  margin: 0; font: 600 clamp(2.2rem, 8vw, 5rem)/1 var(--display);
+  color: #ffe08a; text-shadow: 0 4px 0 #8a3b12, 0 8px 0 rgba(21, 18, 42, 0.6);
+}
+.kit-mark i { font-style: normal; color: var(--ember); text-shadow: 0 4px 0 #6e2a0c, 0 8px 0 rgba(21, 18, 42, 0.6); }
+.kit-logo img { display: block; width: 128px; height: 128px; }
+.swatches { list-style: none; padding: 0; margin: 24px 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 18px; }
+.swatches li { display: flex; flex-direction: column; gap: 4px; font-size: 0.92rem; color: var(--ash); }
+.swatches code { align-self: flex-start; color: var(--parchment); }
+.chip { height: 64px; border: 2px solid var(--line); margin-bottom: 4px; }
+.kit-code pre { font: 1.35rem/1.3 var(--label); }
+.kit-code i { font-style: normal; }
+.kit-code .kw { color: var(--ember); }
+.kit-code .st { color: var(--gold); }
+.kit-code .nm { color: var(--parchment); }
+.kit-code .cm { color: var(--ash); }
+.specimens { list-style: none; padding: 0; margin: 20px 0; }
+.specimens li { padding: 16px 0; border-bottom: 1px solid var(--line); color: var(--ash); font-size: 0.95rem; }
+.specimens p { margin: 0 0 6px; color: var(--parchment); font-size: clamp(1.6rem, 4vw, 2.4rem); line-height: 1.15; }
+.specimens b { color: var(--parchment); }
+.sp-pixel { font-family: var(--display); }
+.sp-label { font-family: var(--label); }
+.sp-body { font-family: var(--body); }
+.art, .cards { list-style: none; padding: 0; margin: 24px 0 12px; display: grid; gap: 20px; }
+.art { grid-template-columns: repeat(auto-fill, minmax(min(45%, 220px), 1fr)); }
+.art li, .cards li { display: flex; flex-direction: column; gap: 2px; font-size: 0.92rem; color: var(--ash); }
+.art b, .cards b { font: 600 1.05rem var(--display); color: var(--parchment); margin-top: 8px; }
+.art a {
+  display: grid; place-items: center; aspect-ratio: 16 / 9; padding: 10px;
+  background: var(--night); border: 2px solid var(--line);
+}
+.art a:hover, .cards a:hover { border-color: var(--gold); }
+.art img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px 24px; margin: 24px 0 8px; }
+.facts dt { font: 1.2rem var(--label); color: var(--ember); text-transform: uppercase; letter-spacing: 0.05em; }
+.facts dd { margin: 0; }
+.cards { grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); }
+.cards li { position: relative; }
+.cards a { display: block; border: 2px solid var(--line); }
+.cards a img { display: block; width: 100%; }
+/* Roughly what a chat app shows when it skips the large card: a small
+   square cut from the middle. */
+.og-crop {
+  position: absolute; right: 8px; top: 8px; width: 64px; height: 64px; overflow: hidden;
+  border: 2px solid var(--gold); box-shadow: 0 0 0 3px var(--night); pointer-events: none;
+}
+.og-crop img { height: 100%; max-width: none; margin-left: -29px; }
