@@ -150,15 +150,16 @@ def stage_card(stage: dict, topic: str) -> Image.Image:
 
 def logo() -> Image.Image:
     """icon.svg as a 512px PNG for og:logo, which crawlers want raster. Keep
-    the rects in step with the SVG: a pixel q between two pairs of underscores."""
+    the rects in step with the SVG: a pixel q between two pairs of underscores,
+    its tail dropping past them the way it does in typed `__q__`."""
     s = 4
     img = Image.new("RGBA", (128 * s, 128 * s), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     draw.rounded_rectangle((0, 0, 128 * s - 1, 128 * s - 1), 16 * s, fill=NIGHT)
     draw.rounded_rectangle((4 * s, 4 * s, 124 * s - 1, 124 * s - 1), 12 * s, outline=GOLD, width=4 * s)
     for x, y, w, h, fill in [
-        (56, 32, 24, 8, PARCHMENT), (48, 40, 8, 24, PARCHMENT), (72, 40, 8, 56, PARCHMENT), (56, 64, 16, 8, PARCHMENT),
-        (12, 88, 14, 8, EMBER), (29, 88, 14, 8, EMBER), (85, 88, 14, 8, EMBER), (102, 88, 14, 8, EMBER),
+        (56, 28, 24, 8, PARCHMENT), (48, 36, 8, 24, PARCHMENT), (72, 36, 8, 64, PARCHMENT), (56, 60, 16, 8, PARCHMENT),
+        (12, 84, 14, 8, EMBER), (29, 84, 14, 8, EMBER), (85, 84, 14, 8, EMBER), (102, 84, 14, 8, EMBER),
     ]:
         draw.rectangle((x * s, y * s, (x + w) * s - 1, (y + h) * s - 1), fill=fill)
     return img
