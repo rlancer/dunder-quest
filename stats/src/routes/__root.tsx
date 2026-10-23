@@ -38,6 +38,7 @@ function Root() {
           <Link to="/questions" search={true} activeOptions={{ includeSearch: false }}>
             Duel questions
           </Link>
+          <Link to="/og">Social cards</Link>
           <Link to="/dev">Dev notes</Link>
         </nav>
       </header>
