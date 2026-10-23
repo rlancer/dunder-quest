@@ -22,7 +22,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SITE = Path(__file__).resolve().parent
-REPO = "https://github.com/rlancer/ember-trail"
+REPO = "https://github.com/rlancer/dunder-quest"
 ## Social previews need absolute URLs, so every page points at production,
 ## even when built for the dev deploy.
 SITE_URL = "https://dunderquest.com/"
