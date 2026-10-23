@@ -17,6 +17,7 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: write
+      pull-requests: write
     env:
       CF_SEND_TELEMETRY: "false"
     steps:
@@ -48,6 +49,28 @@ jobs:
         if: github.event_name == 'pull_request'
         working-directory: deploy
         run: npx --no-install cf deploy --mode ${{ github.base_ref == 'main' && 'production' || 'dev' }} --dry-run
+
+      # Every push to a PR also goes to dev.dunderquest.com, so it can be tried
+      # before merging. There's one dev site, so the latest push to any PR
+      # wins. PRs from forks get no secrets, so they stop at the check above.
+      - name: Deploy the PR to dev
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        working-directory: deploy
+        run: npx --no-install cf deploy --mode dev --message "PR #$PR at ${HEAD_SHA::7}"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+      - name: Link the dev deploy on the PR
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh pr comment "$PR" --edit-last --create-if-none --body "Deployed \`${HEAD_SHA::7}\` to **https://dev.dunderquest.com/**. It's one dev site for every PR, so a later push to another PR replaces it."
 
       - name: Deploy dev
         if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
