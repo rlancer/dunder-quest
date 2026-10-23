@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DevRouteImport } from './routes/dev'
+import { Route as OgRouteImport } from './routes/og'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as StagesStageRouteImport } from './routes/stages/$stage'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const DevRoute = DevRouteImport.update({
   id: '/dev',
   path: '/dev',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OgRoute = OgRouteImport.update({
+  id: '/og',
+  path: '/og',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuestionsRoute = QuestionsRouteImport.update({
@@ -38,12 +44,14 @@ const StagesStageRoute = StagesStageRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
+  '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
+  '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
 }
@@ -51,20 +59,22 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
+  '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev' | '/questions' | '/stages/$stage'
+  fullPaths: '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev' | '/questions' | '/stages/$stage'
-  id: '__root__' | '/' | '/dev' | '/questions' | '/stages/$stage'
+  to: '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
+  id: '__root__' | '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DevRoute: typeof DevRoute
+  OgRoute: typeof OgRoute
   QuestionsRoute: typeof QuestionsRoute
   StagesStageRoute: typeof StagesStageRoute
 }
@@ -83,6 +93,13 @@ declare module '@tanstack/react-router' {
       path: '/dev'
       fullPath: '/dev'
       preLoaderRoute: typeof DevRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/og': {
+      id: '/og'
+      path: '/og'
+      fullPath: '/og'
+      preLoaderRoute: typeof OgRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/questions': {
@@ -105,6 +122,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DevRoute: DevRoute,
+  OgRoute: OgRoute,
   QuestionsRoute: QuestionsRoute,
   StagesStageRoute: StagesStageRoute,
 }

@@ -81,24 +81,32 @@ def wordmark_width(draw: ImageDraw.ImageDraw, fnt) -> int:
     return int(sum(draw.textlength(part, font=fnt) for part in ("__", "dunder_quest", "__")))
 
 
-def gradient_left(img: Image.Image, width: int, strength: int) -> None:
-    """Darken the left side so the headline reads over the art."""
+def vignette(img: Image.Image, strength: int) -> None:
+    """Darken toward the middle so centered text reads over the art."""
     mask = Image.new("L", img.size, 0)
-    md = ImageDraw.Draw(mask)
-    for x in range(width):
-        md.line([(x, 0), (x, H)], fill=int(strength * (1 - x / width) ** 1.4))
-    img.paste(Image.new("RGB", img.size, NIGHT), (0, 0), mask)
+    ImageDraw.Draw(mask).ellipse((W // 2 - 520, -80, W // 2 + 520, 520), fill=strength)
+    img.paste(Image.new("RGB", img.size, NIGHT), (0, 0), mask.filter(ImageFilter.GaussianBlur(90)))
 
 
 def home_card() -> Image.Image:
-    img = backdrop(0.1)
-    gradient_left(img, 900, 215)
+    """Chat apps often show this as a thumbnail cropped from the middle, so
+    the wordmark is stacked and centered to survive a square crop."""
+    img = backdrop(0.15)
+    vignette(img, 200)
     d = ImageDraw.Draw(img)
-    shadowed(d, (80, 96), ">>> pebble.__quest__()", font(LABEL, 44), ASH, 3)
-    wordmark(d, (72, 158), font(PIXEL, 100), 6)
-    shadowed(d, (78, 310), "A pixel-art platformer", font(PIXEL, 54), PARCHMENT)
-    shadowed(d, (78, 372), "that teaches Python", font(PIXEL, 54), PARCHMENT)
-    shadowed(d, (80, 470), "Six stages · free in your browser", font(LABEL, 44), ASH, 3)
+    big = font(PIXEL, 132)
+    lines = (("__", EMBER), ("dunder_", GOLD)), (("quest", GOLD), ("__", EMBER))
+    for y, parts in zip((36, 168), lines):
+        x = (W - sum(int(d.textlength(t, font=big)) for t, _ in parts)) // 2
+        for text, fill in parts:
+            shadowed(d, (x, y), text, big, fill, 7)
+            x += int(d.textlength(text, font=big))
+    tag = font(PIXEL, 44)
+    line = "A pixel-art platformer that teaches Python"
+    shadowed(d, ((W - int(d.textlength(line, font=tag))) // 2, 334), line, tag, PARCHMENT)
+    pebble = Image.open(ROOT / "assets" / "sprites" / "pebble.png").convert("RGBA")
+    pebble = pebble.resize((pebble.width * 7, pebble.height * 7), Image.NEAREST)
+    img.paste(pebble, (W // 2 - pebble.width // 2, H - pebble.height - 16), pebble)
     return img
 
 
