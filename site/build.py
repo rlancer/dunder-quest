@@ -177,10 +177,11 @@ def stage_url(stage: dict, prefix: str) -> str:
     return f"{prefix}lessons/{stage['slug']}/"
 
 
-## The logo, `__Dunder Quest__`: the name between a dunder's underscores.
-## Screen readers get the name without them.
+## The logo, `__dunder_quest__`: the name written as a real Python dunder.
+## Screen readers get the plain name. On a narrow screen it breaks after
+## `dunder_`.
 WORDMARK = ('<span class="wordmark"><span class="sr">Dunder Quest</span>'
-            '<span aria-hidden="true"><i>__</i>Dunder Quest<i>__</i></span></span>')
+            '<span aria-hidden="true"><i>__</i>dunder_<wbr>quest<i>__</i></span></span>')
 
 NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("#download", "Download")]
 

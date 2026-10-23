@@ -76,7 +76,7 @@ p { margin: 0 0 1em; }
 
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* The logo, __Dunder Quest__: ember underscores around the name, like a dunder method */
+/* The logo, __dunder_quest__: ember underscores around the name, like a dunder method */
 .wordmark i { font-style: normal; color: var(--ember); }
 
 .skip { position: absolute; left: -999px; top: 8px; background: var(--gold); color: var(--night); padding: 8px 12px; z-index: 10; }
