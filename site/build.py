@@ -748,6 +748,7 @@ def main() -> None:
     if static.exists():
         shutil.rmtree(static)
     shutil.copytree(SITE / "static", static)
+    shutil.copyfile(SITE / "favicon.ico", out / "favicon.ico")  # painted by tools/make_og.py
     for name, src in IMAGES.items():
         shutil.copyfile(ROOT / src, static / "img" / name)
     (static / "img" / "shots").mkdir(parents=True, exist_ok=True)

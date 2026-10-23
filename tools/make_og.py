@@ -2,8 +2,9 @@
 
 Each card is the title art behind a headline in the game's own fonts. Stage
 cards add that stage's wizard duel, so a shared lesson link shows the Python
-question the player meets. Writes into `site/static/img/og/`; rerun it when a
-stage name, topic or duel capture changes.
+question the player meets. Writes into `site/static/img/og/`, plus
+`site/favicon.ico` from the logo; rerun it when a stage name, topic, duel
+capture or the logo changes.
 
     python tools/make_og.py
 """
@@ -21,6 +22,7 @@ sys.path.insert(0, str(ROOT / "site"))
 from build import STAGES  # noqa: E402
 
 OUT = ROOT / "site" / "static" / "img" / "og"
+FAVICON = ROOT / "site" / "favicon.ico"
 W, H = 1200, 630
 PIXEL = ROOT / "assets" / "fonts" / "PixelifySans.ttf"
 LABEL = ROOT / "assets" / "fonts" / "VT323.ttf"
@@ -166,10 +168,55 @@ def logo() -> Image.Image:
     return img
 
 
+# The q from the logo's grid, for drawing it again at favicon sizes.
+Q_PIXELS = [".###.", "#...#", "#...#", "#...#", ".####", "....#", "....#"]
+
+
+def tiny_logo(n: int, border: int, unit: int, under: int, pairs: int, space: int, gap: int) -> Image.Image:
+    """The logo redrawn on whole pixels at favicon size, since shrinking the
+    128px art blurs it. `under` is each underscore's width, `pairs` how many
+    sit on each side (one at 16px, where two run together anyway), `space`
+    the gap between two underscores, and `gap` the gap to the q."""
+    img = Image.new("RGBA", (n, n), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rectangle((0, 0, n - 1, n - 1), fill=GOLD)
+    draw.rectangle((border, border, n - 1 - border, n - 1 - border), fill=NIGHT)
+    for corner in ((0, 0), (n - 1, 0), (0, n - 1), (n - 1, n - 1)):
+        img.putpixel(corner, (0, 0, 0, 0))
+    side = pairs * under + (pairs - 1) * space
+    x = (n - 2 * side - 2 * gap - 5 * unit) // 2
+    top = (n - 7 * unit) // 2
+    baseline = top + 4 * unit
+
+    def underscores(x: int) -> int:
+        for _ in range(pairs):
+            draw.rectangle((x, baseline, x + under - 1, baseline + unit - 1), fill=EMBER)
+            x += under + space
+        return x - space
+
+    x = underscores(x) + gap
+    for row, line in enumerate(Q_PIXELS):
+        for col, cell in enumerate(line):
+            if cell == "#":
+                px, py = x + col * unit, top + row * unit
+                draw.rectangle((px, py, px + unit - 1, py + unit - 1), fill=PARCHMENT)
+    underscores(x + 5 * unit + gap)
+    return img
+
+
+def favicon() -> None:
+    """/favicon.ico, for tools that ask for that path instead of reading the
+    page's icon link. site/build.py copies it to the site root."""
+    sizes = [tiny_logo(16, 1, 1, 3, 1, 0, 1), tiny_logo(32, 1, 2, 3, 2, 1, 2), tiny_logo(48, 2, 3, 4, 2, 2, 3)]
+    sizes[-1].save(FAVICON, format="ICO", sizes=[im.size for im in sizes], append_images=sizes[:-1])
+    print(f"wrote {FAVICON.relative_to(ROOT)}")
+
+
 def main() -> None:
     bank = json.loads((ROOT / "data" / "lessons.json").read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     cards = {"home.png": home_card(), "lessons.png": lessons_card(bank), "logo.png": logo()}
+    favicon()
     for stage in STAGES:
         cards[f"{stage['slug']}.png"] = stage_card(stage, bank[str(stage["id"])]["topic"])
     for name, img in cards.items():
