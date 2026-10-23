@@ -44,6 +44,8 @@ const INVULNERABLE := 1.25
 const INTRO_TIME := 1.6
 const RIGHT_HOLD := 2.4
 const WRONG_HOLD := 3.6
+## Extra time "Ward broken!" stays fully visible, so it reads for about a second.
+const WARD_TEXT_HOLD := 0.5
 ## Quiet time after a question appears, before spells start: a base plus a
 ## beat per line of code, so a longer snippet gets longer to read.
 const READ_BASE := 3.5
@@ -295,7 +297,7 @@ func _on_block_bumped(answer_block: RuneBlock) -> void:
 		answer_block.set_lit(true)
 		wizard.stagger()
 		wizard.say(RIGHT_LINES.pick_random() if remaining > 0 else "No... NO!", RIGHT_HOLD)
-		Fx.float_text(get_parent(), above, "Ward broken!", GOOD.lightened(0.3))
+		Fx.float_text(get_parent(), above, "Ward broken!", GOOD.lightened(0.3), WARD_TEXT_HOLD, 5)
 		Fx.sparks(get_parent(), answer_block.global_position, GOOD, 12, 70.0)
 		player.camera.shake(3.0)
 		Fx.hitstop(get_tree(), 0.07)

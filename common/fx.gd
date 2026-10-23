@@ -42,8 +42,9 @@ static func sparks(parent: Node, at: Vector2, color: Color = SPARK, amount: int 
 	burst.color_ramp = _fade(color)
 
 
-## A short label that drifts up and fades, e.g. "+1".
-static func float_text(parent: Node, at: Vector2, text: String, color: Color = SPARK) -> void:
+## A short label that drifts up and fades, e.g. "+1". `hold` keeps it fully
+## visible that much longer, and `outline` thickens its edge, for payoffs.
+static func float_text(parent: Node, at: Vector2, text: String, color: Color = SPARK, hold: float = 0.0, outline: int = 3) -> void:
 	if parent == null or not parent.is_inside_tree():
 		return
 	var label := Label.new()
@@ -51,12 +52,12 @@ static func float_text(parent: Node, at: Vector2, text: String, color: Color = S
 	label.z_index = 20
 	label.add_theme_font_size_override(&"font_size", 13)
 	label.add_theme_color_override(&"font_color", color)
-	label.add_theme_constant_override(&"outline_size", 3)
+	label.add_theme_constant_override(&"outline_size", outline)
 	parent.add_child(label)
 	label.global_position = (at + Vector2(-8.0, -20.0)).round()
 	var tween := label.create_tween()
 	tween.tween_property(label, "position:y", label.position.y - 14.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.25).set_delay(0.3)
+	tween.parallel().tween_property(label, "modulate:a", 0.0, 0.25).set_delay(0.3 + hold)
 	tween.tween_callback(label.queue_free)
 
 

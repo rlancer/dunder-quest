@@ -124,18 +124,19 @@ static func span(n: int) -> int:
 
 
 ## Calls span with the block's number and lays that many planks from the
-## near edge. Only an exact fit stays up.
+## near edge. Only an exact fit stays up. The call's result shows below the
+## blocks, clear of the sign above them.
 func _on_call_bumped(block: RuneBlock) -> void:
-	var above := block.global_position + Vector2(-40.0, -14.0)
+	var below := block.global_position + Vector2(-40.0, 44.0)
 	if _bridged:
-		Fx.float_text(self, above, "The bridge holds", BRIDGE_TINT.lightened(0.3))
+		Fx.float_text(self, below, "The bridge holds", BRIDGE_TINT.lightened(0.3))
 		return
 	if _building:
 		return
 	_building = true
 	var length := span(block.index)
 	var fits := length == _gap()
-	Fx.float_text(self, above, "span(%d) returns %d" % [block.index, length], BRIDGE_TINT.lightened(0.4))
+	Fx.float_text(self, below, "span(%d) returns %d" % [block.index, length], BRIDGE_TINT.lightened(0.4))
 	_plank_cells.clear()
 	for offset in mini(length, _gap()):
 		_plank_cells.append(Vector2i(CHASM.x + offset, 14))
