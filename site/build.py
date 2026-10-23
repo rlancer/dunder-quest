@@ -195,6 +195,7 @@ def head_tags(title: str, description: str, path: str | None, image: str, alt: s
         '<meta property="og:image:width" content="1200">',
         '<meta property="og:image:height" content="630">',
         f'<meta property="og:image:alt" content="{esc(alt)}">',
+        f'<meta property="og:logo" content="{SITE_URL}static/img/og/logo.png">',
         '<meta name="twitter:card" content="summary_large_image">',
         '<meta name="theme-color" content="#15122a">',
     ]

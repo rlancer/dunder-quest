@@ -125,10 +125,22 @@ def stage_card(stage: dict, topic: str) -> Image.Image:
     return img
 
 
+def logo() -> Image.Image:
+    """icon.svg as a 512px PNG for og:logo, which crawlers want raster."""
+    s = 4
+    img = Image.new("RGBA", (128 * s, 128 * s), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    draw.rounded_rectangle((0, 0, 128 * s - 1, 128 * s - 1), 16 * s, fill="#2b2d42")
+    draw.rounded_rectangle((36 * s, 28 * s, 92 * s - 1, 100 * s - 1), 8 * s, fill="#e85d4c")
+    for x in (48, 68):
+        draw.rectangle((x * s, 44 * s, (x + 12) * s - 1, 56 * s - 1), fill="#f7f3e9")
+    return img
+
+
 def main() -> None:
     bank = json.loads((ROOT / "data" / "lessons.json").read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
-    cards = {"home.png": home_card(), "lessons.png": lessons_card(bank)}
+    cards = {"home.png": home_card(), "lessons.png": lessons_card(bank), "logo.png": logo()}
     for stage in STAGES:
         cards[f"{stage['slug']}.png"] = stage_card(stage, bank[str(stage["id"])]["topic"])
     for name, img in cards.items():
