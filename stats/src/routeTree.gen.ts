@@ -10,23 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as BrandRouteRouteImport } from './routes/brand/route'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as OgRouteImport } from './routes/og'
 import { Route as QuestionsRouteImport } from './routes/questions'
-import { Route as BrandIndexRouteImport } from './routes/brand/index'
-import { Route as BrandOgRouteImport } from './routes/brand/og'
-import { Route as BrandTrailerRouteImport } from './routes/brand/trailer'
 import { Route as StagesStageRouteImport } from './routes/stages/$stage'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BrandRouteRoute = BrandRouteRouteImport.update({
-  id: '/brand',
-  path: '/brand',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevRoute = DevRouteImport.update({
@@ -44,21 +35,6 @@ const QuestionsRoute = QuestionsRouteImport.update({
   path: '/questions',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BrandIndexRoute = BrandIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BrandRouteRoute,
-} as any)
-const BrandOgRoute = BrandOgRouteImport.update({
-  id: '/og',
-  path: '/og',
-  getParentRoute: () => BrandRouteRoute,
-} as any)
-const BrandTrailerRoute = BrandTrailerRouteImport.update({
-  id: '/trailer',
-  path: '/trailer',
-  getParentRoute: () => BrandRouteRoute,
-} as any)
 const StagesStageRoute = StagesStageRouteImport.update({
   id: '/stages/$stage',
   path: '/stages/$stage',
@@ -67,75 +43,36 @@ const StagesStageRoute = StagesStageRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/brand': typeof BrandRouteRouteWithChildren
   '/dev': typeof DevRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
-  '/brand/og': typeof BrandOgRoute
-  '/brand/trailer': typeof BrandTrailerRoute
   '/stages/$stage': typeof StagesStageRoute
-  '/brand/': typeof BrandIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
-  '/brand/og': typeof BrandOgRoute
-  '/brand/trailer': typeof BrandTrailerRoute
   '/stages/$stage': typeof StagesStageRoute
-  '/brand': typeof BrandIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/brand': typeof BrandRouteRouteWithChildren
   '/dev': typeof DevRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
-  '/brand/og': typeof BrandOgRoute
-  '/brand/trailer': typeof BrandTrailerRoute
   '/stages/$stage': typeof StagesStageRoute
-  '/brand/': typeof BrandIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/brand'
-    | '/dev'
-    | '/og'
-    | '/questions'
-    | '/brand/og'
-    | '/brand/trailer'
-    | '/stages/$stage'
-    | '/brand/'
+  fullPaths: '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/dev'
-    | '/og'
-    | '/questions'
-    | '/brand/og'
-    | '/brand/trailer'
-    | '/stages/$stage'
-    | '/brand'
-  id:
-    | '__root__'
-    | '/'
-    | '/brand'
-    | '/dev'
-    | '/og'
-    | '/questions'
-    | '/brand/og'
-    | '/brand/trailer'
-    | '/stages/$stage'
-    | '/brand/'
+  to: '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
+  id: '__root__' | '/' | '/dev' | '/og' | '/questions' | '/stages/$stage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  BrandRouteRoute: typeof BrandRouteRouteWithChildren
   DevRoute: typeof DevRoute
   OgRoute: typeof OgRoute
   QuestionsRoute: typeof QuestionsRoute
@@ -149,13 +86,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/brand': {
-      id: '/brand'
-      path: '/brand'
-      fullPath: '/brand'
-      preLoaderRoute: typeof BrandRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dev': {
@@ -179,27 +109,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/brand/': {
-      id: '/brand/'
-      path: '/'
-      fullPath: '/brand/'
-      preLoaderRoute: typeof BrandIndexRouteImport
-      parentRoute: typeof BrandRouteRoute
-    }
-    '/brand/og': {
-      id: '/brand/og'
-      path: '/og'
-      fullPath: '/brand/og'
-      preLoaderRoute: typeof BrandOgRouteImport
-      parentRoute: typeof BrandRouteRoute
-    }
-    '/brand/trailer': {
-      id: '/brand/trailer'
-      path: '/trailer'
-      fullPath: '/brand/trailer'
-      preLoaderRoute: typeof BrandTrailerRouteImport
-      parentRoute: typeof BrandRouteRoute
-    }
     '/stages/$stage': {
       id: '/stages/$stage'
       path: '/stages/$stage'
@@ -210,25 +119,8 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface BrandRouteRouteChildren {
-  BrandOgRoute: typeof BrandOgRoute
-  BrandTrailerRoute: typeof BrandTrailerRoute
-  BrandIndexRoute: typeof BrandIndexRoute
-}
-
-const BrandRouteRouteChildren: BrandRouteRouteChildren = {
-  BrandOgRoute: BrandOgRoute,
-  BrandTrailerRoute: BrandTrailerRoute,
-  BrandIndexRoute: BrandIndexRoute,
-}
-
-const BrandRouteRouteWithChildren = BrandRouteRoute._addFileChildren(
-  BrandRouteRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  BrandRouteRoute: BrandRouteRouteWithChildren,
   DevRoute: DevRoute,
   OgRoute: OgRoute,
   QuestionsRoute: QuestionsRoute,

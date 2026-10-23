@@ -253,6 +253,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
   <p><img src="{prefix}static/img/emberseed.png" alt="" width="12" height="12"> Dunder Quest. A pebble's journey to the kiln, and six lessons of Python on the way.</p>
   <p class="fine">Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
   <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
 </body>
@@ -529,6 +530,179 @@ def build_guide(prefix: str) -> str:
     return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Dunder Quest.", path="guide/")
 
 
+## The brand kit. The footer's `>>> help(dunder_quest)` is the only link to
+## it. trailer/PLAN.md §4 has the palette; dusk, line, moss and zap are the
+## site's additions.
+PALETTE = [
+    ("GOLD", "#F2B544", "Headlines, the wordmark, strings in trailer code"),
+    ("EMBER", "#FF8A3D", "Accents, the wordmark's underscores, keywords in trailer code"),
+    ("PARCHMENT", "#F4E4C4", "Body text, numbers in trailer code"),
+    ("ASH", "#B0A9D0", "Secondary text, comments in trailer code"),
+    ("NIGHT", "#15122A", "Backgrounds, card fills, text shadows"),
+    ("DUSK", "#232849", "The site's background, the game's sky"),
+    ("LINE", "#4A4F86", "Panel borders"),
+    ("MOSS", "#7BE08A", "A cleared stage, a right answer"),
+    ("ZAP", "#FF7A7A", "A wrong answer, a hit"),
+]
+## Every line the game is pitched with, where it ships, and where to change it.
+COPY = [
+    ("A pixel platformer where Python is the magic.", "The pitch", "trailer/PLAN.md"),
+    ("A platformer where every stage teaches you a piece of Python.", "Home page", "site/build.py"),
+    ("A pixel-art platformer that teaches Python", "Home social card", "tools/make_og.py"),
+    ("Dunder Quest is a pixel-art platformer that teaches Python. Play it in your browser or download it.", "Search results", "site/build.py"),
+    ("LEARN PYTHON BY PLAYING", "Trailer thumbnail", "tools/make_trailer.py"),
+    ("YOUR CODE / BUILDS THE WORLD", "Trailer hook", "tools/make_trailer.py"),
+    ("A pebble's journey to the kiln · Play free in your browser", "Trailer end card", "tools/make_trailer.py"),
+]
+## (file, name, note, native width, native height, scale): art is only ever
+## scaled by whole numbers, so each piece carries the scale it's shown at.
+ART = [
+    ("title_art.png", "Title art", "Behind the home page, every social card and the trailer's end card", 480, 270, 1),
+    ("trail_map.png", "World map", "The six stages, from Amber Hollow to Crucible Crown", 480, 168, 1),
+    ("pebble.png", "The pebble", "The hero", 16, 24, 4),
+    ("wizard.png", "A wizard", "Waits at the end of every stage", 18, 28, 4),
+    ("copperling.png", "Copperling", "Stomp it", 20, 12, 4),
+    ("emberseed.png", "Emberseed", "Collect it", 12, 12, 6),
+    ("waygate.png", "Waygate", "A stage's exit", 24, 40, 2),
+    ("shots/tour_bridge_built.png", "Bridge built", "span(5) lays the planks", 480, 270, 1),
+    ("shots/tour_amber_duel.png", "Wizard duel", "Jump into the right answer", 480, 270, 1),
+    ("shots/tour_amber_scroll.png", "Lore scroll", "A lesson card", 480, 270, 1),
+]
+TRAILER_FACTS = [
+    ("Length", "62 seconds"),
+    ("Music", "125 BPM; every cut lands on a beat"),
+    ("Loudness", "−14 LUFS, YouTube's target"),
+    ("Pixels", "Drawn at 480×270, scaled ×4 for 1080p and ×8 for 4K"),
+]
+TRAILER_CUTS = [
+    ("4K master", "3840×2160, 60 fps", "YouTube"),
+    ("1080p master", "1920×1080, 60 fps", "itch.io, press"),
+    ("Thumbnail", "1920×1080, from the Kiln Mouth duel", "YouTube, the home page"),
+    ("Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"),
+    ("GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"),
+]
+
+
+def build_brand(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    swatches = "".join(
+        f'<li><span class="chip" style="background:{hex_}"></span>'
+        f'<code>{name} = "{hex_}"</code><span>{esc(use)}</span></li>'
+        for name, hex_, use in PALETTE
+    )
+    copy_rows = "".join(
+        f"<tr><td>{esc(line)}</td><td>{esc(where)}</td><td><code>{esc(src)}</code></td></tr>"
+        for line, where, src in COPY
+    )
+    art = "".join(
+        f'<li><a href="{img}{file}"><img src="{img}{file}" alt="" width="{w * s}" height="{h * s}" loading="lazy"></a>'
+        f"<b>{esc(name)}</b><span>{esc(note)}</span></li>"
+        for file, name, note, w, h, s in ART
+    )
+    facts = "".join(f"<div><dt>{k}</dt><dd>{esc(v)}</dd></div>" for k, v in TRAILER_FACTS)
+    cuts = "".join(f"<tr><td>{a}</td><td>{esc(b)}</td><td>{esc(c)}</td></tr>" for a, b, c in TRAILER_CUTS)
+    cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
+             ("lessons.png", "Lessons", "The lessons index")]
+    cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
+    card_items = "".join(
+        f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
+        f'<span class="og-crop" aria-hidden="true"><img src="{img}og/{file}" alt="" loading="lazy"></span>'
+        f"<b>{esc(name)}</b><span>{esc(used)}</span></li>"
+        for file, name, used in cards
+    )
+    body = f"""
+<section class="section page-head">
+  <p class="kicker">&gt;&gt;&gt; help(dunder_quest)</p>
+  <h1>The brand kit</h1>
+  <figure class="code pydoc"><pre><code>Help on package dunder_quest:
+
+NAME
+    dunder_quest - a pixel platformer where Python is the magic
+
+DESCRIPTION
+    The logo, colors, fonts, art, trailer and social cards, and
+    where each one is made.</code></pre></figure>
+</section>
+
+<section class="section kit" aria-labelledby="logo-h">
+  <p class="kicker">dunder_quest.__logo__</p>
+  <h2 id="logo-h">The wordmark</h2>
+  <p class="lede">The name written as a real Python dunder: gold letters between ember underscores, the way <code>__init__</code> sits between its own. Lowercase, one word, underscores kept. In a sentence, the game is just Dunder Quest.</p>
+  <div class="kit-logo">
+    <p class="kit-mark" aria-hidden="true"><i>__</i>dunder_<wbr>quest<i>__</i></p>
+    <a href="{img}og/logo.png"><img src="{img}og/logo.png" alt="The Dunder Quest icon: a pixel q between two pairs of underscores" width="128" height="128"></a>
+  </div>
+  <p class="fine">Download the icon as <a href="{img}og/logo.png">PNG</a> or <a href="{img}icon.svg">SVG</a>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="voice-h">
+  <p class="kicker">dunder_quest.__doc__</p>
+  <h2 id="voice-h">How it's described</h2>
+  <p class="lede">Every line says "platformer" and "Python", because the hook is that your code changes the world.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Line</th><th>Where</th><th>Made in</th></tr></thead>
+    <tbody>{copy_rows}</tbody>
+  </table></div>
+</section>
+
+<section class="section kit" aria-labelledby="color-h">
+  <p class="kicker">dunder_quest.__colors__</p>
+  <h2 id="color-h">The palette</h2>
+  <ul class="swatches">{swatches}</ul>
+  <figure class="code kit-code"><figcaption>Code in the trailer and on the cards</figcaption><pre><code><i class="kw">for</i> i <i class="kw">in</i> range(<i class="nm">4</i>):
+    lift.rise()  <i class="cm"># one notch</i>
+key = <i class="st">"ember"</i></code></pre></figure>
+</section>
+
+<section class="section kit" aria-labelledby="type-h">
+  <p class="kicker">dunder_quest.__fonts__</p>
+  <h2 id="type-h">The type</h2>
+  <ul class="specimens">
+    <li><p class="sp-pixel">Six stages to the kiln</p><b>Pixelify Sans</b> <span>Headlines and the wordmark · <a href="{prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
+    <li><p class="sp-label">&gt;&gt;&gt; import adventure</p><b>VT323</b> <span>Code, prompts and labels · <a href="{prefix}static/fonts/VT323.ttf">TTF</a></span></li>
+    <li><p class="sp-body">Guide a pebble across six stages to the kiln.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
+  </ul>
+  <p class="fine">All three are under the SIL Open Font License.</p>
+</section>
+
+<section class="section kit" aria-labelledby="art-h">
+  <p class="kicker">dunder_quest.__art__</p>
+  <h2 id="art-h">The art</h2>
+  <p class="lede">The game draws at 480×270. Scale it by whole numbers with nearest-neighbor, never by fractions, or the pixels come out uneven. Click a piece for the original file.</p>
+  <ul class="art">{art}</ul>
+</section>
+
+<section class="section kit" aria-labelledby="trailer-h">
+  <p class="kicker">dunder_quest.__trailer__</p>
+  <h2 id="trailer-h">The trailer</h2>
+  <p class="lede">Built entirely from the game's repo by a Python script, with no video editor: real gameplay, captured frame by frame, with motion graphics in the game's own fonts and colors.</p>
+  <div id="trailer">
+  <a class="trailer" href="https://www.youtube.com/watch?v={TRAILER_ID}" data-yt="{TRAILER_ID}">
+    <img src="{img}trailer.png" alt="Trailer thumbnail: the Kiln Archmage's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
+    <span class="trailer-play" aria-hidden="true"></span>
+    <span class="sr">Play the Dunder Quest trailer</span>
+  </a>
+  </div>
+  <dl class="facts">{facts}</dl>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Cut</th><th>Format</th><th>Where</th></tr></thead>
+    <tbody>{cuts}</tbody>
+  </table></div>
+  <p class="fine">How it's made: <a href="{REPO}/blob/main/trailer/README.md">trailer/README.md</a>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cards-h">
+  <p class="kicker">dunder_quest.__cards__</p>
+  <h2 id="cards-h">The social cards</h2>
+  <p class="lede">What a link to each page looks like when it's shared. Chat apps show either the full card or a small square cut from its middle, shown beside each one, so anything that has to be read sits in the center.</p>
+  <ul class="cards">{card_items}</ul>
+  <p class="fine">Painted by <code>tools/make_og.py</code>.</p>
+</section>"""
+    return page("Brand kit", body, prefix,
+                description="The Dunder Quest brand kit: the logo, colors, fonts, art, trailer and social cards.",
+                scripts=f'<script src="{prefix}static/trailer.js"></script>', path="brand/")
+
+
 def build_404(prefix: str) -> str:
     body = f"""
 <section class="section page-head lost">
@@ -588,6 +762,7 @@ def main() -> None:
     for stage in STAGES:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
     write(out / "guide" / "index.html", build_guide("../"))
+    write(out / "brand" / "index.html", build_brand("../"))
     write(out / "404.html", build_404("/"))
     print(f"site built into {out}")
 

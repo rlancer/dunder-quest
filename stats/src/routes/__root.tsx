@@ -38,7 +38,7 @@ function Root() {
           <Link to="/questions" search={true} activeOptions={{ includeSearch: false }}>
             Duel questions
           </Link>
-          <Link to="/brand">Brand</Link>
+          <a href="https://dunderquest.com/brand/">Brand kit</a>
           <Link to="/dev">Dev notes</Link>
         </nav>
       </header>

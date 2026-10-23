@@ -1,6 +1,6 @@
 # Dunder Quest admin
 
-The admin area at `dunderquest.com/admin`: anonymous play stats from the game, the brand kit (identity, the trailer and the social cards), and the dev notes (debug shortcuts, the save file, test scenes, builds). Only the owner can open it.
+The admin area at `dunderquest.com/admin`: anonymous play stats from the game, and the dev notes (debug shortcuts, the save file, test scenes, builds). Only the owner can open it. The brand kit (logo, colors, trailer and social cards) is public, at `dunderquest.com/brand/`.
 
 - **Game side:** `common/telemetry.gd` queues events (stage start, clear, quit, deaths, scrolls read, duel answers and hints) and posts them in batches to `/api/events`. A player is a random install id and nothing else. Players can switch stats off on the title screen. Only exported release builds report; editor and debug runs stay quiet unless `EMBER_TELEMETRY_URL` is set.
 - **Server side:** one Cloudflare Worker, built with TanStack Start (Router, Query, Table, Charts) and backed by D1.

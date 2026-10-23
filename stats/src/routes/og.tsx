@@ -1,8 +1,8 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-// Social cards moved under Brand; keep old links working.
+// The social cards moved to the public brand kit, beside the logo and trailer.
 export const Route = createFileRoute("/og")({
   beforeLoad: () => {
-    throw redirect({ to: "/brand/og", statusCode: 301 });
+    throw redirect({ href: "https://dunderquest.com/brand/#cards-h", statusCode: 301 });
   },
 });
