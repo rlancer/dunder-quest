@@ -1,6 +1,7 @@
-// The admin area (ember-trail.robertlancer.com/admin) and the endpoint the game
-// reports to (stats.ember-trail.robertlancer.com/api/events). Cloudflare Access
-// guards both hosts except /api/events; see README.md.
+// The admin area (dunderquest.com/admin) and the endpoint the game reports to
+// (stats.dunderquest.com/api/events). Cloudflare Access guards both hosts
+// except /api/events; see README.md. The ember-trail.robertlancer.com hosts
+// are from before the rename: builds already out there still report to them.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ember-trail-stats",
@@ -13,10 +14,11 @@
   "workers_dev": false,
   "preview_urls": false,
   "routes": [
+    { "pattern": "stats.dunderquest.com", "custom_domain": true },
     { "pattern": "stats.ember-trail.robertlancer.com", "custom_domain": true },
     // Path routes win over the game site's custom domain, so /admin lands here.
-    { "pattern": "ember-trail.robertlancer.com/admin", "zone_name": "robertlancer.com" },
-    { "pattern": "ember-trail.robertlancer.com/admin/*", "zone_name": "robertlancer.com" }
+    { "pattern": "dunderquest.com/admin", "zone_name": "dunderquest.com" },
+    { "pattern": "dunderquest.com/admin/*", "zone_name": "dunderquest.com" }
   ],
   // The Vite plugin fills in the directory; the binding lets the Worker serve
   // the build under /admin.
@@ -35,7 +37,7 @@
   ],
   "vars": {
     // Where the game is served from, for CORS on /api/events.
-    "GAME_ORIGINS": "https://ember-trail.robertlancer.com,https://dev.ember-trail.robertlancer.com",
+    "GAME_ORIGINS": "https://dunderquest.com,https://www.dunderquest.com,https://dev.dunderquest.com,https://ember-trail.robertlancer.com",
     // Your Zero Trust team domain and the Access application's AUD tag.
     "ACCESS_TEAM_DOMAIN": "single-phase-capital-web-pages.cloudflareaccess.com",
     "ACCESS_AUD": "d9c9c74e20fa130322c1cad17feec13190c33a2bf309f573e134514ca4fc2471",

@@ -16,9 +16,11 @@ export default defineConfig(({ mode }) => {
         notFoundHandling: "404-page",
         htmlHandling: "auto-trailing-slash",
       },
+      // The old host stays attached so a redirect rule on robertlancer.com
+      // has something to answer for it, and old links keep working.
       domains: dev
-        ? ["dev.ember-trail.robertlancer.com"]
-        : ["ember-trail.robertlancer.com"],
+        ? ["dev.dunderquest.com"]
+        : ["dunderquest.com", "www.dunderquest.com", "ember-trail.robertlancer.com"],
     },
   };
 });

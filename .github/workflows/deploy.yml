@@ -80,12 +80,12 @@ jobs:
         run: |
           git tag -f builds
           git push -f origin refs/tags/builds
-          notes="Desktop builds of Ember Trail from ${GITHUB_SHA::7}. Rebuilt on every push to main. Play in the browser at https://ember-trail.robertlancer.com"
+          notes="Desktop builds of Dunder Quest from ${GITHUB_SHA::7}. Rebuilt on every push to main. Play in the browser at https://dunderquest.com"
           if gh release view builds >/dev/null 2>&1; then
             gh release upload builds build/downloads/* --clobber
             gh release edit builds --notes "$notes"
           else
-            gh release create builds build/downloads/* --title "Ember Trail desktop builds" --notes "$notes" --latest
+            gh release create builds build/downloads/* --title "Dunder Quest desktop builds" --notes "$notes" --latest
           fi
 
       # Last, so a stats problem never holds back the game or its downloads.

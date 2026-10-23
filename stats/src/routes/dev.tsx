@@ -27,9 +27,9 @@ const TESTS: [string, string][] = [
 ];
 
 const SAVE_DIRS: [string, string][] = [
-  ["Windows", "%APPDATA%\\Godot\\app_userdata\\Ember Trail\\"],
-  ["macOS", "~/Library/Application Support/Godot/app_userdata/Ember Trail/"],
-  ["Linux", "~/.local/share/godot/app_userdata/Ember Trail/"],
+  ["Windows", "%APPDATA%\\Godot\\app_userdata\\Dunder Quest\\"],
+  ["macOS", "~/Library/Application Support/Godot/app_userdata/Dunder Quest/"],
+  ["Linux", "~/.local/share/godot/app_userdata/Dunder Quest/"],
   ["Browser", "The browser's IndexedDB for the site. Clear the site data to reset it."],
 ];
 

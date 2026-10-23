@@ -305,7 +305,7 @@ theme_override_colors/font_color = Color(1, 0.92, 0.73, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 4
 theme_override_font_sizes/font_size = 13
-text = "Ember Trail"
+text = "Dunder Quest"
 
 [node name="HeaderSubtitle" type="Label" parent="UI/HeaderBar"]
 layout_mode = 0
