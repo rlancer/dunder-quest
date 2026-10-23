@@ -34,3 +34,8 @@ tools/generation_log.txt
 # Local agent tooling
 .claude/
 .grok/
+
+# Trailer working files (regenerate audio with tools/generate_trailer_audio.py)
+trailer/audio/*.wav
+trailer/captures/
+trailer/out/
