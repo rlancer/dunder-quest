@@ -5,7 +5,7 @@ export const Route = createFileRoute("/dev")({
   component: Dev,
 });
 
-const RELEASE_PAGE = "https://github.com/rlancer/ember-trail/releases/tag/builds";
+const RELEASE_PAGE = "https://github.com/rlancer/dunder-quest/releases/tag/builds";
 
 const TESTS: [string, string][] = [
   [
