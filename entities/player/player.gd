@@ -51,6 +51,8 @@ var _facing: float = 1.0
 var _step_timer: float = 0.0
 var _dead: bool = false
 var _knock_timer: float = 0.0
+## Game time spent running on the ground, for the run bob.
+var _bob_time: float = 0.0
 
 
 func _ready() -> void:
@@ -130,12 +132,16 @@ func _physics_process(delta: float) -> void:
 		_handle_contacts()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if _dead:
 		return
 	var bob := 0.0
-	if is_on_floor() and absf(velocity.x) > 20.0 and int(Time.get_ticks_msec() / 140) % 2 == 0:
-		bob = -1.0
+	if is_on_floor() and absf(velocity.x) > 20.0:
+		if int(_bob_time / 0.14) % 2 == 0:
+			bob = -1.0
+		_bob_time += delta
+	else:
+		_bob_time = 0.0
 	sprite.position = Vector2(0.0, _sprite_base_y + bob)
 	# Stretch along the fall or rise so airtime reads at a glance.
 	var stretch := 0.0
