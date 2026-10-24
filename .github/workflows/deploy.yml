@@ -31,7 +31,10 @@ jobs:
             ~/.local/share/godot/export_templates
           key: godot-4.7.2-templates-v2
 
-      - name: Build the site and the browser game
+      - name: Check the Flatmates.js lesson cards
+        run: node flatmates/tests/verify_lessons.mjs
+
+      - name: Build the site and the browser games
         run: bash scripts/export_web.sh
 
       - name: Export the desktop builds

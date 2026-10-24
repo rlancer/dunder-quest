@@ -7,6 +7,7 @@ beside the pages (`scripts/export_web.sh` puts it there).
 
     python site/build.py build/site
     python site/build.py --play build/site/play/index.html
+    python site/build.py --flatmates build/site/flatmates/index.html
 """
 
 from __future__ import annotations
@@ -912,9 +913,29 @@ def tag_play_page(index: Path) -> None:
     print(f"tagged {index}")
 
 
+FLATMATES_ALT = "Flatmates.js title art: two flatmates by their front door on a Croydon tower block landing at dusk."
+
+
+def tag_flatmates_page(index: Path) -> None:
+    """The same tags for Flatmates.js, the JavaScript game in flatmates/,
+    which Godot exports to flatmates/index.html."""
+    desc = ("Flatmates.js, a Dunder Quest game: two mismatched flatmates, two points of view, and the JavaScript "
+            "one of them runs. Play it free in your browser.")
+    text = index.read_text(encoding="utf-8")
+    if 'property="og:title"' in text:
+        return
+    tags = (f'<meta name="description" content="{esc(desc)}">\n'
+            f'{head_tags("Flatmates.js · Dunder Quest", desc, "flatmates/", "flatmates.png", FLATMATES_ALT)}\n')
+    index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
+    print(f"tagged {index}")
+
+
 def main() -> None:
     if sys.argv[1:2] == ["--play"]:
         tag_play_page(Path(sys.argv[2]))
+        return
+    if sys.argv[1:2] == ["--flatmates"]:
+        tag_flatmates_page(Path(sys.argv[2]))
         return
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "build" / "site").resolve()
     out.mkdir(parents=True, exist_ok=True)

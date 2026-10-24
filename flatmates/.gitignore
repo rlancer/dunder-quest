@@ -1,0 +1,5 @@
+.godot/
+tools/preview/
+tests/shots/
+tools/generated/
+tests/out/
