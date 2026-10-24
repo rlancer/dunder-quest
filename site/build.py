@@ -594,6 +594,38 @@ TRAILER_CUTS = [
     ("Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"),
     ("GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"),
 ]
+## What goes in YouTube's upload form. The chapter times are the cut's bars:
+## gameplay at bar 1, the gadgets at bar 8, the duels at bar 20, the end card
+## at bar 28 (see `edit()` in tools/make_trailer.py).
+YOUTUBE_TITLE = "Dunder Quest – Learn Python on a Very Silly Grail Quest | Official Trailer"
+YOUTUBE_DESCRIPTION = f"""Python is named after Monty Python. So we made learning it a quest for the Grail.
+
+Dunder Quest is a free pixel-art platformer where every stage teaches a piece of real Python. Slice a list to lay a bridge. Hash a key into the right bucket. Loop a lift up a cave wall. Then face the guardian at the exit, from the Knight Who Says Mi to the Bridgekeeper, who asks his questions... four. Answer by jumping into the right block while you dodge his spells.
+
+▶ Play free in your browser: {SITE_URL}play/
+▶ Windows, macOS and Linux: {SITE_URL}#download
+▶ Every lesson and question: {SITE_URL}lessons/
+
+What's inside
+• 6 stages, 6 Python topics: lists, dictionaries, loops, booleans, functions, comprehensions
+• 63 quiz questions, each checked against a real Python interpreter
+• Lore scrolls and a Spellbook to study before each duel
+• A squire, two coconut halves, killer bunnies, tins of spam, and a giant foot
+• Keyboard, gamepad or touch. No signup.
+
+How it was made
+Opus 5.5 built the whole game: every line of Godot code, the pixel art painted from Python scripts, this website, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backgrounds and soundtrack. My part was prompting and playtesting.
+Source: {REPO}
+
+0:00 Cold open
+0:08 Six stages
+0:22 Your code builds the world
+0:46 Guardian duels
+1:02 Play free
+
+A fan homage. Not affiliated with or endorsed by Monty Python.
+
+#python #learnpython #indiegame #pixelart #godot #codinggame"""
 ## The launch: one post per platform, in the order they go out on launch
 ## day. Times are US Eastern on a Tuesday. Every post says what Opus 5.5 did
 ## and what other models made, because readers open the repo and check.
@@ -701,6 +733,10 @@ def build_brand(prefix: str) -> str:
         for file, name, used in cards
     )
     launch = "".join(launch_post(*post) for post in LAUNCH)
+    upload = "".join(
+        f'<figure class="code post"><figcaption>{label} <span class="count">{len(text)} / {limit}</span>'
+        f'<button class="copy" type="button" hidden>Copy</button></figcaption><pre><code>{esc(text)}</code></pre></figure>'
+        for label, text, limit in (("YouTube title", YOUTUBE_TITLE, 100), ("YouTube description", YOUTUBE_DESCRIPTION, 5000)))
     body = f"""
 <section class="section page-head">
   <p class="kicker">&gt;&gt;&gt; help(dunder_quest)</p>
@@ -780,6 +816,9 @@ key = <i class="st">"spam"</i></code></pre></figure>
     <thead><tr><th>Cut</th><th>Format</th><th>Where</th></tr></thead>
     <tbody>{cuts}</tbody>
   </table></div>
+  <h3>Uploading it</h3>
+  <p>The thumbnail: <a href="{img}trailer.png" download="dunder_quest_thumbnail.png">dunder_quest_thumbnail.png</a> (1920×1080, under YouTube's 2 MB limit). The title and description below are ready to paste. Check the chapter times against the uploaded video.</p>
+  {upload}
   <p class="fine">How it's made: <a href="{REPO}/blob/main/trailer/README.md">trailer/README.md</a>.</p>
 </section>
 
