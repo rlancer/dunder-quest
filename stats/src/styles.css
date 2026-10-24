@@ -150,6 +150,40 @@ h2 {
 .hint {
   margin-bottom: 8px;
 }
+.egg {
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.egg:first-of-type {
+  border-top: 0;
+}
+.egg-line {
+  margin: 0 0 6px;
+  font-weight: 600;
+  color: var(--ember);
+}
+.egg dl {
+  display: grid;
+  grid-template-columns: 8.5rem 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.egg dt {
+  color: var(--muted);
+}
+.egg dd {
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .egg dl {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  .egg dd {
+    margin-bottom: 6px;
+  }
+}
 .empty {
   color: var(--muted);
   padding: 24px 0;

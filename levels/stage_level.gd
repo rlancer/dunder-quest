@@ -577,6 +577,8 @@ func _respawn_player() -> void:
 	player.revive()
 	player.reset_camera()
 	player.release_respawn_lock()
+	if _deaths == Eggs.GOT_BETTER_FALLS:
+		Fx.float_text(self, spawn.global_position + Vector2(-16.0, -8.0), Eggs.GOT_BETTER, Fx.SPARK, 0.8)
 	get_tree().call_group(&"ash_shelf", &"reset_piece")
 	get_tree().call_group(&"kiln_lift", &"reset_piece")
 	hud.fade_to(0.0, 0.25)

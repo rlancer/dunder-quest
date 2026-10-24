@@ -48,6 +48,8 @@ var _duel: DuelPanel
 var _touch_labels: bool = false
 ## The top-bar pieces the duel's question strip covers while it is up.
 var _bar: Array[CanvasItem] = []
+## How long the pause menu has been open, for the resting easter egg.
+var _pause_time: float = 0.0
 
 
 func _ready() -> void:
@@ -115,6 +117,10 @@ func _input(event: InputEvent) -> void:
 
 func _process(delta: float) -> void:
 	_card_lock -= delta
+	if _paused:
+		_pause_time += delta
+		if _pause_time >= Eggs.RESTING_AFTER:
+			_pause_title().text = Eggs.RESTING
 	if TouchControls.active != _touch_labels:
 		_touch_labels = TouchControls.active
 		%MapButton.text = "Pause" if _touch_labels else "Pause [Esc]"
@@ -204,9 +210,15 @@ func open_pause() -> void:
 		return
 	_paused = true
 	get_tree().paused = true
+	_pause_time = 0.0
+	_pause_title().text = "Paused"
 	%PauseStats.text = "%s   Seeds %d/%d   Scrolls %d/%d" % [%Clock.text, seed_count, seed_total, scroll_found, scroll_total]
 	%PausePanel.show()
 	%ResumeButton.grab_focus()
+
+
+func _pause_title() -> Label:
+	return $PausePanel/Center/Box/Items/PauseTitle as Label
 
 
 func close_pause() -> void:
@@ -253,6 +265,8 @@ func show_clear(time: float = 0.0, new_best: bool = false) -> void:
 	_continue_at = Time.get_ticks_msec() / 1000.0 + CONTINUE_LOCK * 2.0
 	%Headline.text = "The kiln is lit!"
 	%Subhead.text = "%s cleared. Thanks for playing!" % %Title.text
+	if falls >= Eggs.BRIGHT_SIDE_FALLS:
+		%Subhead.text = Eggs.BRIGHT_SIDE
 	_fill_stats(time)
 	%Best.visible = new_best
 	%ContinueHint.text = "Tap for the map" if TouchControls.active else "Press Jump for the map"

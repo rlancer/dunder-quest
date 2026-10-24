@@ -163,6 +163,14 @@ func _on_call_bumped(block: RuneBlock) -> void:
 	_building = false
 
 
+## Easter egg (see `Eggs`): the Bridgekeeper's cry for a fall into the chasm.
+func _on_fall_zone_body_entered(body: Node2D) -> void:
+	var x := body.global_position.x
+	if body == player and not _dying and x > float(CHASM.x * TILE) - 8.0 and x < float((CHASM.y + 1) * TILE) + 8.0:
+		Fx.float_text(self, Vector2(x - 24.0, 200.0), Eggs.AUGH, BAD.lightened(0.3), 0.6)
+	super(body)
+
+
 func is_bridged() -> bool:
 	return _bridged
 
