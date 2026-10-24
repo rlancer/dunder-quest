@@ -1,6 +1,6 @@
 extends StageLevel
 
-## Bellows Bridge. Lesson 5: Functions & return.
+## Bridge of Peril. Lesson 5: Functions & return.
 ## A raised bellows deck, a low roof, supported ember, and a raised cache
 ## floor near the end. Lanterns before and after the chasm.
 ##
@@ -9,7 +9,7 @@ extends StageLevel
 ## Bumping a block calls span with its number and lays a plank bridge as long
 ## as the value returned: short bridges crumble into the chasm, long ones
 ## crash into the far cliff and break, and only span(5) == 14 holds.
-## The Bellows Sage duels in the arena at the far end.
+## The Bridgekeeper duels in the arena at the far end.
 
 const WIDTH := 177
 const ARENA := 141
@@ -28,9 +28,9 @@ const WRONG_HOLD := 0.6
 var _building: bool = false
 var _bridged: bool = false
 var _plank_cells: Array[Vector2i] = []
-const _FAR := preload("res://assets/backgrounds/span_far.png")
-const _MID := preload("res://assets/backgrounds/span_mid.png")
-const _NEAR := preload("res://assets/backgrounds/span_near.png")
+const _FAR := preload("res://assets/backgrounds/gorge_far.png")
+const _MID := preload("res://assets/backgrounds/gorge_mid.png")
+const _NEAR := preload("res://assets/backgrounds/gorge_near.png")
 
 
 func stage_index() -> int:
@@ -38,7 +38,7 @@ func stage_index() -> int:
 
 
 func _passage_detail() -> String:
-	return "Crucible Crown awaits"
+	return "Castle Aargh awaits"
 
 
 func _stage_width() -> int:
@@ -54,10 +54,11 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	# The span's ruins at a deeper, smokier dusk: the bellows works.
-	_add_parallax("FarSky", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(1.0, 0.72, 0.62))
-	_add_parallax("MidRuins", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.72, 0.56, 0.52))
-	_add_parallax("NearSilhouette", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.6, 0.48, 0.46))
+	# Bridge of Peril: a misty gorge at sunset. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarGorge", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.88, 0.84, 0.86))
+	_add_parallax("MidCrags", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.65, 0.58, 0.6))
+	_add_parallax("NearLedge", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.5, 0.44, 0.48))
 
 
 func _paint_stage() -> void:
@@ -104,7 +105,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1168, 222), "func_default")
 	_spawn_scroll(Vector2(1680, 222), "func_scope")
 	_build_calls()
-	_build_arena(ARENA, "Bellows Sage", Color(1.0, 0.62, 0.4))
+	_build_arena(ARENA, "The Bridgekeeper", Color(1.0, 0.62, 0.4))
 
 
 func _build_calls() -> void:

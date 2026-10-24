@@ -1,6 +1,6 @@
 extends Node
 
-## Plays the whole trail, Amber Hollow to Crucible Crown, end to end with real
+## Plays the whole trail, Shrubbery Wood to Castle Aargh, end to end with real
 ## input and one generic bot: it runs right, hops pits and ember by reading
 ## the live tilemap, jumps copperlings, climbs steps, reads every lesson card,
 ## solves each gadget the way a player would, and fights each wizard duel,
@@ -515,7 +515,7 @@ func _check_fork_gates() -> void:
 	_open(load("res://levels/level_04.tscn") as PackedScene)
 	await _frames(4)
 	var gates := _nodes(&"truth_gate")
-	_expect(gates.size() == 2, "Smelter's Fork has two truth gates")
+	_expect(gates.size() == 2, "Ministry of Walks has two truth gates")
 	var answers: Array = _stage.call(&"gate_answers")
 	_expect(answers == [2, 3], "each gate has one heat that opens it (got %s)" % [answers])
 	for index in gates.size():

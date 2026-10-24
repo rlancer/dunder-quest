@@ -16,19 +16,19 @@ const SILLY_WALK := "A very silly walk!"
 ## A stage: the third fall in one attempt, on the respawn.
 const GOT_BETTER := "I got better."
 const GOT_BETTER_FALLS := 3
-## A stage: caught by a copperling, the first time each visit.
+## A stage: caught by a killer bunny, the first time each visit.
 const RUN_AWAY := "Run away! Run away!"
-## Bellows Bridge: falling into the chasm.
+## Bridge of Peril: falling into the chasm.
 const AUGH := "Auuuuuugh!"
 ## Pause: left open for half a minute.
 const RESTING := "It's not paused, it's resting!"
 const RESTING_AFTER := 30.0
-## Final card: clearing Crucible Crown after five or more falls.
+## Final card: clearing Castle Aargh after five or more falls.
 const BRIGHT_SIDE := "Always look on the bright side of life!"
 const BRIGHT_SIDE_FALLS := 5
 ## Duel: down to the last spark.
 const SCRATCH := "'Tis but a scratch!"
-## Duel: walking into the wizard.
+## Duel: walking into the guardian.
 const NONE_SHALL_PASS := "None shall pass!"
 ## Duel intros and final lines, by stage. Stage 1's trial is three questions,
 ## stage 5's is four (the Bridgekeeper loses count).
@@ -40,7 +40,7 @@ const LAST_WORDS: Dictionary = {
 	1: "Three! Not four. And five is right out!",
 	5: "African or European?! Auuugh!",
 }
-## Kiln Mouth: the first hex strike of each fight.
+## Cave of the Bunny: the first hex strike of each fight.
 const HEX_SURPRISE := "Nobody expects the hex strike!"
 const HEX_STAGE := 3
 

@@ -1,9 +1,11 @@
 # Trailer
 
-A 62 s motion-graphics trailer for **__dunder_quest__**, cut to the beat of a generated music cue and built entirely from the repo. There's no video editor in the loop. YouTube comes first; Steam is deferred (see [PLAN.md](PLAN.md) §8).
+A 72 s motion-graphics trailer for **__dunder_quest__**, cut to the beat of a generated music cue and built entirely from the repo. There's no video editor in the loop. YouTube comes first; Steam is deferred (see [PLAN.md](PLAN.md) §8).
 
 - [PLAN.md](PLAN.md) has the research: the pitch, trailer craft rules, beat sheet, visual style, deliverable specs and sources.
 - [../GAME_IMPROVEMENTS.md](../GAME_IMPROVEMENTS.md) lists the game issues spotted while making it.
+
+> **Needs a recapture.** The current master was cut before the Holy Grail rework, so it shows the old stage names, the pebble and the kiln. Rebuild it with the steps below once the new world is final; `tools/make_trailer.py` already uses the new art and copy.
 
 ## Rebuild
 
@@ -23,7 +25,7 @@ python tools/make_trailer.py --audio-only         # re-mix and re-encode, reusin
 python tools/make_trailer.py --no-4k              # skip the 4K encode
 ```
 
-Regenerate a single cue or SFX with `python tools/generate_trailer_audio.py cue_b whoosh`. Re-run the capture only when the game changes. The shot source frames in `make_trailer.py` point into that capture, so re-check them against the new `run.log` afterwards.
+Regenerate a single cue or SFX with `python tools/generate_trailer_audio.py cue_march whoosh`. Re-run the capture only when the game changes. The shot source frames in `make_trailer.py` point into that capture, so re-check them against the new `run.log` afterwards.
 
 ## How it works
 
@@ -31,7 +33,7 @@ Regenerate a single cue or SFX with `python tools/generate_trailer_audio.py cue_
 |---|---|---|
 | Audio | `tools/generate_trailer_audio.py` | Prompts Lyria for the music cues and Seed Audio for the SFX, writing 48 kHz stereo WAVs to `trailer/audio/`. |
 | Capture | `tests/trailer_capture.gd` | Reuses the `trail_check` bot to play all six stages under Movie Maker: 13,442 lossless PNG frames + WAV, stage music muted. Prints `MARK <frame> <event> on/off x=<pos>` for cards, builds, duel questions, answers, misses and banishes. |
-| Edit | `tools/make_trailer.py` → `edit()` | The cut as a list of `Shot`s (source frame, speed, zoom, focus, overlay FX). Every cut lands on a bar or a beat of `cue_b` (125 BPM, first beat 0.06 s, drop 38.46 s, slam 53.82 s). |
+| Edit | `tools/make_trailer.py` → `edit()` | The cut as a list of `Shot`s (source frame, speed, zoom, focus, overlay FX). It opens with a 6 s cold open (`cold_open`): coconut clops in the dark, the squire walks into a beam of light, and the giant foot stomps down with the title on the march's first hit. After that every cut lands on a bar or a beat of `cue_march` (120 BPM, first beat 0.17 s into the cue, both measured from its onsets, not heard). |
 | Compose | `tools/make_trailer.py` | Draws each frame at native 480×270 with the game's fonts and palette: punch-ins, flashes, shakes, typed syntax-colored code, stage slams, code chips, parallax cards, end card. |
 | Mix | `tools/make_trailer.py` → `mix_audio()` | Music (ducked under hits) + in-game SFX (boosted, soft-limited) + trailer SFX, then two-pass loudnorm to −14 LUFS / −1 dBTP. |
 | Encode | `tools/make_trailer.py` → `encode()` | Nearest-neighbor ×4 (1080p) and ×8 (4K), x264 `tune=animation`, AAC 320k. |
@@ -59,7 +61,7 @@ Done: the full cut, the 1080p and 4K masters and the thumbnail. Measured −13.9
 
 In rough priority order. Tick items off here as they land.
 
-- [ ] **Listening pass.** The mix was balanced by measurement only, so nobody has heard it yet. Check the music/SFX balance, the ducking, and whether `cue_b` actually fits. `cue_a` (94 s) is the alternative.
+- [ ] **Listening pass.** The mix was balanced by measurement only, so nobody has heard it yet. Check the music/SFX balance, the ducking, and whether `cue_march` actually fits; its tempo and first beat were measured, not heard. `cue_b` and `cue_a` are the old pebble-era cues.
 - [ ] **Muted watch.** The hook ("YOUR CODE / BUILDS THE WORLD") and the code chips have to land with the sound off.
 - [ ] **Show the wizard's spells.** The bot answers almost instantly, so ward waves and hexes barely appear. Add a scripted duel shot that uses the `spell` step from `tests/look_tour.gd`.
 - [ ] **Vertical Short** (1080×1920, ≤ 60 s). The compositor can do it with new `W`/`H` and per-shot crops; see PLAN.md §8 for the two layouts.

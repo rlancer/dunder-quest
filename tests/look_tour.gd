@@ -96,7 +96,7 @@ func _process(_delta: float) -> void:
 			hud.open_pause()
 		if hud != null and step.get("clear", false):
 			hud.seed_count = 6
-			hud.show_passage("Cinder Span awaits", 41.3, true)
+			hud.show_passage("The Cheese Shoppe awaits", 41.3, true)
 		if hud != null and step.get("final", false):
 			hud.show_clear(63.8, false)
 		if hud != null and step.get("book", false):

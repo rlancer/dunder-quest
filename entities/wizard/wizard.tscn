@@ -1,7 +1,7 @@
 [gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://entities/wizard/wizard.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/sprites/wizard.png" id="2_sprite"]
+[ext_resource type="Texture2D" path="res://assets/sprites/foe_1.png" id="2_sprite"]
 [ext_resource type="AudioStream" path="res://assets/audio/break.wav" id="3_zap"]
 [ext_resource type="AudioStream" path="res://assets/audio/pickup.wav" id="4_banish"]
 [ext_resource type="Script" path="res://entities/wizard/arcane_barrier.gd" id="5_barrier"]
@@ -52,16 +52,16 @@ hframes = 2
 
 [node name="Nameplate" type="Label" parent="."]
 unique_name_in_owner = true
-offset_left = -40.0
+offset_left = -120.0
 offset_top = -44.0
-offset_right = 40.0
+offset_right = 14.0
 offset_bottom = -32.0
 mouse_filter = 2
 theme_override_colors/font_color = Color(0.86, 0.78, 1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
 text = "Dark Wizard"
-horizontal_alignment = 1
+horizontal_alignment = 2
 
 [node name="Body" type="CollisionShape2D" parent="."]
 unique_name_in_owner = true

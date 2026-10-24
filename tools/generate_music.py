@@ -3,7 +3,8 @@
 Reuses the request helpers in generate_assets.py. Never prints the key.
 
     python tools/generate_music.py             # generate every track
-    python tools/generate_music.py cinder      # just one
+    python tools/generate_music.py march       # just one
+    python tools/make_loops.py assets/audio/music_*.ogg   # then make them loop
 """
 
 from __future__ import annotations
@@ -35,14 +36,43 @@ COMMON = (
     "Do not imitate any existing game soundtrack. "
 )
 
+# A comic Holy Grail quest. The title and map get a brass-band march in the
+# spirit of the old British comedy-show marches (an original tune, not any
+# real march); each stage gets a medieval cue of its own.
 TRACKS = {
-    "cinder": COMMON + (
-        "Tense but adventurous volcanic stage music: driving low hand drums and taiko, plucked "
-        "low strings, a smoky clay flute melody, crackling ember textures, minor key, steady fast tempo."
+    "march": COMMON + (
+        "A jaunty, pompous original military brass-band march: oom-pah tuba, snare drum rolls, cymbal crashes, "
+        "a bright cornet melody with silly trombone slides, 6/8 swagger, comic and grand like a Victorian "
+        "parade that takes itself far too seriously. Major key, quick march tempo."
     ),
-    "calm": COMMON + (
-        "Gentle overworld and title music at dusk: warm kalimba arpeggios, soft felt piano, a soaring "
-        "clay ocarina melody, light shaker, hopeful and cozy, relaxed tempo."
+    "wood": COMMON + (
+        "Cheerful medieval forest stage music: a bouncy recorder melody over plucked lute, tambourine and a "
+        "light frame drum, a hint of pixel chiptune square-wave doubling the tune. Playful, curious, major key, "
+        "moderate tempo."
+    ),
+    "shoppe": COMMON + (
+        "Comic medieval village market music: a bustling hurdy-gurdy and crumhorn tune, plucked lute, "
+        "hand claps and a wooden block, a little pompous, like shopkeepers haggling. Major key, brisk."
+    ),
+    "cave": COMMON + (
+        "Spooky-silly cave stage music: low plucked contrabass, tiptoeing pizzicato strings, a hollow wooden "
+        "flute, dripping-water glockenspiel notes, mock-menacing like something small and fluffy is lurking. "
+        "Minor key, sneaking tempo."
+    ),
+    "ministry": COMMON + (
+        "Absurd bureaucratic stage music: a stiff, prim harpsichord and bassoon march with a typewriter-like "
+        "woodblock rhythm and a tuba that keeps tripping over the beat, as if walking very sillily. "
+        "Major key, strutting tempo."
+    ),
+    "gorge": COMMON + (
+        "Dramatic mountain-gorge stage music: windy low drones, a solemn but slightly over-the-top brass "
+        "fanfare, timpani rolls, a lute ostinato, mock-epic like crossing a perilous rope bridge. "
+        "Minor key, steady tempo."
+    ),
+    "castle": COMMON + (
+        "Grand final castle stage music: a heroic medieval fanfare with trumpets, war drums and a choir-like "
+        "organ pad (no voices), a driving lute rhythm, a little bit pompous and silly, building to a triumphant "
+        "climax. Major key, fast tempo."
     ),
 }
 
@@ -82,7 +112,7 @@ def main() -> None:
     base = env.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
     if not key:
         sys.exit("OPENROUTER_API_KEY is missing from .env")
-    with ThreadPoolExecutor(max_workers=2) as pool:
+    with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {pool.submit(generate, base, key, name): name for name in names}
         for future in as_completed(futures):
             name = futures[future]

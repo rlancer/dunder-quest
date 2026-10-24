@@ -32,6 +32,8 @@ signal respawn_requested
 @export var knock_time: float = 0.3
 @export var jump_sound: AudioStream
 @export var stomp_sound: AudioStream
+## The squire has no horse, so footfalls are two coconut halves knocked together.
+@export var step_sound: AudioStream = preload("res://assets/audio/coconut.wav")
 
 @onready var visual: Node2D = %Visual
 @onready var sprite: Sprite2D = %Sprite
@@ -324,6 +326,8 @@ func _kick_up_steps(delta: float, direction: float) -> void:
 	var skidding := direction != 0.0 and signf(direction) != signf(velocity.x)
 	if _step_timer <= 0.0 or skidding:
 		_step_timer = 0.09 if skidding else 0.28
+		if not skidding:
+			StageAudio.play(get_tree(), step_sound)
 		Fx.dust(get_parent(), global_position + Vector2(-signf(velocity.x) * 4.0, 8.0), 2 if not skidding else 4, -signf(velocity.x))
 
 

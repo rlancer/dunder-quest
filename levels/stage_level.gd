@@ -29,6 +29,9 @@ const LORE_SCROLL := preload("res://entities/lesson/lore_scroll.gd")
 const RUNE_BLOCK := preload("res://entities/lesson/rune_block.gd")
 const RUNE_KEY := preload("res://entities/lesson/rune_key.gd")
 const LESSON_SIGN := preload("res://entities/lesson/lesson_sign.gd")
+const GIANT_FOOT := preload("res://entities/props/giant_foot.gd")
+## How long the stage waits after the foot lands before the results card.
+const FOOT_HOLD := 0.35
 
 @export var tileset_texture: Texture2D
 @export var music_stream: AudioStream
@@ -476,11 +479,16 @@ func _on_waygate_reached() -> void:
 		"best": new_best,
 	})
 	Telemetry.flush()
+	# Held as departing while the foot comes down, so nothing else can end the stage.
+	_departing = true
+	await _stomp_foot()
+	if not is_inside_tree():
+		return
 	if next_stage == null:
+		_departing = false
 		_cleared = true
 		hud.show_clear(_elapsed, new_best)
 		return
-	_departing = true
 	hud.show_passage(_passage_detail(), _elapsed, new_best)
 	get_tree().create_timer(PASSAGE_TIMEOUT).timeout.connect(hud.request_continue)
 	await hud.continue_requested
@@ -491,6 +499,28 @@ func _on_waygate_reached() -> void:
 		get_tree().change_scene_to_file("res://levels/world_map.tscn")
 	else:
 		_open_next_stage()
+
+
+## The giant foot comes down just past the squire. Returns once it has landed
+## and the stage has let it sink in.
+func _stomp_foot() -> void:
+	var foot := GIANT_FOOT.new() as GiantFoot
+	foot.position = player.global_position + Vector2(44.0, 8.0)
+	add_child(foot)
+	await foot.landed
+	await get_tree().create_timer(FOOT_HOLD).timeout
+
+
+## A plain decoration standing on `at` (its bottom center), behind the action.
+func _spawn_prop(texture: Texture2D, at: Vector2, z: int = -1) -> Sprite2D:
+	var prop := Sprite2D.new()
+	prop.texture = texture
+	prop.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	prop.offset = Vector2(0.0, -float(texture.get_height()) * 0.5)
+	prop.position = at
+	prop.z_index = z
+	add_child(prop)
+	return prop
 
 
 func return_to_map() -> void:

@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://ui/stage_hud.gd" id="1_hud"]
-[ext_resource type="Texture2D" path="res://assets/sprites/emberseed.png" id="2_seed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tin.png" id="2_seed"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_chip"]
 content_margin_left = 5.0
@@ -30,7 +30,7 @@ mouse_filter = 2
 theme_override_colors/font_color = Color(0.98, 0.94, 0.84, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 13
-text = "Amber Hollow"
+text = "Shrubbery Wood"
 
 [node name="SeedChip" type="PanelContainer" parent="."]
 offset_left = 6.0
@@ -234,7 +234,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.92, 0.86, 1)
 theme_override_font_sizes/font_size = 13
-text = "Cinder Span awaits"
+text = "The Cheese Shoppe awaits"
 horizontal_alignment = 1
 
 [node name="Rule" type="ColorRect" parent="ClearPanel/Center/Box/Copy"]

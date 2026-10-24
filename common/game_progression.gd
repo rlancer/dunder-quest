@@ -32,7 +32,7 @@ static var _initialized: bool = false
 const STAGES: Array[Dictionary] = [
 	{
 		"id": 1,
-		"name": "Amber Hollow",
+		"name": "Shrubbery Wood",
 		"subtitle": "Lesson 1: Lists & Indexing",
 		"scene": "res://levels/level_01.tscn",
 		"map_pos": Vector2(96.0, 155.0),
@@ -40,7 +40,7 @@ const STAGES: Array[Dictionary] = [
 	},
 	{
 		"id": 2,
-		"name": "Cinder Span",
+		"name": "The Cheese Shoppe",
 		"subtitle": "Lesson 2: Dictionaries & Hashing",
 		"scene": "res://levels/level_02.tscn",
 		"map_pos": Vector2(240.0, 115.0),
@@ -48,7 +48,7 @@ const STAGES: Array[Dictionary] = [
 	},
 	{
 		"id": 3,
-		"name": "Kiln Mouth",
+		"name": "Cave of the Bunny",
 		"subtitle": "Lesson 3: Loops & range",
 		"scene": "res://levels/level_03.tscn",
 		"map_pos": Vector2(384.0, 155.0),
@@ -56,7 +56,7 @@ const STAGES: Array[Dictionary] = [
 	},
 	{
 		"id": 4,
-		"name": "Smelter's Fork",
+		"name": "Ministry of Walks",
 		"subtitle": "Lesson 4: Booleans & Conditions",
 		"scene": "res://levels/level_04.tscn",
 		"map_pos": Vector2(326.0, 76.0),
@@ -64,7 +64,7 @@ const STAGES: Array[Dictionary] = [
 	},
 	{
 		"id": 5,
-		"name": "Bellows Bridge",
+		"name": "Bridge of Peril",
 		"subtitle": "Lesson 5: Functions & return",
 		"scene": "res://levels/level_05.tscn",
 		"map_pos": Vector2(220.0, 58.0),
@@ -72,7 +72,7 @@ const STAGES: Array[Dictionary] = [
 	},
 	{
 		"id": 6,
-		"name": "Crucible Crown",
+		"name": "Castle Aargh",
 		"subtitle": "Lesson 6: Comprehensions",
 		"scene": "res://levels/level_06.tscn",
 		"map_pos": Vector2(112.0, 54.0),

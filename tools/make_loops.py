@@ -4,7 +4,7 @@ Generated tracks fade in and fade out, which leaves a dip to near silence every
 time the loop wraps. This trims to the full-volume body, then folds the last
 CROSSFADE seconds over the first ones so the end flows straight into the start.
 
-    python tools/make_loops.py assets/audio/music_amber.ogg [...]
+    python tools/make_loops.py assets/audio/music_wood.ogg [...]
 """
 
 from __future__ import annotations

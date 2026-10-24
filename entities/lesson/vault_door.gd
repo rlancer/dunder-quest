@@ -1,7 +1,7 @@
 class_name VaultDoor
 extends StaticBody2D
 
-## The Cinder Span vault door: a wall of gold bars too tall to jump, with one
+## The Cheese Shoppe vault door: a wall of gold bars too tall to jump, with one
 ## lock per key. Each key stored in its bucket lights a lock; with every lock
 ## lit the bars slide away.
 

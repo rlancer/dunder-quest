@@ -3,7 +3,7 @@ extends Control
 ## Title screen. The first press also unlocks web audio for the whole session.
 
 const MAP_SCENE := "res://levels/world_map.tscn"
-const MUSIC := preload("res://assets/audio/music_calm.ogg")
+const MUSIC := preload("res://assets/audio/music_march.ogg")
 const CONFIRM_SOUND := preload("res://assets/audio/goal.wav")
 const MOVE_SOUND := preload("res://assets/audio/bump.wav")
 const EGG_SOUND := preload("res://assets/audio/pickup.wav")
@@ -146,7 +146,7 @@ func _update_footer() -> void:
 	if not GameProgression.has_progress():
 		footer.text = "Tap to choose" if TouchControls.active else "Arrows / WASD / gamepad   Jump: Space or A"
 		return
-	footer.text = "Seeds %d/%d   Stages cleared %d/%d" % [
+	footer.text = "Tins %d/%d   Stages cleared %d/%d" % [
 		GameProgression.get_total_seeds_collected(),
 		GameProgression.get_total_max_seeds(),
 		_cleared_count(),

@@ -33,7 +33,7 @@ const GROUPS: [string, Egg[]][] = [
       {
         line: "Ni! Bring us... a shrubbery!",
         where: "World map",
-        trigger: "Type N I. The prompt under the stage card turns green for 2.5 seconds and the pebble hops.",
+        trigger: "Type N I. The prompt under the stage card turns green for 2.5 seconds and the squire hops.",
         sketch: "The Knights Who Say Ni (Holy Grail).",
         code: "levels/world_map.gd: _unhandled_input, _knights_say_ni",
       },
@@ -59,8 +59,8 @@ const GROUPS: [string, Egg[]][] = [
       },
       {
         line: "Run away! Run away!",
-        where: "Any stage with copperlings",
-        trigger: "Get caught by a copperling (touch it without stomping). Shows the first time each visit.",
+        where: "Any stage with killer bunnies",
+        trigger: "Get caught by a killer bunny (touch it without stomping). Shows the first time each visit.",
         sketch: "King Arthur's knights fleeing the Rabbit of Caerbannog (Holy Grail).",
         code: "entities/player/player.gd: _handle_contacts",
       },
@@ -73,14 +73,14 @@ const GROUPS: [string, Egg[]][] = [
       },
       {
         line: "Auuuuuugh!",
-        where: "Bellows Bridge (stage 5)",
+        where: "Bridge of Peril (stage 5)",
         trigger: "Fall into the wide chasm the span(n) bridge crosses (tiles 85 to 98).",
         sketch: "Knights and the Bridgekeeper thrown into the Gorge of Eternal Peril (Holy Grail).",
         code: "levels/level_05.gd: _on_fall_zone_body_entered",
       },
       {
         line: "Always look on the bright side of life!",
-        where: "Crucible Crown (stage 6), the final card",
+        where: "Castle Aargh (stage 6), the final card",
         trigger: 'Clear the last stage after 5 or more falls in that attempt. Replaces "… cleared. Thanks for playing!"',
         sketch: "The closing song of Life of Brian.",
         code: "ui/stage_hud.gd: show_clear",
@@ -88,39 +88,39 @@ const GROUPS: [string, Egg[]][] = [
     ],
   ],
   [
-    "Wizard duels",
+    "Guardian duels",
     [
       {
         line: "Three! Not four. And five is right out!",
-        where: "Amber Hollow (stage 1), the Ash Hexer",
+        where: "Shrubbery Wood (stage 1), the Knight Who Says Mi",
         trigger: "Break his last ward (his trial is three questions). It's his final line before he's banished.",
         sketch: "The Holy Hand Grenade of Antioch (Holy Grail). It fits the counting lesson.",
         code: "entities/wizard/wizard_duel.gd: _on_block_bumped",
       },
       {
         line: "There are some who call me... Tim.",
-        where: "Kiln Mouth (stage 3), the Kiln Archmage",
+        where: "Cave of the Bunny (stage 3), Tom the Enchanter",
         trigger: 'His opening line when you first walk into the arena (in place of "Bump your answer, if you dare!").',
-        sketch: "Tim the Enchanter (Holy Grail), the wizard who loves fire.",
+        sketch: "Tim the Enchanter (Holy Grail), the wizard who loves fire. Our Tom insists on Tim.",
         code: "entities/wizard/wizard_duel.gd: _engage",
       },
       {
         line: "Nobody expects the hex strike!",
-        where: "Kiln Mouth (stage 3), the Kiln Archmage",
-        trigger: "The first hex strike of each fight. Kiln Mouth is where hex strikes first appear.",
+        where: "Cave of the Bunny (stage 3), Tom the Enchanter",
+        trigger: "The first hex strike of each fight. Cave of the Bunny is where hex strikes first appear.",
         sketch: "Nobody expects the Spanish Inquisition! (Flying Circus, series 2).",
         code: "entities/wizard/wizard_duel.gd: _cast_hex",
       },
       {
         line: "Stop! Answer me these questions... four!",
-        where: "Bellows Bridge (stage 5), the Bellows Sage",
+        where: "Bridge of Peril (stage 5), the Bridgekeeper",
         trigger: "His opening line when you first walk into the arena. His trial is four questions, so he loses count.",
         sketch: "The Bridgekeeper at the Bridge of Death (Holy Grail).",
         code: "entities/wizard/wizard_duel.gd: _engage",
       },
       {
         line: "African or European?! Auuugh!",
-        where: "Bellows Bridge (stage 5), the Bellows Sage",
+        where: "Bridge of Peril (stage 5), the Bridgekeeper",
         trigger: "Break his last ward. It's his final line before he's banished.",
         sketch: "The airspeed velocity of an unladen swallow, which the Bridgekeeper can't answer (Holy Grail).",
         code: "entities/wizard/wizard_duel.gd: _on_block_bumped",
@@ -128,19 +128,39 @@ const GROUPS: [string, Egg[]][] = [
       {
         line: "None shall pass!",
         where: "Any duel",
-        trigger: "Walk into the wizard mid-fight (while not blinking from a recent hit).",
+        trigger: "Walk into the guardian mid-fight (while not blinking from a recent hit).",
         sketch: "The Black Knight (Holy Grail).",
         code: "entities/wizard/wizard_duel.gd: _on_wizard_touched",
       },
       {
         line: "'Tis but a scratch!",
         where: "Any duel",
-        trigger: "Drop to your last spark. Floats over the pebble once per fight.",
+        trigger: "Drop to your last spark. Floats over the squire once per fight.",
         sketch: "The Black Knight again, after losing an arm (Holy Grail).",
         code: "entities/wizard/wizard_duel.gd: _hurt",
       },
     ],
   ],
+];
+
+const THEME: [string, string][] = [
+  [
+    "Stages: Shrubbery Wood, The Cheese Shoppe, Cave of the Bunny, Ministry of Walks, Bridge of Peril, Castle Aargh",
+    "common/game_progression.gd: STAGES",
+  ],
+  [
+    "Guardians: the Knight Who Says Mi, the Cheesemonger, Tom the Enchanter, the Under-Minister, the Bridgekeeper, the Taunting Knight",
+    "levels/level_0N.gd: _build_arena; art in tools/paint_quest.py",
+  ],
+  ["A squire who clops coconut halves for want of a horse", "tools/paint_quest.py, tools/make_coconut.py"],
+  ["Coconut clops on every footfall and every map hop", "entities/player/player.gd: step_sound; levels/world_map.gd: HOP_SOUND"],
+  ["Killer bunnies instead of copperlings", "assets/sprites/bunny.png"],
+  ["Tins of spam to collect", "assets/sprites/tin.png"],
+  ["A giant foot stomps down beside you whenever you clear a stage", "entities/props/giant_foot.gd"],
+  ["Shrubberies along Shrubbery Wood", "levels/level_01.gd: SHRUBS"],
+  ["The Grail floats over the very last gate; the final card says \"The Grail is found!\"", "levels/level_06.gd: _place_grail"],
+  ['Lesson code uses spam, ham and shrub; the vault keys are "brie" and "edam"', "data/lessons.json, levels/level_02.gd: KEYS"],
+  ['Every guardian calls you "little squire"', "data/lessons.json: taunt"],
 ];
 
 const COUNT = GROUPS.reduce((total, [, eggs]) => total + eggs.length, 0);
@@ -179,6 +199,28 @@ function Eggs() {
           ))}
         </section>
       ))}
+
+      <section className="card">
+        <h2>Not hidden: the quest itself</h2>
+        <p className="hint">
+          The whole game is a Holy Grail homage too. These are in plain sight, so they're not eggs, but here's where
+          each one lives. The names nod to the sketches without using their characters' names.
+        </p>
+        <div className="table-wrap">
+          <table>
+            <tbody>
+              {THEME.map(([what, where]) => (
+                <tr key={what}>
+                  <th>{what}</th>
+                  <td>
+                    <code>{where}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       <section className="card">
         <h2>Testing them quickly</h2>

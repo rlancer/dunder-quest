@@ -1,7 +1,7 @@
 [gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://entities/player/player.gd" id="1_player"]
-[ext_resource type="Texture2D" path="res://assets/sprites/pebble.png" id="2_pebble"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squire.png" id="2_pebble"]
 [ext_resource type="AudioStream" path="res://assets/audio/jump.wav" id="3_jump"]
 [ext_resource type="AudioStream" path="res://assets/audio/stomp.wav" id="4_stomp"]
 [ext_resource type="Script" path="res://entities/player/player_camera.gd" id="5_camera"]

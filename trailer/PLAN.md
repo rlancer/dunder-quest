@@ -2,7 +2,9 @@
 
 > The original research and plan. v1 is built; see [README.md](README.md) for how to rebuild it and what's next.
 
-Everything needed to cut a motion-graphics trailer for **__dunder_quest__**, a pixel-art platformer where a pebble heads for the kiln and learns Python by bumping blocks and dueling wizards.
+Everything needed to cut a motion-graphics trailer for **__dunder_quest__**, a pixel-art platformer where a squire quests for the Grail and learns Python by bumping blocks and dueling Monty Python-style guardians.
+
+> **Holy Grail rework (2026-10-23):** the stages, cast and art were rethemed after the current master was cut. The 4K master still shows the old pebble-and-kiln world, so it needs a fresh capture (see README.md) before it matches the game. The beat sheet below is written for the new world.
 
 ---
 
@@ -10,14 +12,14 @@ Everything needed to cut a motion-graphics trailer for **__dunder_quest__**, a p
 
 One line: **"A pixel platformer where Python is the magic."**
 
-The hook is that **code changes the world**. `span(n)` returns the gap and the bridge builds. A `range()` raises the kiln lift. You answer a wizard by head-bumping the block marked with the right output. No other platformer does this, so it should be on screen within the first 10 seconds.
+The hook is that **code changes the world**. `span(n)` returns the gap and the bridge builds. A `range()` raises the cave lift. You answer the Bridgekeeper by head-bumping the block marked with the right output. No other platformer does this, so it should be on screen within the first 10 seconds.
 
 Supporting beats, in rising order of interest:
-1. Run, jump, stomp copperlings, collect emberseeds (sets the genre).
+1. Run, jump (coconuts clopping), stomp killer bunnies, collect tins of spam (sets the genre).
 2. Lore scrolls teach a concept (`row[0]`, `row[-1]`, slices).
 3. Bump-block puzzles where the code drives the level (gates, lift, bridge).
-4. Wizard duels: read the code, bump A/B/C/D, dodge hex strikes and ward waves.
-5. Six biomes, from Amber Hollow up to Crucible Crown.
+4. Guardian duels: read the code, bump A/B/C/D, dodge hex strikes and ward waves.
+5. Six biomes, from Shrubbery Wood up to Castle Aargh.
 
 **Platform priority:** YouTube first (plus Shorts), with dunderquest.com embedding the YouTube video. Steam can come later. Section 8 covers what changes if you add it, and the main cut already follows Steam's rules, so nothing needs re-editing.
 
@@ -26,7 +28,7 @@ Supporting beats, in rising order of interest:
 - **Gameplay first.** Show play within the first few seconds. People browsing decide in under 10 seconds, and on YouTube the first 15 s decide audience retention. ([Steamworks][steam], [Derek Lieu via GameDiscoverCo][gdco])
 - **Genre → Hook → Content.** Establish "it's a platformer" fast, then show the hook, then show variety. Put the hook in the first 10–15 s and no later than the halfway point. ([GameDiscoverCo][gdco], [PC Gamer][pcg])
 - **"Tell, Show, Repeat."** A short title card states an idea, then gameplay proves it right away. This is where the motion graphics go. ([presskit.gg][presskit])
-- **Escalate.** Order shots from simple to complex: plain jump, then a bump puzzle, then the bridge building, then a wizard duel. Save the wildest shot for last. ([PC Gamer][pcg])
+- **Escalate.** Order shots from simple to complex: plain jump, then a bump puzzle, then the bridge building, then a guardian duel. Save the wildest shot for last. ([PC Gamer][pcg])
 - **Audio first.** Pick or make the music before editing, then cut to it. The music sets the structure. ([GDC / Derek Lieu][gdc])
 - **Works muted.** YouTube home-feed previews and embeds often autoplay with the sound off, and so do Shorts scrolled past quickly. Text cards and visuals have to carry the message. ([Steamworks][steam])
 - **Logo at the end.** Skip a long logo intro. A 1-second wordmark flash up front is fine; the full lockup belongs on the end card.
@@ -37,16 +39,16 @@ Supporting beats, in rising order of interest:
 
 | Time | Bars | Picture | Motion graphics |
 |---|---|---|---|
-| 0:00–0:04 | 2 | Cold open: pebble sprints and jumps through Amber Hollow, stomps a copperling, grabs an emberseed | none, pure gameplay (feeds the microtrailer) |
+| 0:00–0:04 | 2 | Cold open: the squire clops through Shrubbery Wood, stomps a killer bunny, grabs a tin of spam | none, pure gameplay (feeds the microtrailer) |
 | 0:04–0:06 | 1 | Hard cut to black | `>>> import adventure` types out in VT323, cursor blinks |
-| 0:06–0:12 | 3 | Fast montage of jumps across Cinder Span, Kiln Mouth and Smelter's Fork | Stage names slam in per cut, pixel-snapped |
+| 0:06–0:12 | 3 | Fast montage of jumps across The Cheese Shoppe, Cave of the Bunny and Ministry of Walks | Stage names slam in per cut, pixel-snapped |
 | 0:12–0:16 | 2 | **Hook:** `span(?)` on screen, block bumped, bridge builds (`tour_bridge_short` → `tour_bridge_built`) | Card: **"Your code builds the world."** |
-| 0:16–0:24 | 4 | Kiln lift rises on a `range()`, fork gates open on booleans | Code snippet animates in beside the action, the changing value highlighted |
+| 0:16–0:24 | 4 | The cave lift rises on a `range()`, the Ministry's gates open on booleans | Code snippet animates in beside the action, the changing value highlighted |
 | 0:24–0:28 | 2 | Lore scroll opens: `row[0]  # ash` | Card: **"Learn real Python."** |
-| 0:28–0:40 | 6 | **Wizard duel** escalation: question panel, bump B, ward wave, hex strike, wrong answer, banish | Duel question types itself out; "✓" / "✗" stamps on the beat |
+| 0:28–0:40 | 6 | **Guardian duel** escalation: question panel, bump B, ward wave, hex strike, wrong answer, banish | Duel question types itself out; "✓" / "✗" stamps on the beat |
 | 0:40–0:48 | 4 | Rapid cuts, one per beat: all six biomes, world map path drawing | Topic chips per cut: `lists` `dicts` `loops` `bools` `functions` `comprehensions` |
-| 0:48–0:54 | 3 | Crucible Crown climb and final duel, music peaks | none, let it breathe |
-| 0:54–0:58 | 2 | Pebble at the waygate, spark burst, cut to black on the downbeat | — |
+| 0:48–0:54 | 3 | Castle Aargh climb and final duel, music peaks | none, let it breathe |
+| 0:54–0:58 | 2 | The squire at the castle gate, the giant foot stomps, cut to black on the downbeat | — |
 | 0:58–1:05 | 3–4 | End card: title art + `__dunder_quest__` wordmark | "Play free in your browser · dunderquest.com" + platforms. Leave empty space for YouTube end-screen elements (a subscribe button and a video/link tile), which can only appear in the last 5–20 s |
 
 The duel is the strongest shot, so it lands two-thirds of the way through.
@@ -179,7 +181,7 @@ Uploading pixel art to YouTube at 4K (×8) is a well-known trick: YouTube serves
 **Steam, if you add it later:** Steam wants 1920×1080 H.264 at ≥ 5 Mbps and a thumbnail that's a **text-free frame from the video**. The first 6 s of your first trailer become the uneditable microtrailer. The 1080p master above works as is. Whether Steam is worth it: a Steam page mostly pays off through wishlists for a paid launch. For a free browser game that teaches Python, YouTube, Shorts, r/learnpython, and itch.io reach the audience more directly. Steam is worth revisiting if you add a paid desktop version.
 
 **Vertical cut layouts** (both keep whole-number scaling):
-- **Crop:** game at ×4 (1920×1080), cropped to a 1080-wide window that follows the pebble (270×270 native pixels). That fills the middle of the 1920-tall frame, with cards above and below.
+- **Crop:** game at ×4 (1920×1080), cropped to a 1080-wide window that follows the squire (270×270 native pixels). That fills the middle of the 1920-tall frame, with cards above and below.
 - **Stack:** the full game frame at ×4 cropped to 1080×1080 above a large code card, or the whole frame at ×2 (960×540) with room to spare. "Code on top, game below" reads well on phones and plays to the hook.
 
 Don't host the video files on Cloudflare Pages: `scripts/fit_pages_limit.py` exists because Pages caps file size. Host on YouTube and embed it.

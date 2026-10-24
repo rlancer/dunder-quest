@@ -1,7 +1,7 @@
 extends Node
 
 ## Drives each stage's lesson pieces with real bodies and real input events:
-## Amber Hollow  - a scroll card pauses and resumes play, a known scroll does
+## Shrubbery Wood  - a scroll card pauses and resumes play, a known scroll does
 ##                 not, the index row pays out only for row[2], and the duel:
 ##                 walking in seals the arena and holds the clock, the wizard
 ##                 asks about read scrolls, a thin pool widens to the whole
@@ -10,9 +10,9 @@ extends Node
 ##                 right bump breaks a ward, spells hurt, and losing every
 ##                 spark knocks the player out with the wards kept. Then the
 ##                 Spellbook pages.
-## Cinder Span   - buckets refuse without keys and for the wrong key, keys go
+## The Cheese Shoppe   - buckets refuse without keys and for the wrong key, keys go
 ##                 into hash(key) % 4, and the door opens once both are stored.
-## Kiln Mouth    - each forge loads its range into the lift, which runs only
+## Cave of the Bunny    - each forge loads its range into the lift, which runs only
 ##                 when ridden, one notch per lap, and a new loop sinks it first.
 ## godot --headless --path . res://tests/lesson_check.tscn   ->  LESSON result=ok
 
@@ -94,7 +94,7 @@ func _check_amber() -> void:
 	GameProgression.learn_scroll("list_slice")
 	var duel := _stage.duel()
 	var wizard := duel.wizard
-	_expect(wizard.ward_total == Lessons.trial(1) and Lessons.trial(1) == 3, "the Ash Hexer's trial is three questions")
+	_expect(wizard.ward_total == Lessons.trial(1) and Lessons.trial(1) == 3, "the Knight Who Says Mi's trial is three questions")
 	_place(Vector2(duel.global_position.x + 80.0, FLOOR_Y))
 	await _until(func() -> bool: return duel.is_asking(), 180)
 	_expect(duel.is_asking() and hud.is_duel_open(), "the duel opens its question strip")
@@ -212,13 +212,13 @@ func _check_span() -> void:
 	var door := get_tree().get_first_node_in_group(&"vault_door") as VaultDoor
 	_expect(door != null and not door.is_open(), "vault starts shut")
 	var buckets: Array[int] = _stage.call(&"vault_buckets")
-	_expect(buckets == [RuneKey.rune_hash("ash") % 4, RuneKey.rune_hash("ember") % 4], "vault buckets follow the rune hash")
+	_expect(buckets == [RuneKey.rune_hash("brie") % 4, RuneKey.rune_hash("edam") % 4], "vault buckets follow the rune hash")
 	_expect(buckets[0] != buckets[1], "the two keys hash to different buckets")
 	_block(buckets[0]).receive_head_bump()
 	await _frames(2)
 	_expect(door.lit_locks() == 0, "a bucket refuses without a key")
 
-	await _collect_key("ash")
+	await _collect_key("brie")
 	var wrong := posmod(buckets[0] + 1, 4)
 	if wrong == buckets[1]:
 		wrong = posmod(wrong + 1, 4)
@@ -227,12 +227,12 @@ func _check_span() -> void:
 	_expect(door.lit_locks() == 0 and not _block(wrong).lit, "the wrong bucket is a KeyError")
 	_block(buckets[0]).receive_head_bump()
 	await _frames(2)
-	_expect(door.lit_locks() == 1 and _block(buckets[0]).lit, "ash goes into its bucket")
+	_expect(door.lit_locks() == 1 and _block(buckets[0]).lit, "brie goes into its bucket")
 	_block(buckets[1]).receive_head_bump()
 	await _frames(2)
-	_expect(door.lit_locks() == 1, "ember's bucket waits for its key")
+	_expect(door.lit_locks() == 1, "edam's bucket waits for its key")
 
-	await _collect_key("ember")
+	await _collect_key("edam")
 	_block(buckets[1]).receive_head_bump()
 	await _frames(2)
 	_expect(door.is_open(), "both keys stored open the vault")

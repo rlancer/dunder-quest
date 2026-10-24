@@ -4,32 +4,34 @@ extends Node2D
 ## World Map navigation for the Cinder Realm stages.
 ## Supports keyboard (WASD / Arrows / Space / Enter / Esc), gamepad, and mouse selection.
 
-const MUSIC_STREAM := preload("res://assets/audio/music_calm.ogg")
-const HOP_SOUND := preload("res://assets/audio/jump.wav")
+const MUSIC_STREAM := preload("res://assets/audio/music_march.ogg")
+## Every hop along the trail is a coconut clop: the squire's horse.
+const HOP_SOUND := preload("res://assets/audio/coconut.wav")
 const ENTER_SOUND := preload("res://assets/audio/goal.wav")
 const REJECT_SOUND := preload("res://assets/audio/bump.wav")
 const UNLOCK_SOUND := preload("res://assets/audio/pickup.wav")
 
-## Stage markers. The first three sit on the trail painted into the map art;
-## past the kiln the trail climbs into the high country, drawn at runtime.
+## Stage markers, each on its landmark in the map art: the wood, the village
+## market, the cave, the ministry, the rope bridge and the castle. The map art
+## paints no trail, so every segment is drawn at runtime.
 const STAGE_POSITIONS: Dictionary = {
-	1: Vector2(78.0, 116.0),
-	2: Vector2(240.0, 104.0),
-	3: Vector2(392.0, 132.0),
-	4: Vector2(326.0, 76.0),
-	5: Vector2(214.0, 54.0),
-	6: Vector2(108.0, 52.0),
+	1: Vector2(60.0, 160.0),
+	2: Vector2(130.0, 132.0),
+	3: Vector2(430.0, 150.0),
+	4: Vector2(400.0, 88.0),
+	5: Vector2(250.0, 98.0),
+	6: Vector2(96.0, 58.0),
 }
 ## Bezier control for the hop path from each stage to the next.
 const PATH_CONTROLS: Dictionary = {
-	1: Vector2(160.0, 128.0),
-	2: Vector2(318.0, 134.0),
-	3: Vector2(386.0, 90.0),
-	4: Vector2(272.0, 52.0),
-	5: Vector2(160.0, 40.0),
+	1: Vector2(92.0, 156.0),
+	2: Vector2(280.0, 152.0),
+	3: Vector2(444.0, 116.0),
+	4: Vector2(326.0, 80.0),
+	5: Vector2(170.0, 66.0),
 }
 ## Segments (by their first stage) whose trail the map art already paints.
-const PAINTED_SEGMENTS: Array[int] = [1, 2]
+const PAINTED_SEGMENTS: Array[int] = []
 const PATH_STEPS := 7
 const TRAIL_DARK := Color(0.12, 0.07, 0.08, 0.85)
 const TRAIL_DIRT := Color(0.62, 0.42, 0.24, 0.9)
@@ -330,7 +332,7 @@ func _update_ui() -> void:
 		stage_status_label.text = "Locked"
 		stage_status_label.modulate = Color(0.6, 0.55, 0.7)
 
-	stage_seeds_label.text = "Seeds %d/%d   Best %s" % [
+	stage_seeds_label.text = "Tins %d/%d   Best %s" % [
 		best_seeds,
 		max_seeds,
 		GameProgression.format_time(GameProgression.get_best_time(selected_stage_id)),
@@ -472,7 +474,7 @@ func _draw_trail(canvas: CanvasItem, from_id: int) -> void:
 
 
 func _draw_path_segment(canvas: CanvasItem, points: Array[Vector2], is_unlocked: bool, segment_id: int) -> void:
-	# The trail itself is painted into the map; only the stepping stones are drawn.
+	# _draw_trail lays the dirt; these are the stepping stones along it.
 	for i in range(1, points.size() - 1):
 		var pt := points[i].round()
 		if is_unlocked:

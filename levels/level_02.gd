@@ -1,13 +1,13 @@
 extends StageLevel
 
-## Cinder Span. Lesson 2: Dictionaries & Hashing.
+## The Cheese Shoppe. Lesson 2: Dictionaries & Hashing.
 ## Short floors, a low-roofed pit, a stair of planks over the long drop.
 ## Ember tiles kill on touch. Ash shelves crack, then fall. Both reset on respawn.
 ## The longest stage, so two lanterns hold the respawn point.
 ##
 ## Two rune keys lie on the route. The vault near the end has four bucket
 ## blocks; bumping the bucket a key hashes to stores it and lights a lock on
-## the door. With both stored the door opens, and the Cinder Warlock duels in
+## the door. With both stored the door opens, and the Cheesemonger duels in
 ## the arena past it.
 
 const WIDTH := 212
@@ -20,17 +20,17 @@ const BUCKETS_Y := 152.0
 const DOOR_X := 2712.0
 ## Key name -> where it lies on the route.
 const KEYS: Dictionary = {
-	"ash": Vector2(1256, 222),
-	"ember": Vector2(2400, 222),
+	"brie": Vector2(1256, 222),
+	"edam": Vector2(2400, 222),
 }
 
 var _door: VaultDoor
 ## Bucket -> key name, for keys carried and keys stored in the vault.
 var _held: Dictionary = {}
 var _stored: Dictionary = {}
-const _FAR := preload("res://assets/backgrounds/span_far.png")
-const _MID := preload("res://assets/backgrounds/span_mid.png")
-const _NEAR := preload("res://assets/backgrounds/span_near.png")
+const _FAR := preload("res://assets/backgrounds/shoppe_far.png")
+const _MID := preload("res://assets/backgrounds/shoppe_mid.png")
+const _NEAR := preload("res://assets/backgrounds/shoppe_near.png")
 
 
 func stage_index() -> int:
@@ -38,7 +38,7 @@ func stage_index() -> int:
 
 
 func _passage_detail() -> String:
-	return "Kiln Mouth awaits"
+	return "Cave of the Bunny awaits"
 
 
 func _stage_width() -> int:
@@ -54,9 +54,11 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	_add_parallax("FarSky", _FAR, Vector2(0.08, 0.0), -40, 2.0)
-	_add_parallax("MidRuins", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.85, 0.8, 0.85))
-	_add_parallax("NearSilhouette", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.7, 0.62, 0.66))
+	# The Cheese Shoppe: a village high street of empty cheese stalls. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarStreet", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.85, 0.82, 0.85))
+	_add_parallax("MidStalls", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.62, 0.58, 0.62))
+	_add_parallax("NearCobbles", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.5, 0.45, 0.5))
 
 
 func _paint_stage() -> void:
@@ -111,7 +113,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(2128, 222), "dict_get")
 	_spawn_scroll(Vector2(2176, 222), "dict_unhashable")
 	_build_vault()
-	_build_arena(ARENA, "Cinder Warlock", Color(0.95, 0.55, 1.0))
+	_build_arena(ARENA, "The Cheesemonger", Color(0.95, 0.55, 1.0))
 
 
 func _build_vault() -> void:

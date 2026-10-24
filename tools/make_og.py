@@ -1,7 +1,7 @@
 """Paint the 1200x630 social preview cards the site's og:image tags point at.
 
 Each card is the title art behind a headline in the game's own fonts. Stage
-cards add that stage's wizard duel, so a shared lesson link shows the Python
+cards add that stage's guardian duel, so a shared lesson link shows the Python
 question the player meets. Writes into `site/static/img/og/`, plus
 `site/favicon.ico` from the logo; rerun it when a stage name, topic, duel
 capture or the logo changes.
@@ -34,12 +34,12 @@ NIGHT = (21, 18, 42)
 LINE = (74, 79, 134)
 
 DUELS = {
-    "amber-hollow": "tour_amber_duel.png",
-    "cinder-span": "tour_span_duel_wrong.png",
-    "kiln-mouth": "tour_kiln_duel_hex.png",
-    "smelters-fork": "tour_fork_duel.png",
-    "bellows-bridge": "tour_bridge_duel.png",
-    "crucible-crown": "tour_crown_duel.png",
+    "shrubbery-wood": "tour_amber_duel.png",
+    "cheese-shoppe": "tour_span_duel_wrong.png",
+    "cave-of-the-bunny": "tour_kiln_duel_hex.png",
+    "ministry-of-walks": "tour_fork_duel.png",
+    "bridge-of-peril": "tour_bridge_duel.png",
+    "castle-aargh": "tour_crown_duel.png",
 }
 
 
@@ -106,9 +106,9 @@ def home_card() -> Image.Image:
     tag = font(PIXEL, 44)
     line = "A pixel-art platformer that teaches Python"
     shadowed(d, ((W - int(d.textlength(line, font=tag))) // 2, 334), line, tag, PARCHMENT)
-    pebble = Image.open(ROOT / "assets" / "sprites" / "pebble.png").convert("RGBA")
-    pebble = pebble.resize((pebble.width * 7, pebble.height * 7), Image.NEAREST)
-    img.paste(pebble, (W // 2 - pebble.width // 2, H - pebble.height - 16), pebble)
+    squire = Image.open(ROOT / "assets" / "sprites" / "squire.png").convert("RGBA")
+    squire = squire.resize((squire.width * 7, squire.height * 7), Image.NEAREST)
+    img.paste(squire, (W // 2 - squire.width // 2, H - squire.height - 16), squire)
     return img
 
 
@@ -212,11 +212,26 @@ def favicon() -> None:
     print(f"wrote {FAVICON.relative_to(ROOT)}")
 
 
+def site_art() -> None:
+    """The world map cropped for the home page's trail (its pins come from
+    `x`/`y` in site/build.py), and each guardian's first frame at 2x for the
+    lesson pages."""
+    art = ROOT / "site" / "static" / "img"
+    world = Image.open(ROOT / "assets" / "backgrounds" / "world_map.png").convert("RGB")
+    world.crop((0, 22, 480, 190)).save(art / "trail_map.png")
+    (art / "foes").mkdir(exist_ok=True)
+    for stage in STAGES:
+        sheet = Image.open(ROOT / "assets" / "sprites" / f"foe_{stage['id']}.png").convert("RGBA")
+        frame = sheet.crop((0, 0, sheet.width // 2, sheet.height))
+        frame.resize((frame.width * 2, frame.height * 2), Image.NEAREST).save(art / "foes" / f"foe_{stage['id']}.png")
+
+
 def main() -> None:
     bank = json.loads((ROOT / "data" / "lessons.json").read_text(encoding="utf-8"))
     OUT.mkdir(parents=True, exist_ok=True)
     cards = {"home.png": home_card(), "lessons.png": lessons_card(bank), "logo.png": logo()}
     favicon()
+    site_art()
     for stage in STAGES:
         cards[f"{stage['slug']}.png"] = stage_card(stage, bank[str(stage["id"])]["topic"])
     for name, img in cards.items():

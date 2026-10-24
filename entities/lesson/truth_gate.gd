@@ -1,7 +1,7 @@
 class_name TruthGate
 extends StaticBody2D
 
-## A Smelter's Fork gate: a wall of glass bars too tall to jump, standing on
+## A Ministry of Walks gate: a wall of glass bars too tall to jump, standing on
 ## an `if`. The stage re-checks the condition whenever its dial turns and
 ## calls `set_open`; while the condition is True the bars sink into the
 ## floor, and the moment it turns False they rise again.
