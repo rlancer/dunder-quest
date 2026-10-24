@@ -1,0 +1,157 @@
+/* Flatmates.js, on top of style.css. The Croydon palette from
+   flatmates/core/palette.gd: a tower block at night, sodium streetlight,
+   a laptop's syntax colors, JavaScript yellow, and each flatmate's color. */
+
+body.fm {
+  --dusk: #17161f;
+  --dusk-2: #22212d;
+  --night: #0f0e15;
+  --line: #3b3c55;
+  --gold: #f7de1f;
+  --ember: #ffb24d;
+  --parchment: #f5ebd6;
+  --ash: #a9a8bd;
+  --moss: #75d680;
+  --zap: #e0504a;
+  --clive: #75a8fa;
+  --jazz: #fa6b61;
+  --code-bg: #1a1c29;
+  --shadow: #8a7a00;
+}
+
+.fm .btn { box-shadow: 0 4px 0 var(--shadow); }
+.fm .btn:hover { background: #fff07a; box-shadow: 0 5px 0 var(--shadow); }
+.fm .btn:active { box-shadow: 0 1px 0 var(--shadow); }
+.fm .btn-ghost { box-shadow: 0 4px 0 #000; }
+.fm .btn-ghost:hover { background: var(--night); box-shadow: 0 5px 0 #000; }
+.fm .btn-small { box-shadow: 0 3px 0 var(--shadow); }
+
+/* The name, flatmates.js: paper letters and a yellow extension, as on the title screen */
+.fm .brand i, .fm-hero h1 i { font-style: normal; color: var(--gold); }
+.fm .bar { border-bottom-color: var(--line); background: rgba(15, 14, 21, 0.92); }
+.fm .bar nav a.fm-home { color: var(--ember); }
+.fm .bar nav a.fm-home::before { content: "← "; }
+
+.fm-hero .hero-art { object-position: 70% 40%; }
+.fm-hero::after { background: linear-gradient(180deg, rgba(23, 22, 31, 0) 25%, rgba(23, 22, 31, 0.8) 66%, var(--dusk) 100%); }
+.fm-hero h1 { color: var(--parchment); text-shadow: 0 4px 0 #000, 0 8px 0 rgba(0, 0, 0, 0.4); }
+.fm-hero h1 i { text-shadow: 0 4px 0 #5a4f00, 0 8px 0 rgba(0, 0, 0, 0.4); }
+
+/* Clive and Jazz */
+.mates { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.mates li { display: flex; gap: 20px; align-items: center; padding: 18px 20px; background: var(--night); border: 2px solid var(--who); }
+.mates img { width: 64px; height: 96px; flex: none; }
+.mates h3 { color: var(--who); }
+.mates p { margin: 0; font-size: 1rem; }
+.mate-clive { --who: var(--clive); }
+.mate-jazz { --who: var(--jazz); }
+@media (max-width: 760px) { .mates { grid-template-columns: 1fr; } }
+
+/* The tram line: a green track with a roundel at each stop */
+.line {
+  list-style: none; padding: 0; margin: 28px 0 8px;
+  display: grid; grid-template-columns: repeat(6, 1fr);
+  position: relative; counter-reset: stop;
+}
+.line::before {
+  content: ""; position: absolute; left: 8.33%; right: 8.33%; top: 13px; height: 6px;
+  background: repeating-linear-gradient(90deg, var(--moss) 0 14px, #3d7a45 14px 20px);
+}
+.line li { counter-increment: stop; position: relative; text-align: center; }
+.line a { display: block; padding: 0 4px; text-decoration: none; color: var(--parchment); }
+.line a::before {
+  content: counter(stop); display: grid; place-items: center;
+  width: 32px; height: 32px; margin: 0 auto 10px; border-radius: 50%;
+  background: var(--night); border: 4px solid var(--moss);
+  font: 1.25rem/1 var(--label); color: var(--parchment); position: relative;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.line a:hover::before, .line a:focus-visible::before { background: var(--gold); color: var(--night); }
+.ln-stop { display: block; font: 600 1rem/1.2 var(--display); }
+.ln-lesson { display: block; font-size: 0.9rem; color: var(--ash); margin-top: 2px; }
+@media (max-width: 760px) {
+  .line { grid-template-columns: 1fr; gap: 14px; }
+  .line::before { left: 13px; right: auto; top: 16px; bottom: 16px; width: 6px; height: auto;
+    background: repeating-linear-gradient(180deg, var(--moss) 0 14px, #3d7a45 14px 20px); }
+  .line li { text-align: left; }
+  .line a { display: flex; gap: 14px; align-items: center; padding: 0; }
+  .line a::before { margin: 0; flex: none; }
+}
+
+/* One stop */
+.stop { margin-top: 56px; padding-top: 28px; border-top: 2px solid var(--line); scroll-margin-top: 80px; }
+.stop .kicker { display: flex; align-items: center; gap: 10px; color: var(--moss); }
+.roundel { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--moss); color: var(--parchment); font-size: 1.2rem; }
+.stop h3 { font-size: clamp(1.5rem, 3.4vw, 2rem); }
+.stop h3 span { display: block; font: 1.5rem/1.2 var(--label); color: var(--gold); margin-top: 4px; }
+.stop-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; margin-top: 12px; }
+.stop-grid img { display: block; width: 100%; border: 2px solid var(--line); margin-bottom: 14px; }
+.stop-grid p { font-size: 1rem; }
+@media (max-width: 860px) { .stop-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* The laptop: the game's script editor */
+.fm .code pre { background: var(--code-bg); border-left-color: var(--gold); }
+.fm .code .k { color: #c78fff; }
+.fm .code .s { color: #9ee685; }
+.fm .code .n { color: #ffa866; }
+.fm .code .c { color: #8089a8; }
+.fm .code .b { color: #80c7ff; }
+.laptop { margin: 0; background: var(--code-bg); border: 2px solid var(--line); box-shadow: 0 0 0 4px var(--night), 0 16px 36px rgba(0, 0, 0, 0.4); }
+.laptop figcaption { padding: 8px 14px; border-bottom: 2px solid var(--line); font: 1.3rem/1.1 var(--label); color: var(--ember); }
+.laptop figcaption b { font-weight: 400; color: var(--parchment); background: var(--night); padding: 2px 8px; margin-right: 6px; }
+.laptop pre { margin: 0; padding: 14px 16px; overflow-x: auto; font: 0.95rem/1.7 var(--mono); color: #dbe5ff; }
+.laptop .k { color: #c78fff; }
+.laptop .s { color: #9ee685; }
+.laptop .n { color: #ffa866; }
+.laptop .c { color: #8089a8; }
+.laptop .b { color: #80c7ff; }
+.blank {
+  font: inherit; color: var(--gold); background: rgba(247, 222, 31, 0.1);
+  border: 2px solid var(--gold); padding: 0 6px; min-width: 2.4em; cursor: pointer;
+}
+.blank:disabled { cursor: default; }
+.laptop.live .blank { animation: blank-pulse 1.4s ease-in-out infinite; }
+.laptop.live .blank.set { animation: none; }
+@keyframes blank-pulse { 50% { background: rgba(247, 222, 31, 0.28); } }
+.laptop-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px; border-top: 2px solid var(--line); }
+.laptop-bar > span { font: 1.25rem var(--label); color: var(--ash); }
+.picks { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; flex: 1; }
+.pick {
+  font: inherit; background: var(--night); color: var(--parchment); border: 2px solid var(--line);
+  padding: 6px 10px; min-height: 40px; cursor: pointer; touch-action: manipulation;
+}
+.pick code { background: none; border: 0; padding: 0; }
+.pick:hover:not(:disabled), .pick[aria-pressed="true"] { border-color: var(--gold); }
+.pick[aria-pressed="true"] { background: rgba(247, 222, 31, 0.12); }
+.pick:disabled, .run:disabled { cursor: default; }
+.run {
+  font: 600 1rem/1 var(--display); padding: 10px 18px 9px; min-height: 40px; cursor: pointer;
+  border: 2px solid var(--gold); background: var(--gold); color: var(--night);
+}
+.run:disabled { opacity: 0.4; }
+.out { margin: 0; padding: 12px 14px; border-top: 2px solid var(--line); font-size: 0.98rem; }
+.out b { font: 1.35rem var(--label); font-weight: 400; margin-right: 4px; }
+.out.right { background: #183021; }
+.out.right b { color: var(--moss); }
+.out.wrong { background: #3a1c22; }
+.out.wrong b { color: var(--zap); }
+.laptop details { margin: 0; border: 0; border-top: 2px dashed var(--line); padding: 8px 14px; }
+.laptop details[open] { border-top-color: var(--moss); }
+.laptop details p { font-size: 0.98rem; }
+/* Without JavaScript the options are a list and the answer is a click away. */
+.laptop:not(.live) .run { display: none; }
+
+/* Inner-voice lesson cards, bordered in whoever's thinking */
+.voices { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; margin-top: 24px; }
+.voice { background: var(--night); border: 2px solid var(--who); padding: 14px 16px 4px; }
+.voice-clive { --who: var(--clive); }
+.voice-jazz { --who: var(--jazz); }
+.voice-kick { font: 1.15rem var(--label); color: var(--who); margin: 0 0 2px; }
+.voice h4 { font: 600 1.2rem/1.2 var(--display); margin: 0 0 10px; }
+.voice .code pre { border-left-color: var(--who); font-size: 0.88rem; }
+.voice p { font-size: 0.98rem; }
+
+.fm .count { margin-top: 48px; }
+.fm-family .wordmark i { color: var(--ember); }
+.fm-family .kicker { text-transform: none; }
+.fm .foot img { width: 16px; height: 24px; vertical-align: -6px; }

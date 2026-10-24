@@ -1,0 +1,211 @@
+{
+	"1": {
+		"lesson": "Calling methods",
+		"cards": [
+			{
+				"id": "c1_heads",
+				"who": "clive",
+				"title": "Two heads, one flat",
+				"code": [
+					"// Tab: swap heads",
+					"// E: use a laptop, a lever, a bell"
+				],
+				"text": "There are two of us in Flat 5B and you can be either. Whoever you aren't being does what his script says. Left to himself, Jazz drifts back to the sofa. So do I, to be fair, but my sofa is an armchair."
+			},
+			{
+				"id": "c1_methods",
+				"who": "clive",
+				"title": "Objects and methods",
+				"code": [
+					"jazz.walk(7);",
+					"jazz.jump();"
+				],
+				"text": "jazz is an object, and walk and jump are its methods: things it can do. The dot means 'jazz, do this'. The number in the brackets is an argument: how far. It's like training a dog, if the dog owned a guitar and owed you rent."
+			},
+			{
+				"id": "c1_order",
+				"who": "jazz",
+				"title": "One thing at a time",
+				"code": [
+					"jazz.walk(3);",
+					"jazz.jump();",
+					"jazz.walk(1);"
+				],
+				"text": "Lines run top to bottom, and I do them in that order: walk, then jump, then walk. Each line puts one thing on my to-do list. Swap two lines and you get a different afternoon. Usually a worse one."
+			}
+		]
+	},
+	"2": {
+		"lesson": "Variables & strings",
+		"cards": [
+			{
+				"id": "c2_vars",
+				"who": "jazz",
+				"title": "Labelled boxes",
+				"code": [
+					"const desk = 12;",
+					"let mood = \"hopeful\";",
+					"mood = \"less hopeful\";",
+					"console.log(desk, mood); // 12 less hopeful"
+				],
+				"output": ["12 less hopeful"],
+				"text": "const and let give a value a name. A const keeps the same value forever, like Clive's haircut. A let can be given a new one with =, like my plans for the evening."
+			},
+			{
+				"id": "c2_template",
+				"who": "clive",
+				"title": "Template literals",
+				"code": [
+					"const desk = 12;",
+					"const ext = 7;",
+					"console.log(`${desk}${ext}`); // 127",
+					"console.log(`desk${ext}`);    // desk7"
+				],
+				"output": ["127", "desk7"],
+				"text": "Backticks make a template literal: text with holes in it. Inside ${ }, a name is swapped for its value. Outside, desk is just four letters, the way Gary is just four letters, not a personality."
+			},
+			{
+				"id": "c2_numbers",
+				"who": "clive",
+				"title": "Numbers and strings",
+				"code": [
+					"console.log(2 + 1);      // 3",
+					"console.log(\"2\" + 1);    // 21",
+					"console.log(typeof \"2\"); // string"
+				],
+				"output": ["3", "21", "string"],
+				"text": "2 is a number. \"2\" in quotes is a string: text that happens to look like a number. Add 1 to a string and JavaScript glues it on the end. The lift only takes numbers. The lift and I have standards."
+			}
+		]
+	},
+	"3": {
+		"lesson": "Loops",
+		"cards": [
+			{
+				"id": "c3_loop",
+				"who": "jazz",
+				"title": "The for loop",
+				"code": [
+					"for (let i = 0; i < 3; i++) {",
+					"  console.log(\"strum\", i);",
+					"}",
+					"// strum 0, strum 1, strum 2"
+				],
+				"output": ["strum 0", "strum 1", "strum 2"],
+				"text": "let i = 0 starts the count. i < 3 is checked before every lap, and i++ adds one after it. So i goes 0, 1, 2: three laps. Write i <= 3 and you get four. Every drummer I've ever played with has made that mistake."
+			},
+			{
+				"id": "c3_for_of",
+				"who": "clive",
+				"title": "for...of",
+				"code": [
+					"const amps = [\"amp1\", \"amp2\", \"amp3\"];",
+					"for (const amp of amps.slice(1)) {",
+					"  console.log(amp);",
+					"}",
+					"// amp2, amp3"
+				],
+				"output": ["amp2", "amp3"],
+				"text": "for...of goes through every item in an array, one per lap. slice(1) makes a new array starting at index 1, so it skips the first. And amps[0] isn't an array at all, it's one amp. You can't loop over one amp. Jazz has tried."
+			}
+		]
+	},
+	"4": {
+		"lesson": "Events & callbacks",
+		"cards": [
+			{
+				"id": "c4_events",
+				"who": "clive",
+				"title": "Events",
+				"code": [
+					"bell.addEventListener(\"ring\", () => {",
+					"  console.log(\"ding dong\");",
+					"});",
+					"bell.ring(); // ding dong"
+				],
+				"output": ["ding dong"],
+				"text": "An event is something that happens: a bell rings, a door opens, Gary cries. addEventListener says: when this happens, run this function. The name has to match exactly. Listen for \"ding\" and you'll wait forever. I've waited forever before. It was a Tuesday."
+			},
+			{
+				"id": "c4_callbacks",
+				"who": "clive",
+				"title": "Callbacks",
+				"code": [
+					"const cheer = () => console.log(\"hooray\");",
+					"console.log(\"before\");",
+					"cheer();",
+					"cheer();"
+				],
+				"output": ["before", "hooray", "hooray"],
+				"text": "() => { } is a function with no name: an arrow function. Handing one to addEventListener doesn't run it. The bell runs it later, every time it rings. That's a callback: don't call us, we'll call you. The story of my career."
+			}
+		]
+	},
+	"5": {
+		"lesson": "Timers & the event loop",
+		"cards": [
+			{
+				"id": "c5_timeout",
+				"who": "clive",
+				"title": "setTimeout",
+				"code": [
+					"setTimeout(() => {",
+					"  console.log(\"now\");",
+					"}, 2500);",
+					"console.log(\"first\");"
+				],
+				"output": ["first", "now"],
+				"text": "setTimeout runs a function later. The number is milliseconds, thousandths of a second, so 2500 is two and a half seconds. Meanwhile the rest of the script carries straight on. It doesn't wait. Nobody waits for me either."
+			},
+			{
+				"id": "c5_event_loop",
+				"who": "jazz",
+				"title": "The event loop",
+				"code": [
+					"setTimeout(() => console.log(\"C\"), 0);",
+					"console.log(\"A\");",
+					"console.log(\"B\");",
+					"// A, B, C"
+				],
+				"output": ["A", "B", "C"],
+				"text": "A timer of 0 doesn't mean now. It means as soon as you're done with everything else. JavaScript finishes the lines it's on, then looks at its list of things to do later. Like me with the washing up."
+			}
+		]
+	},
+	"6": {
+		"lesson": "async & await",
+		"cards": [
+			{
+				"id": "c6_async",
+				"who": "clive",
+				"title": "async and await",
+				"code": [
+					"const sleep = (ms) => new Promise((done) => setTimeout(done, ms));",
+					"async function ceremony() {",
+					"  await sleep(100);",
+					"  console.log(\"march\");",
+					"}",
+					"ceremony();",
+					"console.log(\"waiting\"); // waiting, march"
+				],
+				"output": ["waiting", "march"],
+				"text": "A promise is a value that turns up later, like a wedding present or an apology. Inside an async function, await pauses until it turns up. Without await, the next line runs straight away. Jazz runs straight away. Always has."
+			},
+			{
+				"id": "c6_all",
+				"who": "jazz",
+				"title": "Promise.all",
+				"code": [
+					"const sleep = (ms) => new Promise((done) => setTimeout(done, ms));",
+					"async function getaway() {",
+					"  await Promise.all([sleep(100), sleep(200)]);",
+					"  console.log(\"drive\");",
+					"}",
+					"getaway();"
+				],
+				"output": ["drive"],
+				"text": "Promise.all takes a list of promises and waits for every one. Clive reaching the car is one promise. Me reaching the car is another. The car only goes when both are kept. Like a marriage, if you think about it. I try not to."
+			}
+		]
+	}
+}
