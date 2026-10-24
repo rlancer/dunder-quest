@@ -105,6 +105,8 @@ var _spell_turn: int = 0
 var _invulnerable: float = 0.0
 ## Time left framing the arena after a right answer.
 var _frame_hold: float = 0.0
+## Whether this fight's first hex strike has fallen yet (see `Eggs`).
+var _hex_seen: bool = false
 
 
 func _ready() -> void:
@@ -272,9 +274,13 @@ func _engage() -> void:
 	sparks = SPARKS
 	_invulnerable = 0.0
 	_spell_turn = 0
+	_hex_seen = false
 	_seal.rise()
 	player.set_camera_bounds(_arena_bounds())
-	wizard.say("Bump your answer, if you dare!" if wizard.wards_left == wizard.ward_total else "Back for more?", INTRO_TIME + 0.6)
+	var opening := "Back for more?"
+	if wizard.wards_left == wizard.ward_total:
+		opening = str(Eggs.INTRO.get(stage_id, "Bump your answer, if you dare!"))
+	wizard.say(opening, INTRO_TIME + 0.6)
 	if hud != null:
 		hud.open_duel(title, tint, wizard.ward_total - wizard.wards_left, wizard.ward_total, sparks)
 		hud.duel_say("%s seals the arena. Bump the block with the right answer, and jump his spells." % title)
@@ -312,7 +318,7 @@ func _on_block_bumped(answer_block: RuneBlock) -> void:
 		answer_block.flash(GOOD)
 		answer_block.set_lit(true)
 		wizard.stagger()
-		wizard.say(RIGHT_LINES.pick_random() if remaining > 0 else "No... NO!", RIGHT_HOLD)
+		wizard.say(RIGHT_LINES.pick_random() if remaining > 0 else str(Eggs.LAST_WORDS.get(stage_id, "No... NO!")), RIGHT_HOLD)
 		Fx.float_text(get_parent(), above, "Ward broken!", GOOD.lightened(0.3), WARD_TEXT_HOLD, 5)
 		Fx.sparks(get_parent(), answer_block.global_position, GOOD, 12, 70.0)
 		player.camera.shake(3.0)
@@ -422,6 +428,9 @@ func _cast_wave(speed: float) -> void:
 
 
 func _cast_hex(at_x: float) -> void:
+	if stage_id == Eggs.HEX_STAGE and not _hex_seen:
+		_hex_seen = true
+		wizard.say(Eggs.HEX_SURPRISE)
 	var hex := HEX_STRIKE.new() as HexStrike
 	hex.tint = tint
 	hex.drop = HEX_DROP
@@ -446,6 +455,8 @@ func _on_spell_hit(spell: Node2D, body: Node2D) -> void:
 
 func _on_wizard_touched(body: Node2D) -> void:
 	if body == player and is_engaged():
+		if _invulnerable <= 0.0:
+			wizard.say(Eggs.NONE_SHALL_PASS)
 		_hurt(Vector2(-230.0, -220.0))
 
 
@@ -462,6 +473,8 @@ func _hurt(push: Vector2, zap: bool = false) -> void:
 	Fx.sparks(get_parent(), player.global_position, BAD, 10, 60.0)
 	if hud != null:
 		hud.duel_sparks(sparks)
+	if sparks == 1:
+		Fx.float_text(get_parent(), player.global_position + Vector2(-28.0, -8.0), Eggs.SCRATCH, BAD.lightened(0.3), 0.4)
 	if sparks <= 0:
 		_clear_spells()
 		Telemetry.track("duel_downed", stage_id, {"answers": answers, "misses": misses})

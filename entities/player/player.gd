@@ -53,6 +53,13 @@ var _dead: bool = false
 var _knock_timer: float = 0.0
 ## Game time spent running on the ground, for the run bob.
 var _bob_time: float = 0.0
+## Easter eggs (see `Eggs`): quick turns on the ground for the silly walk,
+## and whether a copperling has sent the pebble running yet.
+var _silly_turns: int = 0
+var _silly_window: float = 0.0
+var _silly_last: float = 0.0
+var _silly_done: bool = false
+var _ran_away: bool = false
 
 
 func _ready() -> void:
@@ -114,6 +121,7 @@ func _physics_process(delta: float) -> void:
 		_facing = 1.0
 	elif direction < 0.0:
 		_facing = -1.0
+	_watch_silly_walk(delta, direction)
 
 	var fall_speed := velocity.y
 	if velocity.y < 0.0:
@@ -246,6 +254,9 @@ func _handle_contacts() -> void:
 		if collider == null or collider in stomped:
 			continue
 		if collider.is_in_group(&"stompable"):
+			if collider.is_in_group(&"copperling") and not _ran_away and not _respawn_locked:
+				_ran_away = true
+				Fx.float_text(get_parent(), global_position + Vector2(-30.0, -8.0), Eggs.RUN_AWAY)
 			_ask_respawn()
 			return
 
@@ -314,6 +325,26 @@ func _kick_up_steps(delta: float, direction: float) -> void:
 	if _step_timer <= 0.0 or skidding:
 		_step_timer = 0.09 if skidding else 0.28
 		Fx.dust(get_parent(), global_position + Vector2(-signf(velocity.x) * 4.0, 8.0), 2 if not skidding else 4, -signf(velocity.x))
+
+
+## Six turns on the ground, each within 0.6 s of the last, is a silly walk.
+## Once a stage.
+func _watch_silly_walk(delta: float, direction: float) -> void:
+	if _silly_done:
+		return
+	_silly_window = maxf(_silly_window - delta, 0.0)
+	if _silly_window <= 0.0:
+		_silly_turns = 0
+	if direction == 0.0 or not is_on_floor():
+		return
+	var side := signf(direction)
+	if _silly_last != 0.0 and side != _silly_last:
+		_silly_turns += 1
+		_silly_window = 0.6
+		if _silly_turns >= 6:
+			_silly_done = true
+			Fx.float_text(get_parent(), global_position + Vector2(-28.0, -8.0), Eggs.SILLY_WALK)
+	_silly_last = side
 
 
 func _play_squash(wide: float, tall: float) -> void:

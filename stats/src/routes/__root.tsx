@@ -40,6 +40,7 @@ function Root() {
           </Link>
           <a href="https://dunderquest.com/brand/">Brand kit</a>
           <Link to="/dev">Dev notes</Link>
+          <Link to="/eggs">Easter eggs</Link>
         </nav>
       </header>
       <main>

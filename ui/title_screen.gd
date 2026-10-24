@@ -6,6 +6,9 @@ const MAP_SCENE := "res://levels/world_map.tscn"
 const MUSIC := preload("res://assets/audio/music_calm.ogg")
 const CONFIRM_SOUND := preload("res://assets/audio/goal.wav")
 const MOVE_SOUND := preload("res://assets/audio/bump.wav")
+const EGG_SOUND := preload("res://assets/audio/pickup.wav")
+## How long an easter egg holds the footer before it goes back.
+const EGG_HOLD := 4.0
 
 @onready var stage_audio: StageAudio = %StageAudio
 @onready var start_button: Button = %StartButton
@@ -20,6 +23,11 @@ const MOVE_SOUND := preload("res://assets/audio/bump.wav")
 var _leaving: bool = false
 var _confirm_reset: bool = false
 var _clock: float = 0.0
+## Easter eggs (see `Eggs`): letters typed so far, time since the last press,
+## and how long the footer holds an egg's line.
+var _typed: String = ""
+var _idle: float = 0.0
+var _egg_time: float = 0.0
 
 
 func _ready() -> void:
@@ -49,9 +57,24 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_clock += delta
 	logo.position.y = roundf(sin(_clock * 1.6) * 2.0)
+	_idle += delta
+	if _idle >= 60.0 and _egg_time <= 0.0 and footer.text != Eggs.DIFFERENT:
+		footer.text = Eggs.DIFFERENT
+	if _egg_time > 0.0:
+		_egg_time -= delta
+		if _egg_time <= 0.0:
+			_update_footer()
 
 
 func _input(event: InputEvent) -> void:
+	if event.is_pressed() and not event.is_echo():
+		if footer.text == Eggs.DIFFERENT:
+			_update_footer()
+		_idle = 0.0
+	_typed = Eggs.spell(_typed, event, "SPAM")
+	if _typed == "SPAM":
+		_typed = ""
+		_show_egg(Eggs.SPAM)
 	if StageAudio.web_audio_unlocked or not OS.has_feature("web"):
 		return
 	if event.is_pressed() and not event.is_echo():
@@ -137,6 +160,12 @@ func _cleared_count() -> int:
 		if GameProgression.is_cleared(int(stage.id)):
 			count += 1
 	return count
+
+
+func _show_egg(line: String) -> void:
+	footer.text = line
+	_egg_time = EGG_HOLD
+	stage_audio.play_sfx(EGG_SOUND)
 
 
 func _start_music() -> void:

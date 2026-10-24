@@ -54,6 +54,8 @@ var anim_time: float = 0.0
 var _particles: Array[Dictionary] = []
 var _unlock_anim_t: float = -1.0
 var _unlock_from_id: int = 0
+## Letters typed so far, for the Knights Who Say Ni (see `Eggs`).
+var _typed: String = ""
 
 
 func _ready() -> void:
@@ -99,6 +101,11 @@ func _process(delta: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if is_moving or is_entering:
+		return
+	_typed = Eggs.spell(_typed, event, "NI")
+	if _typed == "NI":
+		_typed = ""
+		_knights_say_ni()
 		return
 
 	if event.is_action_pressed(&"move_left") or _is_key(event, KEY_A) or _is_key(event, KEY_LEFT):
@@ -352,6 +359,14 @@ func _flash_prompt(msg: String) -> void:
 	var flash_cb := func() -> void:
 		_update_ui()
 	timer.timeout.connect(flash_cb)
+
+
+func _knights_say_ni() -> void:
+	enter_prompt_label.text = Eggs.NI
+	enter_prompt_label.modulate = Color(0.6, 1.0, 0.5)
+	_play_sfx(UNLOCK_SOUND)
+	_squash_avatar()
+	get_tree().create_timer(2.5).timeout.connect(_update_ui)
 
 
 func _shake_avatar(dir: int) -> void:
