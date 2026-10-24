@@ -15,6 +15,7 @@ import html
 import io
 import json
 import keyword
+import re
 import shutil
 import sys
 import tokenize
@@ -581,6 +582,83 @@ TRAILER_CUTS = [
     ("Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"),
     ("GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"),
 ]
+## The launch: one post per platform, in the order they go out on launch
+## day. Times are US Eastern on a Tuesday. Every post says what Opus 5.5 did
+## and what other models made, because readers open the repo and check.
+## (platform, when, title or "", [post, or (label, post)], tips)
+LAUNCH = [
+    ("Hacker News", "8:30 AM", "Show HN: Dunder Quest – a Python platformer Opus 5.5 built in four days", [
+        ("URL", f"{SITE_URL}play/"),
+        ("First comment, posted right away", "I wanted to see how far Opus 5.5 could take a game end to end, so I let it build one. "
+        "Dunder Quest is a pixel platformer where Python is the magic: you bump slice blocks to lay a bridge, "
+        "load a range() into a lift, and duel wizards by jumping into the right answer. Six stages, free in the browser, no signup.\n\n"
+        "Over four days Opus wrote all of the Godot code, painted the tiles and the wizard pixel by pixel from Python scripts, "
+        "prompted image, music and sound models for the rest, built this site, and cut the 62 s trailer from a scripted "
+        "gameplay capture with no video editor. I wrote the prompts and playtested.\n\n"
+        "Where it struggled: duels were hard to read until it added a camera that eases in, and some jumps still need a human playtest. "
+        "The list it kept is in GAME_IMPROVEMENTS.md.\n\n"
+        "Why a learning game: I'm dyslexic, and I was failing my spelling tests until my dad wrote me a spelling game in BASIC. "
+        "After that I got 100 on every one. My kids are 5 and 2, too young for Python, but maybe some day this is theirs.\n\n"
+        f"Source: {REPO}"),
+    ], "Link the game itself, not the home page. Stay in the thread for the first three hours and answer everything, the skeptics first. Never ask anyone for upvotes: HN spots vote rings and buries the post. If it sinks, email hn@ycombinator.com and ask about the second-chance pool."),
+    ("X", "8:45 AM", "", [
+        "I let Opus 5.5 build a whole game in four days.\n\n"
+        "Dunder Quest: a pixel platformer where Python is the magic. Slice a list to lay a bridge, loop a lift up a wall, duel wizards with print().\n\n"
+        f"Free in your browser 👇\n{SITE_URL}",
+        "Opus wrote every line of Godot code, painted the tiles pixel by pixel in Python, and prompted image and music models for the rest.\n\n"
+        "It even cut the trailer from code. No video editor anywhere.",
+        "Why a learning game? I'm dyslexic. I failed spelling tests until my dad wrote me a spelling game in BASIC. Then I got 100 on every one.\n\n"
+        "My kids are 5 and 2. Too young for Python, but maybe some day.",
+        "My part: prompts and playtesting.\n\n"
+        f"Everything it made is on GitHub, commit by commit:\n{REPO}",
+    ], "Upload the 1080p trailer to the first post as a video, not a YouTube link: native video autoplays in the feed. Tag @AnthropicAI and @claudeai on the last post. Pin the thread."),
+    ("Bluesky", "9:00 AM", "", [
+        "I let Opus 5.5 build a whole game in four days: Dunder Quest, a pixel platformer where Python is the magic. "
+        "Opus wrote the code, painted the tiles in Python and cut the trailer with no video editor.\n\n"
+        f"Free in your browser: {SITE_URL}",
+        "Why a learning game: I'm dyslexic, and I failed spelling tests until my dad wrote me a spelling game in BASIC. "
+        "Then I got 100 on every one.\n\n"
+        "My kids are 5 and 2, too young for Python. Maybe some day.",
+    ], "Attach the trailer as a video to the first post and reply to it with the second. Bluesky caps posts at 300 characters. Add the GitHub link as a third reply."),
+    ("r/godot", "10:00 AM", "Opus 5.5 built this Python-teaching platformer in Godot 4 in four days, trailer included", [
+        "Dunder Quest is a pixel platformer where every stage teaches a piece of Python: slices, hashing, loops, conditions. "
+        "Wizards at the end of each stage ask a question and you answer by jumping into a block.\n\n"
+        "The whole thing was built by Opus 5.5 over four days. It wrote the GDScript, painted the tiles from Python scripts, "
+        "and made the trailer by recording the game with --write-movie and compositing it in Python. I prompted and playtested.\n\n"
+        f"Play it in the browser (web export): {SITE_URL}play/\n"
+        f"Source: {REPO}\n\n"
+        "Happy to answer questions about how it handled the Godot side.",
+    ], "Use the Showcase flair and upload the trailer as a Reddit video. r/godot cares about the engine, so lead with the Godot details in the comments."),
+    ("r/Python", "11:00 AM", "Dunder Quest: a browser platformer that teaches Python, built end to end by Opus 5.5", [
+        "**What My Project Does**\n\n"
+        "Dunder Quest is a free pixel platformer that teaches Python. Each of its six stages is built around one idea: "
+        "you slice a list to lay a bridge, hash keys into a vault, and run a for loop to raise a lift. "
+        "Wizards quiz you on real Python, and every question is checked against a real interpreter.\n\n"
+        "**Target Audience**\n\n"
+        "Beginners learning Python, and people curious about what a coding model can build alone. It's a finished, playable game, not a demo.\n\n"
+        "**Comparison**\n\n"
+        "Most coding games are puzzles in a code editor. Here the code changes the world you run and jump through. "
+        "It was also built entirely by Opus 5.5, from the game to its art pipeline and trailer, all in Python and GDScript.\n\n"
+        f"Play: {SITE_URL}\nSource: {REPO}",
+    ], "r/Python only allows project posts as Showcase posts in exactly these three sections. Post it as a text post with the link inside."),
+    ("LinkedIn", "12:00 PM", "", [
+        "I'm dyslexic, and as a kid I failed my spelling tests. Then my dad wrote me a spelling game in BASIC. "
+        "After that I got 100 on every test.\n\n"
+        "This week I gave Opus 5.5 a blank repo and four days to make a learning game of its own. It came back with a finished one.\n\n"
+        "Dunder Quest is a pixel platformer that teaches Python: six stages, each built around one idea, and a wizard at the end of each "
+        "who checks you understood it.\n\n"
+        "Opus wrote all of the code, painted the art in Python, directed image and music models for the rest, built the website, "
+        "and cut the trailer from code. My job was prompting and playtesting.\n\n"
+        "What struck me most was the judgment, not the speed. It kept its own list of what wasn't working, "
+        "like duels that were hard to read on a phone, and fixed them.\n\n"
+        "My kids are 5 and 2, too young for Python. But my dad's game is why I can spell, "
+        "and maybe some day this one is theirs.\n\n"
+        f"Play it free in your browser: {SITE_URL}",
+    ], "Native video gets far more reach than a link card, so upload the trailer. Put the link in the post, not the first comment."),
+    ("r/WebGames", "1:00 PM", "Dunder Quest – a pixel platformer where Python is the magic [free, no signup]", [
+        ("URL", f"{SITE_URL}play/"),
+    ], "A link post straight to the game. Check it loads on a phone first: most players will tap it there."),
+]
 
 
 def build_brand(prefix: str) -> str:
@@ -610,6 +688,7 @@ def build_brand(prefix: str) -> str:
         f"<b>{esc(name)}</b><span>{esc(used)}</span></li>"
         for file, name, used in cards
     )
+    launch = "".join(launch_post(*post) for post in LAUNCH)
     body = f"""
 <section class="section page-head">
   <p class="kicker">&gt;&gt;&gt; help(dunder_quest)</p>
@@ -697,10 +776,43 @@ key = <i class="st">"ember"</i></code></pre></figure>
   <p class="lede">What a link to each page looks like when it's shared. Chat apps show either the full card or a small square cut from its middle, shown beside each one, so anything that has to be read sits in the center.</p>
   <ul class="cards">{card_items}</ul>
   <p class="fine">Painted by <code>tools/make_og.py</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="launch-h">
+  <p class="kicker">dunder_quest.__launch__</p>
+  <h2 id="launch-h">The launch posts</h2>
+  <p class="lede">One post for each platform, ready to paste, in the order they go out on launch day. Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
+  <ol class="launch">{launch}</ol>
+  <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
 </section>"""
     return page("Brand kit", body, prefix,
-                description="The Dunder Quest brand kit: the logo, colors, fonts, art, trailer and social cards.",
-                scripts=f'<script src="{prefix}static/trailer.js"></script>', path="brand/")
+                description="The Dunder Quest brand kit: the logo, colors, fonts, art, trailer, social cards and launch posts.",
+                scripts=f'<script src="{prefix}static/trailer.js"></script><script src="{prefix}static/copy.js"></script>', path="brand/")
+
+
+## X counts every link as 23 characters, whatever its length.
+LIMITS = {"X": 280, "Bluesky": 300}
+
+
+def post_length(platform: str, text: str) -> int:
+    if platform == "X":
+        return len(re.sub(r"https?://\S+", "x" * 23, text))
+    return len(text)
+
+
+def launch_post(platform: str, when: str, title: str, posts: list[str], tips: str) -> str:
+    def block(label: str, text: str) -> str:
+        limit = LIMITS.get(platform)
+        count = f' <span class="count">{post_length(platform, text)} / {limit}</span>' if limit else ""
+        return (f'<figure class="code post"><figcaption>{esc(label)}{count}'
+                f'<button class="copy" type="button" hidden>Copy</button></figcaption>'
+                f"<pre><code>{esc(text)}</code></pre></figure>")
+    blocks = block("Title", title) if title else ""
+    for i, post in enumerate(posts):
+        label, text = post if isinstance(post, tuple) else (f"Post {i + 1} of {len(posts)}" if len(posts) > 1 else "Post", post)
+        blocks += block(label, text)
+    return (f'<li><h3><span class="when">{esc(when)}</span> {esc(platform)}</h3>'
+            f"{blocks}<p class=\"fine\">{esc(tips)}</p></li>")
 
 
 def build_404(prefix: str) -> str:

@@ -457,3 +457,17 @@ tbody th { font-weight: 700; color: var(--parchment); }
   border: 2px solid var(--gold); box-shadow: 0 0 0 3px var(--night); pointer-events: none;
 }
 .og-crop img { height: 100%; max-width: none; margin-left: -29px; }
+/* Brand kit: the launch posts, one card per platform in posting order */
+.launch { list-style: none; padding: 0; margin: 24px 0 12px; display: grid; gap: 28px; }
+.launch li { max-width: 760px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.launch h3 { font-size: 1.35rem; display: flex; align-items: baseline; gap: 12px; }
+.launch .when { font: 1.35rem var(--label); color: var(--ember); font-weight: 400; min-width: 5.5ch; }
+.post figcaption { display: flex; align-items: center; gap: 10px; }
+.post .count { color: var(--moss); }
+.post .copy {
+  margin-left: auto; font: 1.1rem/1 var(--label); color: var(--gold); background: var(--night);
+  border: 1px solid var(--line); padding: 4px 10px; cursor: pointer;
+}
+.post .copy:hover { border-color: var(--gold); }
+.post pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.post code { font-size: 0.95rem; line-height: 1.5; white-space: inherit; }
