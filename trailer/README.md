@@ -5,7 +5,7 @@ A 72 s motion-graphics trailer for **__dunder_quest__**, cut to the beat of a ge
 - [PLAN.md](PLAN.md) has the research: the pitch, trailer craft rules, beat sheet, visual style, deliverable specs and sources.
 - [../GAME_IMPROVEMENTS.md](../GAME_IMPROVEMENTS.md) lists the game issues spotted while making it.
 
-> **Needs a recapture.** The current master was cut before the Holy Grail rework, so it shows the old stage names, the pebble and the kiln. Rebuild it with the steps below once the new world is final; `tools/make_trailer.py` already uses the new art and copy.
+> **Upload pending.** The new master is built locally in `trailer/out/`, but the site still embeds the old YouTube video (`TRAILER_ID` in `site/build.py`). Upload the new one, then update `TRAILER_ID`.
 
 ## Rebuild
 
@@ -55,7 +55,7 @@ trailer/
 
 ## v1 status (2026-10-23)
 
-Done: the full cut, the 1080p and 4K masters and the thumbnail. Measured −13.9 LUFS integrated and −0.9 dB peak, 62.000 s, pixel grid checked on 4K crops.
+Done: the Holy Grail recut (2026-10-23): a fresh capture, the cold open, `cue_march`, the 1080p and 4K masters and the thumbnail. Measured −13.6 LUFS integrated and −1.0 dB peak, 72.000 s. The shot frames were moved to the new capture by matching its MARK log against the old one, and checked on a stills sheet.
 
 ## Backlog
 

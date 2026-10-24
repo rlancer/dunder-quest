@@ -487,14 +487,14 @@ def stage_slam(name: str, at: float):
 
 
 # Capture frames for each moment, read off the run's MARK log and contact sheets.
-BRIDGE = 9290        # Bridge of Peril: span(5) bumped at 9356, planks out by 9396
-LIFT = 5300          # Cave of the Bunny: the lift rides up on range()
-GATE = 6935          # Ministry of Walks: the heat dial bumped, the gate swings
-STAIR = 11545        # Castle Aargh: the comprehension stair builds
+BRIDGE = 9552        # Bridge of Peril: span(5) bumped at 9618, planks out by 9658
+LIFT = 5377          # Cave of the Bunny: the lift rides up on range()
+GATE = 7145          # Ministry of Walks: the heat dial bumped, the gate swings
+STAIR = 11987        # Castle Aargh: the comprehension stair builds
 PLANKS = 500         # Shrubbery Wood: the slice lays the planks
 SCROLL_A = 352       # "Counting Backwards" lore card, fully open
-SCROLL_B = 11392     # "Words In, Words Out" lore card
-ARENA = 5560         # Tom the Enchanter seals the arena
+SCROLL_B = 11834     # "Words In, Words Out" lore card
+ARENA = 5637         # Tom the Enchanter seals the arena
 
 
 def edit() -> list[Shot]:
@@ -510,10 +510,10 @@ def edit() -> list[Shot]:
         fx=[flash_fx(SLAM, 6, 1.0), shake_fx(SLAM, 5, 0.4)])
     add(bar(1), bar(2), src=64, label="amber run")
     add(bar(2), bar(3), draw=terminal_card([">>> import adventure"], bar(2) + BEAT, 22), label="import")
-    add(bar(3), bar(4), src=2262, label="cinder run", fx=[flash_fx(bar(3))])
+    add(bar(3), bar(4), src=2295, label="cinder run", fx=[flash_fx(bar(3))])
 
     # Build: one stage per bar, each named as it lands.
-    for n, (src, name) in enumerate([(4340, "Cave of the Bunny"), (6850, "Ministry of Walks"), (9005, "Bridge of Peril")]):
+    for n, (src, name) in enumerate([(4417, "Cave of the Bunny"), (7060, "Ministry of Walks"), (9267, "Bridge of Peril")]):
         add(bar(4 + n), bar(5 + n), src=src, label=name,
             fx=[flash_fx(bar(4 + n), 3, 0.6), stage_slam(name, bar(4 + n))])
     add(bar(7), bar(8), draw=lambda t: parallax(t, "cave", 0.78), label="hook card",
@@ -524,7 +524,7 @@ def edit() -> list[Shot]:
     # Main: the gadgets, each one a line of Python made solid.
     add(bar(8), bar(10), src=BRIDGE, label="bridge",
         fx=[flash_fx(bar(8)), chip("bridge = span(5)", bar(8) + BEAT, bar(10) - BEAT / 2, mono=True, size=16),
-            shake_fx(bar(8) + (9356 - BRIDGE) / FPS, 2)])
+            shake_fx(bar(8) + (9618 - BRIDGE) / FPS, 2)])
     add(bar(10), bar(11), src=LIFT, label="lift",
         fx=[chip("for i in range(4): lift.rise()", bar(10) + BEAT / 2, bar(11) - BEAT / 4, mono=True, size=16)])
     add(bar(11), bar(12), src=GATE, label="gate",
@@ -534,8 +534,8 @@ def edit() -> list[Shot]:
     add(bar(13), bar(14), src=PLANKS, label="planks",
         fx=[chip("bridge = planks[1:11]", bar(13) + BEAT / 2, bar(14) - BEAT / 4, mono=True, size=16)])
     # Two bars of quick cuts on every beat, punching in on every other one.
-    quick = [(230, 1, (240, 150)), (2300, 2, (220, 190)), (4400, 1, (240, 150)), (7210, 2, (230, 185)),
-             (9110, 1, (240, 150)), (11120, 2, (230, 170)), (11260, 1, (240, 150)), (6640, 2, (230, 190))]
+    quick = [(230, 1, (240, 150)), (2333, 2, (220, 190)), (4477, 1, (240, 150)), (7420, 2, (230, 185)),
+             (9372, 1, (240, 150)), (11562, 2, (230, 170)), (11702, 1, (240, 150)), (6850, 2, (230, 190))]
     for k, (src, zoom, focus) in enumerate(quick):
         add(beat(56 + k), beat(57 + k), src=src, zoom=zoom, focus=focus, label=f"quick {k}",
             fx=[flash_fx(beat(56 + k), 2, 0.35)])
@@ -550,14 +550,14 @@ def edit() -> list[Shot]:
         label="duel prompt")
 
     # Finale: a duel a bar, each a different lesson, every one landing on a beat.
-    duels = [(1000, "lists"), (3322, "dictionaries"), (5683, "loops & range"), (7770, "booleans"),
-             (9876, "functions"), (12075, "comprehensions")]
+    duels = [(1000, "lists"), (3371, "dictionaries"), (5760, "loops & range"), (7980, "booleans"),
+             (10138, "functions"), (12517, "comprehensions")]
     for k, (src, topic) in enumerate(duels):
         add(bar(20 + k), bar(21 + k), src=src, label=f"duel {topic}",
             fx=[flash_fx(bar(20 + k), 4 if k == 0 else 3, 0.9 if k == 0 else 0.5),
                 chip(topic, bar(20 + k) + BEAT / 2, bar(21 + k) - BEAT / 4, color=MINT)])
-    add(bar(26), bar(27), src=13262, label="banish", fx=[flash_fx(bar(26), 3, 0.5)])
-    add(bar(27), bar(28), src=13327, label="waygate")
+    add(bar(26), bar(27), src=13758, label="banish", fx=[flash_fx(bar(26), 3, 0.5)])
+    add(bar(27), bar(28), src=13823, label="waygate")
 
     # The slam, then the title.
     add(bar(28), LENGTH, draw=end_card, label="end card", fx=[flash_fx(bar(28), 8, 1.0)])
@@ -582,14 +582,14 @@ CUES = [
     ("typing", bar(19) + BEAT / 2, 0.7),
     ("riser", bar(20) - 3.5, 0.6),
     ("impact", bar(20), 1.0),
-    ("wrong", bar(25) + (12117 - 12075) / FPS, 0.6),
+    ("wrong", bar(25) + (12559 - 12517) / FPS, 0.6),
     ("impact", bar(28), 1.0),
 ]
 
 
 def thumbnail(path: Path) -> None:
     """A 1920x1080 YouTube thumbnail: a duel mid-answer under a big headline."""
-    img = capture(5732).copy()
+    img = capture(5809).copy()
     ImageDraw.Draw(img).rectangle((0, 0, W, 92), fill=NIGHT)
     img.paste(dim(img.crop((0, 92, W, H)), 0.25), (0, 92))
     draw_text(img, (W // 2, 8), "__dunder_quest__", font(PIXEL, 39), TITLE_GOLD,

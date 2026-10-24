@@ -4,7 +4,7 @@
 
 Everything needed to cut a motion-graphics trailer for **__dunder_quest__**, a pixel-art platformer where a squire quests for the Grail and learns Python by bumping blocks and dueling Monty Python-style guardians.
 
-> **Holy Grail rework (2026-10-23):** the stages, cast and art were rethemed after the current master was cut. The 4K master still shows the old pebble-and-kiln world, so it needs a fresh capture (see README.md) before it matches the game. The beat sheet below is written for the new world.
+> **Holy Grail rework (2026-10-23):** the stages, cast and art were rethemed and the trailer recut from a fresh capture, with a cold open (coconut clops in the dark, the giant foot stomping down the title) and a brass-band march cue. The beat sheet below is the original plan; README.md has what was built.
 
 ---
 
