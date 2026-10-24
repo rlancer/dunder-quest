@@ -1,7 +1,7 @@
 extends Node
 
 ## Drives the menus with real input events through real scene changes:
-## title -> map -> Amber Hollow -> pause/resume -> fall + respawn
+## title -> map -> Shrubbery Wood -> pause/resume -> fall + respawn
 ## -> wizard duel (one wrong bump, then three different questions bumped right)
 ## -> pause -> world map -> Esc -> title.
 ## godot --headless --path . res://tests/flow_check.tscn   ->  FLOW result=ok

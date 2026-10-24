@@ -1,4 +1,4 @@
-"""Generate original sprites and audio for Amber Hollow.
+"""Generate original sprites and audio for Shrubbery Wood.
 
 Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the project .env.
 Never prints the key. Image and audio model ids come from the live API.
@@ -147,7 +147,7 @@ def request_json(url: str, key: str, payload: dict | None = None, timeout: int =
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost",
-        "X-Title": "Amber Hollow",
+        "X-Title": "Dunder Quest",
     }
     req = urllib.request.Request(url, data=data, headers=headers, method="POST" if payload else "GET")
     try:
@@ -166,7 +166,7 @@ def request_bytes(url: str, key: str, payload: dict, timeout: int = 180) -> tupl
         "Authorization": f"Bearer {key}",
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost",
-        "X-Title": "Amber Hollow",
+        "X-Title": "Dunder Quest",
     }
     req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers=headers, method="POST")
     try:

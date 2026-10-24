@@ -10,15 +10,15 @@ const RELEASE_PAGE = "https://github.com/rlancer/dunder-quest/releases/tag/build
 const TESTS: [string, string][] = [
   [
     "tests/flow_check.tscn",
-    "Drives the menus through real scene changes: title, map, Amber Hollow, pause, a fall and respawn, a full wizard duel, and back. Prints FLOW result=ok.",
+    "Drives the menus through real scene changes: title, map, Shrubbery Wood, pause, a fall and respawn, a full guardian duel, and back. Prints FLOW result=ok.",
   ],
   [
     "tests/lesson_check.tscn",
-    "Drives each stage's lesson pieces with real input: scroll cards, the index row, the duel (seal, clock, hints, sparks and a knockout), the vault, the kiln lift and the Spellbook.",
+    "Drives each stage's lesson pieces with real input: scroll cards, the index row, the duel (seal, clock, hints, sparks and a knockout), the vault, the loop lift and the Spellbook.",
   ],
   [
     "tests/trail_check.tscn",
-    "A bot plays all six stages start to finish with real input, then checks that the wrong answers really fail and that each stage's seeds match the map. Add -- --from=4 to start later, or -- --checks for just the checks.",
+    "A bot plays all six stages start to finish with real input, then checks that the wrong answers really fail and that each stage's tins match the map. Add -- --from=4 to start later, or -- --checks for just the checks.",
   ],
   [
     "tests/look_tour.tscn",
@@ -84,7 +84,7 @@ function Dev() {
         <h2>Launch a scene directly</h2>
         <p>Pass a scene path to skip the title and map. Each stage scene runs on its own.</p>
         <pre>
-          {`godot --path . res://levels/level_04.tscn      # straight into Smelter's Fork
+          {`godot --path . res://levels/level_04.tscn      # straight into Ministry of Walks
 godot --path . res://levels/world_map.tscn     # straight to the map
 godot --path .                                 # normal start, title screen`}
         </pre>
@@ -94,7 +94,7 @@ godot --path .                                 # normal start, title screen`}
       <section className="card">
         <h2>Progress and the save file</h2>
         <p>
-          Progress lives in <code>user://cinder_progression.json</code>: unlocked and cleared stages, best seeds and
+          Progress lives in <code>user://cinder_progression.json</code>: unlocked and cleared stages, best tins and
           times, total falls, and the scrolls read.
         </p>
         <div className="table-wrap">

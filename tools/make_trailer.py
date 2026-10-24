@@ -2,8 +2,11 @@
 
 Every frame is composed at the game's native 480x270, gameplay and motion
 graphics alike, then scaled by whole numbers with nearest-neighbor so no
-pixel ever smears. The edit is cut to `trailer/audio/cue_b.wav` (125 BPM,
-first beat at 0.06 s). Needs ffmpeg on the PATH.
+pixel ever smears. It opens cold: coconut clops in the dark, the squire
+walks into a beam of light, and the giant foot stomps down on the march's
+first hit. From there the edit is cut to `trailer/audio/cue_march.wav`
+(120 BPM, first beat 0.17 s into the cue, measured from its onsets).
+Needs ffmpeg on the PATH.
 
     godot --path . --write-movie trailer/captures/run/f.png --fixed-fps 60 res://tests/trailer_capture.tscn
     python tools/make_trailer.py            # -> trailer/out/dunder_quest_trailer_{1080p,4k}.mp4
@@ -37,8 +40,17 @@ ART = ROOT / "assets" / "backgrounds"
 W, H = 480, 270
 FPS = 60
 RATE = 48000
-BEAT = 60.0 / 125.0
-FIRST_BEAT = 0.06
+## The cold open runs this long before the march starts.
+INTRO = 6.0
+CUE = "cue_march"
+BEAT = 60.0 / 120.0
+FIRST_BEAT = INTRO + 0.17
+## The march's opening brass hit, where the foot lands.
+SLAM = INTRO + 0.8
+SPRITES = ROOT / "assets" / "sprites"
+## Clip-clops getting closer in the dark: (time, gain).
+CLOPS = [(0.5, 0.18), (1.15, 0.22), (1.75, 0.28), (2.3, 0.34), (2.8, 0.42), (3.25, 0.5),
+         (3.65, 0.58), (4.0, 0.66), (4.32, 0.74), (4.6, 0.8)]
 
 GOLD = (242, 181, 68)
 TITLE_GOLD = (255, 214, 117)
@@ -219,7 +231,7 @@ def layer(name: str) -> Image.Image:
     return Image.open(ART / f"{name}.png").convert("RGBA")
 
 
-def parallax(t: float, theme: str = "amber", darkness: float = 0.72) -> Image.Image:
+def parallax(t: float, theme: str = "wood", darkness: float = 0.72) -> Image.Image:
     """The stage's three background layers drifting at their own speeds."""
     img = Image.new("RGB", (W, H), NIGHT)
     for depth, speed in (("far", 4), ("mid", 9), ("near", 18)):
@@ -393,7 +405,7 @@ def end_card(t: float) -> Image.Image:
         draw_text(img, (W // 2, 70 - drop), "__dunder_quest__", font(PIXEL, 39), TITLE_GOLD,
                   outline=OUTLINE, thick=3, shadow=SHADOW, shadow_dy=3, anchor="mt")
     if local >= BEAT * 2:
-        draw_text(img, (W // 2, 118), "A pebble's journey to the kiln", font(PIXEL, 13), (245, 230, 255),
+        draw_text(img, (W // 2, 118), "A squire's quest for the Grail", font(PIXEL, 13), (245, 230, 255),
                   outline=OUTLINE, thick=1, anchor="mt")
     if local >= BEAT * 4:
         f = font(PIXEL, 13)
@@ -406,6 +418,57 @@ def end_card(t: float) -> Image.Image:
                   outline=OUTLINE, thick=2, anchor="mt")
     if local >= BEAT * 8:
         draw_text(img, (W // 2, 218), "Learn Python  ·  Windows  ·  macOS  ·  Linux  ·  Web", font(MONO, 16), ASH,
+                  outline=OUTLINE, thick=1, anchor="mt")
+    return img
+
+
+@functools.lru_cache(maxsize=None)
+def sprite(name: str, scale: int) -> Image.Image:
+    art = Image.open(SPRITES / f"{name}.png").convert("RGBA")
+    return art.resize((art.width * scale, art.height * scale), Image.NEAREST)
+
+
+def cold_open(t: float) -> Image.Image:
+    """Clops in the dark, a beam of light, the squire walks in and stops, and
+    the giant foot comes down beside him on the march's first hit."""
+    img = Image.new("RGB", (W, H), (8, 6, 16))
+    floor = 206
+    # The beam fades up as the clops get closer.
+    beam = min(1.0, max(0.0, (t - 1.0) / 2.0))
+    if beam > 0.0:
+        light = Image.new("L", (W, H), 0)
+        ImageDraw.Draw(light).polygon([(W // 2 - 26, 0), (W // 2 + 26, 0), (W // 2 + 70, floor), (W // 2 - 70, floor)],
+                                      fill=int(70 * beam))
+        ImageDraw.Draw(light).ellipse((W // 2 - 74, floor - 6, W // 2 + 74, floor + 6), fill=int(110 * beam))
+        img.paste(Image.new("RGB", (W, H), (255, 236, 170)), (0, 0), light)
+        embers(img, t, 0.25 * beam)
+    # The squire walks in from the left, bobbing on every clop, and stops in the light.
+    squire = sprite("squire", 3)
+    walk = min(1.0, max(0.0, (t - 0.4) / 4.3))
+    x = int(-squire.width + (W // 2 - squire.width // 2 + squire.width) * (1 - (1 - walk) ** 2))
+    bob = 3 if walk < 1.0 and any(0 <= t - c < 0.12 for c, _ in CLOPS) else 0
+    # A flinch the moment the foot lands.
+    if 0 <= t - SLAM < 0.25:
+        bob = 6
+    img.paste(squire, (x, floor - squire.height - bob), squire)
+    # The foot: drops in a fifth of a second, stands one beat, then lifts away.
+    foot = sprite("giant_foot", 2)
+    fx = W // 2 + 30
+    if t >= SLAM - 0.2:
+        if t < SLAM:
+            y = floor - foot.height - int((SLAM - t) / 0.2 * (floor + 10))
+        elif t < SLAM + BEAT:
+            y = floor - foot.height
+        else:
+            y = floor - foot.height - int((t - SLAM - BEAT) * 900)
+        img.paste(foot, (fx, y), foot)
+    # The title stamps in with the foot.
+    if t >= SLAM:
+        drop = max(0, 8 - int((t - SLAM) * FPS) * 2)
+        draw_text(img, (W // 2, 34 - drop), "__dunder_quest__", font(PIXEL, 39), TITLE_GOLD,
+                  outline=OUTLINE, thick=3, shadow=SHADOW, shadow_dy=3, anchor="mt")
+    if t >= SLAM + BEAT:
+        draw_text(img, (W // 2, 82), "A squire's quest for the Grail", font(PIXEL, 13), (245, 230, 255),
                   outline=OUTLINE, thick=1, anchor="mt")
     return img
 
@@ -424,14 +487,14 @@ def stage_slam(name: str, at: float):
 
 
 # Capture frames for each moment, read off the run's MARK log and contact sheets.
-BRIDGE = 9290        # Bellows Bridge: span(5) bumped at 9356, planks out by 9396
-LIFT = 5300          # Kiln Mouth: the lift rides up on range()
-GATE = 6935          # Smelter's Fork: the heat dial bumped, the gate swings
-STAIR = 11545        # Crucible Crown: the comprehension stair builds
-PLANKS = 500         # Amber Hollow: the slice lays the planks
+BRIDGE = 9552        # Bridge of Peril: span(5) bumped at 9618, planks out by 9658
+LIFT = 5377          # Cave of the Bunny: the lift rides up on range()
+GATE = 7145          # Ministry of Walks: the heat dial bumped, the gate swings
+STAIR = 11987        # Castle Aargh: the comprehension stair builds
+PLANKS = 500         # Shrubbery Wood: the slice lays the planks
 SCROLL_A = 352       # "Counting Backwards" lore card, fully open
-SCROLL_B = 11392     # "Words In, Words Out" lore card
-ARENA = 5560         # Kiln Archmage seals the arena
+SCROLL_B = 11834     # "Words In, Words Out" lore card
+ARENA = 5637         # Tom the Enchanter seals the arena
 
 
 def edit() -> list[Shot]:
@@ -442,17 +505,18 @@ def edit() -> list[Shot]:
         shots.append(shot)
         return shot
 
-    # Intro: straight into play, then the prompt.
-    add(0.0, bar(1), src=11030, label="crown climb")
+    # Intro: the cold open, then straight into play and the prompt.
+    add(0.0, bar(1), draw=cold_open, label="cold open",
+        fx=[flash_fx(SLAM, 6, 1.0), shake_fx(SLAM, 5, 0.4)])
     add(bar(1), bar(2), src=64, label="amber run")
     add(bar(2), bar(3), draw=terminal_card([">>> import adventure"], bar(2) + BEAT, 22), label="import")
-    add(bar(3), bar(4), src=2262, label="cinder run", fx=[flash_fx(bar(3))])
+    add(bar(3), bar(4), src=2295, label="cinder run", fx=[flash_fx(bar(3))])
 
     # Build: one stage per bar, each named as it lands.
-    for n, (src, name) in enumerate([(4340, "Kiln Mouth"), (6850, "Smelter's Fork"), (9005, "Bellows Bridge")]):
+    for n, (src, name) in enumerate([(4417, "Cave of the Bunny"), (7060, "Ministry of Walks"), (9267, "Bridge of Peril")]):
         add(bar(4 + n), bar(5 + n), src=src, label=name,
             fx=[flash_fx(bar(4 + n), 3, 0.6), stage_slam(name, bar(4 + n))])
-    add(bar(7), bar(8), draw=lambda t: parallax(t, "kiln", 0.78), label="hook card",
+    add(bar(7), bar(8), draw=lambda t: parallax(t, "cave", 0.78), label="hook card",
         fx=[lambda img, t: (embers(img, t), img)[1],
             slam_title([("YOUR CODE", 39, PARCHMENT), ("BUILDS THE WORLD", 39, TITLE_GOLD)], bar(7), BEAT * 2),
             shake_fx(bar(7), 2), shake_fx(bar(7) + BEAT * 2, 3)])
@@ -460,7 +524,7 @@ def edit() -> list[Shot]:
     # Main: the gadgets, each one a line of Python made solid.
     add(bar(8), bar(10), src=BRIDGE, label="bridge",
         fx=[flash_fx(bar(8)), chip("bridge = span(5)", bar(8) + BEAT, bar(10) - BEAT / 2, mono=True, size=16),
-            shake_fx(bar(8) + (9356 - BRIDGE) / FPS, 2)])
+            shake_fx(bar(8) + (9618 - BRIDGE) / FPS, 2)])
     add(bar(10), bar(11), src=LIFT, label="lift",
         fx=[chip("for i in range(4): lift.rise()", bar(10) + BEAT / 2, bar(11) - BEAT / 4, mono=True, size=16)])
     add(bar(11), bar(12), src=GATE, label="gate",
@@ -470,39 +534,45 @@ def edit() -> list[Shot]:
     add(bar(13), bar(14), src=PLANKS, label="planks",
         fx=[chip("bridge = planks[1:11]", bar(13) + BEAT / 2, bar(14) - BEAT / 4, mono=True, size=16)])
     # Two bars of quick cuts on every beat, punching in on every other one.
-    quick = [(230, 1, (240, 150)), (2300, 2, (220, 190)), (4400, 1, (240, 150)), (7210, 2, (230, 185)),
-             (9110, 1, (240, 150)), (11120, 2, (230, 170)), (11260, 1, (240, 150)), (6640, 2, (230, 190))]
+    quick = [(230, 1, (240, 150)), (2333, 2, (220, 190)), (4477, 1, (240, 150)), (7420, 2, (230, 185)),
+             (9372, 1, (240, 150)), (11562, 2, (230, 170)), (11702, 1, (240, 150)), (6850, 2, (230, 190))]
     for k, (src, zoom, focus) in enumerate(quick):
         add(beat(56 + k), beat(57 + k), src=src, zoom=zoom, focus=focus, label=f"quick {k}",
             fx=[flash_fx(beat(56 + k), 2, 0.35)])
 
-    # Breakdown: the scrolls that teach, then the wizard who tests.
+    # Breakdown: the scrolls that teach, then the guardian who tests.
     add(bar(16), bar(17), src=SCROLL_A, speed=0.0, label="scroll A",
         fx=[chip("Read the lore scrolls", bar(16) + BEAT, bar(17))])
     add(bar(17), bar(18), src=SCROLL_B, speed=0.0, label="scroll B",
         fx=[chip("Learn real Python", bar(17) + BEAT / 2, bar(18))])
     add(bar(18), bar(19), src=ARENA, label="arena")
-    add(bar(19), bar(20), draw=terminal_card([">>> duel(wizard)"], bar(19) + BEAT / 2, 20, theme="kiln"),
+    add(bar(19), bar(20), draw=terminal_card([">>> duel(bridgekeeper)"], bar(19) + BEAT / 2, 20, theme="cave"),
         label="duel prompt")
 
     # Finale: a duel a bar, each a different lesson, every one landing on a beat.
-    duels = [(1000, "lists"), (3322, "dictionaries"), (5683, "loops & range"), (7770, "booleans"),
-             (9876, "functions"), (12075, "comprehensions")]
+    duels = [(1000, "lists"), (3371, "dictionaries"), (5760, "loops & range"), (7980, "booleans"),
+             (10138, "functions"), (12517, "comprehensions")]
     for k, (src, topic) in enumerate(duels):
         add(bar(20 + k), bar(21 + k), src=src, label=f"duel {topic}",
             fx=[flash_fx(bar(20 + k), 4 if k == 0 else 3, 0.9 if k == 0 else 0.5),
                 chip(topic, bar(20 + k) + BEAT / 2, bar(21 + k) - BEAT / 4, color=MINT)])
-    add(bar(26), bar(27), src=13262, label="banish", fx=[flash_fx(bar(26), 3, 0.5)])
-    add(bar(27), bar(28), src=13327, label="waygate")
+    add(bar(26), bar(27), src=13758, label="banish", fx=[flash_fx(bar(26), 3, 0.5)])
+    add(bar(27), bar(28), src=13823, label="waygate")
 
     # The slam, then the title.
     add(bar(28), LENGTH, draw=end_card, label="end card", fx=[flash_fx(bar(28), 8, 1.0)])
     return shots
 
 
-LENGTH = 62.0
+## The march plays out to its own finish under the end card.
+LENGTH = INTRO + 66.0
 
 CUES = [
+    *[("coconut", at, gain) for at, gain in CLOPS],
+    *[("coconut", at + 0.19, gain * 0.3) for at, gain in CLOPS],
+    *[("coconut", at + 0.38, gain * 0.12) for at, gain in CLOPS],
+    ("whoosh", SLAM - 0.35, 0.6),
+    ("impact", SLAM, 1.0),
     ("typing", bar(2) + BEAT, 0.7),
     ("cursor_blip", bar(2), 0.6),
     ("whoosh", bar(4) - 0.1, 0.5), ("whoosh", bar(5) - 0.1, 0.5), ("whoosh", bar(6) - 0.1, 0.5),
@@ -512,14 +582,14 @@ CUES = [
     ("typing", bar(19) + BEAT / 2, 0.7),
     ("riser", bar(20) - 3.5, 0.6),
     ("impact", bar(20), 1.0),
-    ("wrong", bar(25) + (12117 - 12075) / FPS, 0.6),
+    ("wrong", bar(25) + (12559 - 12517) / FPS, 0.6),
     ("impact", bar(28), 1.0),
 ]
 
 
 def thumbnail(path: Path) -> None:
     """A 1920x1080 YouTube thumbnail: a duel mid-answer under a big headline."""
-    img = capture(5732).copy()
+    img = capture(5809).copy()
     ImageDraw.Draw(img).rectangle((0, 0, W, 92), fill=NIGHT)
     img.paste(dim(img.crop((0, 92, W, H)), 0.25), (0, 92))
     draw_text(img, (W // 2, 8), "__dunder_quest__", font(PIXEL, 39), TITLE_GOLD,
@@ -621,7 +691,7 @@ def place(mix: np.ndarray, clip: np.ndarray, at: float, gain: float = 1.0) -> No
 def mix_audio(shots: list[Shot], cues: list[tuple[str, float, float]], length: float, path: Path) -> None:
     n = int(length * RATE)
     music = np.zeros((n, 2), np.float32)
-    place(music, load_wav(AUDIO / "cue_b.wav"), 0.0, 1.0)
+    place(music, load_wav(AUDIO / f"{CUE}.wav"), INTRO, 1.0)
     game = np.zeros((n, 2), np.float32)
     source = load_wav(CAPTURE / "f.wav")
     fade = int(0.01 * RATE)
@@ -637,7 +707,9 @@ def mix_audio(shots: list[Shot], cues: list[tuple[str, float, float]], length: f
         place(game, clip, shot.start, shot.audio)
     sfx = np.zeros((n, 2), np.float32)
     for name, at, gain in cues:
-        place(sfx, load_wav(AUDIO / f"{name}.wav"), at, gain)
+        # The coconut lives with the game's sounds; the rest are trailer-only.
+        source = ROOT / "assets" / "audio" / "coconut.wav" if name == "coconut" else AUDIO / f"{name}.wav"
+        place(sfx, load_wav(source), at, gain)
     # Duck the music a little under the effects so hits read through.
     hits = np.abs(game * 2.8 + sfx).max(axis=1)
     env = np.convolve(hits, np.ones(2400) / 2400, mode="same")

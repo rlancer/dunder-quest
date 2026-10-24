@@ -33,12 +33,20 @@ SFX_MODEL = "bytedance-seed/seed-audio-1-0"
 
 COMMON = (
     "Instrumental only. No vocals, no lyrics, no speech, no humming. "
-    "Original trailer music for a cozy-but-epic 2D pixel-art platformer about a pebble journeying "
-    "to a volcanic kiln. Do not imitate any existing game soundtrack. Exactly 120 BPM, 4/4, "
+    "Original trailer music for a comic-epic 2D pixel-art platformer: a squire's quest for the Holy Grail, "
+    "in the spirit of a pompous British comedy brass band. Do not imitate any existing soundtrack or march. "
+    "Exactly 125 BPM, 4/4, "
     "about 64 seconds, with a clean hard ending, not a fade. "
 )
 
 MUSIC = {
+    "cue_march": COMMON + (
+        "A grand, jaunty, slightly ridiculous brass-band march: oom-pah tuba, snare rolls, crashing cymbals, "
+        "a proud cornet melody and silly trombone slides. It starts on a huge brass-and-cymbal hit on the very "
+        "first beat, no intro. Builds through the first 15 seconds, drops into a bouncy full-band main section, "
+        "turns mock-serious and dramatic at 30 seconds with timpani and low brass, peaks triumphantly at 49 "
+        "seconds, slams to a stop on one final hit at 57 seconds, then a short, soft solo glockenspiel tag."
+    ),
     "cue_a": COMMON + (
         "Structure: 0-4s punchy hand-drum groove under a clay ocarina hook; 4-6s sudden near-silence "
         "with one soft kalimba note; 6-12s build with taiko and plucked strings; 12s big drop, full "

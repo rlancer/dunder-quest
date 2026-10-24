@@ -1,6 +1,6 @@
 extends StageLevel
 
-## Amber Hollow. Lesson 1: Lists & Indexing. The first stage, so it teaches
+## Shrubbery Wood. Lesson 1: Lists & Indexing. The first stage, so it teaches
 ## the moves one at a time: a hop, a copperling to stomp, a step up, a drop.
 ##
 ## Over the start, a row of index blocks under a slate reading row[2]:
@@ -11,7 +11,7 @@ extends StageLevel
 ## slice blocks hang before it. Bumping one lays planks on the cells its
 ## slice takes. Only a bridge that touches both edges holds: planks[1:11]
 ## covers the pit's cells 1 to 10, and every other slice crumbles.
-## The Ash Hexer duels in the arena past it.
+## The Knight Who Says Mi duels in the arena past it.
 
 const WIDTH := 112
 const INDEX_TINT := Color(0.55, 0.85, 1.0)
@@ -19,7 +19,7 @@ const BRIDGE_TINT := Color(1.0, 0.8, 0.45)
 const GOOD := Color(0.5, 0.92, 0.6)
 const BAD := Color(1.0, 0.46, 0.4)
 ## What the index blocks hold, left to right. The slate asks for row[LOOT].
-const ROW: Array[String] = ["ash", "clay", "scroll", "ember"]
+const ROW: Array[String] = ["ham", "spam", "scroll", "shrub"]
 const LOOT := 2
 const ROW_X := 152.0
 const ROW_Y := 152.0
@@ -34,10 +34,13 @@ const SLICE_GAP := 40.0
 const PLANK_BEAT := 0.05
 const WRONG_HOLD := 0.7
 const ARENA := 76
+const SHRUB := preload("res://assets/sprites/shrub.png")
+## Where the shrubberies stand along the floor, in pixels.
+const SHRUBS: Array[float] = [30.0, 190.0, 430.0, 760.0, 880.0, 1180.0]
 
-const _FAR := preload("res://assets/backgrounds/amber_far.png")
-const _MID := preload("res://assets/backgrounds/amber_mid.png")
-const _NEAR := preload("res://assets/backgrounds/amber_near.png")
+const _FAR := preload("res://assets/backgrounds/wood_far.png")
+const _MID := preload("res://assets/backgrounds/wood_mid.png")
+const _NEAR := preload("res://assets/backgrounds/wood_near.png")
 
 var _loot_given: bool = false
 var _building: bool = false
@@ -63,14 +66,15 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	_add_parallax("FarSky", _FAR, Vector2(0.08, 0.0), -40, 2.0)
-	_add_parallax("MidHills", _MID, Vector2(0.3, 0.0), -30, 2.0)
-	# Dimmed so the foreground brush never competes with the play lane.
-	_add_parallax("NearBrush", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.72, 0.62, 0.7))
+	# Shrubbery Wood: old oaks and neatly trimmed shrubberies. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarWood", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.9, 0.9, 0.9))
+	_add_parallax("MidTrees", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.7, 0.7, 0.72))
+	_add_parallax("NearBrush", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.5, 0.48, 0.52))
 
 
 func _passage_detail() -> String:
-	return "Cinder Span awaits"
+	return "The Cheese Shoppe awaits"
 
 
 func _paint_stage() -> void:
@@ -107,7 +111,9 @@ func _spawn_actors() -> void:
 		_bind_seed(_spawn(emberseed_scene, point))
 	_spawn_checkpoint(Vector2(664, 224))
 	_build_slice_bridge()
-	_build_arena(ARENA, "Ash Hexer", Color(0.55, 0.85, 1.0))
+	_build_arena(ARENA, "The Knight Who Says Mi", Color(0.55, 0.85, 1.0))
+	for x in SHRUBS:
+		_spawn_prop(SHRUB, Vector2(x, 224.0))
 
 
 ## Four blocks overhead at the start, marked only "?", under a slate asking for

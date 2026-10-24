@@ -1,7 +1,7 @@
 class_name RuneKey
 extends Area2D
 
-## A key on the route, named by a string. The Cinder Span vault stores each
+## A key on the route, named by a string. The Cheese Shoppe vault stores each
 ## key in the bucket its rune hash picks, so the player learns to read
 ## hash(key) % buckets before reaching the door.
 

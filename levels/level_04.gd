@@ -1,6 +1,6 @@
 extends StageLevel
 
-## Smelter's Fork. Lesson 4: Booleans & Conditions.
+## Ministry of Walks. Lesson 4: Booleans & Conditions.
 ## A pit with a stepping plank, supported ember, an ash shelf over a long pit,
 ## and a raised smelter floor with the cache and a copperling. Two lanterns.
 ##
@@ -8,7 +8,7 @@ extends StageLevel
 ## block before it: every bump turns heat through 0, 1, 2, 3 and the gate
 ## re-checks its condition, opening only while it is True. The first needs
 ## `heat > 1 and heat != 3`; the second `heat % 2 == 1 and not heat == 1`.
-## The Smelt Oracle duels in the arena past the second.
+## The Under-Minister duels in the arena past the second.
 
 const WIDTH := 179
 const ARENA := 143
@@ -25,9 +25,9 @@ const GATES: Array[Dictionary] = [
 var _gates: Array[TruthGate] = []
 var _dials: Array[RuneBlock] = []
 var _heat: Array[int] = []
-const _FAR := preload("res://assets/backgrounds/kiln_far.png")
-const _MID := preload("res://assets/backgrounds/kiln_mid.png")
-const _NEAR := preload("res://assets/backgrounds/kiln_near.png")
+const _FAR := preload("res://assets/backgrounds/ministry_far.png")
+const _MID := preload("res://assets/backgrounds/ministry_mid.png")
+const _NEAR := preload("res://assets/backgrounds/ministry_near.png")
 
 
 func stage_index() -> int:
@@ -35,7 +35,7 @@ func stage_index() -> int:
 
 
 func _passage_detail() -> String:
-	return "Bellows Bridge awaits"
+	return "Bridge of Peril awaits"
 
 
 func _stage_width() -> int:
@@ -51,10 +51,11 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	# The kiln's backdrop under a cold blue cast: the smelter's quench yard.
-	_add_parallax("FarSmelter", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.62, 0.7, 0.95))
-	_add_parallax("MidPots", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.45, 0.48, 0.62))
-	_add_parallax("NearSlag", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.55, 0.56, 0.7))
+	# Ministry of Walks: a grand hall of filing cabinets and hat stands. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarHall", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.8, 0.82, 0.9))
+	_add_parallax("MidCabinets", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.58, 0.6, 0.68))
+	_add_parallax("NearClutter", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.45, 0.45, 0.52))
 
 
 func _paint_stage() -> void:
@@ -101,7 +102,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1488, 174), "bool_truthy")
 	_spawn_scroll(Vector2(1800, 222), "bool_chain")
 	_build_gates()
-	_build_arena(ARENA, "Smelt Oracle", Color(0.6, 0.78, 1.0))
+	_build_arena(ARENA, "The Under-Minister", Color(0.6, 0.78, 1.0))
 
 
 func _build_gates() -> void:

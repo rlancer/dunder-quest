@@ -1,9 +1,9 @@
 extends StageLevel
 
-## Crucible Crown. Lesson 6: Comprehensions. The last stage.
+## Castle Aargh. Lesson 6: Comprehensions. The last stage.
 ## A two-step climb to a high plateau, a long drop, ember, and an ash shelf
 ## over a pit, then the crown wall: eight tiles of sheer stone. Across the
-## crown, a drop into the crucible, where the Crucible King duels.
+## crown, a drop into the crucible, where the Taunting Knight duels.
 ##
 ## Three forge blocks hang before the wall, A, B and C, each running a list
 ## comprehension from the slate above. Bumping one builds a stair of plank
@@ -13,6 +13,7 @@ extends StageLevel
 
 const WIDTH := 167
 const ARENA := 131
+const GRAIL := preload("res://assets/sprites/grail.png")
 ## The crown's last column, where it drops into the crucible.
 const CROWN_END := 124
 const STAIR_TINT := Color(1.0, 0.86, 0.4)
@@ -40,9 +41,9 @@ var _building: bool = false
 var _stair_cells: Array[Vector2i] = []
 var _built: int = -1
 var _forges: Array[RuneBlock] = []
-const _FAR := preload("res://assets/backgrounds/amber_far.png")
-const _MID := preload("res://assets/backgrounds/amber_mid.png")
-const _NEAR := preload("res://assets/backgrounds/amber_near.png")
+const _FAR := preload("res://assets/backgrounds/castle_far.png")
+const _MID := preload("res://assets/backgrounds/castle_mid.png")
+const _NEAR := preload("res://assets/backgrounds/castle_near.png")
 
 
 func stage_index() -> int:
@@ -62,10 +63,11 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	# Amber Hollow's sky again, burned to crimson: the trail comes home.
-	_add_parallax("FarSky", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(1.0, 0.62, 0.55))
-	_add_parallax("MidHills", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.78, 0.5, 0.5))
-	_add_parallax("NearBrush", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.6, 0.42, 0.46))
+	# Castle Aargh: battlements under a beam of light. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarCastle", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.9, 0.86, 0.86))
+	_add_parallax("MidBattlements", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.62, 0.56, 0.6))
+	_add_parallax("NearRubble", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.5, 0.44, 0.48))
 
 
 func _paint_stage() -> void:
@@ -111,14 +113,15 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1360, 222), "comp_dict")
 	_spawn_scroll(Vector2(1856, 94), "comp_sum")
 	_build_forges()
-	_build_arena(ARENA, "Crucible King", Color(1.0, 0.82, 0.36))
+	_build_arena(ARENA, "The Taunting Knight", Color(1.0, 0.82, 0.36))
+	_place_grail()
 
 
 func _build_forges() -> void:
 	var lines: PackedStringArray = []
 	for forge: Dictionary in FORGES:
 		lines.append("%s: %s" % [forge["name"], forge["code"]])
-	lines.append("steps = ?  # up the crown")
+	lines.append("steps = ?  # up the wall")
 	_spawn_sign(Vector2(FORGE_X + FORGE_GAP, FORGE_Y - 12.0), "\n".join(lines), STAIR_TINT)
 	for index in FORGES.size():
 		var block := _spawn_rune_block(Vector2(FORGE_X + FORGE_GAP * index, FORGE_Y), index, str(FORGES[index]["name"]), STAIR_TINT)
@@ -185,3 +188,13 @@ func stair_answer() -> int:
 		if stair_reaches(FORGES[index]["steps"]):
 			return index
 	return -1
+
+
+## The Grail hangs over the last gate, bobbing, until the quest is done.
+func _place_grail() -> void:
+	var gate_x := float(ARENA * TILE) + WizardDuel.WIZARD_X + 64.0
+	var grail := _spawn_prop(GRAIL, Vector2(gate_x, 176.0), 2)
+	var bob := grail.create_tween().set_loops()
+	bob.tween_property(grail, "position:y", 173.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_property(grail, "position:y", 176.0, 0.9).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	bob.tween_callback(func() -> void: Fx.sparks(self, grail.global_position + Vector2(0.0, -7.0), Fx.SPARK, 4, 24.0))

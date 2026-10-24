@@ -212,7 +212,7 @@ func open_pause() -> void:
 	get_tree().paused = true
 	_pause_time = 0.0
 	_pause_title().text = "Paused"
-	%PauseStats.text = "%s   Seeds %d/%d   Scrolls %d/%d" % [%Clock.text, seed_count, seed_total, scroll_found, scroll_total]
+	%PauseStats.text = "%s   Tins %d/%d   Scrolls %d/%d" % [%Clock.text, seed_count, seed_total, scroll_found, scroll_total]
 	%PausePanel.show()
 	%ResumeButton.grab_focus()
 
@@ -263,7 +263,7 @@ func show_clear(time: float = 0.0, new_best: bool = false) -> void:
 	passage_shown = false
 	waiting_for_start = false
 	_continue_at = Time.get_ticks_msec() / 1000.0 + CONTINUE_LOCK * 2.0
-	%Headline.text = "The kiln is lit!"
+	%Headline.text = "The Grail is found!"
 	%Subhead.text = "%s cleared. Thanks for playing!" % %Title.text
 	if falls >= Eggs.BRIGHT_SIDE_FALLS:
 		%Subhead.text = Eggs.BRIGHT_SIDE
@@ -509,7 +509,7 @@ func _fill_stats(time: float) -> void:
 		child.queue_free()
 	var rows: Array = [
 		["Time", GameProgression.format_time(time)],
-		["Emberseeds", "%d / %d" % [seed_count, seed_total]],
+		["Tins of spam", "%d / %d" % [seed_count, seed_total]],
 		["Scrolls", "%d / %d" % [scroll_found, scroll_total]],
 		["Wizard hints", str(hints_used)],
 		["Falls", str(falls)],

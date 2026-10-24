@@ -21,6 +21,8 @@ const PIP_GAP := 7.0
 @export var title: String = "Dark Wizard"
 @export var tint: Color = Color(0.55, 0.85, 1.0)
 @export var taunt: String = ""
+## This stage's foe: two idle frames side by side. Empty keeps the scene's own.
+@export var sheet: Texture2D
 @export var zap_sound: AudioStream
 @export var banish_sound: AudioStream
 
@@ -44,6 +46,8 @@ var _flash: Tween
 func _ready() -> void:
 	add_to_group(&"wizard")
 	body_entered.connect(_on_body_entered)
+	if sheet != null:
+		_sprite.texture = sheet
 	_glow.modulate = Color(tint.r, tint.g, tint.b, 0.5)
 	_barrier.tint = tint
 	_nameplate.text = title

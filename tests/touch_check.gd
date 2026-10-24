@@ -1,6 +1,6 @@
 extends Node
 
-## Plays a few seconds of Amber Hollow by touch through the on-screen pad:
+## Plays a few seconds of Shrubbery Wood by touch through the on-screen pad:
 ## hold the right button and the pebble runs right, slide onto the left one
 ## and it turns, tap the jump button and it leaves the ground, lift every
 ## finger and nothing stays held. A key press puts the pad away again.

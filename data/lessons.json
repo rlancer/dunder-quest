@@ -1,16 +1,16 @@
 {
 	"1": {
 		"topic": "Lists & Indexing",
-		"taunt": "Do you count as the scrolls count, little ember?",
+		"taunt": "Do you count as the scrolls count, little squire?",
 		"trial": 3,
 		"scrolls": [
 			{
 				"id": "list_zero",
 				"title": "Counting from Zero",
 				"code": [
-					"row = [\"ash\", \"clay\", \"ember\"]",
-					"print(row[0])  # ash",
-					"print(row[2])  # ember"
+					"row = [\"ham\", \"spam\", \"shrub\"]",
+					"print(row[0])  # ham",
+					"print(row[2])  # shrub"
 				],
 				"insight": "A list's first item lives at index 0, so the third item is row[2]."
 			},
@@ -18,8 +18,8 @@
 				"id": "list_negative",
 				"title": "Counting Backwards",
 				"code": [
-					"row = [\"ash\", \"clay\", \"ember\"]",
-					"print(row[-1])   # ember",
+					"row = [\"ham\", \"spam\", \"shrub\"]",
+					"print(row[-1])   # shrub",
 					"print(len(row))  # 3"
 				],
 				"insight": "Negative indexes count from the end: row[-1] is always the last item."
@@ -30,7 +30,7 @@
 				"code": [
 					"row = [10, 20, 30, 40]",
 					"print(row[1:3])    # [20, 30]",
-					"print(\"ember\"[:3])  # emb"
+					"print(\"shrub\"[:3])  # shr"
 				],
 				"insight": "A slice [a:b] starts at a and stops just before b. Strings slice too."
 			},
@@ -72,12 +72,12 @@
 				"answer": 2,
 				"explanation": "i + 1 is 2, and index 2 is the third item, 9.",
 				"scroll": "list_zero",
-				"hint": "Do the sum first. Then count the way the hollow taught you."
+				"hint": "Do the sum first. Then count the way the wood taught you."
 			},
 			{
-				"code": ["xs = [\"ash\", \"clay\", \"ember\"]", "print(xs[-1])"],
+				"code": ["xs = [\"ham\", \"spam\", \"shrub\"]", "print(xs[-1])"],
 				"prompt": "What does this print?",
-				"options": ["ash", "clay", "ember", "IndexError"],
+				"options": ["ham", "spam", "shrub", "IndexError"],
 				"answer": 2,
 				"explanation": "-1 counts back from the end, so it is always the last item.",
 				"scroll": "list_negative",
@@ -111,9 +111,9 @@
 				"hint": "A slice never takes the item at its last number."
 			},
 			{
-				"code": ["word = \"ember\"", "print(word[:3])"],
+				"code": ["word = \"shrub\"", "print(word[:3])"],
 				"prompt": "What does this print?",
-				"options": ["em", "emb", "embe", "mbe"],
+				"options": ["sh", "shr", "shru", "hru"],
 				"answer": 1,
 				"explanation": "[:3] starts at the beginning and stops before index 3.",
 				"scroll": "list_slice",
@@ -141,16 +141,16 @@
 	},
 	"2": {
 		"topic": "Dictionaries & Hashing",
-		"taunt": "Every key knows its bucket. Do you?",
+		"taunt": "Every cheese knows its shelf. Do you?",
 		"trial": 3,
 		"scrolls": [
 			{
 				"id": "dict_basics",
 				"title": "Keys and Values",
 				"code": [
-					"bag = {\"ash\": 3, \"ember\": 5}",
-					"print(bag[\"ember\"])  # 5",
-					"bag[\"clay\"] = 1",
+					"bag = {\"ham\": 3, \"shrub\": 5}",
+					"print(bag[\"shrub\"])  # 5",
+					"bag[\"spam\"] = 1",
 					"print(len(bag))  # 3"
 				],
 				"insight": "A dict maps each key to a value. You look things up by key, not by position."
@@ -159,7 +159,7 @@
 				"id": "dict_hash",
 				"title": "The Hashing Rune",
 				"code": [
-					"key = \"ember\"",
+					"key = \"shrub\"",
 					"slot = hash(key) % 4",
 					"print(slot == hash(key) % 4)  # True"
 				],
@@ -170,9 +170,9 @@
 				"title": "One Key, One Value",
 				"code": [
 					"d = {}",
-					"d[\"ash\"] = 1",
-					"d[\"ash\"] = 2",
-					"print(d, len(d))  # {'ash': 2} 1"
+					"d[\"ham\"] = 1",
+					"d[\"ham\"] = 2",
+					"print(d, len(d))  # {'ham': 2} 1"
 				],
 				"insight": "The same key always hashes to the same bucket, so writing it again replaces the value."
 			},
@@ -191,18 +191,18 @@
 				"id": "dict_get",
 				"title": "Asking Politely",
 				"code": [
-					"bag = {\"ash\": 3}",
-					"print(bag.get(\"clay\", 0))  # 0",
-					"print(\"ash\" in bag)  # True"
+					"bag = {\"ham\": 3}",
+					"print(bag.get(\"spam\", 0))  # 0",
+					"print(\"ham\" in bag)  # True"
 				],
-				"insight": "bag[\"clay\"] would raise KeyError. get() hands back a default instead."
+				"insight": "bag[\"spam\"] would raise KeyError. get() hands back a default instead."
 			}
 		],
 		"questions": [
 			{
-				"code": ["bag = {\"ash\": 3, \"ember\": 5}", "print(bag[\"ash\"])"],
+				"code": ["bag = {\"ham\": 3, \"shrub\": 5}", "print(bag[\"ham\"])"],
 				"prompt": "What does this print?",
-				"options": ["ash", "3", "5", "0"],
+				"options": ["ham", "3", "5", "0"],
 				"answer": 1,
 				"explanation": "Looking up a key gives back its value, not the key.",
 				"scroll": "dict_basics",
@@ -218,7 +218,7 @@
 				"hint": "A new key is not an error. It is a new resident."
 			},
 			{
-				"code": ["bag = {\"ash\": 3, \"ember\": 5}", "print(sum(bag.values()))"],
+				"code": ["bag = {\"ham\": 3, \"shrub\": 5}", "print(sum(bag.values()))"],
 				"prompt": "What does this print?",
 				"options": ["2", "8", "15", "TypeError"],
 				"answer": 1,
@@ -227,7 +227,7 @@
 				"hint": "Count what is inside, not how many boxes."
 			},
 			{
-				"code": ["a = hash(\"ember\") % 4", "b = hash(\"ember\") % 4", "print(a == b)"],
+				"code": ["a = hash(\"shrub\") % 4", "b = hash(\"shrub\") % 4", "print(a == b)"],
 				"prompt": "What does this print?",
 				"options": ["True", "False", "None", "0"],
 				"answer": 0,
@@ -254,20 +254,20 @@
 				"hint": "Two travellers, one bed. Who sleeps there last?"
 			},
 			{
-				"code": ["bag = {\"ash\": 3}", "print(bag.get(\"clay\", 0))"],
+				"code": ["bag = {\"ham\": 3}", "print(bag.get(\"spam\", 0))"],
 				"prompt": "What does this print?",
 				"options": ["0", "3", "None", "KeyError"],
 				"answer": 0,
-				"explanation": "clay is missing, so get() returns the default you gave it.",
+				"explanation": "spam is missing, so get() returns the default you gave it.",
 				"scroll": "dict_get",
 				"hint": "Ask politely and you are never refused. You get what you asked."
 			},
 			{
-				"code": ["bag = {\"ash\": 3}", "print(\"clay\" in bag, \"ash\" in bag)"],
+				"code": ["bag = {\"ham\": 3}", "print(\"spam\" in bag, \"ham\" in bag)"],
 				"prompt": "What does this print?",
 				"options": ["True True", "False True", "True False", "False 3"],
 				"answer": 1,
-				"explanation": "in checks the keys. Only ash is there.",
+				"explanation": "in checks the keys. Only ham is there.",
 				"scroll": "dict_get",
 				"hint": "in only asks yes or no."
 			},
@@ -291,7 +291,7 @@
 	},
 	"3": {
 		"topic": "Loops & range",
-		"taunt": "Round and round the kiln turns. Where does it stop?",
+		"taunt": "Round and round the burrow goes. Where does it stop?",
 		"trial": 3,
 		"scrolls": [
 			{
@@ -317,7 +317,7 @@
 			},
 			{
 				"id": "loop_total",
-				"title": "Gathering Embers",
+				"title": "Counting Coconuts",
 				"code": [
 					"total = 0",
 					"for n in [3, 4, 5]:",
@@ -346,7 +346,7 @@
 				"answer": 1,
 				"explanation": "range(4) starts at 0 and stops before 4.",
 				"scroll": "loop_for",
-				"hint": "The kiln starts cold, at nothing. And it never reaches the end."
+				"hint": "The count starts at nothing. And it never reaches the end."
 			},
 			{
 				"code": [
@@ -400,9 +400,9 @@
 				"hint": "List the numbers range hands out before you add a single one."
 			},
 			{
-				"code": ["word = \"\"", "for c in \"ash\":", "    word = c + word", "print(word)"],
+				"code": ["word = \"\"", "for c in \"ham\":", "    word = c + word", "print(word)"],
 				"prompt": "What does this print?",
-				"options": ["ash", "hsa", "a", "h"],
+				"options": ["ham", "mah", "m", "h"],
 				"answer": 1,
 				"explanation": "Each letter is put in front of the others, so the word comes out reversed.",
 				"scroll": "loop_total",
@@ -430,7 +430,7 @@
 	},
 	"4": {
 		"topic": "Booleans & Conditions",
-		"taunt": "True or False, little ember? My gates already know.",
+		"taunt": "True or False, little squire? The Ministry already knows.",
 		"trial": 4,
 		"scrolls": [
 			{
@@ -617,7 +617,7 @@
 	},
 	"5": {
 		"topic": "Functions & return",
-		"taunt": "A spell that returns nothing builds nothing, little ember.",
+		"taunt": "A function that returns nothing builds no bridge, squire.",
 		"trial": 4,
 		"scrolls": [
 			{
@@ -637,8 +637,8 @@
 				"code": [
 					"def shout(word):",
 					"    return word.upper()",
-					"loud = shout(\"ash\")",
-					"print(loud + \"!\")  # ASH!"
+					"loud = shout(\"ham\")",
+					"print(loud + \"!\")  # HAM!"
 				],
 				"insight": "return hands a value back to the caller, to store in a name or use at once."
 			},
@@ -734,9 +734,9 @@
 				"hint": "Each call takes its own path."
 			},
 			{
-				"code": ["def greet(name):", "    \"hi \" + name", "print(greet(\"ash\"))"],
+				"code": ["def greet(name):", "    \"hi \" + name", "print(greet(\"ham\"))"],
 				"prompt": "What does this print?",
-				"options": ["hi ash", "None", "hi", "greet"],
+				"options": ["hi ham", "None", "hi", "greet"],
 				"answer": 1,
 				"explanation": "The sum is worked out and thrown away. Without return, the call gives None.",
 				"scroll": "func_none",
@@ -761,9 +761,9 @@
 				"hint": "When nothing is passed, the default steps in."
 			},
 			{
-				"code": ["def tag(w, end=\"!\"):", "    return w + end", "print(tag(\"ash\", \"?\"))"],
+				"code": ["def tag(w, end=\"!\"):", "    return w + end", "print(tag(\"ham\", \"?\"))"],
 				"prompt": "What does this print?",
-				"options": ["ash!", "ash?", "ash!?", "ash"],
+				"options": ["ham!", "ham?", "ham!?", "ham"],
 				"answer": 1,
 				"explanation": "The call passes \"?\", so the default \"!\" is not used.",
 				"scroll": "func_default",
@@ -802,7 +802,7 @@
 	},
 	"6": {
 		"topic": "Comprehensions",
-		"taunt": "Can you read a whole forge in one line, little ember?",
+		"taunt": "Can you read a whole army in one line, silly squire?",
 		"trial": 5,
 		"scrolls": [
 			{
@@ -827,9 +827,9 @@
 				"id": "comp_strings",
 				"title": "Words In, Words Out",
 				"code": [
-					"ws = [\"ash\", \"ember\"]",
+					"ws = [\"ham\", \"shrub\"]",
 					"big = [w.upper() for w in ws]",
-					"print(big)  # ['ASH', 'EMBER']",
+					"print(big)  # ['HAM', 'SHRUB']",
 					"print([len(w) for w in ws])  # [3, 5]"
 				],
 				"insight": "Any expression works on the left: a method call, len(), an index, a sum."
@@ -838,8 +838,8 @@
 				"id": "comp_dict",
 				"title": "Dicts Too",
 				"code": [
-					"heat = {w: len(w) for w in [\"ash\", \"clay\"]}",
-					"print(heat)  # {'ash': 3, 'clay': 4}"
+					"heat = {w: len(w) for w in [\"ham\", \"spam\"]}",
+					"print(heat)  # {'ham': 3, 'spam': 4}"
 				],
 				"insight": "Curly braces and key: value build a dict instead of a list."
 			},
@@ -920,16 +920,16 @@
 				"hint": "The filter runs before the doubling."
 			},
 			{
-				"code": ["ws = [\"fire\", \"ash\"]", "print([w[0] for w in ws])"],
+				"code": ["ws = [\"grail\", \"ham\"]", "print([w[0] for w in ws])"],
 				"prompt": "What does this print?",
-				"options": ["['f', 'a']", "['fire', 'ash']", "['e', 'h']", "fa"],
+				"options": ["['g', 'h']", "['grail', 'ham']", "['l', 'm']", "gh"],
 				"answer": 0,
 				"explanation": "w[0] is each word's first letter.",
 				"scroll": "comp_strings",
-				"hint": "Index zero. You learned this in the Hollow."
+				"hint": "Index zero. You learned this in the Wood."
 			},
 			{
-				"code": ["ws = [\"ox\", \"kiln\", \"ember\"]", "print([len(w) for w in ws])"],
+				"code": ["ws = [\"ox\", \"newt\", \"shrub\"]", "print([len(w) for w in ws])"],
 				"prompt": "What does this print?",
 				"options": ["3", "[2, 4, 5]", "[3, 4, 5]", "11"],
 				"answer": 1,

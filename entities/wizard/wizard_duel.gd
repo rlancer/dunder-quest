@@ -10,7 +10,7 @@ extends Node2D
 ## The player answers by bumping a block from below. Right breaks a ward and
 ## staggers him; wrong cracks the block, gets the player zapped, and earns a
 ## fresh question. Once he has had a moment to let the question sink in, he
-## keeps casting: ward waves along the floor to hop, and from Kiln Mouth on,
+## keeps casting: ward waves along the floor to hop, and from Cave of the Bunny on,
 ## hex strikes that mark a spot and then fall.
 ##
 ## The player carries three sparks through the fight. A spell, a zap, or
@@ -29,6 +29,15 @@ const HEX_STRIKE := preload("res://entities/wizard/hex_strike.gd")
 const RUNE_BLOCK := preload("res://entities/lesson/rune_block.gd")
 const ARCANE_BARRIER := preload("res://entities/wizard/arcane_barrier.gd")
 const ZAP := preload("res://assets/audio/break.wav")
+## Who holds each stage's arena, painted by tools/paint_quest.py.
+const FOE_SHEETS: Dictionary = {
+	1: preload("res://assets/sprites/foe_1.png"),
+	2: preload("res://assets/sprites/foe_2.png"),
+	3: preload("res://assets/sprites/foe_3.png"),
+	4: preload("res://assets/sprites/foe_4.png"),
+	5: preload("res://assets/sprites/foe_5.png"),
+	6: preload("res://assets/sprites/foe_6.png"),
+}
 
 ## Floor-to-barrier width of the arena, and where things stand in it.
 const WIDTH := 448.0
@@ -72,7 +81,7 @@ const PACE: Dictionary = {
 	6: [3.8, 84.0, true],
 }
 const RIGHT_LINES: Array[String] = ["Hmph. Lucky.", "So you did read it.", "Grr... correct.", "A ward?! Again!"]
-const WRONG_LINES: Array[String] = ["Wrong, little ember!", "Ha! Read it again.", "The scrolls weep.", "Not even close!"]
+const WRONG_LINES: Array[String] = ["Wrong, little squire!", "Ha! Read it again.", "The scrolls weep.", "Not even close!"]
 
 enum State { IDLE, INTRO, ASKING, VERDICT, WON }
 
@@ -115,6 +124,7 @@ func _ready() -> void:
 	wizard.title = title
 	wizard.tint = tint
 	wizard.taunt = taunt
+	wizard.sheet = FOE_SHEETS.get(stage_id)
 	wizard.position = Vector2(WIZARD_X, 0.0)
 	add_child(wizard)
 	wizard.set_wards(Lessons.trial(stage_id))

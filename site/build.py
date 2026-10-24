@@ -1,7 +1,7 @@
 """Build the Dunder Quest website into a static folder.
 
 Every lesson page comes from `data/lessons.json`, the same bank the game
-reads, so the scrolls and the wizard's questions on the site are the ones
+reads, so the scrolls and the guardian's questions on the site are the ones
 the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there).
 
@@ -42,10 +42,11 @@ RELEASE_PAGE = f"{REPO}/releases/tag/builds"
 ## `common/game_progression.gd` and `levels/world_map.gd`, and each puzzle
 ## is the gadget its `levels/level_0N.gd` builds. `x`/`y` place the marker on
 ## `static/img/trail_map.png`, the world map cropped 22px from the top.
+## `wizard` is the guardian's name as it reads mid-sentence ("the Bridgekeeper").
 STAGES: list[dict] = [
     {
-        "id": 1, "slug": "amber-hollow", "name": "Amber Hollow", "wizard": "Ash Hexer",
-        "x": 78, "y": 94, "tint": "#8cd9ff",
+        "id": 1, "slug": "shrubbery-wood", "name": "Shrubbery Wood", "wizard": "the Knight Who Says Mi",
+        "x": 60, "y": 138, "tint": "#8cd9ff",
         "shot": "tour_amber_slice.png",
         "puzzle_title": "The slice bridge",
         "puzzle_code": "bridge = planks[?]\n# the pit is cells 1 to 10",
@@ -53,35 +54,35 @@ STAGES: list[dict] = [
         "spoiler": "planks[1:11] takes cells 1 to 10, because a slice stops just before its second number. planks[1:10] stops at cell 9 and leaves a gap. For the bonus scroll, count from zero: row[2] is the third block.",
     },
     {
-        "id": 2, "slug": "cinder-span", "name": "Cinder Span", "wizard": "Cinder Warlock",
-        "x": 240, "y": 82, "tint": "#f28cff",
+        "id": 2, "slug": "cheese-shoppe", "name": "The Cheese Shoppe", "wizard": "the Cheesemonger",
+        "x": 130, "y": 110, "tint": "#f28cff",
         "shot": "tour_span_vault.png",
         "puzzle_title": "The hash vault",
         "puzzle_code": "bucket = rune_hash(key) % 4",
-        "puzzle": "Two rune keys, \"ash\" and \"ember\", lie on the route. Near the end a vault door has one lock per key and four bucket blocks numbered 0 to 3. Store each key by bumping the bucket it hashes to. The vault's rune hash adds up the letter codes of the key (ord in Python), then % 4 picks the bucket.",
-        "spoiler": "\"ash\" is 97 + 115 + 104 = 316, and 316 % 4 is 0. \"ember\" adds up to 523, and 523 % 4 is 3.",
+        "puzzle": "Two rune keys, \"brie\" and \"edam\", lie on the route. Near the end a vault door has one lock per key and four bucket blocks numbered 0 to 3. Store each key by bumping the bucket it hashes to. The vault's rune hash adds up the letter codes of the key (ord in Python), then % 4 picks the bucket.",
+        "spoiler": "\"brie\" is 98 + 114 + 105 + 101 = 418, and 418 % 4 is 2. \"edam\" adds up to 407, and 407 % 4 is 3.",
     },
     {
-        "id": 3, "slug": "kiln-mouth", "name": "Kiln Mouth", "wizard": "Kiln Archmage",
-        "x": 392, "y": 110, "tint": "#80ffa6",
+        "id": 3, "slug": "cave-of-the-bunny", "name": "Cave of the Bunny", "wizard": "Tom the Enchanter",
+        "x": 430, "y": 128, "tint": "#80ffa6",
         "shot": "tour_kiln_forge.png",
         "puzzle_title": "The loop lift",
         "puzzle_code": "for i in ?:\n    lift.rise()  # one notch\nA: range(1, 9, 3)\nB: range(4)\nC: range(10, 13)",
-        "puzzle": "The kiln wall is ten tiles of sheer brick. At its foot, an iron lift runs a for loop and rises one notch for every lap, and a gauge on the wall numbers the notches. Three forge blocks each load a different range into the lift. Stand on the plate to run the loop and watch i count off each lap. You need four notches to jump onto the wall.",
+        "puzzle": "The cave wall is ten tiles of sheer brick. At its foot, an iron lift runs a for loop and rises one notch for every lap, and a gauge on the wall numbers the notches. Three range blocks each load a different range into the lift. Stand on the plate to run the loop and watch i count off each lap. You need four notches to jump onto the wall.",
         "spoiler": "range(4) runs four laps: 0, 1, 2, 3. The other two have bigger numbers but only three laps each: 1, 4, 7 and 10, 11, 12. Count the laps, not the size of the numbers.",
     },
     {
-        "id": 4, "slug": "smelters-fork", "name": "Smelter's Fork", "wizard": "Smelt Oracle",
-        "x": 326, "y": 54, "tint": "#99c7ff",
+        "id": 4, "slug": "ministry-of-walks", "name": "Ministry of Walks", "wizard": "the Under-Minister",
+        "x": 400, "y": 66, "tint": "#99c7ff",
         "shot": "tour_fork_gate_shut.png",
         "puzzle_title": "The truth gates",
         "puzzle_code": "if heat > 1 and heat != 3:\n    gate.open()\n\nif heat % 2 == 1 and not heat == 1:\n    gate.open()",
-        "puzzle": "Two walls of glass bars, too tall to jump, each stand on an if. A heat dial block in front of each gate turns heat through 0, 1, 2 and 3. The bars sink while the condition is True and rise again as soon as it turns False.",
+        "puzzle": "Two of the Ministry's gates, walls of glass bars too tall to jump, each stand on an if. A heat dial block in front of each gate turns heat through 0, 1, 2 and 3. The bars sink while the condition is True and rise again as soon as it turns False.",
         "spoiler": "The first gate opens at heat 2. The second opens only at heat 3.",
     },
     {
-        "id": 5, "slug": "bellows-bridge", "name": "Bellows Bridge", "wizard": "Bellows Sage",
-        "x": 214, "y": 32, "tint": "#ff9e66",
+        "id": 5, "slug": "bridge-of-peril", "name": "Bridge of Peril", "wizard": "the Bridgekeeper",
+        "x": 250, "y": 76, "tint": "#ff9e66",
         "shot": "tour_bridge_calls.png",
         "puzzle_title": "The span bridge",
         "puzzle_code": "def span(n):\n    return n * 2 + 4\nbridge = span(?)  # gap 14",
@@ -89,25 +90,28 @@ STAGES: list[dict] = [
         "spoiler": "span(5) returns 5 * 2 + 4 = 14, the exact width of the gap.",
     },
     {
-        "id": 6, "slug": "crucible-crown", "name": "Crucible Crown", "wizard": "Crucible King",
-        "x": 108, "y": 30, "tint": "#ffd15c",
+        "id": 6, "slug": "castle-aargh", "name": "Castle Aargh", "wizard": "the Taunting Knight",
+        "x": 96, "y": 36, "tint": "#ffd15c",
         "shot": "tour_crown_forges.png",
         "puzzle_title": "The comprehension stair",
-        "puzzle_code": "A: [n for n in range(3)]\nB: [n * 2 for n in range(1, 5)]\nC: [n * 4 for n in range(3) if n != 1]\nsteps = ?  # up the crown",
-        "puzzle": "The crown wall is eight tiles of sheer stone. Three forge blocks, A, B and C, each run a list comprehension. Bumping one builds a stair with one plank step for each number in its list, placed that many tiles high. A 0 builds nothing. Only one list gives you a stair you can climb.",
+        "puzzle_code": "A: [n for n in range(3)]\nB: [n * 2 for n in range(1, 5)]\nC: [n * 4 for n in range(3) if n != 1]\nsteps = ?  # up the wall",
+        "puzzle": "The castle wall is eight tiles of sheer stone. Three blocks, A, B and C, each run a list comprehension. Bumping one builds a stair with one plank step for each number in its list, placed that many tiles high. A 0 builds nothing. Only one list gives you a stair you can climb.",
         "spoiler": "B builds [2, 4, 6, 8]: even steps, two tiles apart, all the way to the top.",
     },
 ]
 
 ## Every image the pages use, copied from the game's own art and test captures.
-## `static/img` also holds the cropped world map and the wizard's first frame.
+## `static/img` also holds the cropped world map and each guardian's first
+## frame (`foes/foe_N.png`), both made by tools/make_og.py.
 IMAGES = {
     "title_art.png": "assets/backgrounds/title_art.png",
-    "pebble.png": "assets/sprites/pebble.png",
-    "emberseed.png": "assets/sprites/emberseed.png",
-    "copperling.png": "assets/sprites/copperling.png",
+    "squire.png": "assets/sprites/squire.png",
+    "tin.png": "assets/sprites/tin.png",
+    "bunny.png": "assets/sprites/bunny.png",
     "lantern_lit.png": "assets/sprites/lantern_lit.png",
-    "waygate.png": "assets/sprites/waygate.png",
+    "castle_gate.png": "assets/sprites/castle_gate.png",
+    "giant_foot.png": "assets/sprites/giant_foot.png",
+    "grail.png": "assets/sprites/grail.png",
     "cache_stone.png": "assets/sprites/cache_stone.png",
     "clay_brick.png": "assets/sprites/clay_brick.png",
     "tile_ash.png": "assets/sprites/tile_ash.png",
@@ -214,7 +218,12 @@ def head_tags(title: str, description: str, path: str | None, image: str, alt: s
     return "\n".join(t for t in tags if t)
 
 
-HOME_ALT = "Dunder Quest title art: a pebble looks out over a valley of ruins toward a smoking kiln volcano."
+def cap(text: str) -> str:
+    """A guardian's name at the start of a line: "the Bridgekeeper" -> "The Bridgekeeper"."""
+    return text[:1].upper() + text[1:]
+
+
+HOME_ALT = "Dunder Quest title art: a squire clapping coconut halves looks out over a misty valley toward a shining castle."
 
 
 def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "",
@@ -243,7 +252,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
-  <a class="brand" href="{prefix}"><img src="{prefix}static/img/pebble.png" alt="" width="16" height="24">{WORDMARK}</a>
+  <a class="brand" href="{prefix}"><img src="{prefix}static/img/squire.png" alt="" width="16" height="24">{WORDMARK}</a>
   <nav aria-label="Site">{"".join(links)}</nav>
   <a class="btn btn-small" href="{prefix}play/">Play</a>
 </header>
@@ -251,8 +260,8 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 {body}
 </main>
 <footer class="foot">
-  <p><img src="{prefix}static/img/emberseed.png" alt="" width="12" height="12"> Dunder Quest. A pebble's journey to the kiln, and six lessons of Python on the way.</p>
-  <p class="fine">Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
+  <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way.</p>
+  <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
   <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
@@ -297,12 +306,12 @@ def build_home(bank: dict, prefix: str = "") -> str:
     total_s = sum(len(v["scrolls"]) for v in bank.values())
     body = f"""
 <section class="hero">
-  <img class="hero-art" src="{prefix}static/img/title_art.png" alt="Pixel art of a small pebble on a cliff, looking out over an autumn valley toward a smoking kiln" width="480" height="270">
+  <img class="hero-art" src="{prefix}static/img/title_art.png" alt="Pixel art of a small squire with coconut halves on a cliff, looking out over a misty valley toward a shining castle" width="480" height="270">
   <div class="hero-copy">
-    <p class="prompt" aria-hidden="true">&gt;&gt;&gt; pebble.__quest__()</p>
+    <p class="prompt" aria-hidden="true">&gt;&gt;&gt; squire.__quest__()</p>
     <h1>{WORDMARK}</h1>
     <p class="tag">A platformer where every stage teaches you a piece of Python.</p>
-    <p class="hero-sub">Guide a pebble across six stages to the kiln. Read the lore scrolls on the way, and use real code to open the path through each stage. Then duel the wizard at the exit: jump into the block with the right answer while you dodge his spells.</p>
+    <p class="hero-sub">Guide a squire across six stages to the Grail. Read the lore scrolls on the way, and use real code to open the path through each stage. Then duel the guardian at the exit, from the Knight Who Says Mi to the Bridgekeeper: jump into the block with the right answer while you dodge his spells.</p>
     <div class="cta">
       <a class="btn" href="{prefix}play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#download">Download for desktop</a>
@@ -316,7 +325,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <p class="kicker">The trailer</p>
   <h2 id="trailer-h">One minute on the trail</h2>
   <a class="trailer" href="https://www.youtube.com/watch?v={TRAILER_ID}" data-yt="{TRAILER_ID}">
-    <img src="{prefix}static/img/trailer.png" alt="Trailer thumbnail: the Kiln Archmage's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
+    <img src="{prefix}static/img/trailer.png" alt="Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
     <span class="trailer-play" aria-hidden="true"></span>
     <span class="sr">Play the Dunder Quest trailer</span>
   </a>
@@ -327,7 +336,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <h2 id="trail-h">Six stages, six lessons</h2>
   <p class="lede">Each stop on the map is a Python topic, and they build on each other: lists first, comprehensions last. Pick a stage to read its lesson and practice its trial here on the site.</p>
   <div class="map">
-    <img src="{prefix}static/img/trail_map.png" alt="The Dunder Quest world map: six stages along a dirt trail from Amber Hollow to Crucible Crown" width="480" height="168">
+    <img src="{prefix}static/img/trail_map.png" alt="The Dunder Quest world map: six stages across a storybook kingdom, from Shrubbery Wood to Castle Aargh" width="480" height="168">
     {markers}
   </div>
   <ol class="trail-list">{trail_list}</ol>
@@ -339,10 +348,10 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <ol class="loop">
     <li><img src="{prefix}static/img/shots/tour_amber_scroll.png" alt="A lore scroll card titled Counting from Zero, showing a short list example" width="480" height="270" loading="lazy">
       <h3>Read the scrolls</h3><p>Lore scrolls lie along the route. Touch one and it opens a card with a few lines of code and the idea behind them. Every scroll you read goes into your Spellbook.</p></li>
-    <li><img src="{prefix}static/img/shots/tour_bridge_built.png" alt="A plank bridge built by calling span(5) across the Bellows Bridge chasm" width="480" height="270" loading="lazy">
+    <li><img src="{prefix}static/img/shots/tour_bridge_built.png" alt="A plank bridge built by calling span(5) across the Bridge of Peril chasm" width="480" height="270" loading="lazy">
       <h3>Code the way forward</h3><p>The only way through each stage is a gadget that runs real Python. You slice planks into a bridge, store keys in hash buckets, load a loop into a lift, or call the function that builds a bridge the exact length of the gap. Only the right code gets you across.</p></li>
-    <li><img src="{prefix}static/img/shots/tour_amber_duel.png" alt="The Ash Hexer's duel: his question across the top of the screen and four lettered answer blocks over the arena floor" width="480" height="270" loading="lazy">
-      <h3>Duel the wizard</h3><p>A wizard holds every exit. His question shows at the top of the screen, and you answer by jumping into the lettered block while you dodge his spells. Each right answer breaks a ward. A wrong one gets you zapped and a new question. He'll give you a hint if you ask.</p></li>
+    <li><img src="{prefix}static/img/shots/tour_amber_duel.png" alt="The Knight Who Says Mi's duel: his question across the top of the screen and four lettered answer blocks over the arena floor" width="480" height="270" loading="lazy">
+      <h3>Duel the guardian</h3><p>A guardian holds every exit. His question shows at the top of the screen, and you answer by jumping into the lettered block while you dodge his spells. Each right answer breaks a ward. A wrong one gets you zapped and a new question. He'll give you a hint if you ask.</p></li>
   </ol>
   <p class="count"><b>{total_s}</b> lore scrolls · <b>{total_q}</b> trial questions · every snippet checked against real Python</p>
 </section>
@@ -382,7 +391,7 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
         }
         for q in lesson["questions"]
     ]
-    trial = {"wizard": stage["wizard"], "trial": lesson["trial"], "questions": questions}
+    trial = {"wizard": cap(stage["wizard"]), "trial": lesson["trial"], "questions": questions}
     data = json.dumps(trial, ensure_ascii=False).replace("</", "<\\/")
     pager = '<nav class="pager" aria-label="Lessons">'
     pager += f'<a href="{stage_url(prev_s, prefix)}" rel="prev"><small>Previous stage</small>{esc(prev_s["name"])}</a>' if prev_s else "<span></span>"
@@ -393,7 +402,7 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
   <header class="lesson-head">
     <p class="kicker">Stage {stage['id']} · {esc(stage['name'])}</p>
     <h1>{esc(lesson['topic'])}</h1>
-    <blockquote class="taunt"><img src="{prefix}static/img/wizard.png" alt="" width="36" height="56"><p>“{esc(lesson['taunt'])}”<cite>{esc(stage['wizard'])}</cite></p></blockquote>
+    <blockquote class="taunt"><img src="{prefix}static/img/foes/foe_{stage['id']}.png" alt="" width="36" height="56"><p>“{esc(lesson['taunt'])}”<cite>{esc(cap(stage['wizard']))}</cite></p></blockquote>
   </header>
 
   <section class="section" aria-labelledby="scrolls-h">
@@ -415,8 +424,8 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
   </section>
 
   <section class="section" aria-labelledby="trial-h">
-    <h2 id="trial-h">Practice the {esc(stage['wizard'])}'s trial</h2>
-    <p class="lede">In the game, the {esc(stage['wizard'])} duels you in a sealed arena. His question shows across the top of the screen, and you answer by jumping up into the lettered block, A to D, while you dodge his spells. You need {lesson['trial']} right answers to banish him. These are his questions, drawn from all {len(questions)} in his bank. The hints work the same as in the game: ask once for his riddle, and ask again for him to rule out a wrong answer.</p>
+    <h2 id="trial-h">Practice {esc(stage['wizard'])}'s trial</h2>
+    <p class="lede">In the game, {esc(stage['wizard'])} duels you in a sealed arena. His question shows across the top of the screen, and you answer by jumping up into the lettered block, A to D, while you dodge his spells. You need {lesson['trial']} right answers to banish him. These are his questions, drawn from all {len(questions)} in his bank. The hints work the same as in the game: ask once for his riddle, and ask again for him to rule out a wrong answer.</p>
     <div class="trial" data-trial>
       <noscript><p>The practice trial needs JavaScript. You can still play the game to sit the real one.</p></noscript>
     </div>
@@ -426,10 +435,10 @@ def build_lesson(stage: dict, lesson: dict, prefix: str) -> str:
 </article>"""
     return page(
         f"{lesson['topic']} ({stage['name']})", body, prefix, "lessons/",
-        f"Stage {stage['id']} of Dunder Quest teaches {lesson['topic']}: the lore scrolls, the stage puzzle, and a practice run of the {stage['wizard']}'s trial.",
+        f"Stage {stage['id']} of Dunder Quest teaches {lesson['topic']}: the lore scrolls, the stage puzzle, and a practice run of {stage['wizard']}'s trial.",
         f'<script src="{prefix}static/trial.js"></script>',
         path=f"lessons/{stage['slug']}/", image=f"{stage['slug']}.png",
-        image_alt=f"Stage {stage['id']}, {stage['name']}: {lesson['topic']}, with the {stage['wizard']}'s duel question on screen.",
+        image_alt=f"Stage {stage['id']}, {stage['name']}: {lesson['topic']}, with {stage['wizard']}'s duel question on screen.",
     )
 
 
@@ -442,13 +451,13 @@ def build_lessons_index(bank: dict, prefix: str) -> str:
   <span class="li-stage">Stage {stage['id']} · {esc(stage['name'])}</span>
   <span class="li-topic">{esc(lesson['topic'])}</span>
   <span class="li-scrolls">{scroll_names}</span>
-  <span class="li-meta">{len(lesson['scrolls'])} scrolls · {len(lesson['questions'])} questions · {esc(stage['wizard'])}</span>
+  <span class="li-meta">{len(lesson['scrolls'])} scrolls · {len(lesson['questions'])} questions · {esc(cap(stage['wizard']))}</span>
 </a></li>""")
     body = f"""
 <section class="section page-head">
   <p class="kicker">Lessons</p>
   <h1>The Python you learn on the trail</h1>
-  <p class="lede">Every scroll, puzzle and wizard question from the game, one stage per page. Read them before you play, or come back after a stage to review. All the code is plain Python 3, so you can paste any snippet into a Python prompt and run it.</p>
+  <p class="lede">Every scroll, puzzle and guardian question from the game, one stage per page. Read them before you play, or come back after a stage to review. All the code is plain Python 3, so you can paste any snippet into a Python prompt and run it.</p>
 </section>
 <ol class="lesson-list">{"".join(items)}</ol>"""
     return page("Lessons", body, prefix, "lessons/", "All six Python lessons from Dunder Quest: lists, dictionaries, loops, conditions, functions and comprehensions.",
@@ -462,19 +471,19 @@ def build_guide(prefix: str) -> str:
         ("Confirm, next card", "Space or Enter", "A / Cross", "Tap anywhere"),
         ("Pause and Spellbook", "Esc or P", "Start / Options", "Pause, top right"),
         ("Back to world map", "M", "LB / L1", "Pause, then World map"),
-        ("Ask the wizard for a hint", "H", "Y / Triangle", "? button, during a duel"),
+        ("Ask the guardian for a hint", "H", "Y / Triangle", "? button, during a duel"),
         ("Fullscreen", "F11", "", "Fullscreen on the title screen (not on iPhone)"),
     ]
     rows = "".join(f"<tr><th scope=row>{a}</th><td data-label=Keyboard>{k}</td><td data-label=Gamepad>{p or '-'}</td><td data-label=Touch>{t}</td></tr>" for a, k, p, t in controls)
     things = [
-        ("emberseed.png", 12, 12, "Emberseed", "The collectible. Each stage counts how many you found, and your best count shows on the world map."),
-        ("cache_stone.png", 16, 16, "Cache stone", "Bump it from below and it gives you its seed. It only does this once."),
+        ("tin.png", 12, 12, "Tin of spam", "The collectible. Each stage counts how many you found, and your best count shows on the world map."),
+        ("cache_stone.png", 16, 16, "Cache stone", "Bump it from below and it gives you its tin. It only does this once."),
         ("clay_brick.png", 16, 16, "Clay brick", "Jump into it from below to break it."),
-        ("copperling.png", 20, 12, "Copperling", "Walks back and forth on its ledge. Landing on it beats it. Touching it from the side knocks you out."),
+        ("bunny.png", 20, 12, "Killer bunny", "Looks harmless. Walks back and forth on its ledge. Landing on it beats it. Touching it from the side knocks you out."),
         ("tile_ash.png", 16, 16, "Ash shelf", "Cracks under your feet, then falls. Keep moving. It comes back when you respawn."),
         ("lantern_lit.png", 12, 28, "Lantern", "A checkpoint. Walk past it to light it, and that's where you come back after a fall."),
-        ("waygate.png", 24, 40, "Waygate", "The exit. It's behind the wizard's barrier, so you have to win his duel before you can reach it."),
-        ("wizard.png", 18, 28, "Wizard", "Each stage ends in his arena. Walk in and the duel starts. See the section below. Touching him knocks you back."),
+        ("castle_gate.png", 24, 40, "Castle gate", "The exit. It's behind the guardian's barrier, so you have to win his duel before you can reach it. When you get there, watch the sky."),
+        ("foes/foe_1.png", 12, 18, "Guardians", "Each stage ends in a guardian's arena: the Knight Who Says Mi, the Cheesemonger, Tom the Enchanter, the Under-Minister, the Bridgekeeper and the Taunting Knight. Walk in and the duel starts. Touching him knocks you back."),
     ]
     cards = "".join(
         f'<li><span class="sprite"><img src="{prefix}static/img/{img}" alt="" width="{w * 3}" height="{h * 3}"></span><div><h3>{name}</h3><p>{text}</p></div></li>'
@@ -484,7 +493,7 @@ def build_guide(prefix: str) -> str:
 <section class="section page-head">
   <p class="kicker">How to play</p>
   <h1>Field guide to the trail</h1>
-  <p class="lede">Dunder Quest is a side-scrolling platformer. You play as a pebble, and you clear a stage by reaching its waygate. There are six stages, and clearing one opens the next on the world map.</p>
+  <p class="lede">Dunder Quest is a side-scrolling platformer. You play as a squire on a quest for the Grail, clopping coconut halves for want of a horse, and you clear a stage by reaching its castle gate. There are six stages, and clearing one opens the next on the world map.</p>
   <a class="btn" href="{prefix}play/">Play in your browser</a>
 </section>
 
@@ -504,14 +513,14 @@ def build_guide(prefix: str) -> str:
 </section>
 
 <section class="section" aria-labelledby="lessons-h">
-  <h2 id="lessons-h">Lessons, puzzles and the wizard's duel</h2>
+  <h2 id="lessons-h">Lessons, puzzles and the guardian's duel</h2>
   <div class="two">
-    <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_hint2.png" alt="The wizard's duel with one wrong answer dimmed and its block cracked after a second hint" width="480" height="270" loading="lazy"><figcaption>After a second hint, the wizard rules out one wrong answer and its block cracks.</figcaption></figure>
+    <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_hint2.png" alt="The guardian's duel with one wrong answer dimmed and its block cracked after a second hint" width="480" height="270" loading="lazy"><figcaption>After a second hint, the guardian rules out one wrong answer and its block cracks.</figcaption></figure>
     <div>
       <p><b>Lore scrolls</b> teach the stage's topic. Touching one pauses the game and opens its card. Press Space or tap to keep going.</p>
       <p><b>The stage puzzle</b> is the way forward. Slates in the scenery show its code, and blocks you bump from below run it. Only the right answer builds the path. The <a href="{prefix}lessons/">lesson pages</a> explain each one.</p>
-      <p><b>The wizard's duel</b> starts when you walk into his arena at the end of the stage. A seal closes behind you, his question appears across the top of the screen, and four lettered blocks hang over the floor. Jump up into the block with the right answer. Each right answer breaks one ward, the pips above his name. A wrong answer cracks that block, zaps you, and brings a different question. He mostly asks about scrolls you've read, so reading them on the way pays off.</p>
-      <p><b>His spells:</b> after giving you a moment to read, he casts. Ward waves roll along the floor, so jump them. From Kiln Mouth on, hexes mark a spot and then strike, so step aside. You have three sparks, shown next to his name. A spell, a zap or bumping into him costs one. Lose all three and you wake at the lantern outside, but the wards you broke stay broken. The clock stops for the whole duel.</p>
+      <p><b>The guardian's duel</b> starts when you walk into his arena at the end of the stage. A seal closes behind you, his question appears across the top of the screen, and four lettered blocks hang over the floor. Jump up into the block with the right answer. Each right answer breaks one ward, the pips above his name. A wrong answer cracks that block, zaps you, and brings a different question. He mostly asks about scrolls you've read, so reading them on the way pays off.</p>
+      <p><b>His spells:</b> after giving you a moment to read, he casts. Ward waves roll along the floor, so jump them. From Cave of the Bunny on, hexes mark a spot and then strike, so step aside. You have three sparks, shown next to his name. A spell, a zap or bumping into him costs one. Lose all three and you wake at the lantern outside, but the wards you broke stay broken. The clock stops for the whole duel.</p>
       <p><b>Hints:</b> press H (or tap the ? button) once for his riddle and a reminder of the scroll the question comes from. Press it again and he rules out one wrong answer, and its block cracks. There's no third hint.</p>
     </div>
   </div>
@@ -522,13 +531,13 @@ def build_guide(prefix: str) -> str:
   <div class="two">
     <div>
       <p><b>Spellbook:</b> pause with Esc or the Pause button to open it. It keeps every scroll you've read, so you can study before a trial.</p>
-      <p><b>Results:</b> when you clear a stage, you see your seeds, time and falls. Your best time and seed count for each stage show on the world map.</p>
+      <p><b>Results:</b> when you clear a stage, you see your tins, time and falls. Your best time and tin count for each stage show on the world map.</p>
       <p><b>Saving</b> happens automatically. In the browser, your progress is stored in that browser on that device, so clearing site data erases it. The desktop builds save to a file in the Godot user folder: <code>%APPDATA%\\Godot\\app_userdata\\Dunder Quest\\</code> on Windows, <code>~/Library/Application Support/Godot/app_userdata/Dunder Quest/</code> on macOS, and <code>~/.local/share/godot/app_userdata/Dunder Quest/</code> on Linux. To start over, choose <em>New game</em> on the title screen and press it a second time to confirm.</p>
     </div>
     <figure class="shot"><img src="{prefix}static/img/shots/tour_amber_book.png" alt="The Spellbook in the pause menu listing scrolls read so far" width="480" height="270" loading="lazy"><figcaption>The Spellbook, from the pause menu.</figcaption></figure>
   </div>
 </section>"""
-    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the wizard's trial and saving in Dunder Quest.", path="guide/")
+    return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the guardian's trial and saving in Dunder Quest.", path="guide/")
 
 
 ## The brand kit. The footer's `>>> help(dunder_quest)` is the only link to
@@ -553,32 +562,35 @@ COPY = [
     ("Dunder Quest is a pixel-art platformer that teaches Python. Play it in your browser or download it.", "Search results", "site/build.py"),
     ("LEARN PYTHON BY PLAYING", "Trailer thumbnail", "tools/make_trailer.py"),
     ("YOUR CODE / BUILDS THE WORLD", "Trailer hook", "tools/make_trailer.py"),
-    ("A pebble's journey to the kiln · Play free in your browser", "Trailer end card", "tools/make_trailer.py"),
+    ("A squire's quest for the Grail · Play free in your browser", "Trailer end card", "tools/make_trailer.py"),
 ]
 ## (file, name, note, native width, native height, scale): art is only ever
 ## scaled by whole numbers, so each piece carries the scale it's shown at.
 ART = [
     ("title_art.png", "Title art", "Behind the home page, every social card and the trailer's end card", 480, 270, 1),
-    ("trail_map.png", "World map", "The six stages, from Amber Hollow to Crucible Crown", 480, 168, 1),
-    ("pebble.png", "The pebble", "The hero", 16, 24, 4),
-    ("wizard.png", "A wizard", "Waits at the end of every stage", 18, 28, 4),
-    ("copperling.png", "Copperling", "Stomp it", 20, 12, 4),
-    ("emberseed.png", "Emberseed", "Collect it", 12, 12, 6),
-    ("waygate.png", "Waygate", "A stage's exit", 24, 40, 2),
+    ("trail_map.png", "World map", "The six stages, from Shrubbery Wood to Castle Aargh", 480, 168, 1),
+    ("squire.png", "The squire", "The hero", 16, 24, 4),
+    ("foes/foe_1.png", "The Knight Who Says Mi", "The first of six guardians", 36, 56, 2),
+    ("foes/foe_5.png", "The Bridgekeeper", "Asks his questions... four", 36, 56, 2),
+    ("bunny.png", "Killer bunny", "Stomp it", 20, 12, 4),
+    ("tin.png", "Tin of spam", "Collect it", 12, 12, 6),
+    ("castle_gate.png", "Castle gate", "A stage's exit", 24, 40, 2),
+    ("giant_foot.png", "The foot", "Stomps down when you clear a stage", 72, 96, 2),
+    ("grail.png", "The Grail", "Over the very last gate", 12, 14, 6),
     ("shots/tour_bridge_built.png", "Bridge built", "span(5) lays the planks", 480, 270, 1),
-    ("shots/tour_amber_duel.png", "Wizard duel", "Jump into the right answer", 480, 270, 1),
+    ("shots/tour_amber_duel.png", "Guardian duel", "Jump into the right answer", 480, 270, 1),
     ("shots/tour_amber_scroll.png", "Lore scroll", "A lesson card", 480, 270, 1),
 ]
 TRAILER_FACTS = [
-    ("Length", "62 seconds"),
-    ("Music", "125 BPM; every cut lands on a beat"),
+    ("Length", "72 seconds, with a cold open"),
+    ("Music", "A brass-band march, 120 BPM; every cut lands on a beat"),
     ("Loudness", "−14 LUFS, YouTube's target"),
     ("Pixels", "Drawn at 480×270, scaled ×4 for 1080p and ×8 for 4K"),
 ]
 TRAILER_CUTS = [
     ("4K master", "3840×2160, 60 fps", "YouTube"),
     ("1080p master", "1920×1080, 60 fps", "itch.io, press"),
-    ("Thumbnail", "1920×1080, from the Kiln Mouth duel", "YouTube, the home page"),
+    ("Thumbnail", "1920×1080, from the Cave of the Bunny duel", "YouTube, the home page"),
     ("Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"),
     ("GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"),
 ]
@@ -591,8 +603,8 @@ LAUNCH = [
         ("URL", f"{SITE_URL}play/"),
         ("First comment, posted right away", "I wanted to see how far Opus 5.5 could take a game end to end, so I let it build one. "
         "Dunder Quest is a pixel platformer where Python is the magic: you bump slice blocks to lay a bridge, "
-        "load a range() into a lift, and duel wizards by jumping into the right answer. Six stages, free in the browser, no signup.\n\n"
-        "Over four days Opus wrote all of the Godot code, painted the tiles and the wizard pixel by pixel from Python scripts, "
+        "load a range() into a lift, and duel the Bridgekeeper by jumping into the right answer. Python is named after Monty Python, so it's a Holy Grail quest: a squire clopping coconuts, a Knight Who Says Mi, a giant foot. Six stages, free in the browser, no signup.\n\n"
+        "Over four days Opus wrote all of the Godot code, painted the tiles and the whole cast pixel by pixel from Python scripts, "
         "prompted image, music and sound models for the rest, built this site, and cut the 62 s trailer from a scripted "
         "gameplay capture with no video editor. I wrote the prompts and playtested.\n\n"
         "Where it struggled: duels were hard to read until it added a camera that eases in, and some jumps still need a human playtest. "
@@ -603,7 +615,7 @@ LAUNCH = [
     ], "Link the game itself, not the home page. Stay in the thread for the first three hours and answer everything, the skeptics first. Never ask anyone for upvotes: HN spots vote rings and buries the post. If it sinks, email hn@ycombinator.com and ask about the second-chance pool."),
     ("X", "8:45 AM", "", [
         "I let Opus 5.5 build a whole game in four days.\n\n"
-        "Dunder Quest: a pixel platformer where Python is the magic. Slice a list to lay a bridge, loop a lift up a wall, duel wizards with print().\n\n"
+        "Dunder Quest: a pixel platformer where Python is the magic. Slice a list to lay a bridge, loop a lift up a wall, answer the Bridgekeeper's questions... four.\n\n"
         f"Free in your browser 👇\n{SITE_URL}",
         "Opus wrote every line of Godot code, painted the tiles pixel by pixel in Python, and prompted image and music models for the rest.\n\n"
         "It even cut the trailer from code. No video editor anywhere.",
@@ -622,7 +634,7 @@ LAUNCH = [
     ], "Attach the trailer as a video to the first post and reply to it with the second. Bluesky caps posts at 300 characters. Add the GitHub link as a third reply."),
     ("r/godot", "10:00 AM", "Opus 5.5 built this Python-teaching platformer in Godot 4 in four days, trailer included", [
         "Dunder Quest is a pixel platformer where every stage teaches a piece of Python: slices, hashing, loops, conditions. "
-        "Wizards at the end of each stage ask a question and you answer by jumping into a block.\n\n"
+        "A Monty Python guardian at the end of each stage asks a question and you answer by jumping into a block.\n\n"
         "The whole thing was built by Opus 5.5 over four days. It wrote the GDScript, painted the tiles from Python scripts, "
         "and made the trailer by recording the game with --write-movie and compositing it in Python. I prompted and playtested.\n\n"
         f"Play it in the browser (web export): {SITE_URL}play/\n"
@@ -633,7 +645,7 @@ LAUNCH = [
         "**What My Project Does**\n\n"
         "Dunder Quest is a free pixel platformer that teaches Python. Each of its six stages is built around one idea: "
         "you slice a list to lay a bridge, hash keys into a vault, and run a for loop to raise a lift. "
-        "Wizards quiz you on real Python, and every question is checked against a real interpreter.\n\n"
+        "Monty Python-style guardians quiz you on real Python, and every question is checked against a real interpreter.\n\n"
         "**Target Audience**\n\n"
         "Beginners learning Python, and people curious about what a coding model can build alone. It's a finished, playable game, not a demo.\n\n"
         "**Comparison**\n\n"
@@ -645,7 +657,7 @@ LAUNCH = [
         "I'm dyslexic, and as a kid I failed my spelling tests. Then my dad wrote me a spelling game in BASIC. "
         "After that I got 100 on every test.\n\n"
         "This week I gave Opus 5.5 a blank repo and four days to make a learning game of its own. It came back with a finished one.\n\n"
-        "Dunder Quest is a pixel platformer that teaches Python: six stages, each built around one idea, and a wizard at the end of each "
+        "Dunder Quest is a pixel platformer that teaches Python: six stages, each built around one idea, and a Monty Python guardian at the end of each "
         "who checks you understood it.\n\n"
         "Opus wrote all of the code, painted the art in Python, directed image and music models for the rest, built the website, "
         "and cut the trailer from code. My job was prompting and playtesting.\n\n"
@@ -655,7 +667,7 @@ LAUNCH = [
         "and maybe some day this one is theirs.\n\n"
         f"Play it free in your browser: {SITE_URL}",
     ], "Native video gets far more reach than a link card, so upload the trailer. Put the link in the post, not the first comment."),
-    ("r/WebGames", "1:00 PM", "Dunder Quest – a pixel platformer where Python is the magic [free, no signup]", [
+    ("r/WebGames", "1:00 PM", "Dunder Quest – a Monty Python quest that teaches Python [free, no signup]", [
         ("URL", f"{SITE_URL}play/"),
     ], "A link post straight to the game. Check it loads on a phone first: most players will tap it there."),
 ]
@@ -697,6 +709,7 @@ def build_brand(prefix: str) -> str:
 
 NAME
     dunder_quest - a pixel platformer where Python is the magic
+    (and Monty Python is the plot)
 
 DESCRIPTION
     The logo, colors, fonts, art, trailer and social cards, and
@@ -730,16 +743,16 @@ DESCRIPTION
   <ul class="swatches">{swatches}</ul>
   <figure class="code kit-code"><figcaption>Code in the trailer and on the cards</figcaption><pre><code><i class="kw">for</i> i <i class="kw">in</i> range(<i class="nm">4</i>):
     lift.rise()  <i class="cm"># one notch</i>
-key = <i class="st">"ember"</i></code></pre></figure>
+key = <i class="st">"spam"</i></code></pre></figure>
 </section>
 
 <section class="section kit" aria-labelledby="type-h">
   <p class="kicker">dunder_quest.__fonts__</p>
   <h2 id="type-h">The type</h2>
   <ul class="specimens">
-    <li><p class="sp-pixel">Six stages to the kiln</p><b>Pixelify Sans</b> <span>Headlines and the wordmark · <a href="{prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
+    <li><p class="sp-pixel">Six stages to the Grail</p><b>Pixelify Sans</b> <span>Headlines and the wordmark · <a href="{prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
     <li><p class="sp-label">&gt;&gt;&gt; import adventure</p><b>VT323</b> <span>Code, prompts and labels · <a href="{prefix}static/fonts/VT323.ttf">TTF</a></span></li>
-    <li><p class="sp-body">Guide a pebble across six stages to the kiln.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
+    <li><p class="sp-body">Guide a squire across six stages to the Grail.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
   </ul>
   <p class="fine">All three are under the SIL Open Font License.</p>
 </section>
@@ -757,7 +770,7 @@ key = <i class="st">"ember"</i></code></pre></figure>
   <p class="lede">Built entirely from the game's repo by a Python script, with no video editor: real gameplay, captured frame by frame, with motion graphics in the game's own fonts and colors.</p>
   <div id="trailer">
   <a class="trailer" href="https://www.youtube.com/watch?v={TRAILER_ID}" data-yt="{TRAILER_ID}">
-    <img src="{img}trailer.png" alt="Trailer thumbnail: the Kiln Archmage's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
+    <img src="{img}trailer.png" alt="Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
     <span class="trailer-play" aria-hidden="true"></span>
     <span class="sr">Play the Dunder Quest trailer</span>
   </a>
@@ -830,6 +843,18 @@ def build_404(prefix: str) -> str:
     return page("Page not found", body, prefix)
 
 
+## Lesson pages renamed in the Holy Grail rework: old slug -> new slug. Their
+## old addresses were already shared, so `_redirects` keeps them working.
+OLD_SLUGS = {
+    "amber-hollow": "shrubbery-wood",
+    "cinder-span": "cheese-shoppe",
+    "kiln-mouth": "cave-of-the-bunny",
+    "smelters-fork": "ministry-of-walks",
+    "bellows-bridge": "bridge-of-peril",
+    "crucible-crown": "castle-aargh",
+}
+
+
 def write(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(text, encoding="utf-8")
@@ -877,6 +902,8 @@ def main() -> None:
     write(out / "guide" / "index.html", build_guide("../"))
     write(out / "brand" / "index.html", build_brand("../"))
     write(out / "404.html", build_404("/"))
+    write(out / "_redirects", "".join(
+        f"/lessons/{old}/ /lessons/{new}/ 301\n/lessons/{old} /lessons/{new}/ 301\n" for old, new in OLD_SLUGS.items()))
     print(f"site built into {out}")
 
 

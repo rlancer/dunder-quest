@@ -1,6 +1,6 @@
 extends StageLevel
 
-## Kiln Mouth. Lesson 3: Loops & range.
+## Cave of the Bunny. Lesson 3: Loops & range.
 ## Ember and an ash shelf are taught on solid ground, then both cross a pit.
 ##
 ## Then the kiln wall: ten tiles of sheer brick, too tall for any jump. At its
@@ -9,7 +9,7 @@ extends StageLevel
 ## four laps lifts the player high enough to jump onto the wall. The numbers
 ## mislead on purpose: range(1, 9, 3) and range(10, 13) look bigger than
 ## range(4), but each makes only three laps. A gauge on the wall marks each
-## notch. The Kiln Archmage duels in the arena past the wall.
+## notch. Tom the Enchanter duels in the arena past the wall.
 
 const WIDTH := 156
 const FORGE_TINT := Color(0.5, 1.0, 0.65)
@@ -37,9 +37,9 @@ const ARENA := 120
 var _lift: KilnLift
 var _loaded: int = -1
 var _forges: Array[RuneBlock] = []
-const _FAR := preload("res://assets/backgrounds/kiln_far.png")
-const _MID := preload("res://assets/backgrounds/kiln_mid.png")
-const _NEAR := preload("res://assets/backgrounds/kiln_near.png")
+const _FAR := preload("res://assets/backgrounds/cave_far.png")
+const _MID := preload("res://assets/backgrounds/cave_mid.png")
+const _NEAR := preload("res://assets/backgrounds/cave_near.png")
 
 
 func stage_index() -> int:
@@ -47,7 +47,7 @@ func stage_index() -> int:
 
 
 func _passage_detail() -> String:
-	return "Smelter's Fork awaits"
+	return "Ministry of Walks awaits"
 
 
 func _stage_width() -> int:
@@ -63,10 +63,11 @@ func _spawn_position() -> Vector2:
 
 
 func _configure_stage() -> void:
-	_add_parallax("FarKiln", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.85, 0.78, 0.78))
-	# The pots are bright, so they sit back behind a heavier tint.
-	_add_parallax("MidPots", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.6, 0.52, 0.55))
-	_add_parallax("NearSlag", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.7, 0.62, 0.66))
+	# Cave of the Bunny: a dim burrow-pocked cave. The busy layers sit back
+	# behind darker tints so they never compete with the play lane.
+	_add_parallax("FarCave", _FAR, Vector2(0.08, 0.0), -40, 2.0, Color(0.85, 0.85, 0.9))
+	_add_parallax("MidRocks", _MID, Vector2(0.3, 0.0), -30, 2.0, Color(0.6, 0.6, 0.66))
+	_add_parallax("NearRubble", _NEAR, Vector2(0.55, 0.0), -20, 2.0, Color(0.5, 0.48, 0.54))
 
 
 func _paint_stage() -> void:
@@ -113,7 +114,7 @@ func _spawn_actors() -> void:
 	_spawn_scroll(Vector2(1160, 222), "loop_while")
 	_spawn_checkpoint(Vector2(1400, 224))
 	_build_lift()
-	_build_arena(ARENA, "Kiln Archmage", Color(0.5, 1.0, 0.65))
+	_build_arena(ARENA, "Tom the Enchanter", Color(0.5, 1.0, 0.65))
 
 
 func _build_lift() -> void:

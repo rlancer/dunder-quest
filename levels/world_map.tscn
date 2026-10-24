@@ -3,8 +3,8 @@
 [ext_resource type="Script" path="res://levels/world_map.gd" id="1_map"]
 [ext_resource type="Texture2D" path="res://assets/backgrounds/world_map.png" id="2_map"]
 [ext_resource type="Script" path="res://levels/world_map_path_drawer.gd" id="5_drawer"]
-[ext_resource type="Texture2D" path="res://assets/sprites/emberseed.png" id="7_seed"]
-[ext_resource type="Texture2D" path="res://assets/sprites/pebble.png" id="8_pebble"]
+[ext_resource type="Texture2D" path="res://assets/sprites/tin.png" id="7_seed"]
+[ext_resource type="Texture2D" path="res://assets/sprites/squire.png" id="8_pebble"]
 [ext_resource type="Script" path="res://common/stage_audio.gd" id="9_audio"]
 
 [node name="WorldMap" type="Node2D"]
@@ -23,7 +23,7 @@ script = ExtResource("5_drawer")
 
 [node name="StageNode1" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(78, 116)
+position = Vector2(60, 160)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode1"]
 visible = false
@@ -52,7 +52,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Amber Hollow"
+text = "Shrubbery Wood"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode1"]
@@ -65,7 +65,7 @@ flat = true
 
 [node name="StageNode2" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(240, 104)
+position = Vector2(130, 132)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode2"]
 visible = false
@@ -94,7 +94,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Cinder Span"
+text = "The Cheese Shoppe"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode2"]
@@ -107,7 +107,7 @@ flat = true
 
 [node name="StageNode3" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(392, 132)
+position = Vector2(430, 150)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode3"]
 visible = false
@@ -136,7 +136,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Kiln Mouth"
+text = "Cave of the Bunny"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode3"]
@@ -149,7 +149,7 @@ flat = true
 
 [node name="StageNode4" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(326, 76)
+position = Vector2(400, 88)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode4"]
 visible = false
@@ -178,7 +178,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Smelter's Fork"
+text = "Ministry of Walks"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode4"]
@@ -191,7 +191,7 @@ flat = true
 
 [node name="StageNode5" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(214, 54)
+position = Vector2(250, 98)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode5"]
 visible = false
@@ -220,7 +220,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Bellows Bridge"
+text = "Bridge of Peril"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode5"]
@@ -233,7 +233,7 @@ flat = true
 
 [node name="StageNode6" type="Node2D" parent="Nodes"]
 unique_name_in_owner = true
-position = Vector2(108, 52)
+position = Vector2(96, 58)
 
 [node name="SeedSprite" type="Sprite2D" parent="Nodes/StageNode6"]
 visible = false
@@ -262,7 +262,7 @@ theme_override_colors/font_color = Color(0.95, 0.9, 0.8, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Crucible Crown"
+text = "Castle Aargh"
 horizontal_alignment = 1
 
 [node name="ClickButton" type="Button" parent="Nodes/StageNode6"]
@@ -275,7 +275,7 @@ flat = true
 
 [node name="PebbleAvatar" type="Node2D" parent="."]
 unique_name_in_owner = true
-position = Vector2(78, 116)
+position = Vector2(60, 160)
 
 [node name="PebbleSprite" type="Sprite2D" parent="PebbleAvatar"]
 unique_name_in_owner = true
@@ -337,7 +337,7 @@ theme_override_colors/font_color = Color(1, 0.78, 0.29, 1)
 theme_override_colors/font_outline_color = Color(0.06, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 10
-text = "Seeds 0 / 11"
+text = "Tins 0 / 11"
 
 [node name="StageCard" type="ColorRect" parent="UI"]
 offset_left = 12.0
@@ -370,7 +370,7 @@ theme_override_colors/font_color = Color(1, 0.89, 0.6, 1)
 theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 13
-text = "STAGE 1: AMBER HOLLOW"
+text = "STAGE 1: SHRUBBERY WOOD"
 
 [node name="StageStatus" type="Label" parent="UI/StageCard"]
 unique_name_in_owner = true
@@ -395,7 +395,7 @@ offset_right = 270.0
 offset_bottom = 37.0
 theme_override_colors/font_color = Color(0.76, 0.72, 0.82, 1)
 theme_override_font_sizes/font_size = 10
-text = "Foothills of ash & shattered clay"
+text = "Lesson 1: Lists & Indexing"
 
 [node name="StageSeeds" type="Label" parent="UI/StageCard"]
 unique_name_in_owner = true
@@ -408,7 +408,7 @@ theme_override_colors/font_color = Color(1, 0.73, 0.27, 1)
 theme_override_colors/font_outline_color = Color(0.07, 0.04, 0.1, 1)
 theme_override_constants/outline_size = 2
 theme_override_font_sizes/font_size = 10
-text = "Seeds: 0 / 5"
+text = "Tins: 0 / 5"
 horizontal_alignment = 2
 
 [node name="EnterPrompt" type="Label" parent="UI/StageCard"]

@@ -1,4 +1,4 @@
-"""Generate the Amber Hollow parallax layers and the title key art.
+"""Generate the six stages' parallax layers, the world map and the title key art.
 
 Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the project .env.
 Never prints the key. Raw model output lands in tools/generated/scenery,
@@ -29,83 +29,97 @@ MODEL = "openai/gpt-image-2.5-flare"
 
 STYLE = (
     "16-bit pixel art video game background, chunky readable shapes, limited warm palette, "
-    "soft dusk light, no characters, no text, no letters, no logo, no watermark, no UI."
+    "soft storybook medieval light, no characters, no text, no letters, no logo, no watermark, no UI."
 )
 
 # name: (prompt, aspect, transparent, (width, height) in game pixels before 2x scale)
 JOBS: dict[str, tuple[str, str, bool, tuple[int, int]]] = {
-    "amber_far": (
-        "Wide side-scrolling platformer sky layer at golden dusk: a huge low amber sun, "
-        "layered peach and violet clouds, and very distant pale lavender mesas along the bottom third. "
-        "Fills the whole frame, horizontally seamless left to right. " + STYLE,
+    "wood_far": (
+        'Wide side-scrolling platformer sky layer over an ancient misty forest at dawn: pale gold and mint sky, soft layered clouds, very distant blue-green hills topped with tiny castle turrets along the bottom third. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
         "21:9", False, (320, 135),
     ),
-    "amber_mid": (
-        "Side-scrolling platformer middle parallax layer: a band of rolling ochre and rust hills "
-        "with a few round amber autumn trees and small clay ruins, occupying only the bottom half of the frame. "
-        "Everything above the hills is fully transparent. Horizontally seamless. " + STYLE,
+    "wood_mid": (
+        'Side-scrolling platformer middle parallax layer: a band of gnarled old oak trees, mossy trunks and round neatly trimmed shrubberies of different sizes in muted greens, occupying only the bottom half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
-    "amber_near": (
-        "Side-scrolling platformer foreground parallax layer: a low strip of dark plum and deep brown "
-        "silhouetted grass tufts, ferns and boulders hugging the bottom quarter of the frame only. "
-        "Everything above is fully transparent. Horizontally seamless. " + STYLE,
+    "wood_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of dark green bracken, ferns, tree roots and little round bushes in silhouette, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
-    "span_far": (
-        "Wide side-scrolling platformer sky layer over a volcanic canyon at night-dusk: deep violet and "
-        "maroon sky with drifting ash clouds, a faint red glow on the horizon, and distant dark basalt cliffs with "
-        "tiny glowing lava falls along the bottom third. Muted and dark so foreground platforms stand out. "
-        "Fills the whole frame, horizontally seamless left to right. " + STYLE,
+    "shoppe_far": (
+        'Wide side-scrolling platformer background of a medieval village high street at golden afternoon: timber-framed shop fronts with crooked roofs, hanging shop signs with no writing, a distant church spire and soft clouds. Muted so foreground platforms stand out. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
         "21:9", False, (320, 135),
     ),
-    "span_mid": (
-        "Side-scrolling platformer middle parallax layer: a row of broken ancient stone bridge arches and "
-        "crumbling pillars in dark plum and charcoal, faint ember-orange rim light, occupying only the bottom "
-        "half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. " + STYLE,
+    "shoppe_mid": (
+        'Side-scrolling platformer middle parallax layer: market stalls with striped awnings, wooden crates, barrels and empty shelves of round cheese wheels, all in muted warm browns and creams, occupying only the bottom half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
-    "span_near": (
-        "Side-scrolling platformer foreground parallax layer: a low strip of near-black basalt rocks and "
-        "jagged spires with a few small glowing ember cracks, hugging only the bottom fifth of the frame. "
-        "Everything above is fully transparent. Horizontally seamless. " + STYLE,
+    "shoppe_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of dark cobbles, sacks, a cart wheel and straw in silhouette, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
-    "kiln_far": (
-        "Wide side-scrolling platformer background: the cavernous interior of a gigantic ancient clay kiln, "
-        "curved dark maroon firebrick walls and a vaulted ceiling, distant arched furnace openings glowing deep "
-        "orange, heat haze and floating sparks. Dark and muted so foreground platforms stand out. "
-        "Fills the whole frame, horizontally seamless left to right. " + STYLE,
+    "cave_far": (
+        'Wide side-scrolling platformer background: the inside of a huge dim rocky cave, grey-blue stone walls, many small round burrow holes, a few shafts of cold light from cracks above, scattered pebbles. Dark and muted so foreground platforms stand out. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
         "21:9", False, (320, 135),
     ),
-    "kiln_mid": (
-        "Side-scrolling platformer middle parallax layer: stacks of huge fired clay pots, brick buttresses and "
-        "hanging iron chains in dark brown silhouette with warm orange edge light, occupying the bottom half and "
-        "a few chains hanging from the top edge. Everything else fully transparent. Low contrast. "
-        "Horizontally seamless. " + STYLE,
+    "cave_mid": (
+        'Side-scrolling platformer middle parallax layer: rock columns, stalagmites and stalactites hanging from the top edge, a few carrots and leafy turnip tops poking from the rubble, slate grey silhouettes with cool rim light, occupying the bottom half and the top edge only; everything else fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
-    "kiln_near": (
-        "Side-scrolling platformer foreground parallax layer: a low strip of near-black slag heaps and broken "
-        "brick rubble with tiny glowing coals, hugging only the bottom fifth of the frame. Everything above is "
-        "fully transparent. Horizontally seamless. " + STYLE,
+    "cave_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of near-black boulders and rubble with a few tiny glinting crystals, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "ministry_far": (
+        'Wide side-scrolling platformer background: the grand interior of an old government ministry hall, tall stone columns, long arched windows letting in pale blue light, tiled floor perspective, grand but silly, cool blues and greys. Muted so foreground platforms stand out. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
+        "21:9", False, (320, 135),
+    ),
+    "ministry_mid": (
+        'Side-scrolling platformer middle parallax layer: rows of filing cabinets, tall stacks of paper, hat stands with bowler hats and umbrellas, in muted slate blue, occupying only the bottom half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "ministry_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of dark office clutter, a bench, paper heaps and a potted plant in silhouette, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "gorge_far": (
+        'Wide side-scrolling platformer sky layer over a deep misty mountain gorge at sunset: coral and violet sky, towering dark cliffs either side, wisps of fog rising from the bottomless chasm, a tiny distant castle on a far peak. Muted so foreground platforms stand out. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
+        "21:9", False, (320, 135),
+    ),
+    "gorge_mid": (
+        'Side-scrolling platformer middle parallax layer: jagged rocky crags, a frayed old rope bridge in the distance and a few dead trees, dark plum silhouettes with warm rim light, occupying only the bottom half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "gorge_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of near-black cliff-edge rocks and dry grass tufts, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "castle_far": (
+        'Wide side-scrolling platformer sky layer at dramatic golden dusk: a vast sky with a single bright beam of light breaking through clouds, and a huge silhouetted castle with many towers and flags on a hill along the bottom third. Fills the whole frame, horizontally seamless left to right. ' + STYLE,
+        "21:9", False, (320, 135),
+    ),
+    "castle_mid": (
+        'Side-scrolling platformer middle parallax layer: crenellated castle battlements, round towers, banners on poles and a wooden siege catapult, in muted rose and stone grey, occupying only the bottom half of the frame. Everything above is fully transparent. Low contrast. Horizontally seamless. ' + STYLE,
+        "21:9", True, (320, 135),
+    ),
+    "castle_near": (
+        'Side-scrolling platformer foreground parallax layer: a low strip of dark castle rubble, a broken cart and long grass in silhouette, hugging only the bottom fifth of the frame. Everything above is fully transparent. Horizontally seamless. ' + STYLE,
         "21:9", True, (320, 135),
     ),
     "world_map": (
-        "Overworld map screen for a pixel platformer, seen from a slightly raised side angle, at violet dusk. "
-        "A winding dirt trail runs left to right across the middle of the image. Three landmarks sit on it: "
-        "on the left, a cozy golden autumn hollow with round amber trees and a small sandstone arch; "
-        "in the upper middle, a crumbling stone bridge spanning a glowing ember chasm; on the right, a huge "
-        "smoking clay kiln shaped like a volcano with an orange glowing mouth. The top tenth is calm night sky "
-        "and the bottom quarter is soft dark foreground hills with no detail, reserved for interface panels. "
+        "Overworld map of a storybook medieval kingdom for a pixel platformer, seen from a slightly raised angle, "
+        "at dawn. Gentle green hills, a misty forest on the lower left, a little village with a market on the left "
+        "middle, a rocky cave mouth on the right, a grand stone ministry building on the upper right, a deep gorge "
+        "crossed by a rope bridge in the upper middle, and a tall castle on a hill at the upper left. No roads or paths. "
+        "The bottom quarter is soft dark foreground hills with no detail, reserved for interface panels. "
         + STYLE,
         "16:9", False, (480, 270),
     ),
     "title_art": (
-        "Key art for a cozy pixel platformer title screen: a tiny round grey river-pebble hero with a green "
-        "sprout on its head and a red clay scarf stands on a sandstone cliff edge at the lower left, looking out "
-        "over a vast valley of amber hills, glowing ember-orange ruins and a distant smoking kiln volcano "
-        "under a violet dusk sky with first stars. Leave the upper middle third calm and empty sky for a title. "
+        "Key art for a silly medieval quest pixel platformer title screen: a tiny squire in a too-big helmet and a "
+        "tabard, clapping two coconut halves together, stands on a grassy cliff edge at the lower left, looking over "
+        "a valley of round shrubberies and a misty gorge toward a distant shining castle under a dawn sky. A beam of "
+        "golden light breaks through the clouds onto the castle. Leave the upper middle third calm, empty sky for a title. "
         + STYLE,
         "16:9", False, (480, 270),
     ),
@@ -141,7 +155,7 @@ def request_image(base: str, key: str, prompt: str, aspect: str, transparent: bo
             "Authorization": f"Bearer {key}",
             "Content-Type": "application/json",
             "HTTP-Referer": "http://localhost",
-            "X-Title": "Amber Hollow",
+            "X-Title": "Dunder Quest",
         },
         method="POST",
     )

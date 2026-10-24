@@ -1,7 +1,7 @@
 class_name KilnLift
 extends AnimatableBody2D
 
-## Kiln Mouth's lift: an iron plate at the foot of the kiln wall that runs a
+## Cave of the Bunny's lift: an iron plate at the foot of the kiln wall that runs a
 ## for loop. A forge block loads it with a range; stepping on the plate runs
 ## the loop, and every lap raises it one notch with the value of i floating
 ## off it. At the top it holds while it is ridden, then sinks back to the
@@ -92,7 +92,7 @@ func _physics_process(delta: float) -> void:
 				if values.is_empty():
 					if not _hinted:
 						_hinted = true
-						Fx.float_text(get_parent(), global_position + Vector2(-44.0, -20.0), "Load a loop at a forge", tint.lightened(0.3))
+						Fx.float_text(get_parent(), global_position + Vector2(-44.0, -20.0), "Load a loop at a block", tint.lightened(0.3))
 				else:
 					state = State.RUNNING
 					_lap = 0
