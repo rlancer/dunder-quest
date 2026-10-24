@@ -57,6 +57,8 @@ trailer/
 
 Done: the Holy Grail recut (2026-10-23): a fresh capture, the cold open, `cue_march`, the 1080p and 4K masters and the thumbnail. Measured −13.6 LUFS integrated and −1.0 dB peak, 72.000 s. The shot frames were moved to the new capture by matching its MARK log against the old one, and checked on a stills sheet.
 
+Recut (2026-10-24): the squire's in-level footsteps were removed from the game, so the run was captured again and the shot frames were remapped by the same MARK matching. The duels ask different questions each run; each shot still matches its topic chip. The thumbnail was kept from the previous capture, because its hard-coded `print(list(range(4)))` no longer matches the duel at frame 5940.
+
 ## Backlog
 
 In rough priority order. Tick items off here as they land.
