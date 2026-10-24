@@ -3,11 +3,13 @@
 Every lesson page comes from `data/lessons.json`, the same bank the game
 reads, so the scrolls and the guardian's questions on the site are the ones
 the player meets on the trail. The web export of the game goes in `play/`
-beside the pages (`scripts/export_web.sh` puts it there).
+beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
+JavaScript game, gets its own page in `flatmates/` and its export in
+`flatmates/play/`.
 
     python site/build.py build/site
     python site/build.py --play build/site/play/index.html
-    python site/build.py --flatmates build/site/flatmates/index.html
+    python site/build.py --flatmates build/site/flatmates/play/index.html
 """
 
 from __future__ import annotations
@@ -263,7 +265,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <footer class="foot">
   <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way.</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
@@ -355,6 +357,17 @@ def build_home(bank: dict, prefix: str = "") -> str:
       <h3>Duel the guardian</h3><p>A guardian holds every exit. His question shows at the top of the screen, and you answer by jumping into the lettered block while you dodge his spells. Each right answer breaks a ward. A wrong one gets you zapped and a new question. He'll give you a hint if you ask.</p></li>
   </ol>
   <p class="count"><b>{total_s}</b> lore scrolls · <b>{total_q}</b> trial questions · every snippet checked against real Python</p>
+</section>
+
+<section class="section" aria-labelledby="fm-h">
+  <p class="kicker">The second game</p>
+  <h2 id="fm-h">Flatmates.js teaches JavaScript</h2>
+  <a class="next-game" href="{prefix}flatmates/">
+    <img src="{prefix}static/img/og/flatmates.png" alt="Flatmates.js: two flatmates by their front door on a Croydon tower block landing at dusk" width="1200" height="630" loading="lazy">
+    <span><b>Two flatmates. Two points of view. One of them runs your JavaScript.</b>
+    Swap between Clive and Jazz across six stops in Croydon, from calling a method to awaiting two promises, and script the one you aren't playing.
+    <span class="next-go">Meet the flatmates →</span></span>
+  </a>
 </section>
 {downloads_section(prefix)}
 """
@@ -725,7 +738,8 @@ def build_brand(prefix: str) -> str:
     facts = "".join(f"<div><dt>{k}</dt><dd>{esc(v)}</dd></div>" for k, v in TRAILER_FACTS)
     cuts = "".join(f"<tr><td>{a}</td><td>{esc(b)}</td><td>{esc(c)}</td></tr>" for a, b, c in TRAILER_CUTS)
     cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
-             ("lessons.png", "Lessons", "The lessons index")]
+             ("lessons.png", "Lessons", "The lessons index"),
+             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game")]
     cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
     card_items = "".join(
         f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
@@ -914,20 +928,304 @@ def tag_play_page(index: Path) -> None:
 
 
 FLATMATES_ALT = "Flatmates.js title art: two flatmates by their front door on a Croydon tower block landing at dusk."
+FLATMATES_DESC = ("Flatmates.js, a Dunder Quest game: two mismatched flatmates, two points of view, and the JavaScript "
+                  "one of them runs. Play it free in your browser.")
 
 
 def tag_flatmates_page(index: Path) -> None:
     """The same tags for Flatmates.js, the JavaScript game in flatmates/,
-    which Godot exports to flatmates/index.html."""
-    desc = ("Flatmates.js, a Dunder Quest game: two mismatched flatmates, two points of view, and the JavaScript "
-            "one of them runs. Play it free in your browser.")
+    which Godot exports to flatmates/play/index.html."""
+    desc = "Play Flatmates.js, the Dunder Quest game that teaches JavaScript, right in your browser."
     text = index.read_text(encoding="utf-8")
     if 'property="og:title"' in text:
         return
     tags = (f'<meta name="description" content="{esc(desc)}">\n'
-            f'{head_tags("Flatmates.js · Dunder Quest", desc, "flatmates/", "flatmates.png", FLATMATES_ALT)}\n')
+            f'{head_tags("Play Flatmates.js · Dunder Quest", desc, "flatmates/play/", "flatmates.png", FLATMATES_ALT)}\n')
     index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
     print(f"tagged {index}")
+
+
+## Flatmates.js's own page at /flatmates/, in its Croydon colors. Its lesson
+## cards come from `flatmates/data/lessons.json`, the bank the game reads.
+## The stops match `flatmates/core/progress.gd`, each puzzle is the one its
+## `flatmates/stages/stage_N.gd` lays out, and each laptop is a script from
+## that stage with one blank, as the game's editor shows it. `{}` is the
+## blank; every option is (text, works, what happens). Art comes from
+## `flatmates/tools/site_art.py`.
+FM_STOPS: list[dict] = [
+    {
+        "id": 1, "slug": "flat-5b", "name": "Flat 5B", "stop": "Hermes House",
+        "puzzle": "The kitchen door only stays open while someone stands on the doormat, and left alone Jazz drifts back to the sofa. So Clive scripts him onto the mat. In the hall the floorboards are up, a hole five boards wide that Clive can't jump. Jazz has to walk to the edge, jump it and step onto the rug that folds the boards down, in that order.",
+        "file": "jazz.js", "runs": "Jazz runs this.",
+        "code": "// To the edge, over the hole, onto the rug.\njazz.walk(3);\n{}\njazz.walk(1);",
+        "options": [
+            ("jazz.jump();", True, "Jazz walks to the edge, clears the hole and lands on the rug. The boards fold down for Clive."),
+            ("jazz.walk(5);", False, "Jazz walks five more boards, straight into the hole. He seems fine. He usually does."),
+            ("jazz.jump;", False, "Without the brackets nothing calls the method, so Jazz only thinks about jumping. He stops at the edge."),
+        ],
+    },
+    {
+        "id": 2, "slug": "croydon-credit", "name": "Croydon Credit", "stop": "Croydon Credit",
+        "puzzle": "Jazz has come into Clive's office to ask for a loan, which Clive is not allowed to give him. The staff door's keypad wants the desk number, then the extension, and the building's laptop builds the code from two constants. Past the door, the lift goes to whatever floor its script says, but only for a number: \"2\" in quotes is a string, and the lift refuses it.",
+        "file": "door.js", "runs": "The building runs this.",
+        "code": "const desk = 12;\nconst ext = 7;\nconst code = {};\nkeypad.enter(code);",
+        "options": [
+            ("`${desk}${ext}`", True, "The keypad gets \"127\": the value of desk, then the value of ext. The staff door opens."),
+            ("`desk${ext}`", False, "Outside ${ }, desk is just the word desk. The keypad gets \"desk7\" and beeps at you."),
+            ("desk + ext", False, "Two numbers added together make 19. The keypad wanted them side by side."),
+        ],
+    },
+    {
+        "id": 3, "slug": "band-practice", "name": "Band Practice", "stop": "The Cellar Bar",
+        "puzzle": "The band's stage in the cellar bar is five tiles up. Every strum lifts the speaker stack one notch, so a loop that strums four times carries Clive up to where he can climb off. Five is too loud, and the landlord pulls the plug. Up top, three amps each raise a riser into a stair, and only a for...of over the whole array switches on all three.",
+        "file": "jazz.js", "runs": "Jazz runs this.",
+        "code": "// Each strum lifts the speakers one notch.\nfor (let i = 0; i {} 4; i++) {\n  jazz.strum();\n}",
+        "options": [
+            ("<", True, "i goes 0, 1, 2, 3: four strums, four notches, and Clive climbs off onto the stage."),
+            ("<=", False, "i goes 0 to 4. That's five strums, and the fifth is too loud. The landlord pulls the plug."),
+            (">", False, "0 > 4 is false before the first lap, so the loop never runs. Jazz doesn't strum once. Not unheard of."),
+        ],
+    },
+    {
+        "id": 4, "slug": "the-stag-do", "name": "The Stag Do", "stop": "Wet Bottom Farm",
+        "puzzle": "Two farm gates, one behind the other, and two plates up in the hay loft, one for each gate. Clive needs Jazz on the first plate until he's between the gates, then on the second. A plain list of steps can't wait for that. A listener can: when Clive rings the bell in the pen, the callback walks Jazz along the loft.",
+        "file": "jazz.js", "runs": "Jazz runs this.",
+        "code": "jazz.walk(2);\nbell.addEventListener({}, () => {\n  jazz.walk(4);\n});",
+        "options": [
+            ("\"ring\"", True, "Clive rings the bell, the callback runs, and Jazz walks along the loft to the second plate."),
+            ("\"click\"", False, "The bell never clicks. It rings. Jazz waits on the first plate for an event that never comes."),
+            ("\"ding\"", False, "Close, but the event is called \"ring\". Jazz listens for a ding forever, which suits him."),
+        ],
+    },
+    {
+        "id": 5, "slug": "east-croydon", "name": "East Croydon", "stop": "East Croydon",
+        "puzzle": "The ticket barrier opens for one second when someone presses the help button, and the button is a long walk from the barrier. setTimeout presses it later, once Clive has had time to get there. On the platform, the train doors open when the tannoy hears \"mind\", \"the\", \"gap!\" in that order, and the laptop logs \"gap!\" from a setTimeout of 0.",
+        "file": "jazz.js", "runs": "Jazz runs this.",
+        "code": "// Jazz is at the help button.\nsetTimeout(() => {\n  jazz.press();\n}, {});",
+        "options": [
+            ("2500", True, "Two and a half seconds later Jazz presses the button, just as Clive reaches the barrier. It opens for him."),
+            ("500", False, "Half a second is too soon. The barrier opens and shuts again while Clive is still walking."),
+            ("0", False, "A timer of 0 still waits for the script to finish, but not for Clive. The barrier opens to nobody."),
+        ],
+    },
+    {
+        "id": 6, "slug": "the-wedding", "name": "The Wedding", "stop": "St Agatha's",
+        "puzzle": "Tess from Accounts is marrying Gary from Sales. Jazz is the music, and Clive, against his better judgement, is doing a reading. Jazz has to play the march once Clive reaches the altar, and await is how his script waits. Out the back, the getaway car leaves on car.drive(), so it should wait on Promise.all of both flatmates reaching it, or it goes with nobody in it.",
+        "file": "jazz.js", "runs": "Jazz runs this.",
+        "code": "async function ceremony() {\n  {} clive.reach(altar);\n  jazz.strum();\n}\nceremony();",
+        "options": [
+            ("await", True, "The function pauses until Clive reaches the altar, then Jazz plays the march, on cue for once."),
+            ("", False, "Without await, Jazz strums straight away, to an empty aisle. Clive arrives to silence."),
+        ],
+    },
+]
+FM_KEYWORDS = {"const", "let", "var", "for", "of", "in", "if", "else", "return", "function", "async", "await",
+               "new", "true", "false", "null", "undefined", "typeof", "while"}
+FM_TOKEN = re.compile(r"(?P<c>//[^\n]*)|(?P<s>\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)"
+                      r"|(?P<n>\b\d+(?:\.\d+)?\b)|(?P<w>[A-Za-z_$][\w$]*)(?P<call>\s*\()?")
+FM_BLANK = "\x00"
+
+
+def highlight_js(code: str) -> str:
+    """JavaScript as HTML spans, with the game's editor's colors: keywords,
+    strings, numbers, comments, and the names of calls. FM_BLANK passes
+    through untouched."""
+    out: list[str] = []
+    pos = 0
+    for m in FM_TOKEN.finditer(code):
+        out.append(esc(code[pos:m.start()]))
+        pos = m.end()
+        if m.group("w"):
+            word = m.group("w")
+            cls = "k" if word in FM_KEYWORDS else "b" if m.group("call") else ""
+            out.append(f'<span class="{cls}">{esc(word)}</span>' if cls else esc(word))
+            out.append(esc(m.group("call") or ""))
+        else:
+            cls = m.lastgroup or ""
+            out.append(f'<span class="{cls}">{esc(m.group())}</span>')
+    out.append(esc(code[pos:]))
+    return "".join(out)
+
+
+def js_block(code: str) -> str:
+    return f'<figure class="code"><pre><code>{highlight_js(code)}</code></pre></figure>'
+
+
+def fm_laptop(stop: dict) -> str:
+    """The stop's laptop: tap the blank or an option, then Run. Without
+    JavaScript, the options and the answer still show."""
+    code = highlight_js(stop["code"].replace("{}", FM_BLANK))
+    code = code.replace(FM_BLANK, '<button class="blank" type="button" aria-label="The blank: tap to change it" disabled>?</button>')
+    picks = "".join(
+        f'<li><button class="pick" type="button" data-ok="{str(ok).lower()}" data-result="{esc(result)}" aria-pressed="false" disabled>'
+        f'<code>{esc(text) if text else "(nothing)"}</code></button></li>'
+        for text, ok, result in stop["options"]
+    )
+    answer = next((text, result) for text, ok, result in stop["options"] if ok)
+    return f"""<figure class="laptop" data-laptop>
+  <figcaption><b>{esc(stop['file'])}</b> {esc(stop['runs'])}</figcaption>
+  <pre><code>{code}</code></pre>
+  <div class="laptop-bar"><span>Options:</span><ul class="picks">{picks}</ul><button class="run" type="button" disabled>Run</button></div>
+  <p class="out" role="status" hidden><b></b> <span></span></p>
+  <details><summary>Show the answer</summary><p><code>{esc(answer[0])}</code>. {esc(answer[1])}</p></details>
+</figure>"""
+
+
+FM_WHO = {"clive": "Clive", "jazz": "Jazz"}
+
+
+def fm_card(card: dict) -> str:
+    who = card["who"]
+    return f"""<article class="voice voice-{who}">
+  <p class="voice-kick">{FM_WHO[who]}'s inner voice</p>
+  <h4>{esc(card['title'])}</h4>
+  {js_block(chr(10).join(card['code']))}
+  <p>{esc(card['text'])}</p>
+</article>"""
+
+
+def build_flatmates(prefix: str) -> str:
+    """The Flatmates.js page. `prefix` reaches the site root; the game itself
+    is in `play/` next to this page."""
+    img = f"{prefix}static/img/flatmates/"
+    bank = json.loads((ROOT / "flatmates" / "data" / "lessons.json").read_text(encoding="utf-8"))
+    line = "".join(
+        f'<li><a href="#{s["slug"]}"><span class="ln-stop">{esc(s["stop"])}</span>'
+        f'<span class="ln-lesson">{esc(bank[str(s["id"])]["lesson"])}</span></a></li>'
+        for s in FM_STOPS
+    )
+    stops = []
+    for s in FM_STOPS:
+        lesson = bank[str(s["id"])]
+        cards = "".join(fm_card(c) for c in lesson["cards"] if c["id"] != "c1_heads")
+        stops.append(f"""
+<article class="stop" id="{s['slug']}">
+  <header>
+    <p class="kicker"><span class="roundel">{s['id']}</span> {esc(s['stop'])}</p>
+    <h3>{esc(s['name'])} <span>{esc(lesson['lesson'])}</span></h3>
+  </header>
+  <div class="stop-grid">
+    <div>
+      <img src="{img}stage{s['id']}_start.png" alt="{esc(s['name'])}, as the stage opens" width="480" height="270" loading="lazy">
+      <p>{esc(s['puzzle'])}</p>
+    </div>
+    {fm_laptop(s)}
+  </div>
+  <div class="voices">{cards}</div>
+</article>""")
+    controls = [
+        ("Move", "A / D or ← / →", "D-pad or left stick"),
+        ("Jump", "Space, W or ↑", "A / Cross"),
+        ("Swap heads", "Tab or Q", "Y / Triangle or RB"),
+        ("Open a laptop, ring a bell, pull a lever", "E", "X / Square"),
+        ("Run the script", "R", "LB / L1"),
+        ("Pause", "Esc or P", "Start / Options"),
+    ]
+    rows = "".join(f"<tr><th scope=row>{a}</th><td data-label=Keyboard>{k}</td><td data-label=Gamepad>{p}</td></tr>" for a, k, p in controls)
+    total = sum(len(v["cards"]) for v in bank.values())
+    body = f"""
+<section class="hero fm-hero">
+  <img class="hero-art" src="{img}title.png" alt="Pixel art of two flatmates, one in a suit with his arms folded and one holding a guitar, by their front door on a tower block landing at dusk" width="480" height="270">
+  <div class="hero-copy">
+    <p class="prompt" aria-hidden="true">&gt; node flat5b.js</p>
+    <h1>flatmates<i>.js</i></h1>
+    <p class="tag">Two flatmates. Two points of view. One of them runs your JavaScript.</p>
+    <p class="hero-sub">Clive can't jump much. Jazz can jump, and that's about it. Swap between their heads to get the pair of them across Croydon, and write the script that the one you aren't playing runs, or he'll wander back to the sofa.</p>
+    <div class="cta">
+      <a class="btn" href="play/">Play in your browser</a>
+      <a class="btn btn-ghost" href="#line">See the six stops</a>
+    </div>
+    <p class="fine">Free, no signup. Keyboard, gamepad or touch.</p>
+  </div>
+</section>
+
+<section class="section" id="heads" aria-labelledby="heads-h">
+  <p class="kicker">Two heads, one flat</p>
+  <h2 id="heads-h">You're whichever one you aren't scripting</h2>
+  <ul class="mates">
+    <li class="mate-clive"><img src="{img}clive.png" alt="" width="64" height="96">
+      <div><h3>Clive</h3><p>Works in credit at Croydon Credit. Owns a tie for weekends. Jumps like a man carrying a briefcase, because he usually is. Left alone, he drifts back to his armchair.</p></div></li>
+    <li class="mate-jazz"><img src="{img}jazz.png" alt="" width="64" height="96">
+      <div><h3>Jazz</h3><p>Would-be rock god, between bands. Jumps high and does very little else. Left alone, he drifts back to the sofa, where his real work happens.</p></div></li>
+  </ul>
+  <ol class="loop">
+    <li><img src="{img}stage3_editor.png" alt="A laptop's editor open on jazz.js: a for loop with a blank where the comparison goes" width="480" height="270" loading="lazy">
+      <h3>Open his laptop</h3><p>Laptops around each stage open the other flatmate's to-do list as real JavaScript, with blanks to fill. Pick what goes in each one.</p></li>
+    <li><img src="{img}stage4_start.png" alt="The stag do at a farm: Clive in the pen below, Jazz up in the hay loft by two plates" width="480" height="270" loading="lazy">
+      <h3>Run it, then swap</h3><p>Run the script and you swap into the other head. He does what you wrote while you play his flatmate, in JavaScript's order: his lines first, then timers, listeners and awaits.</p></li>
+    <li><img src="{img}stage1_card.png" alt="Clive's inner voice card: Objects and methods, with jazz.walk(7) and jazz.jump()" width="480" height="270" loading="lazy">
+      <h3>Listen to the inner voice</h3><p>Each flatmate thinks out loud along the top of the screen. Some thoughts open a lesson card, with the code and the idea behind it, in whoever's voice you're in.</p></li>
+  </ol>
+</section>
+
+<section class="section" id="line" aria-labelledby="line-h">
+  <p class="kicker">The Croydon line</p>
+  <h2 id="line-h">Six stops, six pieces of JavaScript</h2>
+  <p class="lede">The game is a tram line across Croydon, and each stop teaches one idea. They build on each other, from calling a method to awaiting two promises at once. Every stop has a laptop below, with one of its scripts to try.</p>
+  <ol class="line">{line}</ol>
+  {"".join(stops)}
+  <p class="count"><b>{total}</b> lesson cards · <b>6</b> stops · every snippet checked against Node</p>
+</section>
+
+<section class="section" id="controls" aria-labelledby="controls-h">
+  <p class="kicker">Controls</p>
+  <h2 id="controls-h">How to play</h2>
+  <div class="table-wrap"><table class="controls">
+    <thead><tr><th scope=col>Action</th><th scope=col>Keyboard</th><th scope=col>Gamepad</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table></div>
+  <p class="fine">On a phone or tablet, turn it sideways: the on-screen buttons include Swap and Code. A fall sends you back to the last Wi-Fi router you passed. Each stop hides six custard creams. Your progress saves in this browser, separately from Dunder Quest's.</p>
+  <a class="btn" href="play/">Play Flatmates.js</a>
+</section>
+
+<section class="section fm-family" aria-labelledby="family-h">
+  <p class="kicker">a {WORDMARK} game</p>
+  <h2 id="family-h">Prefer Python?</h2>
+  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="{prefix}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper.</p>
+  <p class="fine">Flatmates.js is an homage to a certain Croydon flat-share sitcom. The names and jokes are winks, not the show's own characters or lines, and it isn't affiliated with or endorsed by anyone who made it.</p>
+</section>"""
+    return fm_page(body, prefix)
+
+
+FM_NAV = [("#heads", "Two heads"), ("#line", "The stops"), ("#controls", "How to play")]
+
+
+def fm_page(body: str, prefix: str) -> str:
+    links = "".join(f'<a href="{href}">{label}</a>' for href, label in FM_NAV)
+    title = "Flatmates.js · Dunder Quest"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{esc(FLATMATES_DESC)}">
+{head_tags(title, FLATMATES_DESC, "flatmates/", "flatmates.png", FLATMATES_ALT)}
+<link rel="icon" href="{prefix}static/img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{prefix}static/style.css">
+<link rel="stylesheet" href="{prefix}static/flatmates.css">
+</head>
+<body class="fm">
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <a class="brand" href="./"><img src="{prefix}static/img/flatmates/clive.png" alt="" width="16" height="24"><span>flatmates<i>.js</i></span></a>
+  <nav aria-label="Flatmates.js">{links}<a class="fm-home" href="{prefix}">Dunder Quest</a></nav>
+  <a class="btn btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+{body}
+</main>
+<footer class="foot">
+  <p><img src="{prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/flatmates">Source on GitHub</a></p>
+</footer>
+<script src="{prefix}static/laptop.js"></script>
+</body>
+</html>
+"""
 
 
 def main() -> None:
@@ -961,6 +1259,7 @@ def main() -> None:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
     write(out / "guide" / "index.html", build_guide("../"))
     write(out / "brand" / "index.html", build_brand("../"))
+    write(out / "flatmates" / "index.html", build_flatmates("../"))
     write(out / "404.html", build_404("/"))
     write(out / "_redirects", "".join(
         f"/lessons/{old}/ /lessons/{new}/ 301\n/lessons/{old} /lessons/{new}/ 301\n" for old, new in OLD_SLUGS.items()))

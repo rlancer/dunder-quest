@@ -471,3 +471,15 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .post .copy:hover { border-color: var(--gold); }
 .post pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .post code { font-size: 0.95rem; line-height: 1.5; white-space: inherit; }
+
+/* The home page's link to Flatmates.js, the JavaScript game */
+.next-game {
+  display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center;
+  margin-top: 20px; padding: 16px; background: var(--night); border: 2px solid var(--line);
+  color: var(--parchment); text-decoration: none; transition: border-color 0.12s ease;
+}
+.next-game:hover { border-color: #f7de1f; color: var(--parchment); }
+.next-game img { display: block; width: 100%; image-rendering: auto; }
+.next-game b { display: block; font: 600 1.3rem/1.3 var(--display); margin-bottom: 10px; }
+.next-go { display: block; margin-top: 14px; font: 1.4rem var(--label); color: #f7de1f; }
+@media (max-width: 760px) { .next-game { grid-template-columns: 1fr; } }

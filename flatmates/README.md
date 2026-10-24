@@ -6,7 +6,7 @@ Left to himself, the flatmate you aren't playing drifts back to his comfort zone
 
 It's an homage to a certain Croydon flat-share sitcom. Names and jokes are winks, not the show's own characters or lines.
 
-Played at **dunderquest.com/flatmates/**. It's its own Godot 4.7 project; the Python game one folder up ignores this folder.
+Its page is **dunderquest.com/flatmates/** (built by `site/build.py` from `data/lessons.json`, with art from `tools/site_art.py`), and the game itself plays at **dunderquest.com/flatmates/play/**. It's its own Godot 4.7 project; the Python game one folder up ignores this folder.
 
 ## The stops
 
@@ -41,4 +41,4 @@ godot --path . res://tests/shots.tscn              # screenshots into tests/shot
 
 ## Export
 
-`scripts/export_web.sh` (CI) exports the Web preset to `build/site/flatmates/`, tags the page for link previews (`site/build.py --flatmates`) and gzips the engine to fit Cloudflare's file limit.
+`scripts/export_web.sh` (CI) exports the Web preset to `build/site/flatmates/play/`, tags the page for link previews (`site/build.py --flatmates`) and gzips the engine to fit Cloudflare's file limit.
