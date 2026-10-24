@@ -597,6 +597,8 @@ LAUNCH = [
         "gameplay capture with no video editor. I wrote the prompts and playtested.\n\n"
         "Where it struggled: duels were hard to read until it added a camera that eases in, and some jumps still need a human playtest. "
         "The list it kept is in GAME_IMPROVEMENTS.md.\n\n"
+        "Why a learning game: I'm dyslexic, and I was failing my spelling tests until my dad wrote me a spelling game in BASIC. "
+        "After that I got 100 on every one. My kids are 5 and 2, too young for Python, but maybe some day this is theirs.\n\n"
         f"Source: {REPO}"),
     ], "Link the game itself, not the home page. Stay in the thread for the first three hours and answer everything, the skeptics first. Never ask anyone for upvotes: HN spots vote rings and buries the post. If it sinks, email hn@ycombinator.com and ask about the second-chance pool."),
     ("X", "8:45 AM", "", [
@@ -605,6 +607,8 @@ LAUNCH = [
         f"Free in your browser 👇\n{SITE_URL}",
         "Opus wrote every line of Godot code, painted the tiles pixel by pixel in Python, and prompted image and music models for the rest.\n\n"
         "It even cut the trailer from code. No video editor anywhere.",
+        "Why a learning game? I'm dyslexic. I failed spelling tests until my dad wrote me a spelling game in BASIC. Then I got 100 on every one.\n\n"
+        "My kids are 5 and 2. Too young for Python, but maybe some day.",
         "My part: prompts and playtesting.\n\n"
         f"Everything it made is on GitHub, commit by commit:\n{REPO}",
     ], "Upload the 1080p trailer to the first post as a video, not a YouTube link: native video autoplays in the feed. Tag @AnthropicAI and @claudeai on the last post. Pin the thread."),
@@ -612,7 +616,10 @@ LAUNCH = [
         "I let Opus 5.5 build a whole game in four days: Dunder Quest, a pixel platformer where Python is the magic. "
         "Opus wrote the code, painted the tiles in Python and cut the trailer with no video editor.\n\n"
         f"Free in your browser: {SITE_URL}",
-    ], "Attach the trailer as a video. Bluesky caps posts at 300 characters, so keep it to one post and reply to yourself with the GitHub link."),
+        "Why a learning game: I'm dyslexic, and I failed spelling tests until my dad wrote me a spelling game in BASIC. "
+        "Then I got 100 on every one.\n\n"
+        "My kids are 5 and 2, too young for Python. Maybe some day.",
+    ], "Attach the trailer as a video to the first post and reply to it with the second. Bluesky caps posts at 300 characters. Add the GitHub link as a third reply."),
     ("r/godot", "10:00 AM", "Opus 5.5 built this Python-teaching platformer in Godot 4 in four days, trailer included", [
         "Dunder Quest is a pixel platformer where every stage teaches a piece of Python: slices, hashing, loops, conditions. "
         "Wizards at the end of each stage ask a question and you answer by jumping into a block.\n\n"
@@ -635,13 +642,17 @@ LAUNCH = [
         f"Play: {SITE_URL}\nSource: {REPO}",
     ], "r/Python only allows project posts as Showcase posts in exactly these three sections. Post it as a text post with the link inside."),
     ("LinkedIn", "12:00 PM", "", [
-        "I gave Opus 5.5 a blank repo and four days. It came back with a finished game.\n\n"
+        "I'm dyslexic, and as a kid I failed my spelling tests. Then my dad wrote me a spelling game in BASIC. "
+        "After that I got 100 on every test.\n\n"
+        "This week I gave Opus 5.5 a blank repo and four days to make a learning game of its own. It came back with a finished one.\n\n"
         "Dunder Quest is a pixel platformer that teaches Python: six stages, each built around one idea, and a wizard at the end of each "
         "who checks you understood it.\n\n"
         "Opus wrote all of the code, painted the art in Python, directed image and music models for the rest, built the website, "
         "and cut the trailer from code. My job was prompting and playtesting.\n\n"
         "What struck me most was the judgment, not the speed. It kept its own list of what wasn't working, "
         "like duels that were hard to read on a phone, and fixed them.\n\n"
+        "My kids are 5 and 2, too young for Python. But my dad's game is why I can spell, "
+        "and maybe some day this one is theirs.\n\n"
         f"Play it free in your browser: {SITE_URL}",
     ], "Native video gets far more reach than a link card, so upload the trailer. Put the link in the post, not the first comment."),
     ("r/WebGames", "1:00 PM", "Dunder Quest – a pixel platformer where Python is the magic [free, no signup]", [
@@ -770,7 +781,7 @@ key = <i class="st">"ember"</i></code></pre></figure>
 <section class="section kit" aria-labelledby="launch-h">
   <p class="kicker">dunder_quest.__launch__</p>
   <h2 id="launch-h">The launch posts</h2>
-  <p class="lede">One post for each platform, ready to paste, in the order they go out on launch day. Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one leads with what Opus 5.5 built, and says plainly what other models made.</p>
+  <p class="lede">One post for each platform, ready to paste, in the order they go out on launch day. Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
   <ol class="launch">{launch}</ol>
   <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
 </section>"""
