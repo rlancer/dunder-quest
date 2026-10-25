@@ -25,6 +25,8 @@ import tokenize
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+QUEST = ROOT / "games" / "dunder-quest"
+FLATMATES = ROOT / "games" / "flatmates"
 SITE = Path(__file__).resolve().parent
 REPO = "https://github.com/rlancer/dunder-quest"
 ## Social previews need absolute URLs, so every page points at production,
@@ -1088,7 +1090,7 @@ def build_flatmates(prefix: str) -> str:
     """The Flatmates.js page. `prefix` reaches the site root; the game itself
     is in `play/` next to this page."""
     img = f"{prefix}static/img/flatmates/"
-    bank = json.loads((ROOT / "flatmates" / "data" / "lessons.json").read_text(encoding="utf-8"))
+    bank = json.loads((FLATMATES / "data" / "lessons.json").read_text(encoding="utf-8"))
     line = "".join(
         f'<li><a href="#{s["slug"]}"><span class="ln-stop">{esc(s["stop"])}</span>'
         f'<span class="ln-lesson">{esc(bank[str(s["id"])]["lesson"])}</span></a></li>'
@@ -1220,7 +1222,7 @@ def fm_page(body: str, prefix: str) -> str:
 </main>
 <footer class="foot">
   <p><img src="{prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="{prefix}static/laptop.js"></script>
 </body>
@@ -1237,7 +1239,7 @@ def main() -> None:
         return
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "build" / "site").resolve()
     out.mkdir(parents=True, exist_ok=True)
-    bank = json.loads((ROOT / "data" / "lessons.json").read_text(encoding="utf-8"))
+    bank = json.loads((QUEST / "data" / "lessons.json").read_text(encoding="utf-8"))
 
     static = out / "static"
     if static.exists():
@@ -1245,13 +1247,13 @@ def main() -> None:
     shutil.copytree(SITE / "static", static)
     shutil.copyfile(SITE / "favicon.ico", out / "favicon.ico")  # painted by tools/make_og.py
     for name, src in IMAGES.items():
-        shutil.copyfile(ROOT / src, static / "img" / name)
+        shutil.copyfile(QUEST / src, static / "img" / name)
     (static / "img" / "shots").mkdir(parents=True, exist_ok=True)
     for name in SHOTS + [s["shot"] for s in STAGES]:
-        shutil.copyfile(ROOT / "tests" / "shots" / name, static / "img" / "shots" / name)
+        shutil.copyfile(QUEST / "tests" / "shots" / name, static / "img" / "shots" / name)
     (static / "fonts").mkdir(exist_ok=True)
     for name, src in FONTS.items():
-        shutil.copyfile(ROOT / src, static / "fonts" / name)
+        shutil.copyfile(QUEST / src, static / "fonts" / name)
 
     write(out / "index.html", build_home(bank, ""))
     write(out / "lessons" / "index.html", build_lessons_index(bank, "../"))

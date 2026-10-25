@@ -6,7 +6,7 @@ Left to himself, the flatmate you aren't playing drifts back to his comfort zone
 
 It's an homage to a certain Croydon flat-share sitcom. Names and jokes are winks, not the show's own characters or lines.
 
-Its page is **dunderquest.com/flatmates/** (built by `site/build.py` from `data/lessons.json`, with art from `tools/site_art.py`), and the game itself plays at **dunderquest.com/flatmates/play/**. It's its own Godot 4.7 project; the Python game one folder up ignores this folder.
+Its page is **dunderquest.com/flatmates/** (built by `site/build.py` from `data/lessons.json`, with art from `tools/site_art.py`), and the game itself plays at **dunderquest.com/flatmates/play/**. It's its own Godot 4.7 project; it sits beside the Python game in `../dunder-quest/`.
 
 ## The stops
 
@@ -26,7 +26,7 @@ Its page is **dunderquest.com/flatmates/** (built by `site/build.py` from `data/
 - `props/`: plates, doors, lifts, switches, keypad, amps, laptops, the way out.
 - `stages/stage.gd`: swapping heads, drifting home, falls and Wi-Fi-router checkpoints, inner-voice cards, results. `stage_1.gd` to `stage_6.gd` lay out each stop.
 - `data/lessons.json`: the inner-voice lesson cards.
-- Art: `tools/paint.py` paints the flatmates, tiles and strum by hand; `tools/scenery.py` and `tools/music.py` generate the backdrops, title art and music through the Python game's generators (`../tools/`). `tools/og.py` makes the share card.
+- Art: `tools/paint.py` paints the flatmates, tiles and strum by hand; `tools/scenery.py` and `tools/music.py` generate the backdrops, title art and music through the Python game's generators (`../dunder-quest/tools/`). `tools/og.py` makes the share card.
 
 ## Checks
 

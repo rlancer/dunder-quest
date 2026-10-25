@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import lessons from "../../../data/lessons.json";
+import lessons from "../../../games/dunder-quest/data/lessons.json";
 import { STAGE_NAMES } from "./stages";
 
 

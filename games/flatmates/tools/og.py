@@ -1,7 +1,7 @@
 """Paint the social preview card for dunderquest.com/flatmates/.
 
 The title art, scaled up on whole pixels, with the name and a line about
-the game. Writes ../site/static/img/og/flatmates.png (1200x630), next to the
+the game. Writes ../../site/static/img/og/flatmates.png (1200x630), next to the
 Python game's cards.
 
     python tools/og.py
@@ -14,7 +14,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT.parent / "site" / "static" / "img" / "og" / "flatmates.png"
+OUT = ROOT.parents[1] / "site" / "static" / "img" / "og" / "flatmates.png"
 FONTS = ROOT / "assets" / "fonts"
 PAPER = (244, 234, 214)
 JS = (247, 223, 30)

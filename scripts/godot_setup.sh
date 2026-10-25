@@ -20,7 +20,7 @@ TEMPLATES=(
 )
 
 mkdir -p "$CACHE" "$TEMPLATE_DIR"
-# Keep Godot from importing exported files back into the project.
+# Keep Godot from scanning exported files if it is ever pointed at the repo root.
 mkdir -p "${ROOT}/build"
 touch "${ROOT}/build/.gdignore"
 

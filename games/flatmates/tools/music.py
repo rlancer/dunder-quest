@@ -1,12 +1,12 @@
 """Generate the title and stage music as looping Ogg Vorbis.
 
-Uses the Dunder Quest music helpers (../../tools/generate_music.py) with
+Uses the Dunder Quest music helpers (../../dunder-quest/tools/generate_music.py) with
 this game's briefs: scruffy British indie and awkward-sitcom cues, all
 original. Reads the key from the repo's .env and never prints it.
 
     python tools/music.py            # every track that's missing
     python tools/music.py flat       # just one
-    python ../tools/make_loops.py assets/audio/music_*.ogg   # then loop them
+    python ../dunder-quest/tools/make_loops.py assets/audio/music_*.ogg   # then loop them
 """
 
 from __future__ import annotations
@@ -17,7 +17,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(ROOT.parent / "tools"))
+sys.path.insert(0, str(ROOT.parent / "dunder-quest" / "tools"))
 
 import generate_music as base  # noqa: E402
 

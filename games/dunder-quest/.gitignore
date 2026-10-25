@@ -1,0 +1,7 @@
+tools/generated/
+tools/generation_log.txt
+
+# Trailer working files (regenerate audio with tools/generate_trailer_audio.py)
+trailer/audio/*.wav
+trailer/captures/
+trailer/out/

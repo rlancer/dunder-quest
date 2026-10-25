@@ -1,6 +1,6 @@
 """Generate the six stages' parallax layers, the world map and the title key art.
 
-Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the project .env.
+Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the repo's .env.
 Never prints the key. Raw model output lands in tools/generated/scenery,
 and the downscaled pixel art is written into assets/backgrounds.
 
@@ -128,7 +128,7 @@ JOBS: dict[str, tuple[str, str, bool, tuple[int, int]]] = {
 
 def load_env() -> dict[str, str]:
     values: dict[str, str] = {}
-    path = ROOT / ".env"
+    path = ROOT.parents[1] / ".env"
     if not path.exists():
         return values
     for line in path.read_text(encoding="utf-8").splitlines():

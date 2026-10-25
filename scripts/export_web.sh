@@ -1,22 +1,24 @@
 #!/usr/bin/env bash
-# Builds the website into build/site, with the browser game in build/site/play
-# and Flatmates.js (its own Godot project in flatmates/) in build/site/flatmates/play,
+# Builds the website into build/site, with Dunder Quest (games/dunder-quest/) in build/site/play
+# and Flatmates.js (games/flatmates/) in build/site/flatmates/play,
 # beside its page in build/site/flatmates.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+QUEST="${ROOT}/games/dunder-quest"
+FLATMATES="${ROOT}/games/flatmates"
 source "${ROOT}/scripts/godot_setup.sh"
 
 rm -rf build/site
 mkdir -p build/site/play
 python3 "${ROOT}/site/build.py" "${ROOT}/build/site"
-"$GODOT" --headless --path "$ROOT" --export-release "Web" "build/site/play/index.html"
+"$GODOT" --headless --path "$QUEST" --export-release "Web" "${ROOT}/build/site/play/index.html"
 python3 "${ROOT}/site/build.py" --play "${ROOT}/build/site/play/index.html"
 python3 "${ROOT}/scripts/fit_pages_limit.py" "${ROOT}/build/site/play"
 
 mkdir -p build/site/flatmates/play
-"$GODOT" --headless --path "${ROOT}/flatmates" --import
-"$GODOT" --headless --path "${ROOT}/flatmates" --export-release "Web" "${ROOT}/build/site/flatmates/play/index.html"
+"$GODOT" --headless --path "$FLATMATES" --import
+"$GODOT" --headless --path "$FLATMATES" --export-release "Web" "${ROOT}/build/site/flatmates/play/index.html"
 python3 "${ROOT}/site/build.py" --flatmates "${ROOT}/build/site/flatmates/play/index.html"
 python3 "${ROOT}/scripts/fit_pages_limit.py" "${ROOT}/build/site/flatmates/play"
