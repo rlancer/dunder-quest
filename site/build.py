@@ -1401,6 +1401,13 @@ def build_flatmates(prefix: str) -> str:
   </div>
 </section>
 
+<section class="section" id="trailer" aria-labelledby="trailer-h">
+  <p class="kicker">The trailer</p>
+  <h2 id="trailer-h">Earlier that Saturday</h2>
+  {trailer_player(FM_TRAILER_ID, f"{img}trailer.png", FM_THUMB_ALT, "Flatmates.js")}
+  <p class="fine">More on the channel: <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+
 <section class="section" id="heads" aria-labelledby="heads-h">
   <p class="kicker">Two heads, one flat</p>
   <h2 id="heads-h">You're whichever one you aren't scripting</h2>
@@ -1485,6 +1492,7 @@ def fm_page(body: str, prefix: str) -> str:
   <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="{prefix}static/laptop.js"></script>
+<script src="{prefix}static/trailer.js"></script>
 </body>
 </html>
 """
