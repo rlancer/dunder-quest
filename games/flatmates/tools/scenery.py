@@ -21,7 +21,7 @@ from PIL import Image
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(ROOT.parent / "tools"))
+sys.path.insert(0, str(ROOT.parent / "dunder-quest" / "tools"))
 
 import generate_scenery as base  # noqa: E402
 

@@ -1,6 +1,6 @@
 """Generate original sprites and audio for Shrubbery Wood.
 
-Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the project .env.
+Reads OPENROUTER_API_KEY and OPENROUTER_BASE_URL from the repo's .env.
 Never prints the key. Image and audio model ids come from the live API.
 """
 
@@ -22,7 +22,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[1]
-ENV_PATH = ROOT / ".env"
+ENV_PATH = ROOT.parents[1] / ".env"
 ASSET_SPRITES = ROOT / "assets" / "sprites"
 ASSET_AUDIO = ROOT / "assets" / "audio"
 OUT_SPRITES = ROOT / "tools" / "generated" / "sprites"

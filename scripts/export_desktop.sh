@@ -5,14 +5,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+QUEST="${ROOT}/games/dunder-quest"
 source "${ROOT}/scripts/godot_setup.sh"
 
 rm -rf build/desktop build/downloads
 mkdir -p build/desktop/windows build/desktop/linux build/desktop/macos build/downloads
 
-"$GODOT" --headless --path "$ROOT" --export-release "Windows Desktop" "build/desktop/windows/Dunder Quest.exe"
-"$GODOT" --headless --path "$ROOT" --export-release "Linux" "build/desktop/linux/dunder-quest.x86_64"
-"$GODOT" --headless --path "$ROOT" --export-release "macOS" "build/desktop/macos/dunder-quest-macos.zip"
+"$GODOT" --headless --path "$QUEST" --export-release "Windows Desktop" "${ROOT}/build/desktop/windows/Dunder Quest.exe"
+"$GODOT" --headless --path "$QUEST" --export-release "Linux" "${ROOT}/build/desktop/linux/dunder-quest.x86_64"
+"$GODOT" --headless --path "$QUEST" --export-release "macOS" "${ROOT}/build/desktop/macos/dunder-quest-macos.zip"
 
 for path in "build/desktop/windows/Dunder Quest.exe" build/desktop/linux/dunder-quest.x86_64 build/desktop/macos/dunder-quest-macos.zip; do
   [[ -s "$path" ]] || { echo "export missing: $path" >&2; exit 1; }

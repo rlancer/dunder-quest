@@ -18,11 +18,12 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "site"))
+SITE = ROOT.parents[1] / "site"
+sys.path.insert(0, str(SITE))
 from build import STAGES  # noqa: E402
 
-OUT = ROOT / "site" / "static" / "img" / "og"
-FAVICON = ROOT / "site" / "favicon.ico"
+OUT = SITE / "static" / "img" / "og"
+FAVICON = SITE / "favicon.ico"
 W, H = 1200, 630
 PIXEL = ROOT / "assets" / "fonts" / "PixelifySans.ttf"
 LABEL = ROOT / "assets" / "fonts" / "VT323.ttf"
@@ -209,14 +210,14 @@ def favicon() -> None:
     page's icon link. site/build.py copies it to the site root."""
     sizes = [tiny_logo(16, 1, 1, 3, 1, 0, 1), tiny_logo(32, 1, 2, 3, 2, 1, 2), tiny_logo(48, 2, 3, 4, 2, 2, 3)]
     sizes[-1].save(FAVICON, format="ICO", sizes=[im.size for im in sizes], append_images=sizes[:-1])
-    print(f"wrote {FAVICON.relative_to(ROOT)}")
+    print(f"wrote {FAVICON.relative_to(ROOT.parents[1])}")
 
 
 def site_art() -> None:
     """The world map cropped for the home page's trail (its pins come from
     `x`/`y` in site/build.py), and each guardian's first frame at 2x for the
     lesson pages."""
-    art = ROOT / "site" / "static" / "img"
+    art = SITE / "static" / "img"
     world = Image.open(ROOT / "assets" / "backgrounds" / "world_map.png").convert("RGB")
     world.crop((0, 22, 480, 190)).save(art / "trail_map.png")
     (art / "foes").mkdir(exist_ok=True)

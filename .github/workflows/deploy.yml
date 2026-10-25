@@ -32,7 +32,7 @@ jobs:
           key: godot-4.7.2-templates-v2
 
       - name: Check the Flatmates.js lesson cards
-        run: node flatmates/tests/verify_lessons.mjs
+        run: node games/flatmates/tests/verify_lessons.mjs
 
       - name: Build the site and the browser games
         run: bash scripts/export_web.sh
