@@ -41,7 +41,7 @@ CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
 TRAILER_ID = "7a-I7FzQdD8"
 ## Flatmates.js's trailer, once it's on YouTube. Empty shows the thumbnail
 ## without a player.
-FM_TRAILER_ID = ""
+FM_TRAILER_ID = "EJ2w4MgKSpU"
 ## The channel both trailers go up on.
 CHANNEL = "https://www.youtube.com/@dunderquest"
 ## A rolling release CI refreshes on every push to main.
