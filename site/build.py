@@ -39,6 +39,11 @@ CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
 ## The trailer on YouTube (built by tools/make_trailer.py). The home page shows
 ## its thumbnail and only loads the player once someone clicks it.
 TRAILER_ID = "dXOdBei8838"
+## Flatmates.js's trailer, once it's on YouTube. Empty shows the thumbnail
+## without a player.
+FM_TRAILER_ID = ""
+## The channel both trailers go up on.
+CHANNEL = "https://www.youtube.com/@dunderquest"
 ## A rolling release CI refreshes on every push to main.
 DOWNLOADS = f"{REPO}/releases/download/builds"
 RELEASE_PAGE = f"{REPO}/releases/tag/builds"
@@ -267,7 +272,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <footer class="foot">
   <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way.</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
@@ -334,6 +339,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
     <span class="trailer-play" aria-hidden="true"></span>
     <span class="sr">Play the Dunder Quest trailer</span>
   </a>
+  <p class="fine">More on the channel: <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 
 <section class="section" aria-labelledby="trail-h">
@@ -556,9 +562,10 @@ def build_guide(prefix: str) -> str:
     return page("How to play", body, prefix, "guide/", "Controls, enemies, checkpoints, lore scrolls, the guardian's trial and saving in Dunder Quest.", path="guide/")
 
 
-## The brand kit. The footer's `>>> help(dunder_quest)` is the only link to
-## it. trailer/PLAN.md §4 has the palette; dusk, line, moss and zap are the
-## site's additions.
+## The brand kit: /brand/ and a page for each part (BRAND_PAGES). The
+## footer's `>>> help(dunder_quest)` is the only link to it.
+## games/dunder-quest/trailer/PLAN.md §4 has the palette; dusk, line, moss
+## and zap are the site's additions.
 PALETTE = [
     ("GOLD", "#F2B544", "Headlines, the wordmark, strings in trailer code"),
     ("EMBER", "#FF8A3D", "Accents, the wordmark's underscores, keywords in trailer code"),
@@ -610,9 +617,16 @@ TRAILER_CUTS = [
     ("Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"),
     ("GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"),
 ]
+FM_TRAILER_FACTS = [
+    ("Length", "66 seconds, with a cold open"),
+    ("Music", "A sitcom band cue, 123 BPM, with a piano breakdown for the awkward bit"),
+    ("Loudness", "−14 LUFS, YouTube's target"),
+    ("Pixels", "Drawn at 480×270, scaled ×4 for 1080p and ×8 for 4K"),
+]
 ## What goes in YouTube's upload form. The chapter times are the cut's bars:
-## gameplay at bar 1, the gadgets at bar 8, the duels at bar 20, the end card
-## at bar 28 (see `edit()` in tools/make_trailer.py).
+## the gadgets at bar 8, the duels at bar 20, the end card at bar 28 (see
+## `edit()` in tools/make_trailer.py). YouTube ignores chapters shorter than
+## 10 s, so the 8 s cold open shares the first one.
 YOUTUBE_TITLE = "Dunder Quest – Learn Python on a Very Silly Grail Quest | Official Trailer"
 YOUTUBE_DESCRIPTION = f"""Python is named after Monty Python. So we made learning it a quest for the Grail.
 
@@ -621,6 +635,7 @@ Dunder Quest is a free pixel-art platformer where every stage teaches a piece of
 ▶ Play free in your browser: {SITE_URL}play/
 ▶ Windows, macOS and Linux: {SITE_URL}#download
 ▶ Every lesson and question: {SITE_URL}lessons/
+▶ Prefer JavaScript? Flatmates.js: {SITE_URL}flatmates/
 
 What's inside
 • 6 stages, 6 Python topics: lists, dictionaries, loops, booleans, functions, comprehensions
@@ -633,8 +648,7 @@ How it was made
 Opus 5.5 built the whole game: every line of Godot code, the pixel art painted from Python scripts, this website, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backgrounds and soundtrack. My part was prompting and playtesting.
 Source: {REPO}
 
-0:00 Cold open
-0:08 Six stages
+0:00 Six stages to the Grail
 0:22 Your code builds the world
 0:46 Guardian duels
 1:02 Play free
@@ -642,6 +656,83 @@ Source: {REPO}
 A fan homage. Not affiliated with or endorsed by Monty Python.
 
 #python #learnpython #indiegame #pixelart #godot #codinggame"""
+YOUTUBE_TAGS = ("learn python, python for beginners, coding game, educational game, pixel art, indie game, "
+                "godot, monty python, holy grail, dunder quest")
+## The Flatmates.js trailer's chapters follow `cue_flat` (see `edit()` in
+## flatmates/tools/make_trailer.py): the stops at bar 8 (18 s), the piano
+## breakdown at bar 16 (34 s), the finale at bar 22 (45 s).
+FM_YOUTUBE_TITLE = "Flatmates.js – Learn JavaScript in a Very Small Croydon Flat | Official Trailer"
+FM_YOUTUBE_DESCRIPTION = f"""Two flatmates. Two points of view. One of them runs your JavaScript.
+
+Flatmates.js is a free pixel-art game where you write the other flatmate's to-do list in real JavaScript, then swap into his head and live with what he does. Clive can't jump much. Jazz can jump, and that's about it. Script one to get the other across Croydon, from Flat 5B to a wedding he really shouldn't be playing.
+
+▶ Play free in your browser: {SITE_URL}flatmates/play/
+▶ The six stops and their scripts: {SITE_URL}flatmates/
+▶ Prefer Python? Dunder Quest: {SITE_URL}
+
+What's inside
+• 6 stops, 6 pieces of JavaScript: methods, template literals, loops, events, timers, async/await
+• Real scripts with blanks to fill, every snippet checked against Node
+• Lesson cards in whoever's inner voice you're in
+• A tram line, a stag do, a ticket barrier, and six custard creams per stop
+• Keyboard, gamepad or touch. No signup.
+
+How it was made
+Opus 5.5 built the game: every line of Godot code, the sprites painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backdrops and soundtrack. My part was prompting and playtesting.
+Source: {REPO}/tree/main/games/flatmates
+
+0:00 Earlier that Saturday
+0:18 Six stops
+0:34 The awkward bit
+0:45 The wedding
+
+An homage to a certain Croydon flat-share sitcom. The names and jokes are winks, not the show's own; it isn't affiliated with or endorsed by anyone who made it.
+
+#javascript #learnjavascript #indiegame #pixelart #godot #codinggame"""
+FM_YOUTUBE_TAGS = ("learn javascript, javascript for beginners, coding game, educational game, pixel art, "
+                   "indie game, godot, sitcom, flatmates.js, dunder quest")
+## The channel's own fields, in YouTube Studio under Customization.
+CHANNEL_DESCRIPTION = f"""Free pixel-art games that teach you to code, playable in your browser.
+
+Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does.
+
+Opus 5.5 built every game here end to end: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
+
+Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wrote me a spelling game in BASIC. After that I got 100 on every one. My kids are 5 and 2. Maybe some day these games are theirs.
+
+Play free, no signup: {SITE_URL}"""
+CHANNEL_KEYWORDS = ('"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
+                    '"indie game" godot "programming for beginners" "dunder quest" flatmates.js')
+CHANNEL_LINKS = [
+    ("Play Dunder Quest", f"{SITE_URL}play/"),
+    ("Play Flatmates.js", f"{SITE_URL}flatmates/play/"),
+    ("Source on GitHub", REPO),
+]
+## (file, name, size YouTube asks for, where it goes, alt)
+CHANNEL_ART = [
+    ("banner.png", "Banner", "2560×1440; phones show only the middle 1546×423",
+     "Customization → Branding → Banner image",
+     "The wordmark and 'Pixel-art games that teach you to code' over the title art, with the squire on the left and Clive and Jazz on the right"),
+    ("avatar.png", "Profile picture", "800×800, shown as a circle as small as 98 px",
+     "Customization → Branding → Picture", "The Dunder Quest q between its underscores, on night blue"),
+    ("watermark.png", "Video watermark", "150×150, clear background",
+     "Customization → Branding → Video watermark, shown for the entire video", "The Dunder Quest icon"),
+]
+CHANNEL_PLAYLISTS = [
+    ("Trailers", "Both trailers, newest first. Set the Dunder Quest trailer as the channel trailer for visitors who haven't subscribed."),
+    ("Dunder Quest", "The Python game: its trailer, and later the Short and the GIF loops cut to video."),
+    ("Flatmates.js", "The JavaScript game: its trailer, and later its Short."),
+]
+## Studio's upload settings that are the same for every video.
+UPLOAD_SETTINGS = [
+    ("Audience", "No, it's not made for kids. The trailers are pitched at teen and adult beginners and developers. Answer it honestly for each video, because it changes comments and notifications."),
+    ("Altered or synthetic content", "No. YouTube asks only about realistic footage, and these are pixel art. The descriptions already say what the models made."),
+    ("Category", "Gaming"),
+    ("Language", "English, for the video and the title and description"),
+    ("Thumbnail", "Upload the PNG below. Each is 1920×1080 and under YouTube's 2 MB limit."),
+    ("Video file", "The 4K master from the game's trailer/out/. YouTube makes every smaller size from it."),
+    ("End screen", "Subscribe, plus the other game's trailer, over the end card"),
+]
 ## The launch: one post per platform, in the order they go out on launch
 ## day. Times are US Eastern on a Tuesday. Every post says what Opus 5.5 did
 ## and what other models made, because readers open the repo and check.
@@ -721,7 +812,78 @@ LAUNCH = [
 ]
 
 
+## The brand kit's pages, in the order help(dunder_quest) lists them:
+## (slug, title, what's on it).
+BRAND_PAGES = [
+    ("identity", "Logo, voice, colors and type", "The wordmark, every line the game is pitched with, the palette and the fonts."),
+    ("art", "Art and social cards", "The sprites and scenes, and the card each page shows when its link is shared."),
+    ("trailers", "The trailers", "Both games' trailers, how they're made, and every cut."),
+    ("youtube", "The YouTube channel", "The @dunderquest channel art, its description and links, and each video's upload form."),
+    ("launch", "The launch posts", "One post per platform, ready to paste, in the order they go out."),
+]
+
+
+def copy_block(label: str, text: str, count: str = "") -> str:
+    """Text to paste somewhere else, with a Copy button (static/copy.js) and
+    an optional length against that field's limit."""
+    count = f' <span class="count">{count}</span>' if count else ""
+    return (f'<figure class="code post"><figcaption>{esc(label)}{count}'
+            f'<button class="copy" type="button" hidden>Copy</button></figcaption>'
+            f"<pre><code>{esc(text)}</code></pre></figure>")
+
+
+def brand_page(slug: str, body: str, prefix: str, scripts: str = "") -> str:
+    """One page of the brand kit at /brand/<slug>/, under a row of links to
+    the others."""
+    title, description = next((t, d) for s, t, d in BRAND_PAGES if s == slug)
+    links = "".join(
+        f'<a href="{prefix}brand/{s}/"{" aria-current=page" if s == slug else ""}>{s}</a>'
+        for s, _, _ in BRAND_PAGES)
+    head = f"""
+<nav class="kit-nav" aria-label="Brand kit"><a href="{prefix}brand/">help(dunder_quest)</a>{links}</nav>
+<section class="section page-head kit-head">
+  <p class="kicker">&gt;&gt;&gt; help(dunder_quest.{slug})</p>
+  <h1>{esc(title)}</h1>
+  <p class="lede">{esc(description)}</p>
+</section>"""
+    return page(f"{title} · Brand kit", head + body, prefix,
+                description=f"The Dunder Quest brand kit: {description[0].lower()}{description[1:]}",
+                scripts=scripts + f'<script src="{prefix}static/copy.js"></script>', path=f"brand/{slug}/")
+
+
 def build_brand(prefix: str) -> str:
+    """/brand/, the way in: what help() prints for a package, with each page
+    of the kit as one of its modules."""
+    width = max(len(s) for s, _, _ in BRAND_PAGES)
+    contents = "\n".join(
+        f'    <a href="{s}/">{s}</a>{" " * (width - len(s))}  {esc(t)}' for s, t, _ in BRAND_PAGES)
+    pages = "".join(
+        f'<li><a href="{s}/"><code>dunder_quest.{s}</code><b>{esc(t)}</b><span>{esc(d)}</span></a></li>'
+        for s, t, d in BRAND_PAGES)
+    body = f"""
+<section class="section page-head">
+  <p class="kicker">&gt;&gt;&gt; help(dunder_quest)</p>
+  <h1>The brand kit</h1>
+  <figure class="code pydoc"><pre><code>Help on package dunder_quest:
+
+NAME
+    dunder_quest - pixel-art games that teach you to code
+    (and Monty Python is the plot)
+
+DESCRIPTION
+    The logo, colors, fonts, art, trailers, YouTube channel and
+    launch posts, and where each one is made.
+
+PACKAGE CONTENTS
+{contents}</code></pre></figure>
+  <ul class="kit-pages">{pages}</ul>
+</section>"""
+    return page("Brand kit", body, prefix,
+                description="The Dunder Quest brand kit: the logo, colors, fonts, art, trailers, YouTube channel and launch posts.",
+                path="brand/")
+
+
+def build_brand_identity(prefix: str) -> str:
     img = f"{prefix}static/img/"
     swatches = "".join(
         f'<li><span class="chip" style="background:{hex_}"></span>'
@@ -732,43 +894,7 @@ def build_brand(prefix: str) -> str:
         f"<tr><td>{esc(line)}</td><td>{esc(where)}</td><td><code>{esc(src)}</code></td></tr>"
         for line, where, src in COPY
     )
-    art = "".join(
-        f'<li><a href="{img}{file}"><img src="{img}{file}" alt="" width="{w * s}" height="{h * s}" loading="lazy"></a>'
-        f"<b>{esc(name)}</b><span>{esc(note)}</span></li>"
-        for file, name, note, w, h, s in ART
-    )
-    facts = "".join(f"<div><dt>{k}</dt><dd>{esc(v)}</dd></div>" for k, v in TRAILER_FACTS)
-    cuts = "".join(f"<tr><td>{a}</td><td>{esc(b)}</td><td>{esc(c)}</td></tr>" for a, b, c in TRAILER_CUTS)
-    cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
-             ("lessons.png", "Lessons", "The lessons index"),
-             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game")]
-    cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
-    card_items = "".join(
-        f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
-        f'<span class="og-crop" aria-hidden="true"><img src="{img}og/{file}" alt="" loading="lazy"></span>'
-        f"<b>{esc(name)}</b><span>{esc(used)}</span></li>"
-        for file, name, used in cards
-    )
-    launch = "".join(launch_post(*post) for post in LAUNCH)
-    upload = "".join(
-        f'<figure class="code post"><figcaption>{label} <span class="count">{len(text)} / {limit}</span>'
-        f'<button class="copy" type="button" hidden>Copy</button></figcaption><pre><code>{esc(text)}</code></pre></figure>'
-        for label, text, limit in (("YouTube title", YOUTUBE_TITLE, 100), ("YouTube description", YOUTUBE_DESCRIPTION, 5000)))
     body = f"""
-<section class="section page-head">
-  <p class="kicker">&gt;&gt;&gt; help(dunder_quest)</p>
-  <h1>The brand kit</h1>
-  <figure class="code pydoc"><pre><code>Help on package dunder_quest:
-
-NAME
-    dunder_quest - a pixel platformer where Python is the magic
-    (and Monty Python is the plot)
-
-DESCRIPTION
-    The logo, colors, fonts, art, trailer and social cards, and
-    where each one is made.</code></pre></figure>
-</section>
-
 <section class="section kit" aria-labelledby="logo-h">
   <p class="kicker">dunder_quest.__logo__</p>
   <h2 id="logo-h">The wordmark</h2>
@@ -808,8 +934,28 @@ key = <i class="st">"spam"</i></code></pre></figure>
     <li><p class="sp-body">Guide a squire across six stages to the Grail.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
   </ul>
   <p class="fine">All three are under the SIL Open Font License.</p>
-</section>
+</section>"""
+    return brand_page("identity", body, prefix)
 
+
+def build_brand_art(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    art = "".join(
+        f'<li><a href="{img}{file}"><img src="{img}{file}" alt="" width="{w * s}" height="{h * s}" loading="lazy"></a>'
+        f"<b>{esc(name)}</b><span>{esc(note)}</span></li>"
+        for file, name, note, w, h, s in ART
+    )
+    cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
+             ("lessons.png", "Lessons", "The lessons index"),
+             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game")]
+    cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
+    card_items = "".join(
+        f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
+        f'<span class="og-crop" aria-hidden="true"><img src="{img}og/{file}" alt="" loading="lazy"></span>'
+        f"<b>{esc(name)}</b><span>{esc(used)}</span></li>"
+        for file, name, used in cards
+    )
+    body = f"""
 <section class="section kit" aria-labelledby="art-h">
   <p class="kicker">dunder_quest.__art__</p>
   <h2 id="art-h">The art</h2>
@@ -817,46 +963,163 @@ key = <i class="st">"spam"</i></code></pre></figure>
   <ul class="art">{art}</ul>
 </section>
 
-<section class="section kit" aria-labelledby="trailer-h">
-  <p class="kicker">dunder_quest.__trailer__</p>
-  <h2 id="trailer-h">The trailer</h2>
-  <p class="lede">Built entirely from the game's repo by a Python script, with no video editor: real gameplay, captured frame by frame, with motion graphics in the game's own fonts and colors.</p>
-  <div id="trailer">
-  <a class="trailer" href="https://www.youtube.com/watch?v={TRAILER_ID}" data-yt="{TRAILER_ID}">
-    <img src="{img}trailer.png" alt="Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark" width="1920" height="1080" loading="lazy">
-    <span class="trailer-play" aria-hidden="true"></span>
-    <span class="sr">Play the Dunder Quest trailer</span>
-  </a>
-  </div>
-  <dl class="facts">{facts}</dl>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Cut</th><th>Format</th><th>Where</th></tr></thead>
-    <tbody>{cuts}</tbody>
-  </table></div>
-  <h3>Uploading it</h3>
-  <p>The thumbnail: <a href="{img}trailer.png" download="dunder_quest_thumbnail.png">dunder_quest_thumbnail.png</a> (1920×1080, under YouTube's 2 MB limit). The title and description below are ready to paste. Check the chapter times against the uploaded video.</p>
-  {upload}
-  <p class="fine">How it's made: <a href="{REPO}/blob/main/trailer/README.md">trailer/README.md</a>.</p>
-</section>
-
 <section class="section kit" aria-labelledby="cards-h">
   <p class="kicker">dunder_quest.__cards__</p>
   <h2 id="cards-h">The social cards</h2>
   <p class="lede">What a link to each page looks like when it's shared. Chat apps show either the full card or a small square cut from its middle, shown beside each one, so anything that has to be read sits in the center.</p>
   <ul class="cards">{card_items}</ul>
-  <p class="fine">Painted by <code>tools/make_og.py</code>.</p>
+  <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>.</p>
+</section>"""
+    return brand_page("art", body, prefix)
+
+
+DQ_THUMB_ALT = "Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark"
+FM_THUMB_ALT = "Flatmates.js trailer thumbnail: Clive and Jazz on their sofas, under 'Learn JavaScript. Blame your flatmate.' and jazz.walk(7);"
+
+
+def trailer_player(video: str, thumb: str, alt: str, name: str) -> str:
+    """A trailer's thumbnail that turns into the player when clicked
+    (static/trailer.js), or just the thumbnail before it's uploaded."""
+    image = f'<img src="{thumb}" alt="{esc(alt)}" width="1920" height="1080" loading="lazy">'
+    if not video:
+        return f'<div class="trailer">{image}</div>'
+    return (f'<a class="trailer" href="https://www.youtube.com/watch?v={video}" data-yt="{video}">{image}'
+            f'<span class="trailer-play" aria-hidden="true"></span><span class="sr">Play the {esc(name)} trailer</span></a>')
+
+
+def build_brand_trailers(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    facts = "".join(f"<div><dt>{k}</dt><dd>{esc(v)}</dd></div>" for k, v in TRAILER_FACTS)
+    fm_facts = "".join(f"<div><dt>{k}</dt><dd>{esc(v)}</dd></div>" for k, v in FM_TRAILER_FACTS)
+    cuts = "".join(f"<tr><td>{a}</td><td>{esc(b)}</td><td>{esc(c)}</td></tr>" for a, b, c in TRAILER_CUTS)
+    body = f"""
+<section class="section kit" aria-labelledby="trailer-h">
+  <p class="kicker">dunder_quest.__trailer__</p>
+  <h2 id="trailer-h">Dunder Quest</h2>
+  <p class="lede">Built entirely from the game's repo by a Python script, with no video editor: real gameplay, captured frame by frame, with motion graphics in the game's own fonts and colors.</p>
+  <div id="trailer">{trailer_player(TRAILER_ID, f"{img}trailer.png", DQ_THUMB_ALT, "Dunder Quest")}</div>
+  <dl class="facts">{facts}</dl>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Cut</th><th>Format</th><th>Where</th></tr></thead>
+    <tbody>{cuts}</tbody>
+  </table></div>
+  <p class="fine">How it's made: <a href="{REPO}/blob/main/games/dunder-quest/trailer/README.md">games/dunder-quest/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="fm-trailer-h">
+  <p class="kicker">flatmates.__trailer__</p>
+  <h2 id="fm-trailer-h">Flatmates.js</h2>
+  <p class="lede">Played as a flat-share sitcom: the inner voices do the talking, the camera sits in one flatmate's head and stares at the other, and the jokes land in the awkward silences. Made the same way, from the repo, with no video editor.</p>
+  {trailer_player(FM_TRAILER_ID, f"{img}flatmates/trailer.png", FM_THUMB_ALT, "Flatmates.js")}
+  <dl class="facts">{fm_facts}</dl>
+  <p class="fine">How it's made: <a href="{REPO}/blob/main/games/flatmates/trailer/README.md">games/flatmates/trailer/README.md</a>.</p>
+</section>
+
+<section class="section kit">
+  <p>Uploading them? The titles, descriptions and thumbnails are on <a href="{prefix}brand/youtube/">the YouTube page</a>.</p>
+</section>"""
+    return brand_page("trailers", body, prefix, scripts=f'<script src="{prefix}static/trailer.js"></script>')
+
+
+def upload_kit(name: str, video: str, thumb: str, download: str, title: str, description: str, tags: str,
+               playlist: str, master: str) -> str:
+    """One video's YouTube upload form, field by field."""
+    status = (f'Live at <a href="https://www.youtube.com/watch?v={video}">youtube.com/watch?v={video}</a>.'
+              if video else "Not uploaded yet.")
+    return f"""
+  <article class="upload">
+    <h3>{esc(name)} trailer</h3>
+    <p class="fine">{status} Playlists: Trailers, {esc(playlist)}. Video file: <code>{esc(master)}</code>.</p>
+    <div class="upload-grid">
+      <figure class="shot"><a href="{thumb}" download="{download}"><img src="{thumb}" alt="" width="1920" height="1080" loading="lazy"></a>
+        <figcaption>Thumbnail: <a href="{thumb}" download="{download}">{download}</a>, 1920×1080</figcaption></figure>
+      <div>
+        {copy_block("Title", title, f"{len(title)} / 100")}
+        {copy_block("Tags", tags, f"{len(tags)} / 500")}
+      </div>
+    </div>
+    {copy_block("Description", description, f"{len(description)} / 5000")}
+  </article>"""
+
+
+def build_brand_youtube(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    art = "".join(
+        f'<li class="yt-{file[:-4]}"><a href="{img}youtube/{file}" download="dunder_quest_{file}">'
+        f'<img src="{img}youtube/{file}" alt="{esc(alt)}" loading="lazy"></a>'
+        f"<b>{esc(name)}</b><span>{esc(size)}</span><span>{esc(where)}</span></li>"
+        for file, name, size, where, alt in CHANNEL_ART
+    )
+    links = "".join(copy_block(f"Link {i + 1}: title", title) + copy_block(f"Link {i + 1}: URL", url)
+                    for i, (title, url) in enumerate(CHANNEL_LINKS))
+    playlists = "".join(f"<tr><td>{esc(n)}</td><td>{esc(what)}</td></tr>" for n, what in CHANNEL_PLAYLISTS)
+    settings = "".join(f"<tr><th scope=row>{esc(k)}</th><td>{esc(v)}</td></tr>" for k, v in UPLOAD_SETTINGS)
+    kits = (upload_kit("Dunder Quest", TRAILER_ID, f"{img}trailer.png", "dunder_quest_thumbnail.png",
+                       YOUTUBE_TITLE, YOUTUBE_DESCRIPTION, YOUTUBE_TAGS, "Dunder Quest",
+                       "games/dunder-quest/trailer/out/dunder_quest_trailer_4k.mp4")
+            + upload_kit("Flatmates.js", FM_TRAILER_ID, f"{img}flatmates/trailer.png", "flatmates_thumbnail.png",
+                         FM_YOUTUBE_TITLE, FM_YOUTUBE_DESCRIPTION, FM_YOUTUBE_TAGS, "Flatmates.js",
+                         "games/flatmates/trailer/out/flatmates_trailer_4k.mp4"))
+    body = f"""
+<section class="section kit" aria-labelledby="channel-h">
+  <p class="kicker">dunder_quest.__channel__</p>
+  <h2 id="channel-h">@dunderquest</h2>
+  <p class="lede">One channel for both games: <a href="{CHANNEL}">youtube.com/@dunderquest</a>. Everything YouTube Studio asks for is below, ready to upload or paste.</p>
+  <dl class="facts">
+    <div><dt>Name</dt><dd>Dunder Quest</dd></div>
+    <div><dt>Handle</dt><dd>@dunderquest</dd></div>
+    <div><dt>Channel trailer</dt><dd>The Dunder Quest trailer</dd></div>
+    <div><dt>Featured video</dt><dd>The newest trailer</dd></div>
+  </dl>
+</section>
+
+<section class="section kit" aria-labelledby="yt-art-h">
+  <p class="kicker">dunder_quest.__channel__.art</p>
+  <h2 id="yt-art-h">The channel art</h2>
+  <p class="lede">Click one to download it. On the banner, the dashed box is what a phone shows; the cast stands just outside it, so desktops and TVs see them and phones lose nothing they need.</p>
+  <ul class="yt-art">{art}</ul>
+  <p class="fine">Painted by <code>games/dunder-quest/tools/make_channel.py</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="yt-about-h">
+  <p class="kicker">dunder_quest.__channel__.about</p>
+  <h2 id="yt-about-h">The channel's details</h2>
+  <p class="lede">In Studio under Customization → Basic info, plus the keywords under Settings → Channel.</p>
+  {copy_block("Description", CHANNEL_DESCRIPTION, f"{len(CHANNEL_DESCRIPTION)} / 1000")}
+  {copy_block("Keywords", CHANNEL_KEYWORDS, f"{len(CHANNEL_KEYWORDS)} / 500")}
+  <div class="yt-links">{links}</div>
+  <h3>Playlists</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Playlist</th><th>What goes in it</th></tr></thead>
+    <tbody>{playlists}</tbody>
+  </table></div>
+</section>
+
+<section class="section kit" aria-labelledby="yt-videos-h">
+  <p class="kicker">dunder_quest.__channel__.videos</p>
+  <h2 id="yt-videos-h">The videos</h2>
+  <p class="lede">Each trailer's upload form, field by field. Check the chapter times against the uploaded video: YouTube needs the first at 0:00, at least three, and each at least 10 seconds long.</p>
+  <div class="table-wrap"><table class="settings">
+    <thead><tr><th scope=col>Setting</th><th scope=col>For every video</th></tr></thead>
+    <tbody>{settings}</tbody>
+  </table></div>
+  {kits}
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code> or <code>FM_TRAILER_ID</code> in <code>site/build.py</code>, and the site embeds it.</p>
+</section>"""
+    return brand_page("youtube", body, prefix)
+
+
+def build_brand_launch(prefix: str) -> str:
+    launch = "".join(launch_post(*post) for post in LAUNCH)
+    body = f"""
 <section class="section kit" aria-labelledby="launch-h">
   <p class="kicker">dunder_quest.__launch__</p>
-  <h2 id="launch-h">The launch posts</h2>
-  <p class="lede">One post for each platform, ready to paste, in the order they go out on launch day. Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
+  <h2 id="launch-h">Launch day</h2>
+  <p class="lede">Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
   <ol class="launch">{launch}</ol>
   <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
 </section>"""
-    return page("Brand kit", body, prefix,
-                description="The Dunder Quest brand kit: the logo, colors, fonts, art, trailer, social cards and launch posts.",
-                scripts=f'<script src="{prefix}static/trailer.js"></script><script src="{prefix}static/copy.js"></script>', path="brand/")
+    return brand_page("launch", body, prefix)
 
 
 ## X counts every link as 23 characters, whatever its length.
@@ -872,10 +1135,7 @@ def post_length(platform: str, text: str) -> int:
 def launch_post(platform: str, when: str, title: str, posts: list[str], tips: str) -> str:
     def block(label: str, text: str) -> str:
         limit = LIMITS.get(platform)
-        count = f' <span class="count">{post_length(platform, text)} / {limit}</span>' if limit else ""
-        return (f'<figure class="code post"><figcaption>{esc(label)}{count}'
-                f'<button class="copy" type="button" hidden>Copy</button></figcaption>'
-                f"<pre><code>{esc(text)}</code></pre></figure>")
+        return copy_block(label, text, f"{post_length(platform, text)} / {limit}" if limit else "")
     blocks = block("Title", title) if title else ""
     for i, post in enumerate(posts):
         label, text = post if isinstance(post, tuple) else (f"Post {i + 1} of {len(posts)}" if len(posts) > 1 else "Post", post)
@@ -1261,6 +1521,9 @@ def main() -> None:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
     write(out / "guide" / "index.html", build_guide("../"))
     write(out / "brand" / "index.html", build_brand("../"))
+    for slug, build in (("identity", build_brand_identity), ("art", build_brand_art), ("trailers", build_brand_trailers),
+                        ("youtube", build_brand_youtube), ("launch", build_brand_launch)):
+        write(out / "brand" / slug / "index.html", build("../../"))
     write(out / "flatmates" / "index.html", build_flatmates("../"))
     write(out / "404.html", build_404("/"))
     write(out / "_redirects", "".join(

@@ -472,6 +472,50 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .post pre { white-space: pre-wrap; overflow-wrap: anywhere; }
 .post code { font-size: 0.95rem; line-height: 1.5; white-space: inherit; }
 
+/* Brand kit: the row of pages at the top of each one, as module names */
+.kit-nav {
+  display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 14px var(--gutter);
+  border-bottom: 1px solid var(--line); font: 1.25rem var(--label);
+}
+.kit-nav a { color: var(--ash); text-decoration: none; }
+.kit-nav a:hover, .kit-nav a:focus-visible { color: var(--gold); }
+.kit-nav a[aria-current] { color: var(--gold); }
+.kit-nav a + a::before { content: "."; color: var(--line); }
+.kit-nav a:first-child { color: var(--parchment); margin-right: auto; }
+.kit-head { padding-top: 40px; }
+.kit-head .kicker { text-transform: none; letter-spacing: 0.02em; }
+.pydoc a { color: var(--gold); }
+.kit-pages { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 16px; }
+.kit-pages a {
+  display: flex; flex-direction: column; gap: 6px; height: 100%; padding: 18px;
+  background: var(--night); border: 2px solid var(--line); color: var(--ash); text-decoration: none;
+}
+.kit-pages a:hover, .kit-pages a:focus-visible { border-color: var(--gold); }
+.kit-pages code { color: var(--ember); background: none; border: 0; padding: 0; }
+.kit-pages b { font: 600 1.2rem var(--display); color: var(--parchment); }
+/* Brand kit: the YouTube channel art */
+.yt-art { list-style: none; padding: 0; margin: 24px 0 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.yt-art li { display: flex; flex-direction: column; gap: 2px; font-size: 0.92rem; color: var(--ash); }
+.yt-art b { font: 600 1.05rem var(--display); color: var(--parchment); margin-top: 8px; }
+.yt-art a { display: grid; place-items: center; background: var(--night); border: 2px solid var(--line); }
+.yt-art a:hover { border-color: var(--gold); }
+.yt-art img { display: block; max-width: 100%; height: auto; }
+.yt-banner { grid-column: 1 / -1; }
+.yt-banner a { position: relative; }
+/* The middle 1546x423 of 2560x1440: all a phone shows. */
+.yt-banner a::after {
+  content: ""; position: absolute; left: 19.8%; top: 35.3%; width: 60.4%; height: 29.4%;
+  border: 2px dashed var(--gold); pointer-events: none;
+}
+.yt-avatar a, .yt-watermark a { height: 280px; padding: 16px; }
+.yt-avatar img { width: 240px; border-radius: 50%; box-shadow: 0 0 0 2px var(--line); }
+.yt-watermark a { background: repeating-conic-gradient(#2a2650 0 25%, var(--night) 0 50%) 0 0 / 20px 20px; }
+.yt-links { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 0 16px; }
+.settings th { white-space: nowrap; color: var(--parchment); }
+.upload { margin-top: 36px; padding-top: 8px; border-top: 1px solid var(--line); }
+.upload-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .yt-art, .upload-grid { grid-template-columns: 1fr; } }
+
 /* The home page's link to Flatmates.js, the JavaScript game */
 .next-game {
   display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center;

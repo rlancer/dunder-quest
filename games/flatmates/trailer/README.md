@@ -48,5 +48,5 @@ trailer/
 
 - [ ] **Listening pass.** The mix was balanced by measurement only, not by ear.
 - [ ] **Muted watch.** The freeze frame and the stare rely on the inner-voice text, which should hold up with the sound off.
-- [ ] **Upload** to YouTube and embed it on dunderquest.com/flatmates/. Don't host video on Cloudflare Pages.
+- [ ] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest), using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then set `FM_TRAILER_ID` in `site/build.py` and embed it on dunderquest.com/flatmates/. Don't host video on Cloudflare Pages.
 - [ ] **Vertical Short.** The stare and the cold open would crop well to 9:16.
