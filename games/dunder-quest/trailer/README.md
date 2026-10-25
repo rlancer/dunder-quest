@@ -75,5 +75,5 @@ In rough priority order. Tick items off here as they land.
     - Every running shot: the run bob now follows game time, so it no longer drifts against Movie Maker frames.
   - The changes are visual only and gameplay timing is the same, so the source frame numbers above should still match a fresh capture. Spot-check them against the new contact sheets before re-rendering.
   - After re-rendering, update the home page embed from #26. Set `TRAILER_ID` in `site/build.py` to the new YouTube video ID, and replace `site/static/img/trailer.png` with the new thumbnail (`tools/make_trailer.py` renders it from capture frame 5732 to `trailer/out/youtube_thumbnail.png`). Then run `python site/build.py` to check the site still builds.
-- [ ] **Upload.** Use the YouTube checklist in PLAN.md §8, then embed the video on dunderquest.com. Don't host video files on Cloudflare Pages.
+- [ ] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest). The title, description, tags, thumbnail and settings are on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/); see also the checklist in PLAN.md §8. Then set `TRAILER_ID` in `site/build.py`. Don't host video files on Cloudflare Pages.
 - [ ] **Steam (later).** Raise the bitrate to at least 5 Mbps (the current 1080p is ~2.3 Mbps) and remove any text that says "free in your browser".
