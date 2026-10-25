@@ -3,3 +3,8 @@ tools/preview/
 tests/shots/
 tools/generated/
 tests/out/
+
+# Trailer working files (regenerate with tools/trailer_audio.py and the capture)
+trailer/audio/*.wav
+trailer/captures/
+trailer/out/
