@@ -96,6 +96,11 @@ func _clear_line() -> String:
 # --- Setup ------------------------------------------------------------------
 
 func _make_world() -> void:
+	# The effects player StageAudio.play() looks for. It keeps running while
+	# the editor or a card has the tree paused, so their clicks are heard.
+	var audio := StageAudio.new()
+	audio.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(audio)
 	var sky := CanvasLayer.new()
 	sky.layer = -10
 	add_child(sky)
