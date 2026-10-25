@@ -38,7 +38,7 @@ SITE_URL = "https://dunderquest.com/"
 CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
 ## The trailer on YouTube (built by tools/make_trailer.py). The home page shows
 ## its thumbnail and only loads the player once someone clicks it.
-TRAILER_ID = "dXOdBei8838"
+TRAILER_ID = "7a-I7FzQdD8"
 ## Flatmates.js's trailer, once it's on YouTube. Empty shows the thumbnail
 ## without a player.
 FM_TRAILER_ID = ""
