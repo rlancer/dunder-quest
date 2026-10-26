@@ -1,6 +1,6 @@
 extends Control
 
-## The title: white serif on black, like the top of an episode, over a strip
+## The title: yellow serif on black, like the top of an episode, over a strip
 ## of a Westside street at dusk with Barry in it, squinting at you. The first
 ## press also unlocks web audio.
 
@@ -84,7 +84,7 @@ func _draw() -> void:
 	var serif := Palette.serif()
 	var title := "Curb Your Oxidation"
 	var w := serif.get_string_size(title, HORIZONTAL_ALIGNMENT_LEFT, -1, 26).x
-	draw_string(serif, Vector2(roundf(240 - w / 2), 70), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Color.WHITE)
+	draw_string(serif, Vector2(roundf(240 - w / 2), 70), title, HORIZONTAL_ALIGNMENT_LEFT, -1, 26, Palette.YELLOW)
 	var mono := Palette.mono()
 	var tag := "The borrow checker is the unwritten social contract. Learn Rust."
 	var tw := mono.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x

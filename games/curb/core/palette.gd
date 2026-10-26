@@ -2,7 +2,8 @@ class_name Palette
 extends RefCounted
 
 ## Westside LA: stucco, terracotta, pool blue, golf green, and Rust's own
-## oxide orange for the code. Plus the plain black-and-white of a title card.
+## oxide orange for the code. Plus the plain black-and-white of a title card,
+## and the show's yellow for the name.
 
 const INK := Color(0.07, 0.06, 0.08)
 const PAPER := Color(0.97, 0.94, 0.86)
@@ -13,6 +14,8 @@ const RED := Color(0.86, 0.24, 0.2)
 const GREEN := Color(0.42, 0.78, 0.42)
 const AMBER := Color(1.0, 0.72, 0.32)
 const POOL := Color(0.36, 0.72, 0.86)
+## The show's yellow, for the name and the highlights.
+const YELLOW := Color(0.98, 0.83, 0.11)
 ## Rust orange, for the language and the logo.
 const RUST := Color(0.85, 0.42, 0.18)
 ## The legal pad: yellow paper, blue rules, a red margin.

@@ -1,7 +1,8 @@
 /* Curb Your Oxidation, on top of style.css. Bright Westside daylight
    (stucco, pool blue, golf green, Rust's oxide orange, from
    curb/core/palette.gd), black title cards in plain serif like the game's,
-   and Barry's yellow legal pad for the code. */
+   the show's yellow for the name and the accents on black, and Barry's
+   yellow legal pad for the code. */
 
 body.cy {
   color-scheme: light;
@@ -18,6 +19,7 @@ body.cy {
   --ink: #0d0b0c;
   --paper: #f7f0db;
   --rust: #d96b2e;
+  --yellow: #fad41c;
   --pool: #1a6f94;
   --pad: #fdf3a0;
   --pad-rule: #a9c4e2;
@@ -34,12 +36,12 @@ body.cy {
 .cy :focus-visible { outline-color: var(--pool); }
 
 /* The bar is a title card too */
-.cy .bar { background: rgba(13, 11, 12, 0.95); border-bottom-color: var(--rust); }
-.cy .brand { font: 400 1.2rem var(--display); color: var(--paper); }
+.cy .bar { background: rgba(13, 11, 12, 0.95); border-bottom-color: var(--yellow); }
+.cy .brand { font: 400 1.2rem var(--display); color: var(--yellow); }
 .cy .brand img { width: 12px; height: 24px; }
 .cy .bar nav a { color: #cfc6b8; }
 .cy .bar nav a:hover { color: #fff; }
-.cy .bar nav a.cy-home { color: var(--rust); }
+.cy .bar nav a.cy-home { color: var(--yellow); }
 .cy .bar nav a.cy-home::before { content: "← "; }
 
 /* Buttons: black on the page, paper on the black cards */
@@ -48,16 +50,16 @@ body.cy {
 .cy .btn:active { box-shadow: 0 1px 0 var(--rust); }
 .cy .btn-ghost { background: transparent; color: var(--paper); border-color: var(--paper); box-shadow: none; }
 .cy .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); color: #fff; box-shadow: none; }
-.cy .bar .btn-small, .cy-hero .btn:not(.btn-ghost) { color: var(--ink); background: var(--paper); border-color: var(--paper); }
-.cy .bar .btn-small:hover, .cy-hero .btn:not(.btn-ghost):hover { color: var(--ink); background: #fff; }
+.cy .bar .btn-small, .cy-hero .btn:not(.btn-ghost) { color: var(--ink); background: var(--yellow); border-color: var(--yellow); box-shadow: none; }
+.cy .bar .btn-small:hover, .cy-hero .btn:not(.btn-ghost):hover { color: var(--ink); background: #ffe45c; }
 
 /* The hero: the game's title screen, a title card over the Westside */
 .cy-hero { background: var(--ink); color: var(--paper); }
 .title-card { background: var(--ink); color: var(--paper); text-align: center; }
 .cy-title { max-width: 900px; margin: 0 auto; padding: clamp(48px, 8vw, 96px) var(--gutter) 40px; }
 .cy-title .prompt { color: #8d8478; }
-.cy-title .prompt::after { background: var(--rust); }
-.cy-title h1 { font-size: clamp(2.4rem, 7.4vw, 5rem); line-height: 1.1; margin: 12px 0 18px; color: var(--paper); }
+.cy-title .prompt::after { background: var(--yellow); }
+.cy-title h1 { font-size: clamp(2.4rem, 7.4vw, 5rem); line-height: 1.1; margin: 12px 0 18px; color: var(--yellow); }
 .cy-title .tag { font: italic 400 clamp(1.1rem, 2.4vw, 1.45rem)/1.4 var(--display); max-width: none; color: var(--paper); }
 .cy-title .hero-sub { margin: 0 auto 1em; color: #d8cfc0; }
 .cy-title .cta { justify-content: center; }
@@ -82,10 +84,10 @@ body.cy {
 /* The episode guide: a row of title cards */
 .guide { list-style: none; padding: 0; margin: 28px 0 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
 .guide a { display: flex; flex-direction: column; justify-content: center; min-height: 128px; padding: 14px 10px; background: var(--ink); color: var(--paper); text-align: center; text-decoration: none; transition: transform 0.1s ease, box-shadow 0.1s ease; }
-.guide a:hover, .guide a:focus-visible { color: var(--paper); transform: translateY(-2px); box-shadow: 0 4px 0 var(--rust); }
+.guide a:hover, .guide a:focus-visible { color: var(--paper); transform: translateY(-2px); box-shadow: 0 4px 0 var(--yellow); }
 .ep-n { font: italic 0.8rem var(--display); color: #a39a8c; }
 .ep-t { font: 1.05rem/1.25 var(--display); margin: 6px 0; }
-.ep-l { font: 0.8rem/1.3 var(--mono); color: var(--rust); }
+.ep-l { font: 0.8rem/1.3 var(--mono); color: var(--yellow); }
 @media (max-width: 860px) { .guide { grid-template-columns: repeat(2, minmax(0, 1fr)); } .guide a { min-height: 108px; } }
 
 /* One episode */
