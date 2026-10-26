@@ -9,3 +9,6 @@ tools/*.log
 trailer/audio/*.wav
 trailer/captures/
 trailer/out/
+
+# Written by trailer/capture.sh while it records
+override.cfg

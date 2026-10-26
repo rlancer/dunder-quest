@@ -1,6 +1,6 @@
 # Curb Your Oxidation trailer
 
-A trailer for **Curb Your Oxidation**, cut like the promos for the kind of LA cringe comedy the game is a homage to: it opens like an episode, on the title tune with the name in the show's yellow serif on black and then the episode's title card, before dropping into the situation; then plain white serif on black cards, the squabbling left to play, the sepia rehearsal stopping on a red line and Sharon bursting in with the rustc error, Barry's squint held through an awkward silence, the `unwrap()` panic, and a freeze frame with a bouncy tuba sting. Like the Dunder Quest and Flatmates.js trailers, it's built entirely from the repo with no video editor in the loop, and every frame is composed at the game's native 480×270 and scaled by whole numbers.
+A trailer for **Curb Your Oxidation**, cut like the promos for the kind of LA cringe comedy the game is a homage to: it opens like an episode, on the title tune with the name in the show's yellow serif on black and then the episode's title card, before dropping into the situation; then plain white serif on black cards, the squabbling left to play, the sepia rehearsal stopping on a red line and Sharon bursting in with the rustc error, Barry's squint held through an awkward silence, the `unwrap()` panic, and a freeze frame with a bouncy tuba sting. Like the Dunder Quest and Flatmates.js trailers, it's built entirely from the repo with no video editor in the loop, and its text is sharp: the game draws text at window resolution and is captured at 1920×1080, the trailer's own cards are drawn at that size too, and the pixel art is only ever scaled by whole numbers (1080p is the master, 4K is 2×).
 
 Names, lines and music are the game's own: Barry, Gil, Sharon and the rest of the homage cast, original lines, and an original Italian-library-style cue (tuba, mandolin, pizzicato). The music briefs ask for the style and instruments only and never describe any TV theme. The trailer doesn't name the show.
 
@@ -8,7 +8,7 @@ Names, lines and music are the game's own: Barry, Gil, Sharon and the rest of th
 
 ```sh
 python tools/trailer_audio.py            # music cue + SFX -> trailer/audio/ (OpenRouter, key in the repo's .env)
-godot --path . --write-movie trailer/captures/run/f.png --fixed-fps 60 res://tests/trailer_run.tscn > trailer/captures/run.log   # ~25 min
+bash trailer/capture.sh                  # the bot's run at 1920x1080 -> trailer/captures/ (~1.5 h, ~8 GB)
 python tools/make_trailer.py             # -> trailer/out/
 ```
 
