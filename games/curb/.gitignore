@@ -1,0 +1,11 @@
+.godot/
+tools/preview/
+tests/shots/
+tools/generated/
+tests/out/
+tools/*.log
+
+# Trailer working files
+trailer/audio/*.wav
+trailer/captures/
+trailer/out/
