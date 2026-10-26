@@ -5,7 +5,8 @@
   -- scene=N` in games/curb first), and a close-up and a standing frame for
   each of the main cast into site/static/img/curb/.
 - Paints the social preview card, site/static/img/og/curb.png (1200x630): a
-  black title card in plain serif over the Westside at sunset.
+  black title card, the name in the show's yellow serif, over the Westside
+  at sunset.
 - Paints site/static/img/curb/trailer.png (1920x1080), the trailer's
   thumbnail, unless the trailer has its own at
   games/curb/trailer/out/curb_thumbnail.png, which it copies instead.
@@ -37,6 +38,8 @@ INK = (18, 15, 20)
 PAPER = (247, 240, 219)
 RUST = (217, 107, 46)
 EMBER = (255, 178, 76)
+## The show's yellow (Palette.YELLOW), for the name.
+YELLOW = (250, 212, 28)
 CAST = ["barry", "gil", "sharon", "carol", "lamont", "ted"]
 ## Screenshots the page shows: how a plan goes, in scene 3, and each
 ## episode's opening bicker.
@@ -58,7 +61,7 @@ def og_card() -> None:
     serif = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 86)
     small = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 32)
     mono = ImageFont.truetype(str(FONTS / "VT323.ttf"), 44)
-    centered(draw, 70, "Curb Your Oxidation", serif, PAPER, 1200)
+    centered(draw, 70, "Curb Your Oxidation", serif, YELLOW, 1200)
     centered(draw, 196, "The borrow checker is the unwritten social contract.", small, PAPER, 1200)
     centered(draw, 262, "learn Rust · a __dunder_quest__ game", mono, EMBER, 1200)
     OG.parent.mkdir(parents=True, exist_ok=True)
@@ -78,7 +81,7 @@ def thumbnail() -> None:
     draw = ImageDraw.Draw(thumb)
     serif = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 150)
     small = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 56)
-    centered(draw, 60, "Curb Your Oxidation", serif, PAPER, 1920)
+    centered(draw, 60, "Curb Your Oxidation", serif, YELLOW, 1920)
     centered(draw, 260, "Learn Rust. Mind your manners.", small, EMBER, 1920)
     thumb.save(OUT / "trailer.png")
     print("wrote", OUT / "trailer.png")

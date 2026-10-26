@@ -128,7 +128,7 @@ func _draw() -> void:
 		draw_texture_rect(_art, Rect2(0, 0, 480, 270), false)
 		draw_rect(Rect2(0, 0, 480, 270), Color(0, 0, 0, 0.35))
 	draw_rect(Rect2(0, 0, 480, 24), Color(0, 0, 0, 0.85))
-	draw_string(serif, Vector2(10, 17), "Curb Your Oxidation", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+	draw_string(serif, Vector2(10, 17), "Curb Your Oxidation", HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Palette.YELLOW)
 	draw_string(mono, Vector2(186, 16), "The Westside. Ten scenes. One borrow checker.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.8, 0.8, 0.8))
 	for id in range(1, Progress.count()):
 		var from := _pin(id)
@@ -156,7 +156,7 @@ func _draw() -> void:
 	var s := Story.scene(_selected)
 	var card := Rect2(60, 186, 360, 76)
 	draw_rect(card, Color(0, 0, 0, 0.92))
-	draw_rect(Rect2(card.position, Vector2(3, card.size.y)), Palette.RUST)
+	draw_rect(Rect2(card.position, Vector2(3, card.size.y)), Palette.YELLOW)
 	draw_string(serif, card.position + Vector2(14, 22), str(s.get("title", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color.WHITE)
 	draw_string(mono, card.position + Vector2(14, 38), "%d. %s   ·   Rust: %s" % [_selected, s.get("place", ""), s.get("lesson", "")], HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.AMBER)
 	var status := "Cleared in %d tries" % Progress.best_tries(_selected) if Progress.is_cleared(_selected) else ("Open" if Progress.is_open(_selected) else "Not yet")

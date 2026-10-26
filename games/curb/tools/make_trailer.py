@@ -1,7 +1,8 @@
 """Cut the Curb Your Oxidation trailer from a Movie Maker capture of the bot.
 
 Cut like the promos for the kind of LA cringe comedy the game is a homage
-to: plain white serif on black cards between the scenes, the squabbling
+to: the show's name in yellow serif on black over the title tune, then
+straight into the situation; plain white serif on black cards between the scenes, the squabbling
 left to play, the sepia rehearsal stopping on a red line and Sharon bursting
 in with the rustc error, Barry's squint held through an awkward silence, the
 `unwrap()` panic, and a freeze frame with a bouncy tuba sting to end on.
@@ -10,7 +11,9 @@ numbers with nearest-neighbor, like the Dunder Quest and Flatmates.js
 trailers, whose drawing, mixing and encoding helpers
 (../../dunder-quest/tools/make_trailer.py) this reuses.
 
-It opens cold on the game's own sound: Barry promising one latte, the
+It opens like an episode: the game's title tune with the name in yellow,
+then the episode's own black title card, then the music drops out and it
+plays the situation on the game's own sound: Barry promising one latte, the
 rehearsal, Sharon. Then the cue (`trailer/audio/cue_curb.wav`, an original
 Italian-library-style comedy piece, 120 BPM, measured beats at 0.05 s + k/2
 and bars from 1.05 s) comes in on its pickup and every cut after that lands
@@ -82,6 +85,8 @@ SYN_TYPE = (15, 112, 128)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (205, 205, 205)
+## The show's yellow (Palette.YELLOW), for the name.
+YELLOW = (250, 212, 28)
 
 # --- The cue -----------------------------------------------------------------
 
@@ -279,7 +284,7 @@ def black(_t: float) -> Image.Image:
     return Image.new("RGB", (W, H), BLACK)
 
 
-def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0):
+def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0, color=WHITE):
     """A black card of plain serif lines, centered; each line can wait `gap`."""
     def draw(t: float) -> Image.Image:
         img = black(t)
@@ -287,7 +292,7 @@ def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0):
         y = (H - total) // 2 + 4
         for k, (s, size) in enumerate(lines):
             if t >= at + k * gap:
-                serif_text(img, (W // 2, y), s, size, WHITE if k == 0 else GREY)
+                serif_text(img, (W // 2, y), s, size, color if k == 0 else GREY)
             y += int(size * 1.6)
         return img
     return draw
@@ -297,7 +302,7 @@ def end_card(at: float):
     def draw(t: float) -> Image.Image:
         img = black(t)
         local = t - at
-        serif_text(img, (W // 2, 70), "Curb Your Oxidation", 28)
+        serif_text(img, (W // 2, 70), "Curb Your Oxidation", 28, YELLOW)
         if local >= 0.8:
             serif_text(img, (W // 2, 112), "Learn Rust. Mind your manners.", 13, GREY)
         if local >= 1.6:
@@ -338,12 +343,17 @@ class Shot:
         return int(self.src + round((t - self.start) * FPS * self.speed))
 
 
-## The cold open, in capture frames of scene 1 (filled in by `edit`).
+## Where the cue comes in, after the situation (filled in by `edit`).
 INTRO = 0.0
+## The opening titles, on the title tune's beats (0.5 s + k): the name, then
+## the episode's own title card, then the music drops out for the situation.
+NAME_AT = 0.5
+EPISODE_AT = 4.5
+SITUATION_AT = 7.5
 
 
-def cold_open() -> list[tuple[int, int, str]]:
-    """(from, to, label) capture ranges played back to back before the cue."""
+def situation() -> list[tuple[int, int, str]]:
+    """(from, to, label) capture ranges played back to back after the titles."""
     say = [f for f, s in marks() if s.startswith("say ") and f < mark("card", 1)]
     one = say[1]                          # Barry: One. One latte.
     rehearsal = mark("rehearsal 1a", 1)
@@ -369,9 +379,13 @@ def edit() -> list[Shot]:
         shots.append(shot)
         return shot
 
-    # Cold open: straight in, on the game's own sound.
-    t = 0.0
-    for a, b, label in cold_open():
+    # The opening titles, over the title tune, like the top of an episode.
+    add(0.0, NAME_AT, draw=black, label="black")
+    add(NAME_AT, EPISODE_AT, draw=card([("Curb Your Oxidation", 30)], color=YELLOW), label="name")
+    add(EPISODE_AT, SITUATION_AT, src=mark("scene 1 ") + 40, speed=0.0, label="episode title")
+    # Then the situation, on the game's own sound.
+    t = SITUATION_AT
+    for a, b, label in situation():
         length = (b - a) / FPS
         fx = []
         if label == "sharon":
@@ -382,14 +396,12 @@ def edit() -> list[Shot]:
     add(t, t + 0.35, draw=black, label="beat")
     INTRO = t + 0.35
 
-    # The title on the cue's first big hit.
-    title_at = cue(2.55)
-    add(INTRO, title_at, draw=black, label="pickup")
-    add(title_at, bar(2), draw=card([("Curb Your Oxidation", 30)]), label="title")
-
-    # Who, what, and who's checking: card, footage, card, footage.
+    # Who, what, and who's checking, from the cue's first big hit: card,
+    # footage, card, footage.
+    first_hit = cue(2.55)
+    add(INTRO, first_hit, draw=black, label="pickup")
     etiquette = mark("say barry If we don't open it tonight", 3)
-    add(bar(2), bar(2.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
+    add(first_hit, bar(2.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
     add(bar(2.5), bar(4), src=etiquette + 1, label="the etiquette")
     add(bar(4), bar(4.5), draw=card([("So does Rust.", 18)]), label="card rust")
     pad = mark("pad 3a", 3)
@@ -458,7 +470,7 @@ END_HOLD = 6.0
 
 def chapters() -> list[tuple[float, str]]:
     """YouTube chapters (each at least 10 s long), for the video description."""
-    return [(0.0, "Cold open: one latte"), (INTRO, "Barry has rules"), (bar(8), "The season"),
+    return [(0.0, "Titles, and one latte"), (INTRO, "Barry has rules"), (bar(8), "The season"),
             (bar(15), "The panic, the shrimp, the squint"), (bar(22), "Freeze frames")]
 
 
@@ -470,7 +482,7 @@ def cues() -> list[tuple[str, float, float]]:
     """(sound, trailer time, gain): this trailer's own effects."""
     end_hit = cue(CUE_END) - 0.45
     return [
-        ("swish", bar(2) - 0.1, 0.4),
+        ("swish", bar(2.5) - 0.1, 0.4),
         ("scratch", cue(32.2) - 0.02, 0.7),
         ("sting", end_hit + 0.1, 1.0),
     ]
@@ -515,6 +527,11 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     music = np.zeros((n, 2), np.float32)
     score = dq.load_wav(AUDIO / f"{CUE}.wav")[int(CUE_START * RATE):int(CUE_END * RATE)]
     dq.place(music, score, INTRO, 1.0)
+    # The opening titles, over the game's title tune, which drops out as the
+    # situation starts.
+    opening = decode(GAME_AUDIO / "music_title.ogg")[:int(SITUATION_AT * RATE)].copy()
+    opening *= np.minimum(1.0, np.linspace(SITUATION_AT, 0, len(opening)) / 0.5)[:, None]
+    dq.place(music, opening, 0.0, 1.0)
     # Under the end card, the game's own title tune, faded in low.
     end = shots[-1]
     tune = decode(GAME_AUDIO / "music_title.ogg")[:int((end.end - end.start) * RATE)].copy()
@@ -537,12 +554,12 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     sfx = np.zeros((n, 2), np.float32)
     for name, at, gain in cues():
         dq.place(sfx, dq.load_wav(AUDIO / f"{name}.wav"), at, gain)
-    # Room tone under the cold open (the game has no voices), leveled and
+    # Room tone under the situation (the game has no voices), leveled and
     # faded out into the beat of black before the cue.
-    room = dq.load_wav(AUDIO / "kitchen.wav")[:int(INTRO * RATE)].copy()
+    room = dq.load_wav(AUDIO / "kitchen.wav")[:int((INTRO - SITUATION_AT) * RATE)].copy()
     room *= 0.03 / max(1e-6, float(np.sqrt((room ** 2).mean())))
     room *= np.minimum(1.0, np.linspace(len(room) / RATE, 0, len(room)) / 0.6)[:, None]
-    dq.place(sfx, np.clip(room, -0.5, 0.5), 0.0, 1.0)
+    dq.place(sfx, np.clip(room, -0.5, 0.5), SITUATION_AT, 1.0)
     hits = np.abs(game * 2.5 + sfx).max(axis=1)
     env = np.convolve(hits, np.ones(2400) / 2400, mode="same")
     duck = 1.0 - np.clip(env * 2.0, 0.0, 0.35)
@@ -587,7 +604,7 @@ def thumbnail(path: Path) -> None:
         d.rectangle((x - 2, y - 2, x + 145, y + 145), fill=edge)
         img.paste(face, (x, y), face)
     d.rectangle((0, 0, W, 60), fill=BLACK)
-    serif_text(img, (W // 2, 12), "Curb Your Oxidation", 30)
+    serif_text(img, (W // 2, 12), "Curb Your Oxidation", 30, YELLOW)
     msg = "error[E0382]: borrow of moved value"
     f = font(MONO, 22)
     tw = int(f.getlength(msg))

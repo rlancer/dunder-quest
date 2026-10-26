@@ -501,7 +501,7 @@ func _draw_title(c: Control) -> void:
 
 func _draw_end(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 480, 270), Color.BLACK)
-	_draw_centered(c, Palette.serif(), "Curb Your Oxidation", 96, 22, Color.WHITE)
+	_draw_centered(c, Palette.serif(), "Curb Your Oxidation", 96, 22, Palette.YELLOW)
 	var y := 132.0
 	for line: String in _end.lines:
 		_draw_centered(c, Palette.serif(), line, y, 11, Color(0.85, 0.85, 0.85))

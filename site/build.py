@@ -388,7 +388,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
   <p class="kicker">The third game</p>
   <h2 id="cy-h">Curb Your Oxidation teaches Rust</h2>
   <a class="next-game next-curb" href="{prefix}curb/">
-    <img src="{prefix}static/img/og/curb.png" alt="Curb Your Oxidation: a black title card in plain serif over a palm-lined Westside street at sunset" width="1200" height="630" loading="lazy">
+    <img src="{prefix}static/img/og/curb.png" alt="Curb Your Oxidation: a black title card, the name in yellow serif, over a palm-lined Westside street at sunset" width="1200" height="630" loading="lazy">
     <span><b>The borrow checker is the unwritten social contract.</b>
     Ten petty disputes on the Westside, from a second latte to a houseguest who won't leave, each settled by a Rust program, from <code>let mut</code> to lifetimes.
     <span class="next-go">Meet Barry →</span></span>
@@ -1031,7 +1031,7 @@ def build_brand_art(prefix: str) -> str:
 
 DQ_THUMB_ALT = "Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark"
 FM_THUMB_ALT = "Flatmates.js trailer thumbnail: Clive and Jazz on their sofas, under 'Learn JavaScript. Blame your flatmate.' and jazz.walk(7);"
-CURB_THUMB_ALT = "Curb Your Oxidation trailer thumbnail: the title in plain serif on black, over Sharon interrupting with error[E0382]"
+CURB_THUMB_ALT = "Curb Your Oxidation trailer thumbnail: the title in yellow serif on black, over Sharon interrupting with error[E0382]"
 
 
 def trailer_player(video: str, thumb: str, alt: str, name: str) -> str:
@@ -1567,7 +1567,7 @@ def fm_page(body: str, prefix: str) -> str:
 
 
 
-CURB_ALT = "Curb Your Oxidation: a black title card in plain serif over a palm-lined Westside street at sunset."
+CURB_ALT = "Curb Your Oxidation: a black title card, the name in yellow serif, over a palm-lined Westside street at sunset."
 CURB_DESC = ("Curb Your Oxidation, a Dunder Quest game that teaches Rust: the borrow checker is the unwritten "
              "social contract, and every petty dispute is settled by a Rust program. Play it free in your browser.")
 
