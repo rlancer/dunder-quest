@@ -37,6 +37,11 @@ jobs:
       - name: Build the site and the browser games
         run: bash scripts/export_web.sh
 
+      # Plays every scene and compiles every plan, in every combination of
+      # its blanks, with the runner's rustc, to hold the in-game checker to it.
+      - name: Check Curb Your Oxidation against rustc
+        run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/curb/tests/check.sh
+
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
 

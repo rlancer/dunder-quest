@@ -1,0 +1,925 @@
+{
+	"cast": {
+		"barry": {"name": "Barry", "full": "Barry Danvers", "role": "semi-retired TV writer, stickler for rules nobody else has heard of"},
+		"gil": {"name": "Gil", "full": "Gil Greene", "role": "Barry's manager and best friend, endlessly patient"},
+		"sharon": {"name": "Sharon", "full": "Sharon Greene", "role": "Gil's wife, the social contract in human form"},
+		"carol": {"name": "Carol", "full": "Carol", "role": "Barry's ex-wife, still somehow on speaking terms"},
+		"lamont": {"name": "Lamont", "full": "Lamont", "role": "the houseguest who came for one night"},
+		"ted": {"name": "Ted", "full": "Ted Pruitt", "role": "the neighbor whose lawnmower Barry borrowed"},
+		"sol": {"name": "Sol", "full": "Sol", "role": "runs the deli, counts the samples"},
+		"whit": {"name": "Whit", "full": "Whit Thornbury", "role": "manager of the country club"},
+		"philippe": {"name": "Philippe", "full": "Philippe", "role": "maitre d' of a bistro Barry can't get into"},
+		"dana": {"name": "Dana", "full": "Dana", "role": "returns desk, has heard it all"},
+		"rain": {"name": "Rain", "full": "Rain", "role": "barista, calls 'Next!'"}
+	},
+	"checker": "sharon",
+	"rants": {
+		"E0382": "You gave it away, Barry! It MOVED! You don't get to use something after you've given it away! #@%&!",
+		"E0384": "You said it once and now you're changing it? Then you say `mut`! Up front!",
+		"E0499": "Two hands on one thing! One mutable borrow at a time, Barry! ONE!",
+		"E0502": "Somebody's still LOOKING at it and you're changing it? Wait till they're done!",
+		"E0505": "You can't give away something that's out on loan, Barry!",
+		"E0506": "You can't swap it out while somebody's borrowing it!",
+		"E0507": "That's not yours to take! It's behind a borrow! Copy it, don't yank it!",
+		"E0596": "You can't change something you only borrowed to look at! It has to be `mut`!",
+		"E0594": "You can't write on something that isn't yours to change! #@%&!",
+		"E0597": "That borrow outlived the thing it borrowed! The owner's GONE, Barry!",
+		"E0381": "You're using it before it even exists! Give it a value first!",
+		"E0308": "Those types don't match, Barry! It says one thing and you hand it another!",
+		"E0061": "Wrong number of arguments! Count them! It's right there in the signature!",
+		"E0004": "You didn't cover every case! What if it's the other one, Barry? WHAT THEN?",
+		"E0277": "That doesn't work with that! It doesn't have what it takes, and neither do you!",
+		"E0106": "It returns a borrow, but borrowed from WHAT? Say how long it lives!",
+		"E0063": "You left out a field! You can't just leave things out because you feel like it!",
+		"E0425": "Who is that? Nobody here has that name, Barry!",
+		"E0599": "That method doesn't exist! You can't just make up etiquette!",
+		"panic": "It blew up! The whole thing! In front of everyone!",
+		"wrong": "It ran, but that's not what happened, Barry. Read it again.",
+		"syntax": "I can't even read this, Barry. It's not a sentence."
+	},
+	"scenes": [
+		{
+			"id": 1,
+			"key": "kitchen",
+			"place": "Barry's Kitchen",
+			"title": "The Second Latte",
+			"lesson": "let and mut",
+			"music": "scene",
+			"cast": [["barry", 110], ["carol", 330]],
+			"opening": [
+				["carol", "I'm going to the cafe. You want a latte?"],
+				["barry", "One. One latte. I'm committing to one."],
+				["carol", "Write it down. Last time you changed it four times."],
+				["barry", "That was a different situation. That was a Tuesday."]
+			],
+			"plans": [
+				{
+					"id": "1a",
+					"npc": "carol",
+					"file": "order.rs",
+					"title": "The latte order",
+					"card": "c1_let",
+					"code": [
+						"fn main() {",
+						"    «binding» lattes = 1;",
+						"    println!(\"Barry: Just {} latte.\", lattes);",
+						"    lattes = 2;",
+						"    println!(\"Barry: Make it {}. I'm thirsty.\", lattes);",
+						"}"
+					],
+					"slots": {"binding": ["let", "let mut"]},
+					"start": {"binding": "let"},
+					"solution": {"binding": "let mut"},
+					"start_error": "E0384",
+					"expect": ["Barry: Just 1 latte.", "Barry: Make it 2. I'm thirsty."],
+					"hint": "If I might change my mind later, I have to say so up front.",
+					"rants": {"E0384": "You said ONE, Barry! If you might change your mind, you say `mut`! Up front! #@%&!"},
+					"success": [
+						["carol", "Fine. Two. You said `mut`, so legally you're covered."],
+						["barry", "That's all I ask. Transparency."]
+					]
+				},
+				{
+					"id": "1b",
+					"npc": "carol",
+					"file": "leave.rs",
+					"title": "When are we leaving?",
+					"card": "c1_types",
+					"code": [
+						"fn main() {",
+						"    let minutes: i32 = «minutes»;",
+						"    println!(\"Barry: We leave in {} minutes.\", minutes);",
+						"    println!(\"Carol: Real minutes, or Barry minutes?\");",
+						"}"
+					],
+					"slots": {"minutes": ["\"ten\"", "10.5", "10"]},
+					"start": {"minutes": "\"ten\""},
+					"solution": {"minutes": "10"},
+					"start_error": "E0308",
+					"expect": ["Barry: We leave in 10 minutes.", "Carol: Real minutes, or Barry minutes?"],
+					"hint": "The box says i32. That's a whole number. Not a word, not a half.",
+					"rants": {"E0308": "The box says i32, Barry! A WHOLE number! Not a word, not ten-and-a-half! A number!"},
+					"success": [
+						["barry", "Ten minutes. Whole minutes. No fractions."],
+						["carol", "Your watch is in your hand, Barry."]
+					]
+				}
+			],
+			"ending": [
+				["carol", "It's been eleven minutes."],
+				["barry", "Eleven? Eleven. You've been counting?", "squint"],
+				["carol", "Someone has to."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 2,
+			"key": "deli",
+			"place": "Sol's Deli",
+			"title": "The Sample Abuser",
+			"lesson": "Functions",
+			"music": "scene",
+			"cast": [["barry", 90], ["sol", 250], ["gil", 380]],
+			"opening": [
+				["sol", "That's your eleventh sample, Barry."],
+				["barry", "It's a tasting. You taste. That's the whole concept."],
+				["sol", "The concept is you buy something."],
+				["gil", "Buy a pound of pastrami, Barry. I'm begging you."]
+			],
+			"plans": [
+				{
+					"id": "2a",
+					"npc": "sol",
+					"file": "samples.rs",
+					"title": "How many samples left?",
+					"card": "c2_fn",
+					"code": [
+						"fn samples_left(tray: i32, taken: i32) -> i32 {",
+						"    «body»",
+						"}",
+						"",
+						"fn main() {",
+						"    let left = samples_left(12, 11);",
+						"    println!(\"Sol: {} sample left. ONE.\", left);",
+						"}"
+					],
+					"slots": {"body": ["tray - taken;", "tray + taken", "tray - taken"]},
+					"start": {"body": "tray - taken;"},
+					"solution": {"body": "tray - taken"},
+					"start_error": "E0308",
+					"expect": ["Sol: 1 sample left. ONE."],
+					"hint": "The last line of a function is its answer. Unless something swallows it.",
+					"rants": {"E0308": "That function promised an i32 and handed back NOTHING! The semicolon swallowed it! Last line, no semicolon!"},
+					"wrong": [["sol", "Twenty-three? You've been ADDING them?"]],
+					"success": [
+						["sol", "One. Left. For a paying customer."],
+						["barry", "I'm a paying customer. I'm paying with attention."]
+					]
+				},
+				{
+					"id": "2b",
+					"npc": "sol",
+					"file": "ask.rs",
+					"title": "Asking nicely",
+					"card": "c2_semicolon",
+					"code": [
+						"fn ask(flavor: &str, count: i32) {",
+						"    println!(\"Barry: Can I try {}? Just {}.\", flavor, count);",
+						"}",
+						"",
+						"fn main() {",
+						"    ask(«args»);",
+						"    println!(\"Sol: Sure. Then you buy it.\");",
+						"}"
+					],
+					"slots": {"args": ["\"brisket\"", "2, \"brisket\"", "\"brisket\", 2"]},
+					"start": {"args": "\"brisket\""},
+					"solution": {"args": "\"brisket\", 2"},
+					"start_error": "E0061",
+					"expect": ["Barry: Can I try brisket? Just 2.", "Sol: Sure. Then you buy it."],
+					"hint": "ask wants two things, in order: the flavor, then how many.",
+					"rants": {
+						"E0061": "It takes TWO things! The flavor AND how many! You can't just stand there saying 'brisket'!",
+						"E0308": "Flavor first, then the number! The order is the order, Barry!"
+					},
+					"success": [
+						["sol", "Two pieces of brisket. Then you buy it."],
+						["barry", "We'll see. I'm not going to commit before I taste."]
+					]
+				}
+			],
+			"ending": [
+				["gil", "He gave you two pieces."],
+				["barry", "Two. Did he say two? Did you hear him say two?", "squint"],
+				["sol", "I'm standing right here."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 3,
+			"key": "dinner",
+			"place": "The Greenes' Dinner Party",
+			"title": "The Regift",
+			"lesson": "Ownership and moves",
+			"music": "scene",
+			"cast": [["barry", 90], ["sharon", 250], ["gil", 380]],
+			"opening": [
+				["sharon", "Barry. You brought wine. How thoughtful."],
+				["barry", "A Barolo. A good one. It's a gift, but it's a gift with a future."],
+				["gil", "What's a gift with a future?"],
+				["barry", "If we don't open it tonight, it comes home with me. That's the etiquette."],
+				["sharon", "That is NOT the etiquette."]
+			],
+			"plans": [
+				{
+					"id": "3a",
+					"npc": "sharon",
+					"file": "gift.rs",
+					"title": "The host gift",
+					"card": "c3_move",
+					"code": [
+						"fn main() {",
+						"    let wine = String::from(\"Barolo\");",
+						"    let host_gift = «give»;",
+						"    println!(\"Sharon: Thanks for the {}.\", host_gift);",
+						"    println!(\"Barry: So are we opening the {}?\", wine);",
+						"}"
+					],
+					"slots": {"give": ["wine", "&wine", "wine.clone()"]},
+					"start": {"give": "wine"},
+					"solution": {"give": "wine.clone()"},
+					"start_error": "E0382",
+					"expect": ["Sharon: Thanks for the Barolo.", "Barry: So are we opening the Barolo?"],
+					"hint": "Once I hand it over, it's hers. Unless I hand over something else.",
+					"rants": {"E0382": "You GAVE me the wine, Barry! It MOVED! It's mine now! Stop talking about it like it's still yours!"},
+					"remarks": {"give=&wine": [["sharon", "You LENT us the wine? Who lends wine?"]]},
+					"success": [
+						["sharon", "It's on my table. It's staying on my table."],
+						["barry", "Agreed. Lovely. ...Is it breathing? It should breathe."]
+					]
+				},
+				{
+					"id": "3b",
+					"npc": "gil",
+					"file": "regift.rs",
+					"title": "The regift",
+					"card": "c3_clone",
+					"code": [
+						"fn regift(gift: String) {",
+						"    println!(\"Barry: Gil, I got you a {}.\", gift);",
+						"}",
+						"",
+						"fn main() {",
+						"    let candle = String::from(\"fig candle\");",
+						"    regift(«arg»);",
+						"    println!(\"Sharon: Is that MY {}?\", candle);",
+						"}"
+					],
+					"slots": {"arg": ["candle", "&candle", "candle.clone()"]},
+					"start": {"arg": "candle"},
+					"solution": {"arg": "candle.clone()"},
+					"start_error": "E0382",
+					"expect": ["Barry: Gil, I got you a fig candle.", "Sharon: Is that MY fig candle?"],
+					"hint": "regift takes the candle. The real one. And then it's gone.",
+					"rants": {
+						"E0382": "You gave it to Gil! It MOVED into his function, and you're still waving it around!",
+						"E0308": "He takes a String! An actual candle! Not 'you can look at my candle'!"
+					},
+					"success": [
+						["gil", "You bought a second one? Just so you could regift it?"],
+						["barry", "It's called clone. It's very common. Everybody clones."]
+					]
+				}
+			],
+			"ending": [
+				["sharon", "Get out of my house, Barry."],
+				["barry", "I'll take the Barolo."],
+				["sharon", "#@%&!"],
+				["barry", "...Is that a no on the Barolo?", "squint"]
+			]
+		},
+		{
+			"id": 4,
+			"key": "lawn",
+			"place": "Ted's Driveway",
+			"title": "The Lawnmower",
+			"lesson": "Borrowing with &",
+			"music": "tension",
+			"cast": [["barry", 110], ["ted", 330]],
+			"opening": [
+				["ted", "Barry. My mower's been in your garage for six weeks."],
+				["barry", "I'm borrowing it. A borrow has no fixed term. It's open-ended."],
+				["ted", "A borrow ends when the owner says it ends."],
+				["barry", "Where is that written? Show me where that's written."]
+			],
+			"plans": [
+				{
+					"id": "4a",
+					"npc": "ted",
+					"file": "admire.rs",
+					"title": "Just looking",
+					"card": "c4_borrow",
+					"code": [
+						"fn admire(mower: «ty») {",
+						"    println!(\"Barry: Nice {}. Very quiet.\", mower);",
+						"}",
+						"",
+						"fn main() {",
+						"    let mower = String::from(\"mower\");",
+						"    admire(«arg»);",
+						"    println!(\"Ted: And my {} comes home with me.\", mower);",
+						"}"
+					],
+					"slots": {"ty": ["String", "&String"], "arg": ["mower", "&mower"]},
+					"start": {"ty": "String", "arg": "mower"},
+					"solution": {"ty": "&String", "arg": "&mower"},
+					"start_error": "E0382",
+					"expect": ["Barry: Nice mower. Very quiet.", "Ted: And my mower comes home with me."],
+					"hint": "I only want to look at it. Looking is a borrow. Both of us have to agree it's a borrow.",
+					"rants": {
+						"E0382": "If you only want to LOOK at it, you borrow it! With `&`! Ted is still standing there!",
+						"E0308": "Both sides have to agree it's a borrow, Barry! The function says & and the call says &!"
+					},
+					"success": [
+						["ted", "Thank you. It's coming home."],
+						["barry", "Of course. I was only ever admiring it. Six weeks of admiring."]
+					]
+				},
+				{
+					"id": "4b",
+					"npc": "ted",
+					"file": "sharpen.rs",
+					"title": "The favor",
+					"card": "c4_mut",
+					"code": [
+						"fn sharpen(blade: «ty») {",
+						"    blade.push_str(\" (sharpened)\");",
+						"}",
+						"",
+						"fn main() {",
+						"    let mut blade = String::from(\"blade\");",
+						"    sharpen(«arg»);",
+						"    println!(\"Ted: You did what to my {}?\", blade);",
+						"}"
+					],
+					"slots": {"ty": ["&String", "&mut String"], "arg": ["&blade", "&mut blade"]},
+					"start": {"ty": "&String", "arg": "&blade"},
+					"solution": {"ty": "&mut String", "arg": "&mut blade"},
+					"start_error": "E0596",
+					"expect": ["Ted: You did what to my blade (sharpened)?"],
+					"hint": "If I'm going to change it, it's not a look-don't-touch borrow. It's &mut, and he has to say so too.",
+					"rants": {
+						"E0596": "You can't change something you only borrowed to LOOK at! If you touch it, it's &mut, and he has to SAY so!",
+						"E0308": "He lent you a look-don't-touch borrow and you're treating it like a touch borrow!"
+					},
+					"success": [
+						["ted", "It was sharp before."],
+						["barry", "It was dull. I know dull. I've been to your barbecues."]
+					]
+				}
+			],
+			"ending": [
+				["ted", "..."],
+				["barry", "What? What's the look?", "squint"],
+				["ted", "Six weeks, Barry."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 5,
+			"key": "buffet",
+			"place": "Club Brunch",
+			"title": "The Last Shrimp",
+			"lesson": "&mut: one at a time",
+			"music": "tension",
+			"cast": [["barry", 90], ["gil", 230], ["whit", 380]],
+			"opening": [
+				["whit", "Gentlemen. Two shrimp left. Club rules: one hand on the tray at a time."],
+				["gil", "I saw them first, Barry."],
+				["barry", "You saw. I reached. Reaching beats seeing. Everybody knows that."],
+				["gil", "Nobody knows that."]
+			],
+			"plans": [
+				{
+					"id": "5a",
+					"npc": "gil",
+					"file": "shrimp.rs",
+					"title": "Two hands, one tray",
+					"card": "c5_one",
+					"code": [
+						"fn main() {",
+						"    let mut tray = vec![\"shrimp\", \"shrimp\"];",
+						"    let barry = &mut tray;",
+						"    «first»",
+						"    let gil = &mut tray;",
+						"    «second»",
+						"    println!(\"Whit: {} shrimp left.\", tray.len());",
+						"}"
+					],
+					"slots": {"first": ["// (Barry hovers)", "barry.pop();"], "second": ["barry.pop();", "gil.pop();"]},
+					"start": {"first": "// (Barry hovers)", "second": "barry.pop();"},
+					"solution": {"first": "barry.pop();", "second": "gil.pop();"},
+					"start_error": "E0499",
+					"expect": ["Whit: 0 shrimp left."],
+					"hint": "One &mut at a time. I take mine and I'm DONE before Gil reaches in.",
+					"rants": {"E0499": "Two hands on one tray! One mutable borrow at a time, Barry! Gil waits till you're DONE!"},
+					"wrong": [["whit", "One shrimp left, and Mr. Danvers is still hovering."]],
+					"success": [
+						["whit", "One each. Civilized."],
+						["gil", "Mine was smaller."],
+						["barry", "That's the luck of the tray."]
+					]
+				},
+				{
+					"id": "5b",
+					"npc": "whit",
+					"file": "tray.rs",
+					"title": "Clearing the tray",
+					"card": "c5_look",
+					"code": [
+						"fn main() {",
+						"    let mut tray = vec![\"shrimp\"];",
+						"    let last = &tray[0];",
+						"    «early»",
+						"    println!(\"Barry: I had my eye on that {}.\", last);",
+						"    «late»",
+						"    println!(\"Whit: {} on the tray.\", tray.len());",
+						"}"
+					],
+					"slots": {"early": ["tray.clear();", "// (wait)"], "late": ["// (wait)", "tray.clear();"]},
+					"start": {"early": "tray.clear();", "late": "// (wait)"},
+					"solution": {"early": "// (wait)", "late": "tray.clear();"},
+					"start_error": "E0502",
+					"expect": ["Barry: I had my eye on that shrimp.", "Whit: 0 on the tray."],
+					"hint": "A man is still looking at that shrimp. You clear the tray after he's done looking.",
+					"rants": {"E0502": "He's still LOOKING at it, Whit! You don't clear a tray while a man is looking at it!"},
+					"wrong": [["whit", "The tray is still out, sir. It's been out since ten."]],
+					"success": [
+						["barry", "Thank you. I had closure."],
+						["whit", "We're all very happy for you."]
+					]
+				}
+			],
+			"ending": [
+				["whit", "Sir, those shrimp were decorative."],
+				["barry", "Decorative. A decorative shrimp.", "squint"],
+				["barry", "Is that a thing? Is that a real thing?", "squint"],
+				["whit", "It is now."]
+			]
+		},
+		{
+			"id": 6,
+			"key": "golf",
+			"place": "The Ninth Hole",
+			"title": "The Mulligan",
+			"lesson": "Structs and methods",
+			"music": "scene",
+			"cast": [["barry", 110], ["gil", 260], ["whit", 390]],
+			"opening": [
+				["gil", "That's five, Barry. You took five."],
+				["barry", "Four. The first one was a practice swing that happened to hit the ball."],
+				["gil", "That's called a stroke."],
+				["barry", "That's called a technicality."]
+			],
+			"plans": [
+				{
+					"id": "6a",
+					"npc": "gil",
+					"file": "scorecard.rs",
+					"title": "The scorecard",
+					"card": "c6_struct",
+					"code": [
+						"struct Golfer { name: String, strokes: i32 }",
+						"",
+						"impl Golfer {",
+						"    fn add_stroke(«recv») {",
+						"        self.strokes += 1;",
+						"    }",
+						"}",
+						"",
+						"fn main() {",
+						"    let name = String::from(\"Barry\");",
+						"    let «m»barry = Golfer { name, strokes: 4 };",
+						"    barry.add_stroke();",
+						"    println!(\"{}: {} strokes.\", barry.name, barry.strokes);",
+						"}"
+					],
+					"slots": {"recv": ["&self", "self", "&mut self"], "m": ["", "mut "]},
+					"start": {"recv": "&self", "m": ""},
+					"solution": {"recv": "&mut self", "m": "mut "},
+					"start_error": "E0594",
+					"expect": ["Barry: 5 strokes."],
+					"hint": "Adding a stroke changes the card. The method needs &mut self, and the golfer has to be let mut.",
+					"rants": {
+						"E0594": "A &self method can only LOOK at the scorecard! To add a stroke, it needs &mut self!",
+						"E0596": "You're changing Barry's score, so Barry has to be `let mut`! You can't edit a card you swore was final!",
+						"E0382": "add_stroke took the whole golfer! There's no Barry left to read the score!"
+					},
+					"success": [
+						["gil", "Five. Thank you. Was that so hard?"],
+						["barry", "Yes. It was very hard. It's a five on a par three."]
+					]
+				},
+				{
+					"id": "6b",
+					"npc": "whit",
+					"file": "cart.rs",
+					"title": "The golf cart",
+					"card": "c6_impl",
+					"code": [
+						"#[derive(Debug)]",
+						"struct Cart {",
+						"    driver: String,",
+						"    seats: i32,",
+						"}",
+						"",
+						"fn main() {",
+						"    let cart = Cart {",
+						"        driver: String::from(\"Gil\"),",
+						"        «field»",
+						"    };",
+						"    println!(\"Whit: {:?}\", cart);",
+						"}"
+					],
+					"slots": {"field": ["", "seats: \"two\",", "seats: 2,"]},
+					"start": {"field": ""},
+					"solution": {"field": "seats: 2,"},
+					"start_error": "E0063",
+					"expect": ["Whit: Cart { driver: \"Gil\", seats: 2 }"],
+					"hint": "Every cart on this course has a driver and a number of seats. Every field gets filled in.",
+					"rants": {
+						"E0063": "A Cart has a driver AND seats! You can't leave out the seats just because you want to ride alone!",
+						"E0308": "seats is an i32! A number! Not the word!"
+					},
+					"success": [
+						["whit", "Two seats. Logged. Mr. Greene drives."],
+						["barry", "I'll be navigating. Navigating is a very important seat."]
+					]
+				}
+			],
+			"ending": [
+				["whit", "Mr. Danvers, you've been reported for slow play."],
+				["barry", "Slow? I'm thorough. There's a difference.", "squint"],
+				["whit", "Not on this course."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 7,
+			"key": "bistro",
+			"place": "Le Petit Bistro",
+			"title": "The Maybe",
+			"lesson": "Enums, match and Option",
+			"music": "scene",
+			"cast": [["barry", 110], ["philippe", 250], ["carol", 390]],
+			"opening": [
+				["philippe", "Do you have a reservation, monsieur?"],
+				["barry", "Sort of. I called. Someone said 'maybe'."],
+				["philippe", "Maybe is not a reservation."],
+				["barry", "Maybe is a soft yes. Everyone knows maybe is a soft yes."]
+			],
+			"plans": [
+				{
+					"id": "7a",
+					"npc": "philippe",
+					"file": "answer.rs",
+					"title": "Was that a yes?",
+					"card": "c7_enum",
+					"code": [
+						"enum Answer { Yes, No, Maybe }",
+						"",
+						"fn reply(a: Answer) {",
+						"    match a {",
+						"        Answer::Yes => println!(\"Philippe: Come in.\"),",
+						"        Answer::No => println!(\"Philippe: Non.\"),",
+						"        «arm»",
+						"    }",
+						"}",
+						"",
+						"fn main() {",
+						"    reply(Answer::Maybe);",
+						"}"
+					],
+					"slots": {"arm": ["", "_ => println!(\"Philippe: Non.\"),", "Answer::Maybe => println!(\"Philippe: The bar.\"),"]},
+					"start": {"arm": ""},
+					"solution": {"arm": "Answer::Maybe => println!(\"Philippe: The bar.\"),"},
+					"start_error": "E0004",
+					"expect": ["Philippe: The bar."],
+					"hint": "Yes, no, maybe. A match has to say what happens for every one of them.",
+					"rants": {"E0004": "You didn't say what happens with Maybe! A match has to handle EVERY answer! Every one!"},
+					"wrong": [["philippe", "Non. Your maybe went in with the no's, monsieur."]],
+					"success": [
+						["philippe", "You may wait at the bar."],
+						["barry", "The bar. The bar is a yes. The bar is a soft yes."]
+					]
+				},
+				{
+					"id": "7b",
+					"npc": "philippe",
+					"file": "seats.rs",
+					"title": "Party of how many?",
+					"card": "c7_option",
+					"code": [
+						"fn main() {",
+						"    let seats: Option<i32> = «val»;",
+						"    match seats {",
+						"        Some(n) => println!(\"Philippe: Party of {}.\", n),",
+						"        «none»",
+						"    }",
+						"}"
+					],
+					"slots": {"val": ["2", "None", "Some(2)"], "none": ["", "None => println!(\"Philippe: Then go.\"),"]},
+					"start": {"val": "2", "none": ""},
+					"solution": {"val": "Some(2)", "none": "None => println!(\"Philippe: Then go.\"),"},
+					"start_error": "E0308",
+					"expect": ["Philippe: Party of 2."],
+					"hint": "Maybe there are seats, maybe there aren't. That's an Option: Some(number), or None.",
+					"rants": {
+						"E0308": "It's an Option! Either Some(number) or None! You can't just say 2 and hope!",
+						"E0004": "And what if it's None, Barry? WHAT IF NOBODY'S COMING?"
+					},
+					"wrong": [["philippe", "None? Then why are you standing at my podium?"]],
+					"success": [
+						["philippe", "Party of two. This way."],
+						["carol", "Thank you, Barry. That was almost normal."]
+					]
+				}
+			],
+			"ending": [
+				["philippe", "Your table, monsieur. By the kitchen door."],
+				["barry", "By the kitchen door. Interesting. Very interesting.", "squint"],
+				["carol", "Barry, just sit."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 8,
+			"key": "returns",
+			"place": "The Returns Desk",
+			"title": "The Receipt",
+			"lesson": "Result and ?",
+			"music": "tension",
+			"cast": [["barry", 120], ["dana", 320]],
+			"opening": [
+				["dana", "Do you have the receipt?"],
+				["barry", "I have the sweater. The sweater is the receipt. Look at it. It's clearly yours."],
+				["dana", "No receipt, no refund."],
+				["barry", "Who made that rule? Was there a vote? I wasn't told about a vote."]
+			],
+			"plans": [
+				{
+					"id": "8a",
+					"npc": "dana",
+					"file": "refund.rs",
+					"title": "The refund",
+					"card": "c8_result",
+					"code": [
+						"fn refund(receipt: bool) -> Result<i32, String> {",
+						"    if receipt {",
+						"        Ok(80)",
+						"    } else {",
+						"        Err(String::from(\"No receipt, no refund.\"))",
+						"    }",
+						"}",
+						"",
+						"fn main() {",
+						"    match refund(«has») {",
+						"        Ok(cash) => println!(\"Dana: Here's ${}.\", cash),",
+						"        Err(why) => println!(\"Dana: {}\", why),",
+						"    }",
+						"}"
+					],
+					"slots": {"has": ["\"yes\"", "false", "true"]},
+					"start": {"has": "\"yes\""},
+					"solution": {"has": "true"},
+					"start_error": "E0308",
+					"expect": ["Dana: Here's $80."],
+					"hint": "Do I have the receipt? That's a bool. true or false. Not a speech.",
+					"rants": {"E0308": "receipt is a bool! true or false! You don't answer a yes-or-no question with a speech!"},
+					"wrong": [["barry", "That's the Err! I got the Err! I wanted the Ok!"]],
+					"success": [
+						["dana", "Eighty dollars. You had it the whole time?"],
+						["barry", "In my other pocket. It's a big coat. It has a lot of pockets."]
+					]
+				},
+				{
+					"id": "8b",
+					"npc": "dana",
+					"file": "blame.rs",
+					"title": "Passing the blame",
+					"card": "c8_q",
+					"code": [
+						"fn find_receipt() -> Result<i32, String> {",
+						"    Err(String::from(\"Carol has it.\"))",
+						"}",
+						"",
+						"fn return_it() «ret» {",
+						"    let receipt = find_receipt()«q»;",
+						"    println!(\"Barry: Receipt {}. Refund me.\", receipt);",
+						"    Ok(())",
+						"}",
+						"",
+						"fn main() {",
+						"    if let Err(blame) = return_it() {",
+						"        println!(\"Barry: Not my fault. {}\", blame);",
+						"    }",
+						"}"
+					],
+					"slots": {"ret": ["", "-> Result<(), String>"], "q": ["?", ".unwrap()", ""]},
+					"start": {"ret": "", "q": "?"},
+					"solution": {"ret": "-> Result<(), String>", "q": "?"},
+					"start_error": "E0277",
+					"expect": ["Barry: Not my fault. Carol has it."],
+					"hint": "? passes the blame up to whoever asked. So whoever asked has to be able to receive blame: return a Result.",
+					"rants": {
+						"E0277": "You can't pass the blame up with ? unless your function RETURNS a Result! You can't blame nobody!",
+						"E0308": "This function says it returns nothing, then hands back Ok(())! Make up your mind!"
+					},
+					"panic_line": [["dana", "You called unwrap on an Err. You just ASSUMED the receipt was there."]],
+					"success": [
+						["dana", "So it's Carol's fault."],
+						["barry", "It's always been Carol's fault. That's the beauty of ?. It goes up."]
+					]
+				}
+			],
+			"ending": [
+				["dana", "I'll need you to step aside, sir."],
+				["barry", "Step aside? I'm IN the line. I AM the line.", "squint"],
+				["dana", "Security."],
+				["barry", "...", "squint"]
+			]
+		},
+		{
+			"id": 9,
+			"key": "coffee",
+			"place": "The Coffee Line",
+			"title": "Stop and Chat",
+			"lesson": "Vec and for loops",
+			"music": "scene",
+			"cast": [["barry", 90], ["rain", 210], ["gil", 310], ["lamont", 410]],
+			"opening": [
+				["rain", "Next!"],
+				["barry", "I'm next. But Gil stopped to chat with a guy. So who's in front, Gil or the guy?"],
+				["gil", "It's a stop-and-chat, Barry. It's allowed."],
+				["barry", "A stop-and-chat is not a reservation. Nobody holds your place for a chat."]
+			],
+			"plans": [
+				{
+					"id": "9a",
+					"npc": "gil",
+					"file": "hello.rs",
+					"title": "Saying hello to everyone",
+					"card": "c9_for",
+					"code": [
+						"fn main() {",
+						"    let friends = vec![",
+						"        String::from(\"Gil\"),",
+						"        String::from(\"Lamont\"),",
+						"    ];",
+						"    for f in «iter» {",
+						"        println!(\"Barry: Hello, {}.\", f);",
+						"    }",
+						"    println!(\"Barry: {} hellos. Done.\", friends.len());",
+						"}"
+					],
+					"slots": {"iter": ["friends", "&friends"]},
+					"start": {"iter": "friends"},
+					"solution": {"iter": "&friends"},
+					"start_error": "E0382",
+					"expect": ["Barry: Hello, Gil.", "Barry: Hello, Lamont.", "Barry: 2 hellos. Done."],
+					"hint": "Saying hello shouldn't use my friends up. Loop over a borrow of them.",
+					"rants": {"E0382": "The for loop TOOK your friends! They're gone! Loop over &friends and they're still there after!"},
+					"success": [
+						["gil", "Two hellos. Was that so hard?"],
+						["barry", "It was two more than I wanted."]
+					]
+				},
+				{
+					"id": "9b",
+					"npc": "rain",
+					"file": "line.rs",
+					"title": "Chat and cut",
+					"card": "c9_vec",
+					"code": [
+						"fn main() {",
+						"    let mut line = vec![String::from(\"Barry\")];",
+						"    let first = «first»;",
+						"    line.push(String::from(\"Gil's pal\"));",
+						"    println!(\"Barry: I was first. {} was first.\", first);",
+						"    println!(\"Rain: {} in line.\", line.len());",
+						"}"
+					],
+					"slots": {"first": ["&line[0]", "line[0]", "line[0].clone()"]},
+					"start": {"first": "&line[0]"},
+					"solution": {"first": "line[0].clone()"},
+					"start_error": "E0502",
+					"expect": ["Barry: I was first. Barry was first.", "Rain: 2 in line."],
+					"hint": "The line grows when Gil's pal cuts in. Don't hold on to a spot in it. Write my name down instead.",
+					"rants": {
+						"E0502": "You're holding on to a spot IN the line while the line changes! Write the name down: clone it!",
+						"E0507": "You can't yank someone OUT of the line! Copy the name down instead!"
+					},
+					"success": [
+						["rain", "Two in line. Barry first. Next!"],
+						["barry", "Thank you. Order has been restored."]
+					]
+				}
+			],
+			"ending": [
+				["lamont", "Barry! My man. I'm gonna crash at your place tonight."],
+				["barry", "Tonight. One night."],
+				["lamont", "One night. Maybe two. We'll see how it goes."],
+				["barry", "How long is 'we'll see'?", "squint"]
+			]
+		},
+		{
+			"id": 10,
+			"key": "guestroom",
+			"place": "Barry's Guest Room",
+			"title": "The Houseguest",
+			"lesson": "Lifetimes",
+			"music": "tension",
+			"cast": [["barry", 110], ["lamont", 330]],
+			"opening": [
+				["barry", "Lamont. It's been six weeks."],
+				["lamont", "Six weeks of quality time, Barry."],
+				["barry", "You said one night."],
+				["lamont", "I said one night at a time."]
+			],
+			"plans": [
+				{
+					"id": "10a",
+					"npc": "lamont",
+					"file": "longest.rs",
+					"title": "Who said what",
+					"card": "c10_lt",
+					"code": [
+						"«sig» {",
+						"    if a.len() > b.len() { a } else { b }",
+						"}",
+						"",
+						"fn main() {",
+						"    let said = String::from(\"one night\");",
+						"    let meant = String::from(\"six weeks, maybe seven\");",
+						"    println!(\"Barry: {}?!\", longest(&said, &meant));",
+						"}"
+					],
+					"slots": {"sig": [
+						"fn longest(a: &str, b: &str) -> &str",
+						"fn longest(a: String, b: String) -> String",
+						"fn longest<'a>(a: &'a str, b: &'a str) -> &'a str"
+					]},
+					"start": {"sig": "fn longest(a: &str, b: &str) -> &str"},
+					"solution": {"sig": "fn longest<'a>(a: &'a str, b: &'a str) -> &'a str"},
+					"start_error": "E0106",
+					"expect": ["Barry: six weeks, maybe seven?!"],
+					"hint": "The answer is borrowed from one of them. Which one, nobody knows, so they have to share a lifetime.",
+					"rants": {
+						"E0106": "It hands back a borrow, but borrowed from WHICH one? Say how long it lives! Give it a lifetime!",
+						"E0308": "It takes Strings and you're handing it borrowed ones!"
+					},
+					"success": [
+						["lamont", "See? Six weeks. Maybe seven. I was very clear."],
+						["barry", "You were clear in the longer string. I was looking at the shorter string."]
+					]
+				},
+				{
+					"id": "10b",
+					"npc": "lamont",
+					"file": "key.rs",
+					"title": "The spare key",
+					"card": "c10_scope",
+					"code": [
+						"fn main() {",
+						"    let key;",
+						"    {",
+						"        let spare = String::from(\"spare key\");",
+						"        key = «take»;",
+						"    }",
+						"    println!(\"Lamont: I've still got the {}.\", key);",
+						"}"
+					],
+					"slots": {"take": ["&spare", "spare.clone()", "spare"]},
+					"start": {"take": "&spare"},
+					"solution": {"take": "spare"},
+					"start_error": "E0597",
+					"expect": ["Lamont: I've still got the spare key."],
+					"hint": "The spare is gone at that closing brace. A borrow of it can't be. He needs a key of his own.",
+					"rants": {"E0597": "That key was BORROWED from a block that's OVER! It ended at the curly brace, Barry! A borrow can't outlive what it borrowed!"},
+					"success": [
+						["lamont", "My own key. To your house."],
+						["barry", "Wait. I didn't mean... You OWN it now?"]
+					]
+				}
+			],
+			"ending": [
+				["lamont", "So... I can stay?"],
+				["barry", "You own a key. To my house. You OWN it."],
+				["lamont", "Ownership, Barry. You taught me that."],
+				["barry", "...", "squint"]
+			]
+		}
+	],
+	"cards": {
+		"c1_let": {"who": "barry", "title": "Values don't change unless you say so", "code": ["let lattes = 1;", "let mut coffees = 1;", "coffees = 2;", "println!(\"{} {}\", lattes, coffees); // 1 2"], "output": ["1 2"], "text": "let gives a value a name, and that's that. let mut is a public announcement that you might change your mind later. In Rust, you have to announce it."},
+		"c1_types": {"who": "barry", "title": "Every value has a type", "code": ["let minutes: i32 = 10;", "let place: &str = \"the deli\";", "println!(\"{minutes} minutes to {place}\");", "// 10 minutes to the deli"], "output": ["10 minutes to the deli"], "text": "i32 is a whole number. &str is a bit of text. Write the type after a colon and Rust holds you to it. Names in braces get filled in."},
+		"c2_fn": {"who": "barry", "title": "Functions", "code": ["fn tip(bill: i32) -> i32 {", "    bill / 5", "}", "println!(\"{}\", tip(40)); // 8"], "output": ["8"], "text": "fn makes a function. Its parameters each have a type, and -> says what it hands back. The last line, with no semicolon, is the answer."},
+		"c2_semicolon": {"who": "sol", "title": "The semicolon swallows it", "code": ["fn tip(bill: i32) -> i32 {", "    bill / 5;", "}"], "error": "E0308", "text": "Put a semicolon on the last line and it's a statement, not an answer. Now the function hands back nothing, which is not an i32. Rustc tells you to remove the semicolon. Listen to it."},
+		"c3_move": {"who": "barry", "title": "Giving it away", "code": ["let wine = String::from(\"Barolo\");", "let gift = wine; // the wine moves", "println!(\"{}\", gift); // Barolo"], "output": ["Barolo"], "text": "A String has one owner. let gift = wine; doesn't copy it, it hands it over. After that wine is empty-handed, and using it is error E0382."},
+		"c3_clone": {"who": "gil", "title": "Buy your own", "code": ["let wine = String::from(\"Barolo\");", "let gift = wine.clone();", "println!(\"{} {}\", wine, gift); // Barolo Barolo"], "output": ["Barolo Barolo"], "text": "clone() makes a second one. Two bottles, two owners, nobody goes without. It costs a little more. Manners usually do."},
+		"c4_borrow": {"who": "ted", "title": "Borrowing", "code": ["fn admire(m: &String) {", "    println!(\"Nice {}.\", m);", "}", "let mower = String::from(\"mower\");", "admire(&mower);", "println!(\"Still mine: {}\", mower);"], "output": ["Nice mower.", "Still mine: mower"], "text": "& lends a value without handing it over. The function gets to look. When it's done, the owner still has it. That's what borrowing means, Barry."},
+		"c4_mut": {"who": "ted", "title": "Borrowing to change", "code": ["fn sharpen(b: &mut String) {", "    b.push_str(\"!\");", "}", "let mut blade = String::from(\"blade\");", "sharpen(&mut blade);", "println!(\"{}\", blade); // blade!"], "output": ["blade!"], "text": "&mut lends a value so the borrower may change it. The owner has to be let mut and has to say &mut when lending. Everybody agrees, in writing."},
+		"c5_one": {"who": "whit", "title": "One hand on the tray", "code": ["let mut tray = vec![1, 2];", "let a = &mut tray;", "a.push(3);", "let b = &mut tray; // fine: a is done", "b.push(4);", "println!(\"{:?}\", tray); // [1, 2, 3, 4]"], "output": ["[1, 2, 3, 4]"], "text": "One &mut borrow at a time, or any number of & borrows, never both. A borrow ends at its last use, so finish with one before the next one starts."},
+		"c5_look": {"who": "whit", "title": "No clearing while someone's looking", "code": ["let mut tray = vec![\"shrimp\"];", "let last = &tray[0];", "tray.clear();", "println!(\"{}\", last);"], "error": "E0502", "text": "last is still looking at the tray when clear() wants to change it: error E0502. Move the println! up, and the looking is over before the clearing starts."},
+		"c6_struct": {"who": "gil", "title": "Structs", "code": ["struct Golfer { name: String, strokes: i32 }", "let g = Golfer {", "    name: String::from(\"Gil\"),", "    strokes: 3,", "};", "println!(\"{} {}\", g.name, g.strokes); // Gil 3"], "output": ["Gil 3"], "text": "A struct bundles named fields into one thing. Make one by filling in every field. Read a field with a dot."},
+		"c6_impl": {"who": "gil", "title": "Methods", "code": ["struct Card { strokes: i32 }", "impl Card {", "    fn add(&mut self) { self.strokes += 1; }", "    fn show(&self) -> i32 { self.strokes }", "}", "let mut c = Card { strokes: 4 };", "c.add();", "println!(\"{}\", c.show()); // 5"], "output": ["5"], "text": "impl gives a struct methods. &self means the method only looks. &mut self means it changes things, so the struct has to be let mut."},
+		"c7_enum": {"who": "philippe", "title": "Enums and match", "code": ["enum Answer { Yes, No, Maybe }", "let a = Answer::Maybe;", "match a {", "    Answer::Yes => println!(\"yes\"),", "    Answer::No => println!(\"no\"),", "    Answer::Maybe => println!(\"maybe\"),", "} // maybe"], "output": ["maybe"], "text": "An enum lists the only values there can be. match picks an arm for each, and it must cover them all, or it's error E0004. _ covers whatever's left."},
+		"c7_option": {"who": "carol", "title": "Was that a yes?", "code": ["let seats: Option<i32> = Some(2);", "match seats {", "    Some(n) => println!(\"party of {}\", n),", "    None => println!(\"nobody\"),", "} // party of 2"], "output": ["party of 2"], "text": "Rust has no null. A value that might not be there is an Option: Some(value) or None. To get the value out, you have to say what happens if it's None."},
+		"c8_result": {"who": "dana", "title": "Result", "code": ["fn refund(receipt: bool) -> Result<i32, String> {", "    if receipt { Ok(80) } else { Err(String::from(\"no\")) }", "}", "match refund(true) {", "    Ok(n) => println!(\"${}\", n),", "    Err(e) => println!(\"{}\", e),", "} // $80"], "output": ["$80"], "text": "Result is for things that can fail: Ok(value) or Err(reason). Like Option, you have to deal with both."},
+		"c8_q": {"who": "barry", "title": "Passing the blame", "code": ["fn find() -> Result<i32, String> {", "    Err(String::from(\"Carol has it\"))", "}", "fn refund() -> Result<i32, String> {", "    let r = find()?; // Err: return it now", "    Ok(r)", "}", "println!(\"{:?}\", refund()); // Err(\"Carol has it\")"], "output": ["Err(\"Carol has it\")"], "text": "? after a Result means: if it's an Err, stop and hand it to whoever called me. It only works in a function that returns a Result itself."},
+		"c9_vec": {"who": "rain", "title": "Vec", "code": ["let mut line = vec![String::from(\"Barry\")];", "line.push(String::from(\"Gil\"));", "println!(\"{} {:?}\", line.len(), line);", "// 2 [\"Barry\", \"Gil\"]"], "output": ["2 [\"Barry\", \"Gil\"]"], "text": "A Vec is a list that can grow. push adds to the end, len counts, and {:?} prints the lot."},
+		"c9_for": {"who": "gil", "title": "Looping without taking", "code": ["let friends = vec![1, 2];", "for f in &friends {", "    println!(\"{}\", f);", "}", "println!(\"{}\", friends.len()); // 1 2 2"], "output": ["1", "2", "2"], "text": "for f in friends hands each item to the loop and uses the Vec up. for f in &friends borrows each one instead, and the Vec is still there afterwards."},
+		"c10_lt": {"who": "lamont", "title": "Lifetimes", "code": ["fn longest<'a>(a: &'a str, b: &'a str) -> &'a str {", "    if a.len() > b.len() { a } else { b }", "}", "println!(\"{}\", longest(\"a night\", \"six weeks\"));", "// six weeks"], "output": ["six weeks"], "text": "'a is a lifetime: a name for how long a borrow lasts. Here the answer lives as long as both inputs do. Rustc asks for one when a function hands back a borrow and can't tell where from."},
+		"c10_scope": {"who": "barry", "title": "Borrows can't outlive the owner", "code": ["let key;", "{", "    let spare = String::from(\"key\");", "    key = &spare;", "}", "println!(\"{}\", key);"], "error": "E0597", "text": "spare is dropped at the closing brace, so a borrow of it can't be used after that: E0597, doesn't live long enough. Own the thing instead: move it or clone it."}
+	}
+}

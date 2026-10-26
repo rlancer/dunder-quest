@@ -1,0 +1,785 @@
+[
+ {
+  "plan": "1a",
+  "picks": {
+   "binding": "let"
+  },
+  "ok": false,
+  "first": "E0384 line 4: cannot assign twice to immutable variable `lattes`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "1a",
+  "picks": {
+   "binding": "let mut"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Just 1 latte.",
+   "Barry: Make it 2. I'm thirsty."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "1b",
+  "picks": {
+   "minutes": "\"ten\""
+  },
+  "ok": false,
+  "first": "E0308 line 2: mismatched types: expected `i32`, found `&str`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "1b",
+  "picks": {
+   "minutes": "10.5"
+  },
+  "ok": false,
+  "first": "E0308 line 2: mismatched types: expected `i32`, found `f64`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "1b",
+  "picks": {
+   "minutes": "10"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: We leave in 10 minutes.",
+   "Carol: Real minutes, or Barry minutes?"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "2a",
+  "picks": {
+   "body": "tray - taken;"
+  },
+  "ok": false,
+  "first": "E0308 line 2: mismatched types: expected `i32`, found `()`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "2a",
+  "picks": {
+   "body": "tray + taken"
+  },
+  "ok": true,
+  "stdout": [
+   "Sol: 23 sample left. ONE."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "2a",
+  "picks": {
+   "body": "tray - taken"
+  },
+  "ok": true,
+  "stdout": [
+   "Sol: 1 sample left. ONE."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "2b",
+  "picks": {
+   "args": "\"brisket\""
+  },
+  "ok": false,
+  "first": "E0061 line 6: this function takes 2 arguments but 1 argument was supplied",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "2b",
+  "picks": {
+   "args": "2, \"brisket\""
+  },
+  "ok": false,
+  "first": "E0308 line 6: mismatched types: expected `&str`, found `{integer}`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "2b",
+  "picks": {
+   "args": "\"brisket\", 2"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Can I try brisket? Just 2.",
+   "Sol: Sure. Then you buy it."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "3a",
+  "picks": {
+   "give": "wine"
+  },
+  "ok": false,
+  "first": "E0382 line 5: borrow of moved value: `wine` (value moved at line 3)",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "3a",
+  "picks": {
+   "give": "&wine"
+  },
+  "ok": true,
+  "stdout": [
+   "Sharon: Thanks for the Barolo.",
+   "Barry: So are we opening the Barolo?"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "3a",
+  "picks": {
+   "give": "wine.clone()"
+  },
+  "ok": true,
+  "stdout": [
+   "Sharon: Thanks for the Barolo.",
+   "Barry: So are we opening the Barolo?"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "3b",
+  "picks": {
+   "arg": "candle"
+  },
+  "ok": false,
+  "first": "E0382 line 8: borrow of moved value: `candle` (value moved at line 7)",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "3b",
+  "picks": {
+   "arg": "&candle"
+  },
+  "ok": false,
+  "first": "E0308 line 7: mismatched types: expected `String`, found `&String`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "3b",
+  "picks": {
+   "arg": "candle.clone()"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Gil, I got you a fig candle.",
+   "Sharon: Is that MY fig candle?"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "4a",
+  "picks": {
+   "arg": "mower",
+   "ty": "String"
+  },
+  "ok": false,
+  "first": "E0382 line 8: borrow of moved value: `mower` (value moved at line 7)",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4a",
+  "picks": {
+   "arg": "&mower",
+   "ty": "String"
+  },
+  "ok": false,
+  "first": "E0308 line 7: mismatched types: expected `String`, found `&String`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4a",
+  "picks": {
+   "arg": "mower",
+   "ty": "&String"
+  },
+  "ok": false,
+  "first": "E0308 line 7: mismatched types: expected `&String`, found `String`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4a",
+  "picks": {
+   "arg": "&mower",
+   "ty": "&String"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Nice mower. Very quiet.",
+   "Ted: And my mower comes home with me."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "4b",
+  "picks": {
+   "arg": "&blade",
+   "ty": "&String"
+  },
+  "ok": false,
+  "first": "E0596 line 2: cannot borrow `*blade` as mutable, which is behind a `&` reference",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4b",
+  "picks": {
+   "arg": "&mut blade",
+   "ty": "&String"
+  },
+  "ok": false,
+  "first": "E0596 line 2: cannot borrow `*blade` as mutable, which is behind a `&` reference",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4b",
+  "picks": {
+   "arg": "&blade",
+   "ty": "&mut String"
+  },
+  "ok": false,
+  "first": "E0308 line 7: mismatched types: expected `&mut String`, found `&String`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "4b",
+  "picks": {
+   "arg": "&mut blade",
+   "ty": "&mut String"
+  },
+  "ok": true,
+  "stdout": [
+   "Ted: You did what to my blade (sharpened)?"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "5a",
+  "picks": {
+   "first": "// (Barry hovers)",
+   "second": "barry.pop();"
+  },
+  "ok": false,
+  "first": "E0499 line 5: cannot borrow `tray` as mutable more than once at a time",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "5a",
+  "picks": {
+   "first": "// (Barry hovers)",
+   "second": "gil.pop();"
+  },
+  "ok": true,
+  "stdout": [
+   "Whit: 1 shrimp left."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "5a",
+  "picks": {
+   "first": "barry.pop();",
+   "second": "barry.pop();"
+  },
+  "ok": false,
+  "first": "E0499 line 5: cannot borrow `tray` as mutable more than once at a time",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "5a",
+  "picks": {
+   "first": "barry.pop();",
+   "second": "gil.pop();"
+  },
+  "ok": true,
+  "stdout": [
+   "Whit: 0 shrimp left."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "5b",
+  "picks": {
+   "early": "tray.clear();",
+   "late": "// (wait)"
+  },
+  "ok": false,
+  "first": "E0502 line 4: cannot borrow `tray` as mutable because it is also borrowed as immutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "5b",
+  "picks": {
+   "early": "tray.clear();",
+   "late": "tray.clear();"
+  },
+  "ok": false,
+  "first": "E0502 line 4: cannot borrow `tray` as mutable because it is also borrowed as immutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "5b",
+  "picks": {
+   "early": "// (wait)",
+   "late": "// (wait)"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: I had my eye on that shrimp.",
+   "Whit: 1 on the tray."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "5b",
+  "picks": {
+   "early": "// (wait)",
+   "late": "tray.clear();"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: I had my eye on that shrimp.",
+   "Whit: 0 on the tray."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "",
+   "recv": "&self"
+  },
+  "ok": false,
+  "first": "E0594 line 5: cannot assign to `self.strokes`, which is behind a `&` reference",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "mut ",
+   "recv": "&self"
+  },
+  "ok": false,
+  "first": "E0594 line 5: cannot assign to `self.strokes`, which is behind a `&` reference",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "",
+   "recv": "self"
+  },
+  "ok": false,
+  "first": "E0594 line 5: cannot assign to `self.strokes`, as `self` is not declared as mutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "mut ",
+   "recv": "self"
+  },
+  "ok": false,
+  "first": "E0594 line 5: cannot assign to `self.strokes`, as `self` is not declared as mutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "",
+   "recv": "&mut self"
+  },
+  "ok": false,
+  "first": "E0596 line 12: cannot borrow `barry` as mutable, as `barry` is not declared as mutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6a",
+  "picks": {
+   "m": "mut ",
+   "recv": "&mut self"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: 5 strokes."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "6b",
+  "picks": {
+   "field": ""
+  },
+  "ok": false,
+  "first": "E0063 line 8: missing field `seats` in initializer of `Cart`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6b",
+  "picks": {
+   "field": "seats: \"two\","
+  },
+  "ok": false,
+  "first": "E0308 line 10: mismatched types: expected `i32`, found `&str`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "6b",
+  "picks": {
+   "field": "seats: 2,"
+  },
+  "ok": true,
+  "stdout": [
+   "Whit: Cart { driver: \"Gil\", seats: 2 }"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "7a",
+  "picks": {
+   "arm": ""
+  },
+  "ok": false,
+  "first": "E0004 line 4: non-exhaustive patterns: `Answer::Maybe` not covered",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "7a",
+  "picks": {
+   "arm": "_ => println!(\"Philippe: Non.\"),"
+  },
+  "ok": true,
+  "stdout": [
+   "Philippe: Non."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "7a",
+  "picks": {
+   "arm": "Answer::Maybe => println!(\"Philippe: The bar.\"),"
+  },
+  "ok": true,
+  "stdout": [
+   "Philippe: The bar."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "",
+   "val": "2"
+  },
+  "ok": false,
+  "first": "E0308 line 2: mismatched types: expected `Option<i32>`, found `{integer}`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "None => println!(\"Philippe: Then go.\"),",
+   "val": "2"
+  },
+  "ok": false,
+  "first": "E0308 line 2: mismatched types: expected `Option<i32>`, found `{integer}`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "",
+   "val": "None"
+  },
+  "ok": false,
+  "first": "E0004 line 3: non-exhaustive patterns: `None` not covered",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "None => println!(\"Philippe: Then go.\"),",
+   "val": "None"
+  },
+  "ok": true,
+  "stdout": [
+   "Philippe: Then go."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "",
+   "val": "Some(2)"
+  },
+  "ok": false,
+  "first": "E0004 line 3: non-exhaustive patterns: `None` not covered",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "7b",
+  "picks": {
+   "none": "None => println!(\"Philippe: Then go.\"),",
+   "val": "Some(2)"
+  },
+  "ok": true,
+  "stdout": [
+   "Philippe: Party of 2."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "8a",
+  "picks": {
+   "has": "\"yes\""
+  },
+  "ok": false,
+  "first": "E0308 line 10: mismatched types: expected `bool`, found `&str`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "8a",
+  "picks": {
+   "has": "false"
+  },
+  "ok": true,
+  "stdout": [
+   "Dana: No receipt, no refund."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "8a",
+  "picks": {
+   "has": "true"
+  },
+  "ok": true,
+  "stdout": [
+   "Dana: Here's $80."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": "?",
+   "ret": ""
+  },
+  "ok": false,
+  "first": "E0277 line 6: the `?` operator can only be used in a function that returns `Result` or `Option`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": ".unwrap()",
+   "ret": ""
+  },
+  "ok": false,
+  "first": "E0308 line 8: mismatched types: expected `()`, found `Result<(), _>`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": "",
+   "ret": ""
+  },
+  "ok": false,
+  "first": "E0277 line 7: `Result<i32, String>` doesn't implement `std::fmt::Display`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": "?",
+   "ret": "-> Result<(), String>"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Not my fault. Carol has it."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": ".unwrap()",
+   "ret": "-> Result<(), String>"
+  },
+  "ok": true,
+  "stdout": [],
+  "panic": "called `Result::unwrap()` on an `Err` value: \"Carol has it.\""
+ },
+ {
+  "plan": "8b",
+  "picks": {
+   "q": "",
+   "ret": "-> Result<(), String>"
+  },
+  "ok": false,
+  "first": "E0277 line 7: `Result<i32, String>` doesn't implement `std::fmt::Display`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "9a",
+  "picks": {
+   "iter": "friends"
+  },
+  "ok": false,
+  "first": "E0382 line 9: borrow of moved value: `friends` (value moved at line 6)",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "9a",
+  "picks": {
+   "iter": "&friends"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: Hello, Gil.",
+   "Barry: Hello, Lamont.",
+   "Barry: 2 hellos. Done."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "9b",
+  "picks": {
+   "first": "&line[0]"
+  },
+  "ok": false,
+  "first": "E0502 line 4: cannot borrow `line` as mutable because it is also borrowed as immutable",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "9b",
+  "picks": {
+   "first": "line[0]"
+  },
+  "ok": false,
+  "first": "E0507 line 3: cannot move out of index of `Vec<String>`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "9b",
+  "picks": {
+   "first": "line[0].clone()"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: I was first. Barry was first.",
+   "Rain: 2 in line."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "10a",
+  "picks": {
+   "sig": "fn longest(a: &str, b: &str) -> &str"
+  },
+  "ok": false,
+  "first": "E0106 line 1: missing lifetime specifier",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "10a",
+  "picks": {
+   "sig": "fn longest(a: String, b: String) -> String"
+  },
+  "ok": false,
+  "first": "E0308 line 8: mismatched types: expected `String`, found `&String`",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "10a",
+  "picks": {
+   "sig": "fn longest<'a>(a: &'a str, b: &'a str) -> &'a str"
+  },
+  "ok": true,
+  "stdout": [
+   "Barry: six weeks, maybe seven?!"
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "10b",
+  "picks": {
+   "take": "&spare"
+  },
+  "ok": false,
+  "first": "E0597 line 5: `spare` does not live long enough: borrowed value does not live long enough",
+  "stdout": [],
+  "panic": ""
+ },
+ {
+  "plan": "10b",
+  "picks": {
+   "take": "spare.clone()"
+  },
+  "ok": true,
+  "stdout": [
+   "Lamont: I've still got the spare key."
+  ],
+  "panic": ""
+ },
+ {
+  "plan": "10b",
+  "picks": {
+   "take": "spare"
+  },
+  "ok": true,
+  "stdout": [
+   "Lamont: I've still got the spare key."
+  ],
+  "panic": ""
+ }
+]

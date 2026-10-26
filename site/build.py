@@ -5,11 +5,13 @@ reads, so the scrolls and the guardian's questions on the site are the ones
 the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
 JavaScript game, gets its own page in `flatmates/` and its export in
-`flatmates/play/`.
+`flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
+`curb/` and `curb/play/`.
 
     python site/build.py build/site
     python site/build.py --play build/site/play/index.html
     python site/build.py --flatmates build/site/flatmates/play/index.html
+    python site/build.py --curb build/site/curb/play/index.html
 """
 
 from __future__ import annotations
@@ -27,6 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 QUEST = ROOT / "games" / "dunder-quest"
 FLATMATES = ROOT / "games" / "flatmates"
+CURB = ROOT / "games" / "curb"
 SITE = Path(__file__).resolve().parent
 REPO = "https://github.com/rlancer/dunder-quest"
 ## Social previews need absolute URLs, so every page points at production,
@@ -42,7 +45,10 @@ TRAILER_ID = "7a-I7FzQdD8"
 ## Flatmates.js's trailer, once it's on YouTube. Empty shows the thumbnail
 ## without a player.
 FM_TRAILER_ID = "EJ2w4MgKSpU"
-## The channel both trailers go up on.
+## Curb Your Oxidation's trailer, once it's on YouTube: paste its video ID
+## here. Empty leaves the trailer off the /curb/ page.
+CURB_TRAILER_ID = ""
+## The channel every trailer goes up on.
 CHANNEL = "https://www.youtube.com/@dunderquest"
 ## A rolling release CI refreshes on every push to main.
 DOWNLOADS = f"{REPO}/releases/download/builds"
@@ -272,7 +278,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <footer class="foot">
   <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way.</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{prefix}curb/">Curb Your Oxidation</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
@@ -375,6 +381,17 @@ def build_home(bank: dict, prefix: str = "") -> str:
     <span><b>Two flatmates. Two points of view. One of them runs your JavaScript.</b>
     Swap between Clive and Jazz across six stops in Croydon, from calling a method to awaiting two promises, and script the one you aren't playing.
     <span class="next-go">Meet the flatmates →</span></span>
+  </a>
+</section>
+
+<section class="section" aria-labelledby="cy-h">
+  <p class="kicker">The third game</p>
+  <h2 id="cy-h">Curb Your Oxidation teaches Rust</h2>
+  <a class="next-game next-curb" href="{prefix}curb/">
+    <img src="{prefix}static/img/og/curb.png" alt="Curb Your Oxidation: a black title card in plain serif over a palm-lined Westside street at sunset" width="1200" height="630" loading="lazy">
+    <span><b>The borrow checker is the unwritten social contract.</b>
+    Ten petty disputes on the Westside, from a second latte to a houseguest who won't leave, each settled by a Rust program, from <code>let mut</code> to lifetimes.
+    <span class="next-go">Meet Barry →</span></span>
   </a>
 </section>
 {downloads_section(prefix)}
@@ -636,6 +653,7 @@ Dunder Quest is a free pixel-art platformer where every stage teaches a piece of
 ▶ Windows, macOS and Linux: {SITE_URL}#download
 ▶ Every lesson and question: {SITE_URL}lessons/
 ▶ Prefer JavaScript? Flatmates.js: {SITE_URL}flatmates/
+▶ Or Rust? Curb Your Oxidation: {SITE_URL}curb/
 
 What's inside
 • 6 stages, 6 Python topics: lists, dictionaries, loops, booleans, functions, comprehensions
@@ -669,6 +687,7 @@ Flatmates.js is a free pixel-art game where you write the other flatmate's to-do
 ▶ Play free in your browser: {SITE_URL}flatmates/play/
 ▶ The six stops and their scripts: {SITE_URL}flatmates/
 ▶ Prefer Python? Dunder Quest: {SITE_URL}
+▶ Or Rust? Curb Your Oxidation: {SITE_URL}curb/
 
 What's inside
 • 6 stops, 6 pieces of JavaScript: methods, template literals, loops, events, timers, async/await
@@ -691,10 +710,44 @@ An homage to a certain Croydon flat-share sitcom. The names and jokes are winks,
 #javascript #learnjavascript #indiegame #pixelart #godot #codinggame"""
 FM_YOUTUBE_TAGS = ("learn javascript, javascript for beginners, coding game, educational game, pixel art, "
                    "indie game, godot, sitcom, flatmates.js, dunder quest")
+## Curb Your Oxidation's trailer (games/curb/trailer/). The chapter times are
+## a guess until the cut is final: check them against it.
+CURB_YOUTUBE_TITLE = "Curb Your Oxidation – Learn Rust, One Petty Dispute at a Time | Official Trailer"
+CURB_YOUTUBE_DESCRIPTION = f"""The borrow checker is the unwritten social contract.
+
+Curb Your Oxidation is a free pixel-art game that teaches Rust. Barry Danvers, a semi-retired TV writer on the Westside of LA, lives by rules nobody else has heard of, and every petty dispute he gets into is settled by a plan: a short Rust program on his yellow legal pad. He plays it through in his head first, the way rustc reads your whole program before anything runs. Break the rules and Sharon bursts in at the exact line with the real rustc error, and an opinion about it. Get it right and the scene plays out, one println! at a time.
+
+▶ Play free in your browser: {SITE_URL}curb/play/
+▶ The ten episodes and their plans: {SITE_URL}curb/
+▶ Prefer Python? Dunder Quest: {SITE_URL}
+▶ Or JavaScript? Flatmates.js: {SITE_URL}flatmates/
+
+What's inside
+• 10 episodes, 10 pieces of Rust: let and mut, functions, ownership and moves, borrowing, &mut, structs and methods, enums and Option, Result and ?, Vec and loops, lifetimes
+• Real rustc error codes, from E0382 to E0597, delivered by Sharon
+• Every plan compiled with the real rustc, in every combination of its blanks
+• A second latte, the last shrimp, a regifted candle, and a houseguest who said one night
+• Keyboard, gamepad or touch. No signup.
+
+How it was made
+Opus 5.5 built the game: every line of Godot code, a small Rust checker written in GDScript, the cast painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backdrops and soundtrack. My part was prompting and playtesting.
+Source: {REPO}/tree/main/games/curb
+
+0:00 Cold open: one latte
+0:13 Barry has rules
+0:29 The season
+0:43 The panic, the shrimp, the squint
+0:57 Freeze frames
+
+An homage to a certain LA cringe-comedy series. The names, lines and music are original, not the show's own; it isn't affiliated with or endorsed by anyone who made it.
+
+#rust #rustlang #learnrust #indiegame #pixelart #godot #codinggame"""
+CURB_YOUTUBE_TAGS = ("learn rust, rust for beginners, rustlang, borrow checker, coding game, educational game, "
+                     "pixel art, indie game, godot, sitcom, curb your oxidation, dunder quest")
 ## The channel's own fields, in YouTube Studio under Customization.
 CHANNEL_DESCRIPTION = f"""Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does.
+Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract.
 
 Opus 5.5 built every game here end to end: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -702,10 +755,11 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: {SITE_URL}"""
 CHANNEL_KEYWORDS = ('"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-                    '"indie game" godot "programming for beginners" "dunder quest" flatmates.js')
+                    '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation"')
 CHANNEL_LINKS = [
     ("Play Dunder Quest", f"{SITE_URL}play/"),
     ("Play Flatmates.js", f"{SITE_URL}flatmates/play/"),
+    ("Play Curb Your Oxidation", f"{SITE_URL}curb/play/"),
     ("Source on GitHub", REPO),
 ]
 ## (file, name, size YouTube asks for, where it goes, alt)
@@ -719,9 +773,10 @@ CHANNEL_ART = [
      "Customization → Branding → Video watermark, shown for the entire video", "The Dunder Quest icon"),
 ]
 CHANNEL_PLAYLISTS = [
-    ("Trailers", "Both trailers, newest first. Set the Dunder Quest trailer as the channel trailer for visitors who haven't subscribed."),
+    ("Trailers", "Every trailer, newest first. Set the Dunder Quest trailer as the channel trailer for visitors who haven't subscribed."),
     ("Dunder Quest", "The Python game: its trailer, and later the Short and the GIF loops cut to video."),
     ("Flatmates.js", "The JavaScript game: its trailer, and later its Short."),
+    ("Curb Your Oxidation", "The Rust game: its trailer, and later its Short."),
 ]
 ## Studio's upload settings that are the same for every video.
 UPLOAD_SETTINGS = [
@@ -817,7 +872,7 @@ LAUNCH = [
 BRAND_PAGES = [
     ("identity", "Logo, voice, colors and type", "The wordmark, every line the game is pitched with, the palette and the fonts."),
     ("art", "Art and social cards", "The sprites and scenes, and the card each page shows when its link is shared."),
-    ("trailers", "The trailers", "Both games' trailers, how they're made, and every cut."),
+    ("trailers", "The trailers", "Every game's trailer, how each is made, and every cut."),
     ("youtube", "The YouTube channel", "The @dunderquest channel art, its description and links, and each video's upload form."),
     ("launch", "The launch posts", "One post per platform, ready to paste, in the order they go out."),
 ]
@@ -947,7 +1002,8 @@ def build_brand_art(prefix: str) -> str:
     )
     cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
              ("lessons.png", "Lessons", "The lessons index"),
-             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game")]
+             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game"),
+             ("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")]
     cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
     card_items = "".join(
         f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
@@ -968,13 +1024,14 @@ def build_brand_art(prefix: str) -> str:
   <h2 id="cards-h">The social cards</h2>
   <p class="lede">What a link to each page looks like when it's shared. Chat apps show either the full card or a small square cut from its middle, shown beside each one, so anything that has to be read sits in the center.</p>
   <ul class="cards">{card_items}</ul>
-  <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>.</p>
+  <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>, <code>games/flatmates/tools/og.py</code> and <code>site/curb_art.py</code>.</p>
 </section>"""
     return brand_page("art", body, prefix)
 
 
 DQ_THUMB_ALT = "Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark"
 FM_THUMB_ALT = "Flatmates.js trailer thumbnail: Clive and Jazz on their sofas, under 'Learn JavaScript. Blame your flatmate.' and jazz.walk(7);"
+CURB_THUMB_ALT = "Curb Your Oxidation trailer thumbnail: the title in plain serif on black, over Sharon interrupting with error[E0382]"
 
 
 def trailer_player(video: str, thumb: str, alt: str, name: str) -> str:
@@ -1013,6 +1070,14 @@ def build_brand_trailers(prefix: str) -> str:
   {trailer_player(FM_TRAILER_ID, f"{img}flatmates/trailer.png", FM_THUMB_ALT, "Flatmates.js")}
   <dl class="facts">{fm_facts}</dl>
   <p class="fine">How it's made: <a href="{REPO}/blob/main/games/flatmates/trailer/README.md">games/flatmates/trailer/README.md</a>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cy-trailer-h">
+  <p class="kicker">curb.__trailer__</p>
+  <h2 id="cy-trailer-h">Curb Your Oxidation</h2>
+  <p class="lede">Cut like the series it's an homage to: black title cards in plain serif, the bickering left to run, a squint, a freeze frame and a tuba. Made the same way, from the repo, with no video editor.</p>
+  {trailer_player(CURB_TRAILER_ID, f"{img}curb/trailer.png", CURB_THUMB_ALT, "Curb Your Oxidation")}
+  <p class="fine">Its working files are in <code>games/curb/trailer/</code>.</p>
 </section>
 
 <section class="section kit">
@@ -1059,12 +1124,15 @@ def build_brand_youtube(prefix: str) -> str:
                        "games/dunder-quest/trailer/out/dunder_quest_trailer_4k.mp4")
             + upload_kit("Flatmates.js", FM_TRAILER_ID, f"{img}flatmates/trailer.png", "flatmates_thumbnail.png",
                          FM_YOUTUBE_TITLE, FM_YOUTUBE_DESCRIPTION, FM_YOUTUBE_TAGS, "Flatmates.js",
-                         "games/flatmates/trailer/out/flatmates_trailer_4k.mp4"))
+                         "games/flatmates/trailer/out/flatmates_trailer_4k.mp4")
+            + upload_kit("Curb Your Oxidation", CURB_TRAILER_ID, f"{img}curb/trailer.png", "curb_thumbnail.png",
+                         CURB_YOUTUBE_TITLE, CURB_YOUTUBE_DESCRIPTION, CURB_YOUTUBE_TAGS, "Curb Your Oxidation",
+                         "games/curb/trailer/out/curb_trailer_4k.mp4"))
     body = f"""
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
   <h2 id="channel-h">@dunderquest</h2>
-  <p class="lede">One channel for both games: <a href="{CHANNEL}">youtube.com/@dunderquest</a>. Everything YouTube Studio asks for is below, ready to upload or paste.</p>
+  <p class="lede">One channel for every game: <a href="{CHANNEL}">youtube.com/@dunderquest</a>. Everything YouTube Studio asks for is below, ready to upload or paste.</p>
   <dl class="facts">
     <div><dt>Name</dt><dd>Dunder Quest</dd></div>
     <div><dt>Handle</dt><dd>@dunderquest</dd></div>
@@ -1104,7 +1172,7 @@ def build_brand_youtube(prefix: str) -> str:
     <tbody>{settings}</tbody>
   </table></div>
   {kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code> or <code>FM_TRAILER_ID</code> in <code>site/build.py</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code> or <code>CURB_TRAILER_ID</code> in <code>site/build.py</code>, and the site embeds it.</p>
 </section>"""
     return brand_page("youtube", body, prefix)
 
@@ -1450,7 +1518,7 @@ def build_flatmates(prefix: str) -> str:
 <section class="section fm-family" aria-labelledby="family-h">
   <p class="kicker">a {WORDMARK} game</p>
   <h2 id="family-h">Prefer Python?</h2>
-  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="{prefix}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper.</p>
+  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="{prefix}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper. The third, <a href="{prefix}curb/">Curb Your Oxidation</a>, teaches Rust on the Westside of LA.</p>
   <p class="fine">Flatmates.js is an homage to a certain Croydon flat-share sitcom. The names and jokes are winks, not the show's own characters or lines, and it isn't affiliated with or endorsed by anyone who made it.</p>
 </section>"""
     return fm_page(body, prefix)
@@ -1498,12 +1566,336 @@ def fm_page(body: str, prefix: str) -> str:
 """
 
 
+
+CURB_ALT = "Curb Your Oxidation: a black title card in plain serif over a palm-lined Westside street at sunset."
+CURB_DESC = ("Curb Your Oxidation, a Dunder Quest game that teaches Rust: the borrow checker is the unwritten "
+             "social contract, and every petty dispute is settled by a Rust program. Play it free in your browser.")
+
+
+def tag_curb_page(index: Path) -> None:
+    """The same tags for Curb Your Oxidation, the Rust game in curb/, which
+    Godot exports to curb/play/index.html."""
+    desc = "Play Curb Your Oxidation, the Dunder Quest game that teaches Rust, right in your browser."
+    text = index.read_text(encoding="utf-8")
+    if 'property="og:title"' in text:
+        return
+    tags = (f'<meta name="description" content="{esc(desc)}">\n'
+            f'{head_tags("Play Curb Your Oxidation · Dunder Quest", desc, "curb/play/", "curb.png", CURB_ALT)}\n')
+    index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
+    print(f"tagged {index}")
+
+
+## Curb Your Oxidation's own page at /curb/: black title cards in plain serif
+## on a bright Westside page. Everything about the season comes from
+## `curb/data/scenes.json`, the data the game plays, and every pad answers
+## from `site/curb_cases.json`, the in-game checker's verdict on each
+## combination of blanks (both made by `site/curb_art.py`, which also copies
+## the art).
+CURB_RS_KEYWORDS = {"fn", "let", "mut", "match", "if", "else", "for", "in", "impl", "struct", "enum", "self",
+                    "Self", "return", "pub", "use", "while", "loop", "as", "ref", "move", "true", "false"}
+CURB_RS_TYPES = {"i32", "i64", "u32", "usize", "f64", "bool", "str", "String", "Vec", "Option", "Result",
+                 "Some", "None", "Ok", "Err"}
+CURB_TOKEN = re.compile(r"(?P<c>//[^\n]*)|(?P<s>\"(?:\\.|[^\"\\])*\")|(?P<l>'[a-z_]+\b(?!'))"
+                        r"|(?P<n>\b\d+(?:\.\d+)?\b)|(?P<w>[A-Za-z_][\w]*)(?P<bang>!)?(?P<call>\s*\()?")
+## The cast on the page, in the order they're introduced.
+CURB_CAST = ["barry", "gil", "sharon", "carol", "lamont", "ted"]
+CURB_CAST_NOTES = {
+    "barry": "Semi-retired TV writer on the Westside. Lives by rules nobody else has heard of, and holds everyone to them.",
+    "gil": "Barry's manager and best friend. Endlessly patient, which Barry tests daily.",
+    "sharon": "Gil's wife, and the borrow checker. When a plan breaks the rules, she bursts in at the exact line, with rustc's own error and an opinion about it.",
+    "carol": "Barry's ex-wife, somehow still on speaking terms. Counts his minutes.",
+    "lamont": "The houseguest who came for one night. It's been six weeks.",
+    "ted": "The neighbor whose lawnmower has been in Barry's garage for six weeks.",
+}
+
+
+def highlight_rs(code: str) -> str:
+    """Rust as HTML spans, in the pad's ink colors: keywords, types, strings,
+    numbers, lifetimes, comments, macros and calls. Private-use characters
+    (the blanks) pass through untouched."""
+    out: list[str] = []
+    pos = 0
+    for m in CURB_TOKEN.finditer(code):
+        out.append(esc(code[pos:m.start()]))
+        pos = m.end()
+        if m.group("w"):
+            word = m.group("w")
+            if m.group("bang"):
+                out.append(f'<span class="m">{esc(word)}!</span>')
+            else:
+                cls = ("k" if word in CURB_RS_KEYWORDS else "t" if word in CURB_RS_TYPES or word[:1].isupper()
+                       else "b" if m.group("call") else "")
+                out.append(f'<span class="{cls}">{esc(word)}</span>' if cls else esc(word))
+            out.append(esc(m.group("call") or ""))
+        else:
+            out.append(f'<span class="{m.lastgroup}">{esc(m.group())}</span>')
+    out.append(esc(code[pos:]))
+    return "".join(out)
+
+
+def curb_said(data: dict, line: list) -> str:
+    """One line of dialogue, as a script would print it."""
+    who = data["cast"].get(line[0], {}).get("name", line[0].title())
+    return f'<p><b>{esc(who)}</b> {esc(line[1])}</p>'
+
+
+def curb_verdict(data: dict, plan: dict, case: dict) -> dict:
+    """What the scene does with one combination of blanks, the way the game
+    plays it: Sharon's interruption, the scene playing out, or a panic."""
+    def lines(say: list) -> list:
+        return [[data["cast"][w]["name"], t] for w, t, *_ in say]
+    if not case["ok"]:
+        code, rest = case["first"].split(" line ", 1)
+        line, msg = rest.split(": ", 1)
+        rant = plan.get("rants", {}).get(code) or data["rants"].get(code, data["rants"]["syntax"])
+        return {"kind": "err", "head": f"error[{code}]: {msg}", "at": f"--> {plan['file']}:{line}",
+                "lines": [["Sharon", rant]]}
+    out = list(case["stdout"])
+    if case["panic"]:
+        out.append(f"thread 'main' panicked: {case['panic']}")
+        return {"kind": "panic", "out": out, "lines": lines(plan.get("panic_line") or [["sharon", data["rants"]["panic"]]])}
+    if case["stdout"] == plan["expect"]:
+        key = ",".join(f"{k}={v}" for k, v in case["picks"].items())
+        return {"kind": "ok", "out": out, "lines": lines(plan.get("remarks", {}).get(key, []) + plan["success"])}
+    return {"kind": "wrong", "out": out, "lines": lines(plan.get("wrong") or [[plan["npc"], data["rants"]["wrong"]]])}
+
+
+def curb_pad(data: dict, plan: dict, cases: list[dict]) -> str:
+    """A plan on Barry's yellow legal pad: tap a blank to cycle its options,
+    then Run it (static/pad.js). It opens on the scene's starting picks, so
+    the first run fails the way the game's does. Without JavaScript the
+    options and the answer still show."""
+    order: list[str] = []
+    for line in plan["code"]:
+        order += [n for n in re.findall(r"«(\w+)»", line) if n not in order]
+    src = "\n".join(plan["code"])
+    for i, name in enumerate(order):
+        src = src.replace(f"«{name}»", chr(0xE000 + i))
+    code = highlight_rs(src)
+    for i, name in enumerate(order):
+        opts = plan["slots"][name]
+        start = opts.index(plan["start"][name])
+        code = code.replace(chr(0xE000 + i), (
+            f'<button class="blank" type="button" data-pick="{start}" '
+            f"data-options='{esc(json.dumps(opts))}' aria-label=\"Blank {i + 1}: tap to change it\" disabled>"
+            f"{esc(opts[start]) or '…'}</button>"))
+    verdicts = {}
+    for case in cases:
+        if case["plan"] == plan["id"]:
+            key = ",".join(str(plan["slots"][n].index(case["picks"][n])) for n in order)
+            verdicts[key] = curb_verdict(data, plan, case)
+    options = "".join(
+        f'<li><span>Blank {i + 1}:</span> '
+        + " · ".join(f"<code>{esc(o) if o else '(nothing)'}</code>" for o in plan["slots"][n]) + "</li>"
+        for i, n in enumerate(order))
+    solution = " and ".join(f"<code>{esc(plan['solution'][n]) or '(nothing)'}</code>" for n in order)
+    said = "".join(f"<li><code>{esc(line)}</code></li>" for line in plan["expect"])
+    return f"""<figure class="pad" data-pad data-verdicts='{esc(json.dumps(verdicts, ensure_ascii=False))}'>
+  <figcaption><b>{esc(plan['file'])}</b> {esc(plan['title'])}</figcaption>
+  <pre><code>{code}</code></pre>
+  <ul class="pad-options">{options}</ul>
+  <p class="pad-hint"><b>Barry, thinking:</b> {esc(plan['hint'])}</p>
+  <div class="pad-bar"><span>Tap a blank to change it.</span><button class="run" type="button" disabled>Run it</button></div>
+  <div class="pad-out" role="status" hidden></div>
+  <details><summary>Show the answer</summary><p>{solution}. Then the scene plays out, one line per <code>println!</code>:</p><ol class="pad-said">{said}</ol></details>
+</figure>"""
+
+
+def curb_card(data: dict, card: dict) -> str:
+    who = data["cast"][card["who"]]["name"]
+    tail = (f'<p class="rule-err">error[{esc(card["error"])}]</p>' if card.get("error")
+            else '<p class="rule-out">prints ' + " ".join(f"<code>{esc(o)}</code>" for o in card.get("output", [])) + "</p>")
+    return f"""<article class="rule">
+  <p class="rule-kick">{esc(who)} explains</p>
+  <h4>{esc(card['title'])}</h4>
+  <figure class="code"><pre><code>{highlight_rs(chr(10).join(card['code']))}</code></pre></figure>
+  {tail}
+  <p>{esc(card['text'])}</p>
+</article>"""
+
+
+def build_curb(prefix: str) -> str:
+    """The Curb Your Oxidation page. `prefix` reaches the site root; the game
+    itself is in `play/` next to this page."""
+    img = f"{prefix}static/img/curb/"
+    data = json.loads((CURB / "data" / "scenes.json").read_text(encoding="utf-8"))
+    cases = json.loads((SITE / "curb_cases.json").read_text(encoding="utf-8"))
+    scenes = data["scenes"]
+    guide = "".join(
+        f'<li><a href="#ep{s["id"]}"><span class="ep-n">Episode {s["id"]}</span>'
+        f'<span class="ep-t">{esc(s["title"])}</span><span class="ep-l">{esc(s["lesson"])}</span></a></li>'
+        for s in scenes)
+    episodes = []
+    for s in scenes:
+        cards = "".join(curb_card(data, data["cards"][p["card"]]) for p in s["plans"])
+        cast = ", ".join(data["cast"][c]["name"] for c, _ in s["cast"])
+        episodes.append(f"""
+<article class="ep" id="ep{s['id']}">
+  <header class="title-card"><p>Episode {s['id']}</p><h3>{esc(s['title'])}</h3></header>
+  <p class="ep-meta"><b>{esc(s['place'])}</b> · {esc(s['lesson'])} · with {esc(cast)}</p>
+  <div class="ep-grid">
+    <div>
+      <img src="{img}{s['id']:02d}_opening.png" alt="{esc(s['place'])}, as the episode opens" width="480" height="270" loading="lazy">
+      <div class="script">{"".join(curb_said(data, line) for line in s['opening'])}</div>
+    </div>
+    {curb_pad(data, s["plans"][0], cases)}
+  </div>
+  <div class="rules">{cards}</div>
+</article>""")
+    cast = "".join(
+        f'<li class="who-{w}"><img src="{img}{w}_face.png" alt="" width="96" height="96">'
+        f'<div><h3>{esc(data["cast"][w]["full"])}</h3><p>{esc(CURB_CAST_NOTES[w])}</p></div></li>'
+        for w in CURB_CAST)
+    codes: list[str] = []
+    for s in scenes:
+        for p in s["plans"]:
+            if p["start_error"] not in codes:
+                codes.append(p["start_error"])
+    rulebook = "".join(f'<li><code>error[{c}]</code><q>{esc(data["rants"][c])}</q></li>' for c in codes)
+    controls = [
+        ("Walk", "← / → or A / D", "D-pad or left stick"),
+        ("Talk, open a plan", "E, Space or Enter", "X / Square or A / Cross"),
+        ("Pick a blank on the pad", "← / →", "D-pad left and right"),
+        ("Change the blank", "↑ / ↓", "D-pad up and down"),
+        ("Run the plan", "Enter or R", "LB / L1"),
+        ("Close the pad, pause", "Esc or P", "Start / Options"),
+    ]
+    rows = "".join(f"<tr><th scope=row>{a}</th><td data-label=Keyboard>{k}</td><td data-label=Gamepad>{p}</td></tr>" for a, k, p in controls)
+    ## No trailer yet: the section appears once CURB_TRAILER_ID is set.
+    trailer = "" if not CURB_TRAILER_ID else f"""
+<section class="section" id="trailer" aria-labelledby="trailer-h">
+  <p class="kicker">The trailer</p>
+  <h2 id="trailer-h">Previously, on the Westside</h2>
+  {trailer_player(CURB_TRAILER_ID, f"{img}trailer.png", CURB_THUMB_ALT, "Curb Your Oxidation")}
+  <p class="fine">More on the channel: <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+"""
+    total = len(data["cards"])
+    plans = sum(len(s["plans"]) for s in scenes)
+    body = f"""
+<section class="cy-hero">
+  <div class="title-card cy-title">
+    <p class="prompt" aria-hidden="true">$ cargo run --bin barry</p>
+    <h1>Curb Your Oxidation</h1>
+    <p class="tag">The borrow checker is the unwritten social contract. Learn Rust.</p>
+    <p class="hero-sub">Barry Danvers lives by rules nobody else has heard of. Every petty dispute on the Westside, over a latte, a lawnmower or the last shrimp, is settled by a plan, and every plan is a short Rust program on his yellow legal pad. Break the rules and Sharon will let you know. At the exact line.</p>
+    <div class="cta">
+      <a class="btn" href="play/">Play in your browser</a>
+      <a class="btn btn-ghost" href="#season">See the ten episodes</a>
+    </div>
+    <p class="fine">Free, no signup. Keyboard, gamepad or touch.</p>
+  </div>
+  <img class="cy-strip" src="{img}title.png" alt="Pixel art of a palm-lined Westside street at sunset, a silver hybrid parked at the curb" width="480" height="270">
+</section>
+{trailer}
+<section class="section" id="how" aria-labelledby="how-h">
+  <p class="kicker">How an episode goes</p>
+  <h2 id="how-h">Plan it. Rehearse it. Get interrupted.</h2>
+  <p class="lede">The way rustc reads your whole program before anything runs, Barry plays every plan through in his head first. If it breaks the rules, it never happens. If it compiles, every <code>println!</code> is somebody saying that line out loud.</p>
+  <ol class="loop">
+    <li><img src="{img}03_pad.png" alt="Barry's legal pad open on gift.rs, with the blank in let host_gift = wine; picked out and three options below" width="480" height="270" loading="lazy">
+      <h3>Write the plan</h3><p>Talk to someone and the dispute turns into a short Rust program on Barry's legal pad, with blanks to fill. Pick what goes in each.</p></li>
+    <li><img src="{img}03_rant.png" alt="Sharon bursting in with error[E0382]: borrow of moved value" width="480" height="270" loading="lazy">
+      <h3>Rehearse it, in sepia</h3><p>Barry runs it in his head, line by line. Break a rule and Sharon bursts in at that line with the real rustc error, <code>error[E0382]</code> and all, and an opinion about it.</p></li>
+    <li><img src="{img}03_run.png" alt="The plan playing out for real: Sharon says Thanks for the Barolo while the code highlights her println! line" width="480" height="270" loading="lazy">
+      <h3>Watch it happen</h3><p>When it compiles, the scene plays it out for real, and only moves on if the program prints exactly what should happen. Then a squint, a freeze frame, and the tuba.</p></li>
+  </ol>
+</section>
+
+<section class="section" id="cast" aria-labelledby="cast-h">
+  <p class="kicker">Starring</p>
+  <h2 id="cast-h">The cast</h2>
+  <ul class="cast">{cast}</ul>
+  <p class="fine">Also appearing: Sol at the deli, who counts the samples; Whit Thornbury, who manages the country club; Philippe, maître d' of a bistro Barry can't get into; Dana at returns, who has heard it all; and Rain, the barista.</p>
+</section>
+
+<section class="section" id="season" aria-labelledby="season-h">
+  <p class="kicker">The season</p>
+  <h2 id="season-h">Ten episodes, ten pieces of Rust</h2>
+  <p class="lede">Each episode is one petty dispute and one idea, and they build on each other: from <code>let mut</code> to ownership, borrowing and lifetimes. Every episode below has one of its plans on a pad to try. It opens on Barry's first idea, which is wrong.</p>
+  <ol class="guide">{guide}</ol>
+  {"".join(episodes)}
+  <p class="count"><b>{total}</b> lesson cards · <b>{plans}</b> plans · every one compiled with the real rustc</p>
+</section>
+
+<section class="section" id="rules" aria-labelledby="rules-h">
+  <p class="kicker">The rulebook</p>
+  <h2 id="rules-h">rustc, as Sharon puts it</h2>
+  <p class="lede">The error codes are the compiler's own. The delivery is Sharon's.</p>
+  <ul class="rulebook">{rulebook}</ul>
+</section>
+
+<section class="section" id="controls" aria-labelledby="controls-h">
+  <p class="kicker">Controls</p>
+  <h2 id="controls-h">How to play</h2>
+  <div class="table-wrap"><table class="controls">
+    <thead><tr><th scope=col>Action</th><th scope=col>Keyboard</th><th scope=col>Gamepad</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table></div>
+  <p class="fine">On a phone or tablet, turn it sideways and tap: tap someone to talk, tap a blank to change it. Your progress saves in this browser, separately from the other games'.</p>
+  <a class="btn" href="play/">Play Curb Your Oxidation</a>
+</section>
+
+<section class="section cy-family" aria-labelledby="family-h">
+  <p class="kicker">a {WORDMARK} game</p>
+  <h2 id="family-h">Prefer Python, or JavaScript?</h2>
+  <p class="lede">Curb Your Oxidation is the third Dunder Quest game. <a href="{prefix}">Dunder Quest</a> teaches Python on a quest for the Grail, and <a href="{prefix}flatmates/">Flatmates.js</a> teaches JavaScript in a very small Croydon flat.</p>
+  <p class="fine">Curb Your Oxidation is an homage to a certain LA cringe-comedy series. The names, lines and music are original, not the show's own, and it isn't affiliated with or endorsed by anyone who made it.</p>
+</section>"""
+    return curb_page(body, prefix)
+
+
+CURB_NAV = [("#cast", "The cast"), ("#season", "Episodes"), ("#controls", "How to play")]
+
+
+def curb_page(body: str, prefix: str) -> str:
+    links = "".join(f'<a href="{href}">{label}</a>' for href, label in CURB_NAV)
+    title = "Curb Your Oxidation · Dunder Quest"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{esc(CURB_DESC)}">
+{head_tags(title, CURB_DESC, "curb/", "curb.png", CURB_ALT)}
+<link rel="icon" href="{prefix}static/img/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{prefix}static/style.css">
+<link rel="stylesheet" href="{prefix}static/curb.css">
+</head>
+<body class="cy">
+<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <a class="brand" href="./"><img src="{prefix}static/img/curb/barry.png" alt="" width="12" height="24"><span>Curb Your Oxidation</span></a>
+  <nav aria-label="Curb Your Oxidation">{links}<a class="cy-home" href="{prefix}">Dunder Quest</a></nav>
+  <a class="btn btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+{body}
+</main>
+<footer class="foot">
+  <p><img src="{prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="{REPO}/tree/main/games/curb">Source on GitHub</a></p>
+</footer>
+<script src="{prefix}static/pad.js"></script>
+<script src="{prefix}static/trailer.js"></script>
+</body>
+</html>
+"""
+
+
 def main() -> None:
     if sys.argv[1:2] == ["--play"]:
         tag_play_page(Path(sys.argv[2]))
         return
     if sys.argv[1:2] == ["--flatmates"]:
         tag_flatmates_page(Path(sys.argv[2]))
+        return
+    if sys.argv[1:2] == ["--curb"]:
+        tag_curb_page(Path(sys.argv[2]))
         return
     out = Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "build" / "site").resolve()
     out.mkdir(parents=True, exist_ok=True)
@@ -1533,6 +1925,7 @@ def main() -> None:
                         ("youtube", build_brand_youtube), ("launch", build_brand_launch)):
         write(out / "brand" / slug / "index.html", build("../../"))
     write(out / "flatmates" / "index.html", build_flatmates("../"))
+    write(out / "curb" / "index.html", build_curb("../"))
     write(out / "404.html", build_404("/"))
     write(out / "_redirects", "".join(
         f"/lessons/{old}/ /lessons/{new}/ 301\n/lessons/{old} /lessons/{new}/ 301\n" for old, new in OLD_SLUGS.items()))

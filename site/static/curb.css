@@ -1,0 +1,191 @@
+/* Curb Your Oxidation, on top of style.css. Bright Westside daylight
+   (stucco, pool blue, golf green, Rust's oxide orange, from
+   curb/core/palette.gd), black title cards in plain serif like the game's,
+   and Barry's yellow legal pad for the code. */
+
+body.cy {
+  color-scheme: light;
+  --dusk: #f6efe1;
+  --dusk-2: #efe5d0;
+  --night: #fffaf0;
+  --line: #dccdb0;
+  --gold: #a8441a;
+  --ember: #c4561c;
+  --parchment: #1b1719;
+  --ash: #6b5f55;
+  --moss: #2f7d3a;
+  --zap: #b8332a;
+  --ink: #0d0b0c;
+  --paper: #f7f0db;
+  --rust: #d96b2e;
+  --pool: #1a6f94;
+  --pad: #fdf3a0;
+  --pad-rule: #a9c4e2;
+  --pad-margin: #e05c57;
+  --pad-ink: #1f2450;
+  --display: "Libre Baskerville", Georgia, "Times New Roman", serif;
+}
+
+/* Headings in the title cards' serif, set plain */
+.cy h1, .cy h2, .cy h3, .cy h4 { font-weight: 400; letter-spacing: 0; }
+.cy h2 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
+.cy .kicker { font: 700 0.8rem/1 var(--body); letter-spacing: 0.18em; color: var(--ember); }
+.cy a:hover { color: var(--rust); }
+.cy :focus-visible { outline-color: var(--pool); }
+
+/* The bar is a title card too */
+.cy .bar { background: rgba(13, 11, 12, 0.95); border-bottom-color: var(--rust); }
+.cy .brand { font: 400 1.2rem var(--display); color: var(--paper); }
+.cy .brand img { width: 12px; height: 24px; }
+.cy .bar nav a { color: #cfc6b8; }
+.cy .bar nav a:hover { color: #fff; }
+.cy .bar nav a.cy-home { color: var(--rust); }
+.cy .bar nav a.cy-home::before { content: "← "; }
+
+/* Buttons: black on the page, paper on the black cards */
+.cy .btn { font-family: var(--display); font-weight: 400; color: var(--paper); background: var(--ink); border-color: var(--ink); box-shadow: 0 4px 0 var(--rust); }
+.cy .btn:hover { color: #fff; background: #2a2427; box-shadow: 0 5px 0 var(--rust); }
+.cy .btn:active { box-shadow: 0 1px 0 var(--rust); }
+.cy .btn-ghost { background: transparent; color: var(--paper); border-color: var(--paper); box-shadow: none; }
+.cy .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); color: #fff; box-shadow: none; }
+.cy .bar .btn-small, .cy-hero .btn:not(.btn-ghost) { color: var(--ink); background: var(--paper); border-color: var(--paper); }
+.cy .bar .btn-small:hover, .cy-hero .btn:not(.btn-ghost):hover { color: var(--ink); background: #fff; }
+
+/* The hero: the game's title screen, a title card over the Westside */
+.cy-hero { background: var(--ink); color: var(--paper); }
+.title-card { background: var(--ink); color: var(--paper); text-align: center; }
+.cy-title { max-width: 900px; margin: 0 auto; padding: clamp(48px, 8vw, 96px) var(--gutter) 40px; }
+.cy-title .prompt { color: #8d8478; }
+.cy-title .prompt::after { background: var(--rust); }
+.cy-title h1 { font-size: clamp(2.4rem, 7.4vw, 5rem); line-height: 1.1; margin: 12px 0 18px; color: var(--paper); }
+.cy-title .tag { font: italic 400 clamp(1.1rem, 2.4vw, 1.45rem)/1.4 var(--display); max-width: none; color: var(--paper); }
+.cy-title .hero-sub { margin: 0 auto 1em; color: #d8cfc0; }
+.cy-title .cta { justify-content: center; }
+.cy-title .fine { color: #a39a8c; }
+.cy-strip { display: block; width: 100%; height: clamp(180px, 34vw, 440px); object-fit: cover; object-position: 50% 78%; }
+
+/* How an episode goes */
+.cy .loop img { border: 0; box-shadow: 0 10px 24px rgba(60, 40, 20, 0.18); }
+.cy .loop h3 { font-size: 1.3rem; }
+
+/* The cast */
+.cast { list-style: none; padding: 0; margin: 24px 0 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.cast li { display: flex; gap: 16px; align-items: flex-start; padding: 16px; background: var(--night); border: 1px solid var(--line); }
+.cast img { width: 96px; height: 96px; flex: none; background: var(--ink); }
+.cast h3 { font-size: 1.15rem; margin-bottom: 6px; }
+.cast p { margin: 0; font-size: 0.95rem; }
+.cast .who-sharon { border: 2px solid var(--zap); }
+.cast .who-sharon h3::after { content: "the borrow checker"; display: block; margin-top: 4px; font: 700 0.72rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--zap); }
+@media (max-width: 960px) { .cast { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 620px) { .cast { grid-template-columns: 1fr; } }
+
+/* The episode guide: a row of title cards */
+.guide { list-style: none; padding: 0; margin: 28px 0 8px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.guide a { display: flex; flex-direction: column; justify-content: center; min-height: 128px; padding: 14px 10px; background: var(--ink); color: var(--paper); text-align: center; text-decoration: none; transition: transform 0.1s ease, box-shadow 0.1s ease; }
+.guide a:hover, .guide a:focus-visible { color: var(--paper); transform: translateY(-2px); box-shadow: 0 4px 0 var(--rust); }
+.ep-n { font: italic 0.8rem var(--display); color: #a39a8c; }
+.ep-t { font: 1.05rem/1.25 var(--display); margin: 6px 0; }
+.ep-l { font: 0.8rem/1.3 var(--mono); color: var(--rust); }
+@media (max-width: 860px) { .guide { grid-template-columns: repeat(2, minmax(0, 1fr)); } .guide a { min-height: 108px; } }
+
+/* One episode */
+.ep { margin-top: 64px; scroll-margin-top: 72px; }
+.ep .title-card { padding: 28px 16px 26px; }
+.ep .title-card p { margin: 0 0 6px; font: italic 0.95rem var(--display); color: #a39a8c; }
+.ep .title-card h3 { margin: 0; font-size: clamp(1.6rem, 4vw, 2.4rem); color: var(--paper); }
+.ep-meta { margin: 12px 0 18px; color: var(--ash); font-size: 0.98rem; text-align: center; }
+.ep-meta b { color: var(--parchment); font-weight: 700; }
+.ep-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 28px; align-items: start; }
+.ep-grid img { display: block; width: 100%; }
+@media (max-width: 900px) { .ep-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* The opening bicker, as a script */
+.script { margin-top: 12px; padding: 12px 16px 4px; background: var(--night); border-left: 3px solid var(--ink); }
+.script p { margin: 0 0 10px; font-size: 0.98rem; }
+.script b { display: block; font: 700 0.75rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ember); }
+
+/* Barry's legal pad */
+.pad { margin: 0; background: var(--pad); color: var(--pad-ink); box-shadow: 0 12px 28px rgba(60, 40, 20, 0.22); }
+.pad figcaption { padding: 8px 14px; background: #8c2a20; color: var(--paper); font: 1.25rem/1.2 var(--label); }
+.pad figcaption b { font-weight: 400; margin-right: 8px; padding-right: 8px; border-right: 1px solid rgba(247, 240, 219, 0.4); }
+.pad pre {
+  margin: 0; padding: 12px 14px 14px 52px; overflow-x: auto;
+  font: 0.9rem/28px var(--mono); color: var(--pad-ink);
+  background:
+    linear-gradient(90deg, transparent 40px, var(--pad-margin) 40px, var(--pad-margin) 42px, transparent 42px),
+    repeating-linear-gradient(180deg, transparent 0 27px, var(--pad-rule) 27px 28px) 0 12px;
+}
+.pad .k, .rule .k { color: #8f288f; }
+.pad .s, .rule .s { color: #1f751d; }
+.pad .n, .rule .n, .pad .l, .rule .l { color: #b0500e; }
+.pad .c, .rule .c { color: #6c6c7a; font-style: italic; }
+.pad .b, .rule .b { color: #1a52a8; }
+.pad .m, .rule .m { color: #b8331f; }
+.pad .t, .rule .t { color: #0f6f7f; }
+.blank {
+  font: inherit; line-height: 1.5; color: var(--pad-ink); background: rgba(217, 107, 46, 0.14);
+  border: 2px dashed var(--rust); padding: 0 5px; min-width: 2em; cursor: pointer; touch-action: manipulation;
+}
+.blank:disabled { cursor: default; }
+.pad.live .blank { animation: blank-pulse 1.6s ease-in-out infinite; }
+.pad.live .blank.set { animation: none; border-style: solid; }
+@keyframes blank-pulse { 50% { background: rgba(217, 107, 46, 0.32); } }
+.pad-options { list-style: none; margin: 0; padding: 8px 14px; border-top: 1px solid var(--pad-rule); font-size: 0.9rem; }
+.pad-options li { margin: 2px 0; }
+.pad-options span { font: 1.1rem var(--label); color: #8c2a20; margin-right: 4px; }
+.pad-options code { background: rgba(255, 255, 255, 0.5); border-color: var(--pad-rule); }
+.pad-hint { margin: 0; padding: 8px 14px; font-size: 0.95rem; font-style: italic; border-top: 1px solid var(--pad-rule); }
+.pad-hint b { font-style: normal; }
+.pad-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 10px 14px; border-top: 1px solid var(--pad-rule); }
+.pad-bar span { font: 1.15rem var(--label); color: #6c6c7a; }
+.pad .run {
+  font: 400 1rem/1 var(--display); padding: 10px 18px 9px; min-height: 42px; cursor: pointer;
+  color: var(--paper); background: var(--ink); border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--rust);
+}
+.pad .run:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--rust); }
+.pad:not(.live) .pad-bar { display: none; }
+.pad-out { padding: 12px 14px 2px; border-top: 2px solid var(--ink); }
+.pad-out.err { background: #fbe1da; }
+.pad-out.ok { background: #e2f1d9; }
+.pad-out.wrong, .pad-out.panic { background: #fbeccb; }
+.pad-verdict { margin: 0 0 8px; font: 1.05rem var(--display); }
+.pad-out pre { margin: 0 0 10px; padding: 10px 12px; overflow-x: auto; background: var(--ink); font: 0.85rem/1.5 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; }
+.pad-out pre.rustc { color: #ff9c8c; }
+.pad-out pre.stdout { color: #e8e2d0; }
+.pad-out p:not(.pad-verdict) { margin: 0 0 10px; font-size: 0.98rem; }
+.pad-out p b { font: 700 0.75rem var(--body); letter-spacing: 0.14em; text-transform: uppercase; color: #8c2a20; margin-right: 6px; }
+.pad details { margin: 0; border: 0; border-top: 1px dashed var(--pad-rule); padding: 6px 14px 10px; }
+.pad summary { color: #8c2a20; }
+.pad details p, .pad-said { font-size: 0.95rem; }
+.pad-said { margin: 8px 0 0; padding-left: 1.4em; }
+.pad code, .rule code { color: inherit; }
+
+/* Lesson cards */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; margin-top: 24px; }
+.rule { background: var(--night); border: 1px solid var(--line); border-top: 3px solid var(--pool); padding: 14px 16px 4px; }
+.rule-kick { margin: 0 0 4px; font: 700 0.75rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--pool); }
+.rule h4 { font: 400 1.2rem/1.25 var(--display); margin: 0 0 10px; }
+.rule .code pre { background: #fbf6e8; border-left-color: var(--pool); color: var(--parchment); font-size: 0.86rem; }
+.rule p { font-size: 0.97rem; }
+.rule-out { font-size: 0.9rem; color: var(--ash); }
+.rule-err { font: 600 0.9rem var(--mono); color: var(--zap); }
+
+/* Sharon's rulebook */
+.rulebook { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.rulebook li { padding: 14px 16px; background: var(--night); border-left: 4px solid var(--zap); }
+.rulebook code { display: block; margin-bottom: 6px; background: none; border: 0; padding: 0; font-weight: 600; color: var(--zap); }
+.rulebook q { font: italic 0.98rem/1.5 var(--display); }
+
+.cy .code pre { background: var(--night); }
+.cy .count b { color: var(--ember); }
+.cy thead th { border-bottom-color: var(--ink); }
+.cy-family .wordmark i { color: var(--ember); }
+.cy-family .kicker { text-transform: none; letter-spacing: 0.04em; font: 1.4rem/1 var(--label); }
+.cy .foot { border-top-color: var(--line); }
+.cy .foot img { width: 12px; height: 24px; vertical-align: -6px; }
+@media (max-width: 520px) {
+  .pad pre { padding-left: 34px; font-size: 0.82rem;
+    background:
+      linear-gradient(90deg, transparent 24px, var(--pad-margin) 24px, var(--pad-margin) 26px, transparent 26px),
+      repeating-linear-gradient(180deg, transparent 0 27px, var(--pad-rule) 27px 28px) 0 12px; }
+}
