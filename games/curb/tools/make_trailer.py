@@ -6,10 +6,13 @@ straight into the situation; plain white serif on black cards between the scenes
 left to play, the sepia rehearsal stopping on a red line and Sharon bursting
 in with the rustc error, Barry's squint held through an awkward silence, the
 `unwrap()` panic, and a freeze frame with a bouncy tuba sting to end on.
-Everything is composed at the game's native 480x270 and scaled by whole
-numbers with nearest-neighbor, like the Dunder Quest and Flatmates.js
-trailers, whose drawing, mixing and encoding helpers
-(../../dunder-quest/tools/make_trailer.py) this reuses.
+Shots are laid out in the game's native 480x270 units but composed at
+1920x1080 (`S` times that), so text is sharp: the game draws its text at
+window resolution and is captured at 1920x1080 (`trailer/capture.sh`), and
+the trailer's own cards and chips are drawn at full size too. The pixel art
+stays on whole-number nearest-neighbor scales. The mixing and encoding
+helpers come from the Dunder Quest trailer
+(../../dunder-quest/tools/make_trailer.py).
 
 It opens like an episode: the game's title tune with the name in yellow,
 then the episode's own black title card, then the music drops out and it
@@ -24,7 +27,7 @@ Shots find their capture frames by name in the run's MARK log
 (`trailer/captures/run.log`), so a fresh capture needs no renumbering.
 Needs ffmpeg on the PATH.
 
-    godot --path . --write-movie trailer/captures/run/f.png --fixed-fps 60 res://tests/trailer_run.tscn > trailer/captures/run.log
+    bash trailer/capture.sh                 # -> trailer/captures/run/ + run.log, at 1920x1080
     python tools/make_trailer.py            # -> trailer/out/curb_trailer_{1080p,4k}.mp4 + curb_thumbnail.png
     python tools/make_trailer.py --stills   # one frame per shot, for checking the cut
     python tools/make_trailer.py --at 3 12.5   # frames at those trailer times
@@ -50,7 +53,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT.parent / "dunder-quest" / "tools"))
 
 import make_trailer as dq  # noqa: E402
-from make_trailer import draw_text, flash, font, panel  # noqa: E402
+from make_trailer import flash, font  # noqa: E402
 
 ## `--capture NAME` cuts from trailer/captures/NAME/ and NAME.log instead of run.
 _NAME = sys.argv[sys.argv.index("--capture") + 1] if "--capture" in sys.argv else "run"
@@ -63,7 +66,10 @@ MONO = ROOT / "assets" / "fonts" / "VT323.ttf"
 PIXEL = ROOT / "assets" / "fonts" / "PixelifySans.ttf"
 GAME_AUDIO = ROOT / "assets" / "audio"
 
+## Layout units are the game's native pixels; frames are S times that.
 W, H = dq.W, dq.H
+S = 4
+CW, CH = W * S, H * S
 FPS = dq.FPS
 RATE = dq.RATE
 
@@ -202,39 +208,67 @@ def tokens(line: str) -> list[tuple[str, tuple]]:
     return out
 
 
-def draw_rust(img: Image.Image, xy: tuple[int, int], line: str, fnt) -> int:
+# --- Sharp drawing, in native units --------------------------------------------
+
+def width(s: str, path: Path, size: int) -> float:
+    """How wide `s` is, in native pixels."""
+    return font(path, size * S).getlength(s) / S
+
+
+def text(img: Image.Image, xy: tuple[float, float], s: str, path: Path, size: int, color,
+         anchor: str = "lt", outline=None, thick: int = 1, shadow=None, shadow_dy: int = 0) -> None:
+    """`s` antialiased at full resolution; `xy`, `size`, `thick` and
+    `shadow_dy` are in native pixels. `anchor` is 'lt' or 'mt': x is the left
+    edge or the middle, y the top."""
+    fnt = font(path, size * S)
+    x, y = xy[0] * S, xy[1] * S
+    pil_anchor = {"lt": "la", "mt": "ma"}[anchor]
+    d = ImageDraw.Draw(img)
+    stroke = thick * S if outline is not None else 0
+    if shadow is not None and shadow_dy:
+        d.text((x, y + shadow_dy * S), s, font=fnt, fill=shadow, anchor=pil_anchor, stroke_width=stroke, stroke_fill=shadow)
+    d.text((x, y), s, font=fnt, fill=color, anchor=pil_anchor, stroke_width=stroke, stroke_fill=outline)
+
+
+def rect(img: Image.Image, box: tuple[float, float, float, float], fill=None, border=None) -> None:
+    """A box in native pixels, with a border one native pixel wide."""
+    x0, y0, x1, y1 = (round(v * S) for v in box)
+    d = ImageDraw.Draw(img)
+    if fill is not None:
+        d.rectangle((x0, y0, x1 - 1, y1 - 1), fill=fill)
+    if border is not None:
+        d.rectangle((x0, y0, x1 - 1, y1 - 1), outline=border, width=S)
+
+
+def draw_rust(img: Image.Image, xy: tuple[float, float], line: str, size: int) -> float:
     x, y = xy
     for word, color in tokens(line):
-        draw_text(img, (x, y), word, fnt, color)
-        x += int(fnt.getlength(word))
+        text(img, (x, y), word, MONO, size, color)
+        x += width(word, MONO, size)
     return x
 
 
 # --- Overlays -----------------------------------------------------------------
 
-def serif_text(img: Image.Image, xy: tuple[int, int], s: str, size: int, color=WHITE, anchor: str = "mt") -> None:
-    """Plain serif, antialiased at native size, as the game draws its title cards."""
-    ImageDraw.Draw(img).text(xy, s, font=font(SERIF, size), fill=color, anchor={"mt": "ma", "lt": "la"}[anchor])
+def serif_text(img: Image.Image, xy: tuple[float, float], s: str, size: int, color=WHITE, anchor: str = "mt") -> None:
+    """Plain serif, as the game draws its title cards."""
+    text(img, xy, s, SERIF, size, color, anchor)
 
 
 def code_chip(line: str, at: float, until: float, y: int = 228, border=RUST):
     """One line of Rust on a strip of legal-pad yellow that wipes open."""
-    fnt = font(MONO, 18)
-
     def fx(img: Image.Image, t: float) -> Image.Image:
         if not at <= t < until:
             return img
-        tw = int(fnt.getlength(line))
-        pw, ph = tw + 18, 22
-        x0 = (W - pw) // 2
+        pw, ph = width(line, MONO, 18) + 18, 22
+        x0 = (W - pw) / 2
         grow = min(1.0, (t - at) * 10, (until - t) * 12)
-        width = int(pw * grow)
-        if width < 4:
+        if pw * grow < 4:
             return img
-        panel(img, (x0, y, x0 + width, y + ph), fill=PAD, border=border)
-        ImageDraw.Draw(img).rectangle((x0, y, x0 + 1, y + ph - 1), fill=RUST)
-        if width == pw:
-            draw_rust(img, (x0 + 9, y + 2), line, fnt)
+        rect(img, (x0, y, x0 + pw * grow, y + ph), fill=PAD, border=border)
+        rect(img, (x0, y, x0 + 2, y + ph), fill=RUST)
+        if grow == 1.0:
+            draw_rust(img, (x0 + 9, y + 2), line, 18)
         return img
     return fx
 
@@ -243,10 +277,9 @@ def caption(s: str, at: float, until: float, y: int = 230, size: int = 13, color
     """A plain serif caption on a black strip, like a subtitle."""
     def fx(img: Image.Image, t: float) -> Image.Image:
         if at <= t < until:
-            f = font(SERIF, size)
-            tw = int(f.getlength(s))
-            ImageDraw.Draw(img).rectangle(((W - tw) // 2 - 8, y - 4, (W + tw) // 2 + 8, y + size + 6), fill=BLACK)
-            serif_text(img, (W // 2, y), s, size, color)
+            tw = width(s, SERIF, size)
+            rect(img, ((W - tw) / 2 - 8, y - 4, (W + tw) / 2 + 8, y + size + 6), fill=BLACK)
+            serif_text(img, (W / 2, y), s, size, color)
         return img
     return fx
 
@@ -261,8 +294,29 @@ def flash_fx(at: float, frames: int = 4, peak: float = 0.8):
 def shake_fx(at: float, amount: float = 3.0, length: float = 0.25):
     def fx(img: Image.Image, t: float) -> Image.Image:
         k = t - at
-        return dq.shaken(img, amount * (1 - k / length), t) if 0 <= k < length else img
+        return shaken(img, amount * (1 - k / length), t) if 0 <= k < length else img
     return fx
+
+
+def shaken(img: Image.Image, amount: float, t: float) -> Image.Image:
+    """Knocked off-center by up to `amount` native pixels."""
+    if amount < 0.5:
+        return img
+    dx = int(round(math.sin(t * 91.0) * amount * S))
+    dy = int(round(math.cos(t * 77.0) * amount * S))
+    out = Image.new("RGB", img.size, BLACK)
+    out.paste(img, (dx, dy))
+    return out
+
+
+def zoomed(img: Image.Image, zoom: int, focus: tuple[int, int]) -> Image.Image:
+    """Whole-number punch-in around `focus` (native pixels)."""
+    if zoom == 1:
+        return img
+    cw, ch = W // zoom, H // zoom
+    x = min(max(focus[0] - cw // 2, 0), W - cw)
+    y = min(max(focus[1] - ch // 2, 0), H - ch)
+    return img.crop((x * S, y * S, (x + cw) * S, (y + ch) * S)).resize((CW, CH), Image.NEAREST)
 
 
 def freeze_tint(img: Image.Image, t: float) -> Image.Image:
@@ -281,7 +335,7 @@ def fade_from_black(at: float, length: float):
 # --- Cards ----------------------------------------------------------------------
 
 def black(_t: float) -> Image.Image:
-    return Image.new("RGB", (W, H), BLACK)
+    return Image.new("RGB", (CW, CH), BLACK)
 
 
 def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0, color=WHITE):
@@ -292,7 +346,7 @@ def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0, color
         y = (H - total) // 2 + 4
         for k, (s, size) in enumerate(lines):
             if t >= at + k * gap:
-                serif_text(img, (W // 2, y), s, size, color if k == 0 else GREY)
+                serif_text(img, (W / 2, y), s, size, color if k == 0 else GREY)
             y += int(size * 1.6)
         return img
     return draw
@@ -302,26 +356,29 @@ def end_card(at: float):
     def draw(t: float) -> Image.Image:
         img = black(t)
         local = t - at
-        serif_text(img, (W // 2, 70), "Curb Your Oxidation", 28, YELLOW)
+        serif_text(img, (W / 2, 70), "Curb Your Oxidation", 28, YELLOW)
         if local >= 0.8:
-            serif_text(img, (W // 2, 112), "Learn Rust. Mind your manners.", 13, GREY)
+            serif_text(img, (W / 2, 112), "Learn Rust. Mind your manners.", 13, GREY)
         if local >= 1.6:
-            serif_text(img, (W // 2, 150), "Play free in your browser", 11, GREY)
-            draw_text(img, (W // 2, 166), "dunderquest.com/curb", font(MONO, 26), AMBER, anchor="mt")
+            serif_text(img, (W / 2, 150), "Play free in your browser", 11, GREY)
+            text(img, (W / 2, 166), "dunderquest.com/curb", MONO, 26, AMBER, anchor="mt")
         if local >= 2.4:
-            draw_text(img, (W // 2, 222), "a __dunder_quest__ game", font(MONO, 18), RUST, anchor="mt")
+            text(img, (W / 2, 222), "a __dunder_quest__ game", MONO, 18, RUST, anchor="mt")
         return img
     return draw
 
 
 # --- Gameplay source ------------------------------------------------------------
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=48)
 def capture(frame: int) -> Image.Image:
+    """A capture frame at full size. An old native-size capture is scaled up
+    whole, which works but leaves the game's text soft."""
     path = CAPTURE / f"f{frame:08d}.png"
     if not path.exists():
-        return Image.new("RGB", (W, H), INK)
-    return Image.open(path).convert("RGB")
+        return Image.new("RGB", (CW, CH), INK)
+    img = Image.open(path).convert("RGB")
+    return img if img.size == (CW, CH) else img.resize((CW, CH), Image.NEAREST)
 
 
 @dataclass
@@ -495,7 +552,7 @@ def render_frame(shots: list[Shot], t: float) -> Image.Image:
     if shot.draw is not None:
         img = shot.draw(t)
     else:
-        img = dq.zoomed(capture(shot.frame_at(t)), shot.zoom, shot.focus).copy()
+        img = zoomed(capture(shot.frame_at(t)), shot.zoom, shot.focus).copy()
     for fx in shot.fx:
         img = fx(img, t)
     return img
@@ -503,7 +560,7 @@ def render_frame(shots: list[Shot], t: float) -> Image.Image:
 
 def write_video(shots: list[Shot], total_s: float, path: Path) -> None:
     command = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24",
-               "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-c:v", "ffv1", "-pix_fmt", "bgr0", str(path)]
+               "-s", f"{CW}x{CH}", "-r", str(FPS), "-i", "-", "-c:v", "ffv1", "-pix_fmt", "bgr0", str(path)]
     proc = subprocess.Popen(command, stdin=subprocess.PIPE)
     total = int(round(total_s * FPS))
     for n in range(total):
@@ -578,9 +635,10 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
 
 
 def encode(native: Path, audio: Path, scale: int, out: Path, crf: int) -> None:
-    """Whole-number nearest-neighbor upscale to H.264 + AAC, YouTube/Steam friendly."""
+    """Whole-number nearest-neighbor upscale of the 1920x1080 master to H.264
+    + AAC, YouTube/Steam friendly."""
     command = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(native), "-i", str(audio),
-               "-vf", f"scale={W * scale}:{H * scale}:flags=neighbor",
+               "-vf", f"scale={CW * scale}:{CH * scale}:flags=neighbor",
                "-c:v", "libx264", "-preset", "slow", "-crf", str(crf), "-pix_fmt", "yuv420p",
                "-tune", "animation", "-r", str(FPS), "-c:a", "aac", "-b:a", "320k", "-ar", str(RATE),
                "-shortest", "-movflags", "+faststart", str(out)]
@@ -591,29 +649,25 @@ def encode(native: Path, audio: Path, scale: int, out: Path, crf: int) -> None:
 def thumbnail(path: Path) -> None:
     """A 1920x1080 YouTube thumbnail: Barry's squint and Sharon mid-rant,
     face to face over the rustc error, under the name in plain serif."""
-    img = Image.new("RGB", (W, H), BLACK)
-    scene = Image.open(ROOT / "assets" / "backgrounds" / "dinner.png").convert("RGB").resize((W, H), Image.NEAREST)
-    img.paste(Image.blend(scene, Image.new("RGB", (W, H), BLACK), 0.45), (0, 0))
+    scene = Image.open(ROOT / "assets" / "backgrounds" / "dinner.png").convert("RGB").resize((CW, CH), Image.NEAREST)
+    img = Image.blend(scene, Image.new("RGB", (CW, CH), BLACK), 0.45)
     faces = ROOT / "assets" / "sprites"
-    barry = Image.open(faces / "barry_face.png").convert("RGBA").crop((96, 0, 144, 48)).resize((144, 144), Image.NEAREST)
-    sharon = Image.open(faces / "sharon_face.png").convert("RGBA").crop((144, 0, 192, 48)).resize((144, 144), Image.NEAREST)
-    d = ImageDraw.Draw(img)
-    for box, face, edge in (((24, 74), barry, PAPER), ((312, 74), sharon, RED)):
-        x, y = box
-        d.rectangle((x - 4, y - 4, x + 147, y + 147), fill=INK)
-        d.rectangle((x - 2, y - 2, x + 145, y + 145), fill=edge)
-        img.paste(face, (x, y), face)
-    d.rectangle((0, 0, W, 60), fill=BLACK)
-    serif_text(img, (W // 2, 12), "Curb Your Oxidation", 30, YELLOW)
+    big = 144 * S
+    barry = Image.open(faces / "barry_face.png").convert("RGBA").crop((96, 0, 144, 48)).resize((big, big), Image.NEAREST)
+    sharon = Image.open(faces / "sharon_face.png").convert("RGBA").crop((144, 0, 192, 48)).resize((big, big), Image.NEAREST)
+    for (x, y), face, edge in (((24, 74), barry, PAPER), ((312, 74), sharon, RED)):
+        rect(img, (x - 4, y - 4, x + 148, y + 148), fill=INK)
+        rect(img, (x - 2, y - 2, x + 146, y + 146), fill=edge)
+        img.paste(face, (x * S, y * S), face)
+    rect(img, (0, 0, W, 60), fill=BLACK)
+    serif_text(img, (W / 2, 12), "Curb Your Oxidation", 30, YELLOW)
     msg = "error[E0382]: borrow of moved value"
-    f = font(MONO, 22)
-    tw = int(f.getlength(msg))
-    panel(img, ((W - tw) // 2 - 10, 228, (W + tw) // 2 + 10, 256), fill=INK, border=RED)
-    draw_text(img, (W // 2, 231), msg, f, (240, 120, 110), anchor="mt")
-    draw_text(img, (W // 2, 104), "LEARN", font(PIXEL, 24), PAPER, outline=INK, thick=2, anchor="mt")
-    draw_text(img, (W // 2, 130), "RUST", font(PIXEL, 44), RUST, outline=INK, thick=2,
-              shadow=BLACK, shadow_dy=3, anchor="mt")
-    img.resize((W * 4, H * 4), Image.NEAREST).save(path)
+    tw = width(msg, MONO, 22)
+    rect(img, ((W - tw) / 2 - 10, 228, (W + tw) / 2 + 10, 256), fill=INK, border=RED)
+    text(img, (W / 2, 231), msg, MONO, 22, (240, 120, 110), anchor="mt")
+    text(img, (W / 2, 104), "LEARN", PIXEL, 24, PAPER, outline=INK, thick=2, anchor="mt")
+    text(img, (W / 2, 130), "RUST", PIXEL, 44, RUST, outline=INK, thick=2, shadow=BLACK, shadow_dy=3, anchor="mt")
+    img.save(path)
     print(f"WROTE {path.relative_to(ROOT.parent)}")
 
 
@@ -632,8 +686,8 @@ def main() -> None:
         for k, shot in enumerate(shots):
             mid = min(shot.end - 1 / FPS, shot.start + (shot.end - shot.start) * 0.7)
             img = render_frame(shots, mid)
-            draw_text(img, (2, 2), f"{k} {shot.label} {shot.start:.1f}", font(MONO, 16), (255, 0, 255))
-            sheet.paste(img, ((k % 4) * W, (k // 4) * H))
+            text(img, (2, 2), f"{k} {shot.label} {shot.start:.1f}", MONO, 16, (255, 0, 255))
+            sheet.paste(img.resize((W, H), Image.LANCZOS), ((k % 4) * W, (k // 4) * H))
         sheet.save(OUT / "stills.png")
         print(f"WROTE {(OUT / 'stills.png').relative_to(ROOT.parent)}")
         for shot in shots:
@@ -641,9 +695,11 @@ def main() -> None:
         return
     if "--at" in sys.argv:
         times = [float(a) for a in sys.argv[sys.argv.index("--at") + 1:]]
-        sheet = Image.new("RGB", (W * 2, H * ((len(times) + 1) // 2)), "black")
+        # Half size, so a sheet of them stays viewable; --at one time is full size.
+        tw, th = (CW, CH) if len(times) == 1 else (CW // 2, CH // 2)
+        sheet = Image.new("RGB", (tw * 2 if len(times) > 1 else tw, th * ((len(times) + 1) // 2)), "black")
         for k, t in enumerate(times):
-            sheet.paste(render_frame(shots, t), ((k % 2) * W, (k // 2) * H))
+            sheet.paste(render_frame(shots, t).resize((tw, th), Image.LANCZOS), ((k % 2) * tw, (k // 2) * th))
         sheet.save(OUT / "at.png")
         print(f"WROTE {(OUT / 'at.png').relative_to(ROOT.parent)}")
         return
@@ -652,9 +708,9 @@ def main() -> None:
         write_video(shots, total, native)
     mix_audio(shots, total, OUT / "mix_raw.wav")
     dq.normalize(OUT / "mix_raw.wav", OUT / "mix.wav")
-    encode(native, OUT / "mix.wav", 4, OUT / "curb_trailer_1080p.mp4", 12)
+    encode(native, OUT / "mix.wav", 1, OUT / "curb_trailer_1080p.mp4", 12)
     if "--no-4k" not in sys.argv:
-        encode(native, OUT / "mix.wav", 8, OUT / "curb_trailer_4k.mp4", 16)
+        encode(native, OUT / "mix.wav", 2, OUT / "curb_trailer_4k.mp4", 16)
     thumbnail(OUT / "curb_thumbnail.png")
 
 

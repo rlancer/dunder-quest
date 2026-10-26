@@ -32,6 +32,7 @@ Barry Danvers (the hero), Gil Greene (his manager and best friend), Sharon Green
 - `rust/`: a small rustc and a runner, in GDScript. `RustParser` parses the slice of Rust the plans use; `RustChecker` checks it in rustc's order (names and types, then match exhaustiveness, then a non-lexical borrow check that knows where each reference is last used) and reports rustc's error codes; `RustRunner` runs what passes. `Plan` is a plan's code with «blanks» and their options.
 - `data/scenes.json`: the whole season. The cast, each scene's opening, plans (code, blanks, start and solution, the error the start must hit, what it must print), success lines and freeze-frame ending, Sharon's rant for each error code, and the lesson cards.
 - `scenes/curb_scene.gd`: one script builds every scene from that data: walking, talking, the rehearsal, the interruption, the performance and the ending. `ui/hud.gd` draws the bubbles, close-ups, code strip, rants, cards and title cards; `ui/pad.gd` is the legal pad.
+- Sharp text: the window stretches in `canvas_items` mode, so everything is laid out at 480×270 and the pixel art is scaled up nearest-neighbor, but text is drawn at the window's own resolution.
 - Art: `tools/paint.py` paints the cast (a 6-frame sheet and a 4-frame close-up each) by hand. `tools/scenery.py` and `tools/music.py` generate the backdrops, title art, map, music, sting and SFX through the Dunder Quest generators (`../dunder-quest/tools/`). The title cards use Libre Baskerville (OFL).
 
 ## Checks
@@ -53,8 +54,8 @@ bash tests/check.sh                                         # cases, bot and rus
 `tests/trailer_run.tscn` is the bot's full run paced for a trailer (lines stay up to be read, the pad is held open with its picks showing, music muted, one panic and one wrong answer added on camera). It prints `MARK <frame> <what>` lines for every moment worth cutting to: `scene`, `say`, `card`, `pad`, `rehearsal`, `rant`, `panic`, `run`, `squint`, `freeze`, `end`.
 
 ```sh
-godot --path . --write-movie trailer/captures/run/f.png --fixed-fps 60 res://tests/trailer_run.tscn > trailer/captures/run.log
-godot --path . --write-movie trailer/captures/s5/f.png --fixed-fps 60 res://tests/trailer_run.tscn -- scene=5 > trailer/captures/s5.log
+bash trailer/capture.sh               # -> trailer/captures/run/ + run.log, at 1920x1080
+bash trailer/capture.sh s5 scene=5    # just scene 5
 ```
 
 Trailer working files go in `trailer/`, which the web build ignores.

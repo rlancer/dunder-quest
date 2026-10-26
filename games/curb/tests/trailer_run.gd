@@ -17,7 +17,7 @@ extends "res://tests/bot.gd"
 ##   MARK <frame> freeze <n>               the freeze frame before the sting
 ##   MARK <frame> end <n>                  the black end card
 ##
-## godot --path . --write-movie trailer/captures/run/f.png --fixed-fps 60 res://tests/trailer_run.tscn > trailer/captures/run.log
+## bash trailer/capture.sh   (records at 1920x1080, so the text is sharp)
 ## Add `-- scene=5` to capture one scene.
 
 const PAD_HOLD := 120
