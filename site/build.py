@@ -955,6 +955,8 @@ LAUNCH = [
 BRAND_PAGES = [
     ("identity", "Logo, voice, colors and type", "The wordmark, every line the game is pitched with, the palette and the fonts."),
     ("art", "Art and social cards", "The sprites and scenes, and the card each page shows when its link is shared."),
+    ("curb", "Curb Your Oxidation", "The Rust game's name, lines, palette, type, cast and cards."),
+    ("flatmates", "Flatmates.js", "The JavaScript game's wordmark, lines, palette, type, art and cards."),
     ("trailers", "The trailers", "Every game's trailer, how each is made, and every cut."),
     ("youtube", "The YouTube channel", "The @dunderquest channel art, its description and links, and each video's upload form."),
     ("launch", "The launch posts", "One post per platform, ready to paste, in the order they go out."),
@@ -970,7 +972,7 @@ def copy_block(label: str, text: str, count: str = "") -> str:
             f"<pre><code>{esc(text)}</code></pre></figure>")
 
 
-def brand_page(slug: str, body: str, prefix: str, scripts: str = "") -> str:
+def brand_page(slug: str, body: str, prefix: str, scripts: str = "", fonts: str = "") -> str:
     """One page of the brand kit at /brand/<slug>/, under a row of links to
     the others."""
     title, description = next((t, d) for s, t, d in BRAND_PAGES if s == slug)
@@ -986,7 +988,7 @@ def brand_page(slug: str, body: str, prefix: str, scripts: str = "") -> str:
 </section>"""
     return page(f"{title} · Brand kit", head + body, prefix,
                 description=f"The Dunder Quest brand kit: {description[0].lower()}{description[1:]}",
-                scripts=scripts + f'<script src="{prefix}static/copy.js"></script>', path=f"brand/{slug}/")
+                scripts=scripts + f'<script src="{prefix}static/copy.js"></script>', path=f"brand/{slug}/", fonts=fonts)
 
 
 def build_brand(prefix: str) -> str:
@@ -1021,17 +1023,26 @@ PACKAGE CONTENTS
                 path="brand/")
 
 
-def build_brand_identity(prefix: str) -> str:
-    img = f"{prefix}static/img/"
-    swatches = "".join(
+def swatch_list(palette: list[tuple[str, str, str]]) -> str:
+    return "".join(
         f'<li><span class="chip" style="background:{hex_}"></span>'
         f'<code>{name} = "{hex_}"</code><span>{esc(use)}</span></li>'
-        for name, hex_, use in PALETTE
+        for name, hex_, use in palette
     )
-    copy_rows = "".join(
-        f"<tr><td>{esc(line)}</td><td>{esc(where)}</td><td><code>{esc(src)}</code></td></tr>"
-        for line, where, src in COPY
+
+
+def copy_table(rows: list[tuple[str, str, str]]) -> str:
+    body = "".join(
+        f"<tr><td>{esc(line)}</td><td>{esc(where)}</td><td>"
+        + "<br>".join(f"<code>{esc(one)}</code>" for one in src.split(", ")) + "</td></tr>"
+        for line, where, src in rows
     )
+    return (f'<div class="table-wrap"><table>\n    <thead><tr><th>Line</th><th>Where</th><th>Made in</th></tr></thead>\n'
+            f'    <tbody>{body}</tbody>\n  </table></div>')
+
+
+def build_brand_identity(prefix: str) -> str:
+    img = f"{prefix}static/img/"
     body = f"""
 <section class="section kit" aria-labelledby="logo-h">
   <p class="kicker">dunder_quest.__logo__</p>
@@ -1048,16 +1059,13 @@ def build_brand_identity(prefix: str) -> str:
   <p class="kicker">dunder_quest.__doc__</p>
   <h2 id="voice-h">How it's described</h2>
   <p class="lede">Every line says "platformer" and "Python", because the hook is that your code changes the world.</p>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Line</th><th>Where</th><th>Made in</th></tr></thead>
-    <tbody>{copy_rows}</tbody>
-  </table></div>
+  {copy_table(COPY)}
 </section>
 
 <section class="section kit" aria-labelledby="color-h">
   <p class="kicker">dunder_quest.__colors__</p>
   <h2 id="color-h">The palette</h2>
-  <ul class="swatches">{swatches}</ul>
+  <ul class="swatches">{swatch_list(PALETTE)}</ul>
   <figure class="code kit-code"><figcaption>Code in the trailer and on the cards</figcaption><pre><code><i class="kw">for</i> i <i class="kw">in</i> range(<i class="nm">4</i>):
     lift.rise()  <i class="cm"># one notch</i>
 key = <i class="st">"spam"</i></code></pre></figure>
@@ -1076,24 +1084,35 @@ key = <i class="st">"spam"</i></code></pre></figure>
     return brand_page("identity", body, prefix)
 
 
-def build_brand_art(prefix: str) -> str:
-    img = f"{prefix}static/img/"
-    art = "".join(
+def art_list(img: str, art: list[tuple[str, str, str, int, int, int]]) -> str:
+    """Pieces of art as (file, name, note, native width, native height, scale)."""
+    return "".join(
         f'<li><a href="{img}{file}"><img src="{img}{file}" alt="" width="{w * s}" height="{h * s}" loading="lazy"></a>'
         f"<b>{esc(name)}</b><span>{esc(note)}</span></li>"
-        for file, name, note, w, h, s in ART
+        for file, name, note, w, h, s in art
     )
-    cards = [("home.png", "Home", "Home, Dunder Quest, How to play, and any page without its own card"),
-             ("lessons.png", "Lessons", "The lessons index"),
-             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game"),
-             ("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")]
-    cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
-    card_items = "".join(
+
+
+def card_list(img: str, cards: list[tuple[str, str, str]]) -> str:
+    """Social cards from static/img/og/, each with the square a chat app
+    might cut from it."""
+    return "".join(
         f'<li><a href="{img}og/{file}"><img src="{img}og/{file}" alt="The {esc(name)} social card" width="1200" height="630" loading="lazy"></a>'
         f'<span class="og-crop" aria-hidden="true"><img src="{img}og/{file}" alt="" loading="lazy"></span>'
         f"<b>{esc(name)}</b><span>{esc(used)}</span></li>"
         for file, name, used in cards
     )
+
+
+def build_brand_art(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    art = art_list(img, ART)
+    cards = [("home.png", "Home", "Home, Dunder Quest, How to play, and any page without its own card"),
+             ("lessons.png", "Lessons", "The lessons index"),
+             ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game"),
+             ("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")]
+    cards += [(f"{s['slug']}.png", f"{s['id']} · {s['name']}", "That stage's lesson page") for s in STAGES]
+    card_items = card_list(img, cards)
     body = f"""
 <section class="section kit" aria-labelledby="art-h">
   <p class="kicker">dunder_quest.__art__</p>
@@ -1110,6 +1129,214 @@ def build_brand_art(prefix: str) -> str:
   <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>, <code>games/flatmates/tools/og.py</code> and <code>site/curb_art.py</code>.</p>
 </section>"""
     return brand_page("art", body, prefix)
+
+
+def godot_palette(game: Path) -> dict[str, str]:
+    """A game's core/palette.gd as hex, so the kit's swatches are the game's
+    own colors and can't drift from them."""
+    text = (game / "core" / "palette.gd").read_text(encoding="utf-8")
+    return {m[1]: "#" + "".join(f"{round(float(v) * 255):02x}" for v in m.groups()[1:])
+            for m in re.finditer(r"const (\w+) := Color\(([\d.]+), ([\d.]+), ([\d.]+)", text)}
+
+
+## Curb Your Oxidation's page of the kit: (palette.gd name, what it's for).
+CURB_PALETTE = [
+    ("YELLOW", "The name, and the accents on black"),
+    ("INK", "Title cards, and the trailer's cards"),
+    ("PAPER", "Text on the title cards"),
+    ("RUST", "Rust itself, and the pad's line marker"),
+    ("RED", "The line rustc rejects, where Sharon comes in"),
+    ("STUCCO", "Westside walls"),
+    ("POOL", "Westside pools"),
+    ("SEPIA", "The rehearsal: a plan playing in Barry's head"),
+    ("PAD", "Barry's yellow legal pad"),
+    ("PAD_RULE", "The pad's blue rules"),
+    ("PAD_MARGIN", "The pad's red margin"),
+    ("PAD_INK", "The plans, written on the pad"),
+]
+CURB_ROLES = {"barry": "The hero", "gil": "Barry's manager and best friend", "sharon": "The borrow checker",
+              "carol": "Barry's ex-wife", "lamont": "The houseguest", "ted": "The neighbor with the lawnmower"}
+CURB_PAD_SAMPLE = ('let wine = String::from("a nice Barolo");\n'
+                   'let host_gift = &wine; // a borrow, not a move\n'
+                   'println!("I brought {host_gift}.");')
+
+
+def thumb_item(src: str, alt: str) -> str:
+    """A trailer's YouTube thumbnail, in a row of social cards."""
+    return (f'<li><a href="{src}"><img src="{src}" alt="{esc(alt)}" width="1920" height="1080" loading="lazy"></a>'
+            f"<b>Trailer thumbnail</b><span>The YouTube video, and the page's trailer</span></li>")
+
+
+def build_brand_curb(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    cy = f"{img}curb/"
+    colors = godot_palette(CURB)
+    names = json.loads((CURB / "data" / "scenes.json").read_text(encoding="utf-8"))["cast"]
+    copy = [
+        ("The borrow checker is the unwritten social contract. Learn Rust.", "Page hero", "site/build.py"),
+        ("The borrow checker is the unwritten social contract.", "Social card, the home page's title card",
+         "site/curb_art.py, site/build.py"),
+        ("learn Rust · a __dunder_quest__ game", "Social card", "site/curb_art.py"),
+        ("Barry Danvers has rules. So does Rust. And somebody is always checking.", "Trailer cold open, a card at a time",
+         "games/curb/tools/make_trailer.py"),
+        ("Learn Rust. Mind your manners.", "Trailer end card", "games/curb/tools/make_trailer.py"),
+        ("LEARN RUST · error[E0382]: borrow of moved value", "Trailer thumbnail", "games/curb/tools/make_trailer.py"),
+        (CURB_DESC, "Search results", "site/build.py"),
+    ]
+    art = [("title.png", "Title art", "The title screen, the page's hero and the social card", 480, 270, 1)]
+    art += [(f"{w}.png", names[w]["full"], CURB_ROLES[w], 24, 48, 2) for w in CURB_CAST]
+    art += [(f"{w}_face.png", f"{names[w]['full']}, close up", "On the page's cast list", 48, 48, 2) for w in ("barry", "sharon")]
+    art += [("03_pad.png", "The legal pad", "Writing the plan", 480, 270, 1),
+            ("03_rant.png", "The interruption", "Sharon, at the line rustc rejects", 480, 270, 1),
+            ("03_run.png", "The plan plays out", "Every println! said out loud", 480, 270, 1)]
+    cast = ", ".join(names[w]["full"] for w in CURB_CAST)
+    body = f"""
+<section class="section kit" aria-labelledby="cy-logo-h">
+  <p class="kicker">curb.__logo__</p>
+  <h2 id="cy-logo-h">The name</h2>
+  <p class="lede">Set like a title card: heavy Franklin Gothic, in yellow on black, centered. The game uses Libre Franklin at weight 800 to 900. The URL and the repo folder are just <code>curb</code>.</p>
+  <div class="kit-logo cy-logo">
+    <p class="kit-mark cy-mark">Curb Your Oxidation</p>
+    <a href="{cy}icon.svg"><img src="{cy}icon.svg" alt="The Curb Your Oxidation icon: a pixel face squinting inside a rust-orange frame" width="128" height="128"></a>
+  </div>
+  <p class="fine">Download the icon as <a href="{cy}icon.svg">SVG</a>. It's <code>games/curb/icon.svg</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cy-voice-h">
+  <p class="kicker">curb.__doc__</p>
+  <h2 id="cy-voice-h">How it's described</h2>
+  <p class="lede">The hook is that Rust's rules are etiquette, so the lines pair the borrow checker with manners.</p>
+  {copy_table(copy)}
+  <p>It's an homage to a certain LA cringe-comedy series, and copies its format, tone and tropes as closely as it can, with three limits. Names are homage names only: {esc(cast)}. None of the show's catchphrases or lines appear. The music is original, never a recreation of its theme. And nothing public names the show.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cy-color-h">
+  <p class="kicker">curb.__colors__</p>
+  <h2 id="cy-color-h">The palette</h2>
+  <p class="lede">Westside daylight and black title cards, read from <code>games/curb/core/palette.gd</code>.</p>
+  <ul class="swatches">{swatch_list([(n, colors[n], use) for n, use in CURB_PALETTE])}</ul>
+  <figure class="code kit-pad"><figcaption>Code on Barry's pad</figcaption><pre><code>{highlight_rs(CURB_PAD_SAMPLE)}</code></pre></figure>
+</section>
+
+<section class="section kit" aria-labelledby="cy-type-h">
+  <p class="kicker">curb.__fonts__</p>
+  <h2 id="cy-type-h">The type</h2>
+  <ul class="specimens">
+    <li><p class="sp-franklin">Curb Your Oxidation</p><b>Libre Franklin</b> <span>The name and every title card, in the game, on this site and in the trailer · <a href="{prefix}static/fonts/LibreFranklin.ttf">TTF</a></span></li>
+    <li><p class="sp-label">error[E0382]: borrow of moved value</p><b>VT323</b> <span>The code on Barry's pad in the game, and the trailer's URL · <a href="{prefix}static/fonts/VT323.ttf">TTF</a></span></li>
+    <li><p class="sp-pixel">LEARN RUST</p><b>Pixelify Sans</b> <span>Lesson card titles in the game, and the trailer thumbnail · <a href="{prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
+    <li><p class="sp-body">Barry Danvers lives by rules nobody else has heard of.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
+  </ul>
+  <p class="fine">All four are under the SIL Open Font License. Libre Franklin is a free revival of Franklin Gothic, whose heavy cut is commercial.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cy-art-h">
+  <p class="kicker">curb.__art__</p>
+  <h2 id="cy-art-h">The cast and the art</h2>
+  <p class="lede">The game draws at 480×270. Scale it by whole numbers with nearest-neighbor. Click a piece for the original file.</p>
+  <ul class="art">{art_list(cy, art)}</ul>
+</section>
+
+<section class="section kit" aria-labelledby="cy-cards-h">
+  <p class="kicker">curb.__cards__</p>
+  <h2 id="cy-cards-h">The social card and the thumbnail</h2>
+  <ul class="cards">{card_list(img, [("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")])}{thumb_item(cy + "trailer.png", CURB_THUMB_ALT)}</ul>
+  <p class="fine">The card is painted by <code>site/curb_art.py</code>, the thumbnail by <code>games/curb/tools/make_trailer.py</code>. The trailer itself is on <a href="{prefix}brand/trailers/">the trailers page</a>, and its upload form on <a href="{prefix}brand/youtube/">the YouTube page</a>.</p>
+</section>"""
+    return brand_page("curb", body, prefix, fonts="&family=Libre+Franklin:wght@800..900")
+
+
+## Flatmates.js's page of the kit: (palette.gd name, what it's for).
+FM_PALETTE = [
+    ("JS", "JavaScript yellow: the .js of the wordmark"),
+    ("PAPER", "The rest of the wordmark, and text"),
+    ("INK", "Outlines and shadows"),
+    ("CLIVE", "Clive's blue, for when you're in his head"),
+    ("JAZZ", "Jazz's red, for when you're in his"),
+    ("AMBER", "\"a __dunder_quest__ game\" on the card"),
+    ("MAGNOLIA", "The flat's magnolia walls"),
+    ("CARPET", "The flat's brown carpet"),
+    ("CODE_BG", "A laptop's screen"),
+    ("GREEN", "A lit amp, a keypad that took the code"),
+    ("RED", "A keypad that didn't"),
+]
+
+
+def build_brand_flatmates(prefix: str) -> str:
+    img = f"{prefix}static/img/"
+    fm = f"{img}flatmates/"
+    colors = godot_palette(FLATMATES)
+    copy = [
+        ("Two flatmates. Two points of view. One of them runs your JavaScript.", "Page hero, social card, trailer title card",
+         "site/build.py, games/flatmates/tools/og.py, games/flatmates/tools/make_trailer.py"),
+        ("Two mismatched flatmates in a very small Croydon flat.", "Home page card", "site/build.py"),
+        ("Learn JavaScript. Blame your flatmate.", "Trailer thumbnail", "games/flatmates/tools/make_trailer.py"),
+        ("Learn JavaScript. Mostly by accident.", "Trailer end card", "games/flatmates/tools/make_trailer.py"),
+        ("a __dunder_quest__ game", "Social card, trailer end card",
+         "games/flatmates/tools/og.py, games/flatmates/tools/make_trailer.py"),
+        (FLATMATES_DESC, "Search results", "site/build.py"),
+    ]
+    art = [("title.png", "Title art", "The page's hero and the social card", 480, 270, 1),
+           ("clive.png", "Clive", "Works in credit. Can't jump much", 16, 24, 4),
+           ("jazz.png", "Jazz", "Between bands. Can jump, and that's about it", 16, 24, 4),
+           ("stage3_editor.png", "The laptop", "The other flatmate's script, with a blank to fill", 480, 270, 1),
+           ("stage1_card.png", "An inner voice", "A lesson card, in whoever's head you're in", 480, 270, 1)]
+    art += [(f"stage{s['id']}_start.png", s["name"], f"Stop {s['id']}, {s['stop']}", 480, 270, 1) for s in FM_STOPS]
+    sample = FM_STOPS[0]["code"].replace("{}", "jazz.jump();")
+    body = f"""
+<section class="section kit" aria-labelledby="fm-logo-h">
+  <p class="kicker">flatmates.__logo__</p>
+  <h2 id="fm-logo-h">The wordmark</h2>
+  <p class="lede">The name written as a JavaScript file: lowercase <b>flatmates</b> in paper, then <b>.js</b> in JavaScript yellow, in Pixelify Sans. In a sentence, it's Flatmates.js.</p>
+  <div class="kit-logo fm-logo">
+    <p class="kit-mark fm-mark">flatmates<i>.js</i></p>
+    <a href="{fm}icon.svg"><img src="{fm}icon.svg" alt="The Flatmates.js icon: two front doors side by side in a yellow frame" width="128" height="128"></a>
+  </div>
+  <p class="fine">Download the icon as <a href="{fm}icon.svg">SVG</a>. It's <code>games/flatmates/icon.svg</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="fm-voice-h">
+  <p class="kicker">flatmates.__doc__</p>
+  <h2 id="fm-voice-h">How it's described</h2>
+  <p class="lede">The hook is the other point of view: you write the script, and your flatmate lives with it.</p>
+  {copy_table(copy)}
+  <p>It's an homage to a certain Croydon flat-share sitcom. Names are homage names only: Clive, Jazz, Big Ron, Tess from Accounts. None of the show's lines appear, and nothing public names the show.</p>
+</section>
+
+<section class="section kit" aria-labelledby="fm-color-h">
+  <p class="kicker">flatmates.__colors__</p>
+  <h2 id="fm-color-h">The palette</h2>
+  <p class="lede">A Croydon flat and a laptop's syntax colors, read from <code>games/flatmates/core/palette.gd</code>.</p>
+  <ul class="swatches">{swatch_list([(n, colors[n], use) for n, use in FM_PALETTE])}</ul>
+  <figure class="code kit-laptop"><figcaption>jazz.js, on a laptop</figcaption><pre><code>{highlight_js(sample)}</code></pre></figure>
+</section>
+
+<section class="section kit" aria-labelledby="fm-type-h">
+  <p class="kicker">flatmates.__fonts__</p>
+  <h2 id="fm-type-h">The type</h2>
+  <ul class="specimens">
+    <li><p class="sp-pixel">flatmates.js</p><b>Pixelify Sans</b> <span>The wordmark, on the title screen, the social card and the trailer · <a href="{prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
+    <li><p class="sp-label">Two flatmates. Two points of view.</p><b>VT323</b> <span>Names and labels in the game, and the lines on the card and in the trailer · <a href="{prefix}static/fonts/VT323.ttf">TTF</a></span></li>
+    <li><p class="sp-mono">jazz.walk(7);</p><b>Atkinson Hyperlegible Mono</b> <span>The laptops' code on this site</span></li>
+    <li><p class="sp-body">Clive can't jump much. Jazz can jump, and that's about it.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
+  </ul>
+  <p class="fine">All four are under the SIL Open Font License.</p>
+</section>
+
+<section class="section kit" aria-labelledby="fm-art-h">
+  <p class="kicker">flatmates.__art__</p>
+  <h2 id="fm-art-h">The flatmates and the art</h2>
+  <p class="lede">The game draws at 480×270. Scale it by whole numbers with nearest-neighbor. Click a piece for the original file.</p>
+  <ul class="art">{art_list(fm, art)}</ul>
+</section>
+
+<section class="section kit" aria-labelledby="fm-cards-h">
+  <p class="kicker">flatmates.__cards__</p>
+  <h2 id="fm-cards-h">The social card and the thumbnail</h2>
+  <ul class="cards">{card_list(img, [("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game")])}{thumb_item(fm + "trailer.png", FM_THUMB_ALT)}</ul>
+  <p class="fine">The card is painted by <code>games/flatmates/tools/og.py</code>, the thumbnail by <code>games/flatmates/tools/make_trailer.py</code>. The trailer itself is on <a href="{prefix}brand/trailers/">the trailers page</a>, and its upload form on <a href="{prefix}brand/youtube/">the YouTube page</a>.</p>
+</section>"""
+    return brand_page("flatmates", body, prefix)
 
 
 DQ_THUMB_ALT = "Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark"
@@ -1997,6 +2224,9 @@ def main() -> None:
     (static / "fonts").mkdir(exist_ok=True)
     for name, src in FONTS.items():
         shutil.copyfile(QUEST / src, static / "fonts" / name)
+    shutil.copyfile(CURB / "assets" / "fonts" / "LibreFranklin.ttf", static / "fonts" / "LibreFranklin.ttf")
+    for game, folder in ((CURB, "curb"), (FLATMATES, "flatmates")):  # their icons, for the brand kit
+        shutil.copyfile(game / "icon.svg", static / "img" / folder / "icon.svg")
 
     write(out / "index.html", build_splash(""))
     write(out / QUEST_PAGE / "index.html", build_home(bank, "../"))
@@ -2005,7 +2235,8 @@ def main() -> None:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
     write(out / "guide" / "index.html", build_guide("../"))
     write(out / "brand" / "index.html", build_brand("../"))
-    for slug, build in (("identity", build_brand_identity), ("art", build_brand_art), ("trailers", build_brand_trailers),
+    for slug, build in (("identity", build_brand_identity), ("art", build_brand_art), ("curb", build_brand_curb),
+                        ("flatmates", build_brand_flatmates), ("trailers", build_brand_trailers),
                         ("youtube", build_brand_youtube), ("launch", build_brand_launch)):
         write(out / "brand" / slug / "index.html", build("../../"))
     write(out / "flatmates" / "index.html", build_flatmates("../"))
