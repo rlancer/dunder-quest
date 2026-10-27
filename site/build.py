@@ -1,6 +1,7 @@
 """Build the Dunder Quest website into a static folder.
 
-Every lesson page comes from `data/lessons.json`, the same bank the game
+The site root is a splash of every game, with Curb Your Oxidation out
+front; Dunder Quest's own page is `dunder-quest/`. Every lesson page comes from `data/lessons.json`, the same bank the game
 reads, so the scrolls and the guardian's questions on the site are the ones
 the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
@@ -39,8 +40,8 @@ SITE_URL = "https://dunderquest.com/"
 ## Analytics). It's public, since it ships in every page. Empty leaves the
 ## beacon out.
 CF_ANALYTICS_TOKEN = "6befdb51293b4efc966f8490afb169c8"
-## The trailer on YouTube (built by tools/make_trailer.py). The home page shows
-## its thumbnail and only loads the player once someone clicks it.
+## The trailer on YouTube (built by tools/make_trailer.py). Dunder Quest's page
+## shows its thumbnail and only loads the player once someone clicks it.
 TRAILER_ID = "7a-I7FzQdD8"
 ## Flatmates.js's trailer, once it's on YouTube. Empty shows the thumbnail
 ## without a player.
@@ -207,7 +208,12 @@ def stage_url(stage: dict, prefix: str) -> str:
 WORDMARK = ('<span class="wordmark"><span class="sr">Dunder Quest</span>'
             '<span aria-hidden="true"><i>__</i>dunder_<wbr>quest<i>__</i></span></span>')
 
-NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), ("#download", "Download")]
+## The site root is a splash of every game; Dunder Quest's own page is
+## `dunder-quest/`, and its pages' logo goes there.
+QUEST_PAGE = "dunder-quest/"
+NAV = [("lessons/", "Lessons"), ("guide/", "How to play"), (f"{QUEST_PAGE}#download", "Download")]
+HOME_NAV = [("curb/", "Curb Your Oxidation"), (QUEST_PAGE, "Dunder Quest"), ("flatmates/", "Flatmates.js")]
+FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400"
 
 
 def head_tags(title: str, description: str, path: str | None, image: str, alt: str) -> str:
@@ -243,13 +249,15 @@ HOME_ALT = "Dunder Quest title art: a squire clapping coconut halves looks out o
 
 
 def page(title: str, body: str, prefix: str, active: str = "", description: str = "", scripts: str = "",
-         path: str | None = None, image: str = "home.png", image_alt: str = HOME_ALT) -> str:
+         path: str | None = None, image: str = "home.png", image_alt: str = HOME_ALT,
+         nav: list[tuple[str, str]] = NAV, brand: str = QUEST_PAGE, play: str = "play/", fonts: str = "",
+         full_title: str = "", foot: str = "") -> str:
     links = []
-    for href, label in NAV:
-        target = f"{prefix}{href}" if not href.startswith("#") else f"{prefix}{href}"
+    for href, label in nav:
+        target = f"{prefix}{href}"
         current = ' aria-current="page"' if active == href else ""
         links.append(f'<a href="{target}"{current}>{label}</a>')
-    full_title = "Dunder Quest" if not title else f"{title} · Dunder Quest"
+    full_title = full_title or ("Dunder Quest" if not title else f"{title} · Dunder Quest")
     desc = description or "Dunder Quest is a pixel-art platformer that teaches Python. Play it in your browser or download it."
     return f"""<!doctype html>
 <html lang="en">
@@ -262,23 +270,23 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <link rel="icon" href="{prefix}static/img/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400{fonts}&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{prefix}static/style.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
-  <a class="brand" href="{prefix}"><img src="{prefix}static/img/squire.png" alt="" width="16" height="24">{WORDMARK}</a>
+  <a class="brand" href="{prefix}{brand}"><img src="{prefix}static/img/squire.png" alt="" width="16" height="24">{WORDMARK}</a>
   <nav aria-label="Site">{"".join(links)}</nav>
-  <a class="btn btn-small" href="{prefix}play/">Play</a>
+  <a class="btn btn-small" href="{prefix}{play}">Play</a>
 </header>
 <main id="main">
 {body}
 </main>
 <footer class="foot">
-  <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way.</p>
+  <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> {foot or "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{prefix}curb/">Curb Your Oxidation</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}">All games</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest</a> · <a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{prefix}curb/">Curb Your Oxidation</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
@@ -396,7 +404,84 @@ def build_home(bank: dict, prefix: str = "") -> str:
 </section>
 {downloads_section(prefix)}
 """
-    return page("", body, prefix, scripts=f'<script src="{prefix}static/trailer.js"></script>', path="")
+    return page("", body, prefix, scripts=f'<script src="{prefix}static/trailer.js"></script>', path=QUEST_PAGE)
+
+
+SPLASH_DESC = ("Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest "
+               "and JavaScript in Flatmates.js. Play them in your browser.")
+
+
+def build_splash(prefix: str = "") -> str:
+    """The site root: every game, with Curb Your Oxidation out front on a
+    title card of its own. Each game's full page is a click away."""
+    cy = f"{prefix}static/img/curb/"
+    beats = [("03_pad.png", "Write the plan", "Barry's legal pad open on gift.rs, with a blank picked out and three options below"),
+             ("03_rant.png", "Get interrupted", "Sharon bursting in with error[E0382]: borrow of moved value"),
+             ("03_run.png", "Watch it happen", "The plan playing out for real while the code highlights Sharon's println! line")]
+    strip = "".join(
+        f'<li><img src="{cy}{file}" alt="{esc(alt)}" width="480" height="270" loading="lazy"><span>{label}</span></li>'
+        for file, label, alt in beats)
+    games = [
+        ("game-dq", "Learn Python", "Dunder Quest", f"{prefix}{QUEST_PAGE}", f"{prefix}play/", "home.png", HOME_ALT,
+         "A platformer on a very silly quest for the Grail. Slice a list to lay a bridge, loop a lift up a cave wall, "
+         "then duel the Bridgekeeper by jumping into the right answer. Six stages, lists to comprehensions.",
+         "Meet the squire"),
+        ("game-fm", "Learn JavaScript", "Flatmates.js", f"{prefix}flatmates/", f"{prefix}flatmates/play/", "flatmates.png", FLATMATES_ALT,
+         "Two mismatched flatmates in a very small Croydon flat. Swap between Clive and Jazz across six stops, from "
+         "calling a method to awaiting two promises, and script the one you aren't playing.",
+         "Meet the flatmates"),
+    ]
+    cards = "".join(f"""
+    <li class="game {cls}">
+      <a class="game-art" href="{about}"><img src="{prefix}static/img/og/{og}" alt="{esc(alt)}" width="1200" height="630" loading="lazy"></a>
+      <div class="game-copy">
+        <p class="kicker">{kick}</p>
+        <h3><a href="{about}">{name}</a></h3>
+        <p>{blurb}</p>
+        <div class="cta"><a class="btn btn-small" href="{play}">Play {name}</a><a class="game-more" href="{about}">{more} →</a></div>
+      </div>
+    </li>""" for cls, kick, name, about, play, og, alt, blurb, more in games)
+    body = f"""
+<section class="splash-intro">
+  <p class="prompt" aria-hidden="true">&gt;&gt;&gt; help(games)</p>
+  <h1>{WORDMARK}</h1>
+  <p class="tag">Pixel-art games that teach real programming. Free, in your browser.</p>
+</section>
+
+<section class="feature" aria-labelledby="cy-h">
+  <div class="feature-in">
+    <div class="feature-copy">
+      <p class="feature-kick">New · Learn Rust</p>
+      <h2 id="cy-h">Curb Your Oxidation</h2>
+      <p class="feature-tag">The borrow checker is the unwritten social contract.</p>
+      <p>Barry Danvers lives by rules nobody else has heard of. Ten petty disputes on the Westside, over a latte, a lawnmower or the last shrimp, each settled by a short Rust program on his yellow legal pad, from <code>let mut</code> to lifetimes. Break the rules and Sharon interrupts at the exact line, with the real rustc error.</p>
+      <div class="cta">
+        <a class="btn" href="{prefix}curb/play/">Play Curb Your Oxidation</a>
+        <a class="btn btn-ghost" href="{prefix}curb/">Meet Barry</a>
+      </div>
+    </div>
+    <div class="feature-media">
+      {trailer_player(CURB_TRAILER_ID, f"{cy}trailer.png", CURB_THUMB_ALT, "Curb Your Oxidation")}
+    </div>
+  </div>
+  <ol class="feature-strip">{strip}</ol>
+</section>
+
+<section class="section" aria-labelledby="more-h">
+  <p class="kicker">More games</p>
+  <h2 id="more-h">Prefer Python, or JavaScript?</h2>
+  <ul class="games">{cards}
+  </ul>
+  <p class="count">Every snippet in every game is checked against the real thing: Python, Node and rustc. Trailers for all three are on <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+"""
+    ## Links to the old home's sections (in trailer descriptions, for one) now
+    ## belong to Dunder Quest's page.
+    old = f'<script>if (/^#(download|trailer)$/.test(location.hash)) location.replace("{prefix}{QUEST_PAGE}" + location.hash);</script>'
+    return page("", body, prefix, description=SPLASH_DESC, path="", nav=HOME_NAV, brand="", play="curb/play/",
+                fonts=FRANKLIN, full_title="Dunder Quest · Games that teach programming",
+                foot="Dunder Quest. Pixel-art games that teach Python, JavaScript and Rust.",
+                scripts=f'{old}\n<script src="{prefix}static/trailer.js"></script>')
 
 
 def scroll_card(scroll: dict, topic: str) -> str:
@@ -650,7 +735,7 @@ YOUTUBE_DESCRIPTION = f"""Python is named after Monty Python. So we made learnin
 Dunder Quest is a free pixel-art platformer where every stage teaches a piece of real Python. Slice a list to lay a bridge. Hash a key into the right bucket. Loop a lift up a cave wall. Then face the guardian at the exit, from the Knight Who Says Mi to the Bridgekeeper, who asks his questions... four. Answer by jumping into the right block while you dodge his spells.
 
 ▶ Play free in your browser: {SITE_URL}play/
-▶ Windows, macOS and Linux: {SITE_URL}#download
+▶ Windows, macOS and Linux: {SITE_URL}{QUEST_PAGE}#download
 ▶ Every lesson and question: {SITE_URL}lessons/
 ▶ Prefer JavaScript? Flatmates.js: {SITE_URL}flatmates/
 ▶ Or Rust? Curb Your Oxidation: {SITE_URL}curb/
@@ -998,7 +1083,7 @@ def build_brand_art(prefix: str) -> str:
         f"<b>{esc(name)}</b><span>{esc(note)}</span></li>"
         for file, name, note, w, h, s in ART
     )
-    cards = [("home.png", "Home", "Home, How to play, and any page without its own card"),
+    cards = [("home.png", "Home", "Home, Dunder Quest, How to play, and any page without its own card"),
              ("lessons.png", "Lessons", "The lessons index"),
              ("flatmates.png", "Flatmates.js", "The Flatmates.js page and its game"),
              ("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")]
@@ -1516,7 +1601,7 @@ def build_flatmates(prefix: str) -> str:
 <section class="section fm-family" aria-labelledby="family-h">
   <p class="kicker">a {WORDMARK} game</p>
   <h2 id="family-h">Prefer Python?</h2>
-  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="{prefix}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper. The third, <a href="{prefix}curb/">Curb Your Oxidation</a>, teaches Rust on the Westside of LA.</p>
+  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="{prefix}{QUEST_PAGE}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper. The third, <a href="{prefix}curb/">Curb Your Oxidation</a>, teaches Rust on the Westside of LA.</p>
   <p class="fine">Flatmates.js is an homage to a certain Croydon flat-share sitcom. The names and jokes are winks, not the show's own characters or lines, and it isn't affiliated with or endorsed by anyone who made it.</p>
 </section>"""
     return fm_page(body, prefix)
@@ -1547,7 +1632,7 @@ def fm_page(body: str, prefix: str) -> str:
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
   <a class="brand" href="./"><img src="{prefix}static/img/flatmates/clive.png" alt="" width="16" height="24"><span>flatmates<i>.js</i></span></a>
-  <nav aria-label="Flatmates.js">{links}<a class="fm-home" href="{prefix}">Dunder Quest</a></nav>
+  <nav aria-label="Flatmates.js">{links}<a class="fm-home" href="{prefix}">All games</a></nav>
   <a class="btn btn-small" href="play/">Play</a>
 </header>
 <main id="main">
@@ -1555,7 +1640,7 @@ def fm_page(body: str, prefix: str) -> str:
 </main>
 <footer class="foot">
   <p><img src="{prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="{REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="{prefix}static/laptop.js"></script>
 <script src="{prefix}static/trailer.js"></script>
@@ -1837,7 +1922,7 @@ def build_curb(prefix: str) -> str:
 <section class="section cy-family" aria-labelledby="family-h">
   <p class="kicker">a {WORDMARK} game</p>
   <h2 id="family-h">Prefer Python, or JavaScript?</h2>
-  <p class="lede">Curb Your Oxidation is the third Dunder Quest game. <a href="{prefix}">Dunder Quest</a> teaches Python on a quest for the Grail, and <a href="{prefix}flatmates/">Flatmates.js</a> teaches JavaScript in a very small Croydon flat.</p>
+  <p class="lede">Curb Your Oxidation is the third Dunder Quest game. <a href="{prefix}{QUEST_PAGE}">Dunder Quest</a> teaches Python on a quest for the Grail, and <a href="{prefix}flatmates/">Flatmates.js</a> teaches JavaScript in a very small Croydon flat.</p>
   <p class="fine">Curb Your Oxidation is an homage to a certain LA cringe-comedy series. The names, lines and music are original, not the show's own, and it isn't affiliated with or endorsed by anyone who made it.</p>
 </section>"""
     return curb_page(body, prefix)
@@ -1868,7 +1953,7 @@ def curb_page(body: str, prefix: str) -> str:
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
   <a class="brand" href="./"><img src="{prefix}static/img/curb/barry.png" alt="" width="12" height="24"><span>Curb Your Oxidation</span></a>
-  <nav aria-label="Curb Your Oxidation">{links}<a class="cy-home" href="{prefix}">Dunder Quest</a></nav>
+  <nav aria-label="Curb Your Oxidation">{links}<a class="cy-home" href="{prefix}">All games</a></nav>
   <a class="btn btn-small" href="play/">Play</a>
 </header>
 <main id="main">
@@ -1876,7 +1961,7 @@ def curb_page(body: str, prefix: str) -> str:
 </main>
 <footer class="foot">
   <p><img src="{prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="{prefix}">Dunder Quest, the Python game</a> · <a href="{prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="{REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="{prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="{REPO}/tree/main/games/curb">Source on GitHub</a></p>
 </footer>
 <script src="{prefix}static/pad.js"></script>
 <script src="{prefix}static/trailer.js"></script>
@@ -1913,7 +1998,8 @@ def main() -> None:
     for name, src in FONTS.items():
         shutil.copyfile(QUEST / src, static / "fonts" / name)
 
-    write(out / "index.html", build_home(bank, ""))
+    write(out / "index.html", build_splash(""))
+    write(out / QUEST_PAGE / "index.html", build_home(bank, "../"))
     write(out / "lessons" / "index.html", build_lessons_index(bank, "../"))
     for stage in STAGES:
         write(out / "lessons" / stage["slug"] / "index.html", build_lesson(stage, bank[str(stage["id"])], "../../"))
