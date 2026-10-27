@@ -47,7 +47,7 @@ TRAILER_ID = "7a-I7FzQdD8"
 FM_TRAILER_ID = "EJ2w4MgKSpU"
 ## Curb Your Oxidation's trailer, once it's on YouTube: paste its video ID
 ## here. Empty leaves the trailer off the /curb/ page.
-CURB_TRAILER_ID = ""
+CURB_TRAILER_ID = "QZsFLN5z7R4"
 ## The channel every trailer goes up on.
 CHANNEL = "https://www.youtube.com/@dunderquest"
 ## A rolling release CI refreshes on every push to main.
@@ -710,8 +710,8 @@ An homage to a certain Croydon flat-share sitcom. The names and jokes are winks,
 #javascript #learnjavascript #indiegame #pixelart #godot #codinggame"""
 FM_YOUTUBE_TAGS = ("learn javascript, javascript for beginners, coding game, educational game, pixel art, "
                    "indie game, godot, sitcom, flatmates.js, dunder quest")
-## Curb Your Oxidation's trailer (games/curb/trailer/). The chapter times are
-## a guess until the cut is final: check them against it.
+## Curb Your Oxidation's trailer (games/curb/trailer/). The chapters are the
+## ones `make_trailer.py` writes to `recut.log`.
 CURB_YOUTUBE_TITLE = "Curb Your Oxidation – Learn Rust, One Petty Dispute at a Time | Official Trailer"
 CURB_YOUTUBE_DESCRIPTION = f"""The borrow checker is the unwritten social contract.
 
@@ -733,11 +733,9 @@ How it was made
 Opus 5.5 built the game: every line of Godot code, a small Rust checker written in GDScript, the cast painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backdrops and soundtrack. My part was prompting and playtesting.
 Source: {REPO}/tree/main/games/curb
 
-0:00 Cold open: one latte
-0:13 Barry has rules
-0:29 The season
-0:43 The panic, the shrimp, the squint
-0:57 Freeze frames
+0:00 Barry has rules
+0:24 The season, the panic, the squint
+0:44 Freeze frames
 
 An homage to a certain LA cringe-comedy series. The names, lines and music are original, not the show's own; it isn't affiliated with or endorsed by anyone who made it.
 
