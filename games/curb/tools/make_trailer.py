@@ -1,8 +1,8 @@
 """Cut the Curb Your Oxidation trailer from a Movie Maker capture of the bot.
 
 Cut like the promos for the kind of LA cringe comedy the game is a homage
-to, and fast: the show's name in yellow serif on black, then highlights on
-the beat (Barry's punchlines, plain white serif on black cards, the sepia
+to: the show's name in yellow heavy Franklin on black, then highlights on
+the beat (Barry's punchlines, white Franklin on black cards, the sepia
 rehearsal stopping on a red line and Sharon bursting in with the rustc
 error), Barry's squint held through an awkward silence, the `unwrap()`
 panic, a run of freeze frames, and a bouncy tuba sting to end on.
@@ -58,7 +58,10 @@ CAPTURE = ROOT / "trailer" / "captures" / _NAME
 LOG = ROOT / "trailer" / "captures" / f"{_NAME}.log"
 AUDIO = ROOT / "trailer" / "audio"
 OUT = ROOT / "trailer" / "out"
-SERIF = ROOT / "assets" / "fonts" / "LibreBaskerville.ttf"
+## The show sets its titles in ITC Franklin Gothic Heavy, which is commercial;
+## Libre Franklin (OFL) is a revival of the same Franklin Gothic. Trailer-only,
+## so it stays out of the game's assets/.
+FRANKLIN = ROOT / "trailer" / "fonts" / "LibreFranklin-VF.ttf"
 MONO = ROOT / "assets" / "fonts" / "VT323.ttf"
 PIXEL = ROOT / "assets" / "fonts" / "PixelifySans.ttf"
 GAME_AUDIO = ROOT / "assets" / "audio"
@@ -247,9 +250,19 @@ def draw_rust(img: Image.Image, xy: tuple[float, float], line: str, size: int) -
 
 # --- Overlays -----------------------------------------------------------------
 
-def serif_text(img: Image.Image, xy: tuple[float, float], s: str, size: int, color=WHITE, anchor: str = "mt") -> None:
-    """Plain serif, as the game draws its title cards."""
-    text(img, xy, s, SERIF, size, color, anchor)
+@lru_cache(maxsize=None)
+def franklin(size: int, weight: int) -> ImageFont.FreeTypeFont:
+    fnt = ImageFont.truetype(str(FRANKLIN), size)
+    fnt.set_variation_by_axes([weight])
+    return fnt
+
+
+def title_text(img: Image.Image, xy: tuple[float, float], s: str, size: int, color=WHITE,
+               anchor: str = "mt", weight: int = 800) -> None:
+    """Heavy Franklin Gothic, as the show sets its titles; `xy` and `size` in
+    native pixels."""
+    ImageDraw.Draw(img).text((xy[0] * S, xy[1] * S), s, font=franklin(size * S, weight), fill=color,
+                             anchor={"lt": "la", "mt": "ma"}[anchor])
 
 
 def code_chip(line: str, at: float, until: float, y: int = 228, border=RUST):
@@ -271,12 +284,12 @@ def code_chip(line: str, at: float, until: float, y: int = 228, border=RUST):
 
 
 def caption(s: str, at: float, until: float, y: int = 230, size: int = 13, color=WHITE):
-    """A plain serif caption on a black strip, like a subtitle."""
+    """A Franklin caption on a black strip, like a subtitle."""
     def fx(img: Image.Image, t: float) -> Image.Image:
         if at <= t < until:
-            tw = width(s, SERIF, size)
+            tw = franklin(size * S, 800).getlength(s) / S
             rect(img, ((W - tw) / 2 - 8, y - 4, (W + tw) / 2 + 8, y + size + 6), fill=BLACK)
-            serif_text(img, (W / 2, y), s, size, color)
+            title_text(img, (W / 2, y), s, size, color)
         return img
     return fx
 
@@ -335,15 +348,15 @@ def black(_t: float) -> Image.Image:
     return Image.new("RGB", (CW, CH), BLACK)
 
 
-def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0, color=WHITE):
-    """A black card of plain serif lines, centered; each line can wait `gap`."""
+def card(lines: list[tuple[str, int]], at: float = -1.0, gap: float = 0.0, color=WHITE, weight: int = 800):
+    """A black card of heavy Franklin lines, centered; each line can wait `gap`."""
     def draw(t: float) -> Image.Image:
         img = black(t)
         total = sum(int(size * 1.6) for _, size in lines)
         y = (H - total) // 2 + 4
         for k, (s, size) in enumerate(lines):
             if t >= at + k * gap:
-                serif_text(img, (W / 2, y), s, size, color if k == 0 else GREY)
+                title_text(img, (W / 2, y), s, size, color if k == 0 else WHITE, weight=weight)
             y += int(size * 1.6)
         return img
     return draw
@@ -353,11 +366,11 @@ def end_card(at: float):
     def draw(t: float) -> Image.Image:
         img = black(t)
         local = t - at
-        serif_text(img, (W / 2, 70), "Curb Your Oxidation", 28, YELLOW)
+        title_text(img, (W / 2, 66), "Curb Your Oxidation", 28, YELLOW, weight=900)
         if local >= 0.8:
-            serif_text(img, (W / 2, 112), "Learn Rust. Mind your manners.", 13, GREY)
+            title_text(img, (W / 2, 112), "Learn Rust. Mind your manners.", 13, WHITE, weight=700)
         if local >= 1.6:
-            serif_text(img, (W / 2, 150), "Play free in your browser", 11, GREY)
+            title_text(img, (W / 2, 150), "Play free in your browser", 11, GREY, weight=600)
             text(img, (W / 2, 166), "dunderquest.com/curb", MONO, 26, AMBER, anchor="mt")
         if local >= 2.4:
             text(img, (W / 2, 222), "a __dunder_quest__ game", MONO, 18, RUST, anchor="mt")
@@ -412,41 +425,34 @@ def edit() -> list[Shot]:
         return shot
 
     add(0.0, NAME_AT, draw=black, label="black")
-    add(NAME_AT, bar(1), draw=card([("Curb Your Oxidation", 30)], color=YELLOW), label="name")
+    add(NAME_AT, bar(1), draw=card([("Curb Your Oxidation", 30)], color=YELLOW, weight=900), label="name")
 
     # The situation, scene 1, cut down to its punchlines.
     say = [f for f, s in marks() if s.startswith("say ") and f < mark("card", 1)]
     rant = mark("rant E0384", 1)
     add(bar(1), bar(2), src=say[1] + 1, label="one latte")
-    add(bar(2), bar(2.5), src=mark("pad 1a", 1) + 20, label="the pad")
-    add(bar(2.5), bar(3), src=rant - int(BEAT * 2 * FPS), label="rehearsal")
-    add(bar(3), bar(4), src=rant, label="sharon", fx=[shake_fx(bar(3), 3, 0.3)])
-    add(bar(4), bar(5), src=mark("squint barry", 1), label="is that a rule")
+    add(bar(2), bar(3), src=rant - int(4 * BEAT * FPS), label="rehearsal")
+    add(bar(3), bar(4.5), src=rant, label="sharon", fx=[shake_fx(bar(3), 3, 0.3)])
+    add(bar(4.5), bar(5.5), src=mark("squint barry", 1), label="is that a rule")
 
-    # Who, what, and who's checking: half-bar cards between the footage.
-    add(bar(5), bar(5.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
-    add(bar(5.5), bar(6.5), src=mark("say barry If we don't open it tonight", 3) + 1, label="the etiquette")
-    add(bar(6.5), bar(7), draw=card([("So does Rust.", 18)]), label="card rust")
-    add(bar(7), bar(7.5), src=mark("pad 3a", 3) + 10, label="the pad 3")
-    add(bar(7.5), bar(8), draw=card([("And somebody", 18), ("is always checking.", 18)]), label="card checking")
+    # Who, what, and who's checking: a bar for each card, long enough to read.
+    add(bar(5.5), bar(6.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
+    add(bar(6.5), bar(7.5), src=mark("say barry If we don't open it tonight", 3) + 1, label="the etiquette")
+    add(bar(7.5), bar(8.5), draw=card([("So does Rust.", 18)]), label="card rust")
+    add(bar(8.5), bar(9.5), src=mark("pad 3a", 3) + 10, label="the pad 3")
+    add(bar(9.5), bar(10.5), draw=card([("And somebody", 18), ("is always checking.", 18)]), label="card checking")
     rant3 = mark("rant E0382", 3)
-    add(bar(8), bar(9), src=rant3, label="rant 3a", fx=[shake_fx(bar(8), 3, 0.3)])
+    add(bar(10.5), bar(12), src=rant3, label="rant 3a", fx=[shake_fx(bar(10.5), 3, 0.3)])
 
-    # The season, a bar a dispute: the plan with its key line, then Sharon.
+    # The season: three plans, a bar each, with the key line of Rust.
     season = [
-        (4, "admire(&mower);", mark("run 4a", 4) + 20, mark("rant ", 4)),
-        (5, "let barry = &mut tray;", mark("run 5a", 5) + 30, mark("rant E0502", 5)),
-        (6, "fn add_stroke(&mut self)", mark("run 6a", 6) + 20, mark("rant ", 6)),
-        (7, "Answer::Maybe => ...", mark("run 7a", 7) + 30, mark("rant E0004", 7)),
-        (9, "for f in &friends {", mark("run 9a", 9) + 30, mark("rant ", 9)),
-        (10, "fn longest<'a>(a: &'a str, b: &'a str)", mark("run 10a", 10) + 20, mark("rant ", 10)),
+        (4, "admire(&mower);", mark("run 4a", 4) + 20),
+        (5, "let barry = &mut tray;", mark("run 5a", 5) + 30),
+        (9, "for f in &friends {", mark("run 9a", 9) + 30),
     ]
-    for k, (n, code, run, sharon) in enumerate(season):
-        at = bar(9 + k)
-        add(at, at + BEAT * 2, src=run, label=f"run {n}",
-            fx=[code_chip(code, at + BEAT / 4, at + BEAT * 2 - BEAT / 8)])
-        add(at + BEAT * 2, bar(10 + k), src=sharon, label=f"rant {n}",
-            fx=[flash_fx(at + BEAT * 2, 3, 0.5), shake_fx(at + BEAT * 2, 2, 0.25)])
+    for k, (n, code, src) in enumerate(season):
+        at = bar(12 + k)
+        add(at, bar(13 + k), src=src, label=f"run {n}", fx=[code_chip(code, at + BEAT / 4, bar(13 + k) - BEAT / 4)])
 
     # Bar 15: the music stops dead for a beat, and so does the plan.
     panic = mark("panic 8b", 8)
@@ -459,19 +465,17 @@ def edit() -> list[Shot]:
     add(cue(38.5) - 2.4, cue(38.5), src=rant5 + 10, label="rant 5a")
     # The cue's long silence: Barry's squint, held.
     add(cue(38.5), bar(20), src=mark("squint barry", 6) + 40, speed=0.0, label="the squint")
-    # It starts up again: four more kinds of trouble, half a bar each.
-    for k, (code, scene) in enumerate([("E0061", 2), ("E0063", 6), ("E0277", 8), ("E0597", 10)]):
-        at = bar(20 + k / 2)
-        add(at, at + BEAT * 2, src=mark(f"rant {code}", scene) + 10, label=f"rant {code}",
-            fx=[flash_fx(at, 3, 0.5)])
+    # It starts up again: the other kinds of trouble.
+    add(bar(20), bar(21), src=mark("rant E0004", 7) + 20, label="rant maybe")
+    add(bar(21), bar(22), src=mark("rant E0597", 10) + 20, label="rant key")
 
-    # Finale: six endings, a bar each: the last awkward line, then the freeze.
-    for k, n in enumerate([1, 3, 4, 5, 6, 9]):
-        at = bar(22 + k)
+    # Finale: three endings, two bars each: the last awkward lines, then the freeze.
+    for k, n in enumerate([3, 5, 8]):
+        at = bar(22 + k * 2)
         fr = mark(f"freeze {n}")
-        hold = at + BEAT * 2
-        add(at, hold, src=fr - int((hold - at) * FPS), label=f"ending {n}")
-        add(hold, bar(23 + k), src=fr + 4, speed=0.0, label=f"freeze {n}",
+        hold = at + BEAT * 6
+        add(at, hold, src=fr - int((hold - at) * FPS), label=f"ending {n}", fx=[flash_fx(at, 3, 0.4)])
+        add(hold, bar(24 + k * 2), src=fr + 4, speed=0.0, label=f"freeze {n}",
             fx=[freeze_tint, flash_fx(hold, 3, 0.5)])
     # The houseguest, timed so his freeze lands on the cue's last chord.
     last = mark("freeze 10")
@@ -490,8 +494,8 @@ END_HOLD = 6.0
 
 def chapters() -> list[tuple[float, str]]:
     """YouTube chapters (each at least 10 s long), for the video description."""
-    return [(0.0, "Barry has rules"), (bar(9), "The season"),
-            (bar(15), "The panic, the shrimp, the squint"), (bar(22), "Freeze frames")]
+    return [(0.0, "Barry has rules"), (bar(12), "The season, the panic, the squint"),
+            (bar(22), "Freeze frames")]
 
 
 def length(shots: list[Shot]) -> float:
@@ -502,7 +506,7 @@ def cues() -> list[tuple[str, float, float]]:
     """(sound, trailer time, gain): this trailer's own effects."""
     end_hit = cue(CUE_END) - 0.45
     return [
-        ("swish", bar(5) - 0.1, 0.4),
+        ("swish", bar(5.5) - 0.1, 0.4),
         ("scratch", cue(32.2) - 0.02, 0.7),
         ("sting", end_hit + 0.1, 1.0),
     ]
@@ -599,7 +603,7 @@ def encode(native: Path, audio: Path, scale: int, out: Path, crf: int) -> None:
 
 def thumbnail(path: Path) -> None:
     """A 1920x1080 YouTube thumbnail: Barry's squint and Sharon mid-rant,
-    face to face over the rustc error, under the name in plain serif."""
+    face to face over the rustc error, under the name in heavy Franklin."""
     scene = Image.open(ROOT / "assets" / "backgrounds" / "dinner.png").convert("RGB").resize((CW, CH), Image.NEAREST)
     img = Image.blend(scene, Image.new("RGB", (CW, CH), BLACK), 0.45)
     faces = ROOT / "assets" / "sprites"
@@ -611,7 +615,7 @@ def thumbnail(path: Path) -> None:
         rect(img, (x - 2, y - 2, x + 146, y + 146), fill=edge)
         img.paste(face, (x * S, y * S), face)
     rect(img, (0, 0, W, 60), fill=BLACK)
-    serif_text(img, (W / 2, 12), "Curb Your Oxidation", 30, YELLOW)
+    title_text(img, (W / 2, 12), "Curb Your Oxidation", 30, YELLOW, weight=900)
     msg = "error[E0382]: borrow of moved value"
     tw = width(msg, MONO, 22)
     rect(img, ((W - tw) / 2 - 10, 228, (W + tw) / 2 + 10, 256), fill=INK, border=RED)
