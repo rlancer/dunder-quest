@@ -5,7 +5,7 @@
   -- scene=N` in games/curb first), and a close-up and a standing frame for
   each of the main cast into site/static/img/curb/.
 - Paints the social preview card, site/static/img/og/curb.png (1200x630): a
-  black title card, the name in the show's yellow serif, over the Westside
+  black title card, the name in the show's yellow heavy Franklin, over the Westside
   at sunset.
 - Paints site/static/img/curb/trailer.png (1920x1080), the trailer's
   thumbnail, unless the trailer has its own at
@@ -47,6 +47,13 @@ PAGE_SHOTS = ["03_pad.png", "03_rant.png", "03_run.png"]
 PAGE_SHOTS += [f"{n:02d}_opening.png" for n in range(1, 11)]
 
 
+def franklin(size: int, weight: int) -> ImageFont.FreeTypeFont:
+    """Heavy Franklin Gothic, as the show sets its titles (Libre Franklin)."""
+    font = ImageFont.truetype(str(FONTS / "LibreFranklin.ttf"), size)
+    font.set_variation_by_axes([weight])
+    return font
+
+
 def centered(draw: ImageDraw.ImageDraw, y: int, text: str, font, fill, width: int) -> None:
     w = draw.textlength(text, font=font)
     draw.text(((width - w) / 2, y), text, font=font, fill=fill)
@@ -58,8 +65,8 @@ def og_card() -> None:
     card = Image.new("RGB", (1200, 630), INK)
     card.paste(art.crop((0, 675 - 290, 1200, 675)), (0, 340))
     draw = ImageDraw.Draw(card)
-    serif = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 86)
-    small = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 32)
+    serif = franklin(86, 900)
+    small = franklin(32, 700)
     mono = ImageFont.truetype(str(FONTS / "VT323.ttf"), 44)
     centered(draw, 70, "Curb Your Oxidation", serif, YELLOW, 1200)
     centered(draw, 196, "The borrow checker is the unwritten social contract.", small, PAPER, 1200)
@@ -79,8 +86,8 @@ def thumbnail() -> None:
     thumb = Image.new("RGB", (1920, 1080), INK)
     thumb.paste(shot.crop((0, 380, 1920, 1080)), (0, 380))
     draw = ImageDraw.Draw(thumb)
-    serif = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 150)
-    small = ImageFont.truetype(str(FONTS / "LibreBaskerville.ttf"), 56)
+    serif = franklin(150, 900)
+    small = franklin(56, 700)
     centered(draw, 60, "Curb Your Oxidation", serif, YELLOW, 1920)
     centered(draw, 260, "Learn Rust. Mind your manners.", small, EMBER, 1920)
     thumb.save(OUT / "trailer.png")

@@ -2,7 +2,7 @@
 
 A Dunder Quest game that teaches Rust. Barry Danvers, a semi-retired TV writer on the Westside of LA, lives by rules nobody else has heard of and keeps getting into petty disputes about them. Each dispute is settled by a plan, and every plan is a short Rust program on Barry's yellow legal pad.
 
-**The borrow checker is the unwritten social contract.** Run a plan and Barry first plays it through in his head (in sepia), line by line, the way rustc reads the whole program before anything runs. If it breaks the rules, Sharon Greene bursts in at the offending line with the real rustc error (`error[E0382]: borrow of moved value: wine`) and an opinion about it. If it compiles, the scene plays it out for real: every `println!` is somebody saying that line, and the scene only moves on when the program prints exactly what should happen. Each scene opens on a black serif title card and ends on a freeze frame and a bouncy tuba sting. The name is always in the show's yellow (`Palette.YELLOW`, #fad41c), which is also the game's and the page's accent on black.
+**The borrow checker is the unwritten social contract.** Run a plan and Barry first plays it through in his head (in sepia), line by line, the way rustc reads the whole program before anything runs. If it breaks the rules, Sharon Greene bursts in at the offending line with the real rustc error (`error[E0382]: borrow of moved value: wine`) and an opinion about it. If it compiles, the scene plays it out for real: every `println!` is somebody saying that line, and the scene only moves on when the program prints exactly what should happen. Each scene opens on a black title card in heavy Franklin Gothic, like the show's and ends on a freeze frame and a bouncy tuba sting. The name is always in the show's yellow (`Palette.YELLOW`, #fad41c), which is also the game's and the page's accent on black.
 
 It's a homage to a certain LA cringe-comedy series: the format, the tone and the tropes, with invented names and original lines and music (see AGENTS.md for the rules).
 
@@ -33,7 +33,7 @@ Barry Danvers (the hero), Gil Greene (his manager and best friend), Sharon Green
 - `data/scenes.json`: the whole season. The cast, each scene's opening, plans (code, blanks, start and solution, the error the start must hit, what it must print), success lines and freeze-frame ending, Sharon's rant for each error code, and the lesson cards.
 - `scenes/curb_scene.gd`: one script builds every scene from that data: walking, talking, the rehearsal, the interruption, the performance and the ending. `ui/hud.gd` draws the bubbles, close-ups, code strip, rants, cards and title cards; `ui/pad.gd` is the legal pad.
 - Sharp text: the window stretches in `canvas_items` mode, so everything is laid out at 480×270 and the pixel art is scaled up nearest-neighbor, but text is drawn at the window's own resolution.
-- Art: `tools/paint.py` paints the cast (a 6-frame sheet and a 4-frame close-up each) by hand. `tools/scenery.py` and `tools/music.py` generate the backdrops, title art, map, music, sting and SFX through the Dunder Quest generators (`../dunder-quest/tools/`). The title cards use Libre Baskerville (OFL).
+- Art: `tools/paint.py` paints the cast (a 6-frame sheet and a 4-frame close-up each) by hand. `tools/scenery.py` and `tools/music.py` generate the backdrops, title art, map, music, sting and SFX through the Dunder Quest generators (`../dunder-quest/tools/`). The title cards use Libre Franklin (OFL), a revival of the show's Franklin Gothic.
 
 ## Checks
 

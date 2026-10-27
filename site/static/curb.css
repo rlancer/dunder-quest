@@ -1,6 +1,6 @@
 /* Curb Your Oxidation, on top of style.css. Bright Westside daylight
    (stucco, pool blue, golf green, Rust's oxide orange, from
-   curb/core/palette.gd), black title cards in plain serif like the game's,
+   curb/core/palette.gd), black title cards in heavy Franklin Gothic like the game's,
    the show's yellow for the name and the accents on black, and Barry's
    yellow legal pad for the code. */
 
@@ -25,11 +25,11 @@ body.cy {
   --pad-rule: #a9c4e2;
   --pad-margin: #e05c57;
   --pad-ink: #1f2450;
-  --display: "Libre Baskerville", Georgia, "Times New Roman", serif;
+  --display: "Libre Franklin", "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
 }
 
 /* Headings in the title cards' serif, set plain */
-.cy h1, .cy h2, .cy h3, .cy h4 { font-weight: 400; letter-spacing: 0; }
+.cy h1, .cy h2, .cy h3, .cy h4 { font-weight: 800; letter-spacing: 0; }
 .cy h2 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); }
 .cy .kicker { font: 700 0.8rem/1 var(--body); letter-spacing: 0.18em; color: var(--ember); }
 .cy a:hover { color: var(--rust); }
@@ -37,7 +37,7 @@ body.cy {
 
 /* The bar is a title card too */
 .cy .bar { background: rgba(13, 11, 12, 0.95); border-bottom-color: var(--yellow); }
-.cy .brand { font: 400 1.2rem var(--display); color: var(--yellow); }
+.cy .brand { font: 800 1.2rem var(--display); color: var(--yellow); }
 .cy .brand img { width: 12px; height: 24px; }
 .cy .bar nav a { color: #cfc6b8; }
 .cy .bar nav a:hover { color: #fff; }
@@ -45,7 +45,7 @@ body.cy {
 .cy .bar nav a.cy-home::before { content: "← "; }
 
 /* Buttons: black on the page, paper on the black cards */
-.cy .btn { font-family: var(--display); font-weight: 400; color: var(--paper); background: var(--ink); border-color: var(--ink); box-shadow: 0 4px 0 var(--rust); }
+.cy .btn { font-family: var(--display); font-weight: 700; color: var(--paper); background: var(--ink); border-color: var(--ink); box-shadow: 0 4px 0 var(--rust); }
 .cy .btn:hover { color: #fff; background: #2a2427; box-shadow: 0 5px 0 var(--rust); }
 .cy .btn:active { box-shadow: 0 1px 0 var(--rust); }
 .cy .btn-ghost { background: transparent; color: var(--paper); border-color: var(--paper); box-shadow: none; }
@@ -86,7 +86,7 @@ body.cy {
 .guide a { display: flex; flex-direction: column; justify-content: center; min-height: 128px; padding: 14px 10px; background: var(--ink); color: var(--paper); text-align: center; text-decoration: none; transition: transform 0.1s ease, box-shadow 0.1s ease; }
 .guide a:hover, .guide a:focus-visible { color: var(--paper); transform: translateY(-2px); box-shadow: 0 4px 0 var(--yellow); }
 .ep-n { font: italic 0.8rem var(--display); color: #a39a8c; }
-.ep-t { font: 1.05rem/1.25 var(--display); margin: 6px 0; }
+.ep-t { font: 800 1.05rem/1.25 var(--display); margin: 6px 0; }
 .ep-l { font: 0.8rem/1.3 var(--mono); color: var(--yellow); }
 @media (max-width: 860px) { .guide { grid-template-columns: repeat(2, minmax(0, 1fr)); } .guide a { min-height: 108px; } }
 
@@ -141,7 +141,7 @@ body.cy {
 .pad-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 10px 14px; border-top: 1px solid var(--pad-rule); }
 .pad-bar span { font: 1.15rem var(--label); color: #6c6c7a; }
 .pad .run {
-  font: 400 1rem/1 var(--display); padding: 10px 18px 9px; min-height: 42px; cursor: pointer;
+  font: 700 1rem/1 var(--display); padding: 10px 18px 9px; min-height: 42px; cursor: pointer;
   color: var(--paper); background: var(--ink); border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--rust);
 }
 .pad .run:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--rust); }
@@ -166,7 +166,7 @@ body.cy {
 .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; margin-top: 24px; }
 .rule { background: var(--night); border: 1px solid var(--line); border-top: 3px solid var(--pool); padding: 14px 16px 4px; }
 .rule-kick { margin: 0 0 4px; font: 700 0.75rem var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--pool); }
-.rule h4 { font: 400 1.2rem/1.25 var(--display); margin: 0 0 10px; }
+.rule h4 { font: 800 1.2rem/1.25 var(--display); margin: 0 0 10px; }
 .rule .code pre { background: #fbf6e8; border-left-color: var(--pool); color: var(--parchment); font-size: 0.86rem; }
 .rule p { font-size: 0.97rem; }
 .rule-out { font-size: 0.9rem; color: var(--ash); }

@@ -1075,7 +1075,7 @@ def build_brand_trailers(prefix: str) -> str:
 <section class="section kit" aria-labelledby="cy-trailer-h">
   <p class="kicker">curb.__trailer__</p>
   <h2 id="cy-trailer-h">Curb Your Oxidation</h2>
-  <p class="lede">Cut like the series it's an homage to: black title cards in plain serif, the bickering left to run, a squint, a freeze frame and a tuba. Made the same way, from the repo, with no video editor.</p>
+  <p class="lede">Cut like the series it's an homage to: black title cards, a squint, a freeze frame and a tuba, cut fast to the music. Made the same way, from the repo, with no video editor.</p>
   {trailer_player(CURB_TRAILER_ID, f"{img}curb/trailer.png", CURB_THUMB_ALT, "Curb Your Oxidation")}
   <p class="fine">Its working files are in <code>games/curb/trailer/</code>.</p>
 </section>
@@ -1585,7 +1585,7 @@ def tag_curb_page(index: Path) -> None:
     print(f"tagged {index}")
 
 
-## Curb Your Oxidation's own page at /curb/: black title cards in plain serif
+## Curb Your Oxidation's own page at /curb/: black title cards in heavy Franklin Gothic
 ## on a bright Westside page. Everything about the season comes from
 ## `curb/data/scenes.json`, the data the game plays, and every pad answers
 ## from `site/curb_cases.json`, the in-game checker's verdict on each
@@ -1862,7 +1862,7 @@ def curb_page(body: str, prefix: str) -> str:
 <link rel="icon" href="{prefix}static/img/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:ital,wght@0,400..900;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{prefix}static/style.css">
 <link rel="stylesheet" href="{prefix}static/curb.css">
 </head>
