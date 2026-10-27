@@ -59,9 +59,9 @@ LOG = ROOT / "trailer" / "captures" / f"{_NAME}.log"
 AUDIO = ROOT / "trailer" / "audio"
 OUT = ROOT / "trailer" / "out"
 ## The show sets its titles in ITC Franklin Gothic Heavy, which is commercial;
-## Libre Franklin (OFL) is a revival of the same Franklin Gothic. Trailer-only,
-## so it stays out of the game's assets/.
-FRANKLIN = ROOT / "trailer" / "fonts" / "LibreFranklin-VF.ttf"
+## Libre Franklin (OFL) is a revival of the same Franklin Gothic, which the
+## game uses too.
+FRANKLIN = ROOT / "assets" / "fonts" / "LibreFranklin.ttf"
 MONO = ROOT / "assets" / "fonts" / "VT323.ttf"
 PIXEL = ROOT / "assets" / "fonts" / "PixelifySans.ttf"
 GAME_AUDIO = ROOT / "assets" / "audio"

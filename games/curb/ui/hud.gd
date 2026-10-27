@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Everything drawn over a scene: speech bubbles, the close-up inset, the
 ## code strip that follows the plan line by line, Sharon's interruption (her
 ## face, the rustc error and the offending line), panics, lesson cards, the
-## black title cards in plain serif, the freeze frame and the end card.
+## black title cards in heavy Franklin Gothic, the freeze frame and the end card.
 ##
 ## The scene drives it with coroutines: `await hud.say(...)` returns once the
 ## player has read the line (Enter, E, Space or a tap). Tests set
@@ -220,7 +220,7 @@ func show_card(card: Dictionary) -> void:
 
 # --- Title cards, freeze frame, end card ------------------------------------
 
-## A black card with plain serif text, like the opening of an episode.
+## A black card with heavy Franklin Gothic text, like the opening of an episode.
 func title_card(title: String, small: String = "", seconds: float = 2.4) -> void:
 	_title = {"title": title, "small": small, "alpha": 1.0}
 	if auto_frames > 0:
@@ -299,7 +299,7 @@ func _draw_hud() -> void:
 		_draw_end(c)
 	if _press_start:
 		c.draw_rect(Rect2(0, 0, 480, 270), Color(0, 0, 0, 0.85))
-		_draw_centered(c, Palette.serif(), "Curb Your Oxidation", 135, 22, Palette.PAPER)
+		_draw_centered(c, Palette.titles(), "Curb Your Oxidation", 135, 22, Palette.PAPER)
 		var press := "Tap to start" if TouchControls.active else "Press any key"
 		_draw_centered(c, Palette.mono(), press, 168, 16, Palette.AMBER)
 
@@ -494,17 +494,17 @@ func _draw_card(c: Control) -> void:
 
 func _draw_title(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 480, 270), Color.BLACK)
-	_draw_centered(c, Palette.serif(), str(_title.title), 142, 22, Color.WHITE)
+	_draw_centered(c, Palette.titles(), str(_title.title), 142, 22, Color.WHITE)
 	if str(_title.small) != "":
-		_draw_centered(c, Palette.serif(), str(_title.small), 170, 11, Color(0.8, 0.8, 0.8))
+		_draw_centered(c, Palette.titles(), str(_title.small), 170, 11, Color(0.8, 0.8, 0.8))
 
 
 func _draw_end(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 480, 270), Color.BLACK)
-	_draw_centered(c, Palette.serif(), "Curb Your Oxidation", 96, 22, Palette.YELLOW)
+	_draw_centered(c, Palette.titles(), "Curb Your Oxidation", 96, 22, Palette.YELLOW)
 	var y := 132.0
 	for line: String in _end.lines:
-		_draw_centered(c, Palette.serif(), line, y, 11, Color(0.85, 0.85, 0.85))
+		_draw_centered(c, Palette.titles(), line, y, 11, Color(0.85, 0.85, 0.85))
 		y += 18
 	if _waiting and int(_clock * 2.0) % 2 == 0:
 		_draw_centered(c, Palette.mono(), "Tap to carry on" if TouchControls.active else "Enter: carry on", 252, 16, Color(0.6, 0.6, 0.6))

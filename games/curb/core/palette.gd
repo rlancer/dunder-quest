@@ -38,7 +38,7 @@ const SMALL := 16
 
 static var _mono: Font
 static var _pixel: Font
-static var _serif: Font
+static var _titles: Font
 
 
 static func mono() -> Font:
@@ -53,8 +53,13 @@ static func pixel() -> Font:
 	return _pixel
 
 
-## The title cards' plain serif.
-static func serif() -> Font:
-	if _serif == null:
-		_serif = load("res://assets/fonts/LibreBaskerville.ttf") as Font
-	return _serif
+## The title cards' heavy Franklin Gothic, as the show sets its titles
+## (Libre Franklin, an OFL revival; the show's ITC Franklin Gothic Heavy is
+## commercial).
+static func titles() -> Font:
+	if _titles == null:
+		var font := FontVariation.new()
+		font.base_font = load("res://assets/fonts/LibreFranklin.ttf") as Font
+		font.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 800}
+		_titles = font
+	return _titles
