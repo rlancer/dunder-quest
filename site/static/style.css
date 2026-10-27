@@ -529,3 +529,51 @@ tbody th { font-weight: 700; color: var(--parchment); }
 @media (max-width: 760px) { .next-game { grid-template-columns: 1fr; } }
 .next-curb:hover { border-color: #fad41c; }
 .next-curb .next-go { color: #fad41c; }
+
+/* The splash at the site root: every game, Curb Your Oxidation out front
+   on a black title card in its own Franklin Gothic and yellow. */
+.splash-intro { max-width: 1100px; margin: 0 auto; padding: 48px var(--gutter) 28px; }
+.splash-intro h1 { font-size: clamp(2.2rem, 6.5vw, 4.4rem); color: #ffe08a; text-shadow: 0 4px 0 #8a3b12; margin-bottom: 0.15em; }
+.splash-intro .tag { max-width: none; }
+
+.feature {
+  --yellow: #fad41c; --franklin: "Libre Franklin", "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+  background: #0d0b0c; color: #f7f0db; border-block: 3px solid var(--yellow);
+}
+.feature-in {
+  max-width: 1100px; margin: 0 auto; padding: clamp(36px, 6vw, 72px) var(--gutter) 28px;
+  display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: clamp(24px, 4vw, 48px); align-items: center;
+}
+.feature-kick { font: 700 0.8rem/1 var(--body); letter-spacing: 0.18em; text-transform: uppercase; color: var(--yellow); margin: 0 0 14px; }
+.feature h2 { font: 900 clamp(2.4rem, 5.6vw, 4.2rem)/1.02 var(--franklin); color: var(--yellow); letter-spacing: -0.01em; margin: 0 0 14px; }
+.feature-tag { font: italic 400 clamp(1.1rem, 2vw, 1.35rem)/1.4 var(--franklin); margin: 0 0 14px; }
+.feature-copy > p:not([class]) { color: #d8cfc0; max-width: 52ch; }
+.feature code { color: var(--yellow); }
+.feature .btn { font-family: var(--franklin); font-weight: 800; color: #0d0b0c; background: var(--yellow); border-color: var(--yellow); box-shadow: none; }
+.feature .btn:hover { background: #ffe45c; color: #0d0b0c; }
+.feature .btn-ghost { background: transparent; color: #f7f0db; border-color: #f7f0db; }
+.feature .btn-ghost:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.feature .trailer { margin: 0; border-color: var(--yellow); }
+.feature .trailer-play { background: var(--yellow); }
+.feature-strip {
+  list-style: none; max-width: 1100px; margin: 0 auto; padding: 0 var(--gutter) clamp(32px, 5vw, 56px);
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+}
+.feature-strip img { display: block; width: 100%; height: auto; }
+.feature-strip span { display: block; margin-top: 8px; font: 800 1rem var(--franklin); color: var(--yellow); text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 860px) { .feature-in { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .feature-strip { grid-template-columns: 1fr; } }
+
+.games { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.game { display: flex; flex-direction: column; background: var(--night); border: 2px solid var(--line); transition: border-color 0.12s ease; }
+.game:hover { border-color: var(--gold); }
+.game-art img { display: block; width: 100%; height: auto; image-rendering: auto; }
+.game-copy { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+.game-copy .kicker { font-size: 1.2rem; }
+.game h3 { font-size: 1.6rem; margin-bottom: 8px; }
+.game h3 a { color: var(--parchment); text-decoration: none; }
+.game h3 a:hover { color: var(--gold); }
+.game-copy .cta { margin: auto 0 0; padding-top: 12px; align-items: center; }
+.game-more { font: 1.35rem var(--label); color: var(--gold); }
+.game-fm:hover { border-color: #f7de1f; }
+@media (max-width: 760px) { .games { grid-template-columns: 1fr; } }
