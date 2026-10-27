@@ -1,11 +1,11 @@
 """Cut the Curb Your Oxidation trailer from a Movie Maker capture of the bot.
 
 Cut like the promos for the kind of LA cringe comedy the game is a homage
-to: the show's name in yellow serif on black over the title tune, then
-straight into the situation; plain white serif on black cards between the scenes, the squabbling
-left to play, the sepia rehearsal stopping on a red line and Sharon bursting
-in with the rustc error, Barry's squint held through an awkward silence, the
-`unwrap()` panic, and a freeze frame with a bouncy tuba sting to end on.
+to, and fast: the show's name in yellow serif on black, then highlights on
+the beat (Barry's punchlines, plain white serif on black cards, the sepia
+rehearsal stopping on a red line and Sharon bursting in with the rustc
+error), Barry's squint held through an awkward silence, the `unwrap()`
+panic, a run of freeze frames, and a bouncy tuba sting to end on.
 Shots are laid out in the game's native 480x270 units but composed at
 1920x1080 (`S` times that), so text is sharp: the game draws its text at
 window resolution and is captured at 1920x1080 (`trailer/capture.sh`), and
@@ -14,13 +14,10 @@ stays on whole-number nearest-neighbor scales. The mixing and encoding
 helpers come from the Dunder Quest trailer
 (../../dunder-quest/tools/make_trailer.py).
 
-It opens like an episode: the game's title tune with the name in yellow,
-then the episode's own black title card, then the music drops out and it
-plays the situation on the game's own sound: Barry promising one latte, the
-rehearsal, Sharon. Then the cue (`trailer/audio/cue_curb.wav`, an original
-Italian-library-style comedy piece, 120 BPM, measured beats at 0.05 s + k/2
-and bars from 1.05 s) comes in on its pickup and every cut after that lands
-on a beat or a bar of it. The cue's own stops (32.2 s, 38.5 s) carry the
+The cue (`trailer/audio/cue_curb.wav`, an original Italian-library-style
+comedy piece, 120 BPM, measured beats at 0.05 s + k/2 and bars from 1.05 s)
+plays from the start, with the name on its pickup, and every cut lands on a
+beat or a bar of it; the game's sound sits under it. The cue's own stops (32.2 s, 38.5 s) carry the
 panic and the squint.
 
 Shots find their capture frames by name in the run's MARK log
@@ -400,35 +397,13 @@ class Shot:
         return int(self.src + round((t - self.start) * FPS * self.speed))
 
 
-## Where the cue comes in, after the situation (filled in by `edit`).
-INTRO = 0.0
-## The opening titles, on the title tune's beats (0.5 s + k): the name, then
-## the episode's own title card, then the music drops out for the situation.
-NAME_AT = 0.5
-EPISODE_AT = 4.5
-SITUATION_AT = 7.5
-
-
-def situation() -> list[tuple[int, int, str]]:
-    """(from, to, label) capture ranges played back to back after the titles."""
-    say = [f for f, s in marks() if s.startswith("say ") and f < mark("card", 1)]
-    one = say[1]                          # Barry: One. One latte.
-    rehearsal = mark("rehearsal 1a", 1)
-    rant = mark("rant E0384", 1)
-    squint = mark("squint barry", 1)
-    return [
-        (one + 1, say[2] + 1, "one latte"),
-        (say[2] + 1, say[3] + 1, "write it down"),
-        (say[3] + 1, say[3] + 140, "a tuesday"),
-        (mark("pad 1a", 1) + 20, mark("pad 1a", 1) + 80, "the pad"),
-        (rehearsal - 4, rant, "rehearsal"),
-        (rant, rant + 170, "sharon"),
-        (squint, squint + 110, "is that a rule"),
-    ]
+## The cue starts at once: the name sits on its pickup, and every cut after
+## that lands on a beat or a bar of it.
+NAME_AT = 0.3
+INTRO = 0.5
 
 
 def edit() -> list[Shot]:
-    global INTRO
     shots: list[Shot] = []
 
     def add(start: float, end: float, **kw) -> Shot:
@@ -436,55 +411,43 @@ def edit() -> list[Shot]:
         shots.append(shot)
         return shot
 
-    # The opening titles, over the title tune, like the top of an episode.
     add(0.0, NAME_AT, draw=black, label="black")
-    add(NAME_AT, EPISODE_AT, draw=card([("Curb Your Oxidation", 30)], color=YELLOW), label="name")
-    add(EPISODE_AT, SITUATION_AT, src=mark("scene 1 ") + 40, speed=0.0, label="episode title")
-    # Then the situation, on the game's own sound.
-    t = SITUATION_AT
-    for a, b, label in situation():
-        length = (b - a) / FPS
-        fx = []
-        if label == "sharon":
-            fx = [shake_fx(t, 3, 0.3)]
-        add(t, t + length, src=a, label=label, fx=fx)
-        t += length
-    # A beat of black before the cue's pickup.
-    add(t, t + 0.35, draw=black, label="beat")
-    INTRO = t + 0.35
+    add(NAME_AT, bar(1), draw=card([("Curb Your Oxidation", 30)], color=YELLOW), label="name")
 
-    # Who, what, and who's checking, from the cue's first big hit: card,
-    # footage, card, footage.
-    first_hit = cue(2.55)
-    add(INTRO, first_hit, draw=black, label="pickup")
-    etiquette = mark("say barry If we don't open it tonight", 3)
-    add(first_hit, bar(2.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
-    add(bar(2.5), bar(4), src=etiquette + 1, label="the etiquette")
-    add(bar(4), bar(4.5), draw=card([("So does Rust.", 18)]), label="card rust")
-    pad = mark("pad 3a", 3)
-    add(bar(4.5), bar(5.5), src=pad + 10, label="the pad",
-        fx=[caption("Every plan is a real Rust program.", bar(4.5) + BEAT, bar(5.5), y=120, size=12)])
-    add(bar(5.5), bar(6), draw=card([("And somebody", 18), ("is always checking.", 18)], bar(5.5), BEAT), label="card checking")
+    # The situation, scene 1, cut down to its punchlines.
+    say = [f for f, s in marks() if s.startswith("say ") and f < mark("card", 1)]
+    rant = mark("rant E0384", 1)
+    add(bar(1), bar(2), src=say[1] + 1, label="one latte")
+    add(bar(2), bar(2.5), src=mark("pad 1a", 1) + 20, label="the pad")
+    add(bar(2.5), bar(3), src=rant - int(BEAT * 2 * FPS), label="rehearsal")
+    add(bar(3), bar(4), src=rant, label="sharon", fx=[shake_fx(bar(3), 3, 0.3)])
+    add(bar(4), bar(5), src=mark("squint barry", 1), label="is that a rule")
+
+    # Who, what, and who's checking: half-bar cards between the footage.
+    add(bar(5), bar(5.5), draw=card([("Barry Danvers has rules.", 18)]), label="card barry")
+    add(bar(5.5), bar(6.5), src=mark("say barry If we don't open it tonight", 3) + 1, label="the etiquette")
+    add(bar(6.5), bar(7), draw=card([("So does Rust.", 18)]), label="card rust")
+    add(bar(7), bar(7.5), src=mark("pad 3a", 3) + 10, label="the pad 3")
+    add(bar(7.5), bar(8), draw=card([("And somebody", 18), ("is always checking.", 18)]), label="card checking")
     rant3 = mark("rant E0382", 3)
-    add(bar(6), bar(6.5), src=rant3 - int(BEAT * 2 * FPS) + 6, label="rehearsal 3a")
-    add(bar(6.5), bar(8), src=rant3, label="rant 3a", fx=[shake_fx(bar(6.5), 3, 0.3)])
+    add(bar(8), bar(9), src=rant3, label="rant 3a", fx=[shake_fx(bar(8), 3, 0.3)])
 
-    # The season: ten disputes, a bar each, on the game's own title cards.
+    # The season, a bar a dispute: the plan with its key line, then Sharon.
     season = [
-        (4, "admire(&mower);", mark("run 4a", 4) + 20),
-        (5, "let barry = &mut tray;", mark("run 5a", 5) + 30),
-        (6, "fn add_stroke(&mut self)", mark("run 6a", 6) + 20),
-        (7, 'Answer::Maybe => println!("Philippe: The bar."),', mark("run 7a", 7) + 30),
-        (8, "fn refund(receipt: bool) -> Result<i32, String>", mark("run 8a", 8) + 40),
-        (9, "for f in &friends {", mark("run 9a", 9) + 30),
-        (10, "fn longest<'a>(a: &'a str, b: &'a str) -> &'a str", mark("run 10a", 10) + 20),
+        (4, "admire(&mower);", mark("run 4a", 4) + 20, mark("rant ", 4)),
+        (5, "let barry = &mut tray;", mark("run 5a", 5) + 30, mark("rant E0502", 5)),
+        (6, "fn add_stroke(&mut self)", mark("run 6a", 6) + 20, mark("rant ", 6)),
+        (7, "Answer::Maybe => ...", mark("run 7a", 7) + 30, mark("rant E0004", 7)),
+        (9, "for f in &friends {", mark("run 9a", 9) + 30, mark("rant ", 9)),
+        (10, "fn longest<'a>(a: &'a str, b: &'a str)", mark("run 10a", 10) + 20, mark("rant ", 10)),
     ]
-    for k, (n, code, src) in enumerate(season):
-        at = bar(8 + k)
-        title = mark(f"scene {n} ")
-        add(at, at + BEAT * 1.5, src=title + 40, speed=0.0, label=f"title {n}")
-        add(at + BEAT * 1.5, bar(9 + k), src=src, label=f"run {n}",
-            fx=[code_chip(code, at + BEAT * 1.75, bar(9 + k) - BEAT / 4)])
+    for k, (n, code, run, sharon) in enumerate(season):
+        at = bar(9 + k)
+        add(at, at + BEAT * 2, src=run, label=f"run {n}",
+            fx=[code_chip(code, at + BEAT / 4, at + BEAT * 2 - BEAT / 8)])
+        add(at + BEAT * 2, bar(10 + k), src=sharon, label=f"rant {n}",
+            fx=[flash_fx(at + BEAT * 2, 3, 0.5), shake_fx(at + BEAT * 2, 2, 0.25)])
+
     # Bar 15: the music stops dead for a beat, and so does the plan.
     panic = mark("panic 8b", 8)
     add(bar(15), cue(32.2), src=panic - int((cue(32.2) - bar(15)) * FPS) - 10, label="before panic")
@@ -495,20 +458,20 @@ def edit() -> list[Shot]:
     add(cue(35.2), cue(38.5) - 2.4, src=rant5 - int(0.9 * FPS), label="rehearsal 5a")
     add(cue(38.5) - 2.4, cue(38.5), src=rant5 + 10, label="rant 5a")
     # The cue's long silence: Barry's squint, held.
-    squint = mark("squint barry", 6)
-    add(cue(38.5), bar(20), src=squint + 40, speed=0.0,
-        label="the squint")
-    # It starts up again: the other kinds of trouble.
-    add(bar(20), bar(21), src=mark("rant E0004", 7) + 20, label="rant maybe")
-    add(bar(21), bar(22), src=mark("rant E0597", 10) + 20, label="rant key")
+    add(cue(38.5), bar(20), src=mark("squint barry", 6) + 40, speed=0.0, label="the squint")
+    # It starts up again: four more kinds of trouble, half a bar each.
+    for k, (code, scene) in enumerate([("E0061", 2), ("E0063", 6), ("E0277", 8), ("E0597", 10)]):
+        at = bar(20 + k / 2)
+        add(at, at + BEAT * 2, src=mark(f"rant {code}", scene) + 10, label=f"rant {code}",
+            fx=[flash_fx(at, 3, 0.5)])
 
-    # Finale: three endings, two bars each: the last awkward lines, then the freeze.
-    for k, n in enumerate([3, 5, 8]):
-        at = bar(22 + k * 2)
+    # Finale: six endings, a bar each: the last awkward line, then the freeze.
+    for k, n in enumerate([1, 3, 4, 5, 6, 9]):
+        at = bar(22 + k)
         fr = mark(f"freeze {n}")
-        hold = at + BEAT * 6
-        add(at, hold, src=fr - int((hold - at) * FPS), label=f"ending {n}", fx=[flash_fx(at, 3, 0.4)])
-        add(hold, bar(24 + k * 2), src=fr + 4, speed=0.0, label=f"freeze {n}",
+        hold = at + BEAT * 2
+        add(at, hold, src=fr - int((hold - at) * FPS), label=f"ending {n}")
+        add(hold, bar(23 + k), src=fr + 4, speed=0.0, label=f"freeze {n}",
             fx=[freeze_tint, flash_fx(hold, 3, 0.5)])
     # The houseguest, timed so his freeze lands on the cue's last chord.
     last = mark("freeze 10")
@@ -527,7 +490,7 @@ END_HOLD = 6.0
 
 def chapters() -> list[tuple[float, str]]:
     """YouTube chapters (each at least 10 s long), for the video description."""
-    return [(0.0, "Titles, and one latte"), (INTRO, "Barry has rules"), (bar(8), "The season"),
+    return [(0.0, "Barry has rules"), (bar(9), "The season"),
             (bar(15), "The panic, the shrimp, the squint"), (bar(22), "Freeze frames")]
 
 
@@ -539,7 +502,7 @@ def cues() -> list[tuple[str, float, float]]:
     """(sound, trailer time, gain): this trailer's own effects."""
     end_hit = cue(CUE_END) - 0.45
     return [
-        ("swish", bar(2.5) - 0.1, 0.4),
+        ("swish", bar(5) - 0.1, 0.4),
         ("scratch", cue(32.2) - 0.02, 0.7),
         ("sting", end_hit + 0.1, 1.0),
     ]
@@ -584,11 +547,6 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     music = np.zeros((n, 2), np.float32)
     score = dq.load_wav(AUDIO / f"{CUE}.wav")[int(CUE_START * RATE):int(CUE_END * RATE)]
     dq.place(music, score, INTRO, 1.0)
-    # The opening titles, over the game's title tune, which drops out as the
-    # situation starts.
-    opening = decode(GAME_AUDIO / "music_title.ogg")[:int(SITUATION_AT * RATE)].copy()
-    opening *= np.minimum(1.0, np.linspace(SITUATION_AT, 0, len(opening)) / 0.5)[:, None]
-    dq.place(music, opening, 0.0, 1.0)
     # Under the end card, the game's own title tune, faded in low.
     end = shots[-1]
     tune = decode(GAME_AUDIO / "music_title.ogg")[:int((end.end - end.start) * RATE)].copy()
@@ -606,17 +564,10 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
             ramp = np.linspace(0, 1, fade)[:, None]
             clip[:fade] *= ramp
             clip[-fade:] *= ramp[::-1]
-        # Before the cue, the game is the whole soundtrack; after, it sits under.
-        dq.place(game, clip, shot.start, shot.audio if shot.end <= INTRO else shot.audio * 0.7)
+        dq.place(game, clip, shot.start, shot.audio * 0.7)
     sfx = np.zeros((n, 2), np.float32)
     for name, at, gain in cues():
         dq.place(sfx, dq.load_wav(AUDIO / f"{name}.wav"), at, gain)
-    # Room tone under the situation (the game has no voices), leveled and
-    # faded out into the beat of black before the cue.
-    room = dq.load_wav(AUDIO / "kitchen.wav")[:int((INTRO - SITUATION_AT) * RATE)].copy()
-    room *= 0.03 / max(1e-6, float(np.sqrt((room ** 2).mean())))
-    room *= np.minimum(1.0, np.linspace(len(room) / RATE, 0, len(room)) / 0.6)[:, None]
-    dq.place(sfx, np.clip(room, -0.5, 0.5), SITUATION_AT, 1.0)
     hits = np.abs(game * 2.5 + sfx).max(axis=1)
     env = np.convolve(hits, np.ones(2400) / 2400, mode="same")
     duck = 1.0 - np.clip(env * 2.0, 0.0, 0.35)
