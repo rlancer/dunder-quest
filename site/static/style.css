@@ -433,6 +433,28 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .sp-pixel { font-family: var(--display); }
 .sp-label { font-family: var(--label); }
 .sp-body { font-family: var(--body); }
+.sp-mono { font-family: var(--mono); }
+.sp-franklin { font-family: "Libre Franklin", "Franklin Gothic Medium", Arial, sans-serif; font-weight: 900; }
+/* Brand kit: each game's name and code, the way that game shows them */
+.cy-logo { background: #0d0b0c; border-color: #fad41c; }
+.kit-mark.cy-mark { font: 900 clamp(2rem, 7vw, 4.2rem)/1.05 "Libre Franklin", "Franklin Gothic Medium", Arial, sans-serif; color: #fad41c; text-shadow: none; }
+.fm-logo { background: #0f0e15; border-color: #f7de1f; }
+.kit-mark.fm-mark { color: #f5ebd6; text-shadow: 0 4px 0 #000, 0 8px 0 rgba(0, 0, 0, 0.4); }
+.kit-mark.fm-mark i { color: #f7de1f; text-shadow: 0 4px 0 #5a4f00, 0 8px 0 rgba(0, 0, 0, 0.4); }
+.kit-pad pre { font: 1.35rem/1.3 var(--label); background: #fdf3a0; color: #1f2450; border-left-color: #e05c57; }
+.kit-pad .k { color: #8f288f; }
+.kit-pad .s { color: #1f751d; }
+.kit-pad .n, .kit-pad .l { color: #b0500e; }
+.kit-pad .c { color: #6c6c7a; }
+.kit-pad .b { color: #1a52a8; }
+.kit-pad .m { color: #b8331f; }
+.kit-pad .t { color: #0f6f7f; }
+.kit-laptop pre { background: #1a1c29; color: #dbe5ff; border-left-color: #f7de1f; }
+.kit-laptop .k { color: #c78fff; }
+.kit-laptop .s { color: #9ee685; }
+.kit-laptop .n { color: #ffa866; }
+.kit-laptop .c { color: #8089a8; }
+.kit-laptop .b { color: #80c7ff; }
 .art, .cards { list-style: none; padding: 0; margin: 24px 0 12px; display: grid; gap: 20px; }
 .art { grid-template-columns: repeat(auto-fill, minmax(min(45%, 220px), 1fr)); }
 .art li, .cards li { display: flex; flex-direction: column; gap: 2px; font-size: 0.92rem; color: var(--ash); }
@@ -442,7 +464,8 @@ tbody th { font-weight: 700; color: var(--parchment); }
   background: var(--night); border: 2px solid var(--line);
 }
 .art a:hover, .cards a:hover { border-color: var(--gold); }
-.art img { max-width: 100%; max-height: 100%; width: auto; height: auto; }
+/* Shown at the whole-number scale in its width and height, shrunk to fit only if the box is smaller */
+.art img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px 24px; margin: 24px 0 8px; }
 .facts dt { font: 1.2rem var(--label); color: var(--ember); text-transform: uppercase; letter-spacing: 0.05em; }
 .facts dd { margin: 0; }
