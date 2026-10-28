@@ -489,7 +489,7 @@ func _draw_card(c: Control) -> void:
 		c.draw_string(font, Vector2(panel.position.x + 8, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.PAPER.darkened(0.05))
 		y += 12
 	if _waiting and int(_clock * 3.0) % 2 == 0:
-		c.draw_string(font, Vector2(panel.end.x - 60, panel.end.y - 5), "Enter: OK", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.AMBER)
+		c.draw_string(font, Vector2(panel.end.x - 60, panel.end.y - 5), "Tap: OK" if TouchControls.active else "Enter: OK", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.AMBER)
 
 
 func _draw_title(c: Control) -> void:

@@ -129,9 +129,10 @@ func _tick() -> void:
 	_canvas.queue_redraw()
 
 
+## A tap arrives as a touch and as an emulated click; reading both would
+## change the blank twice, so only the click counts.
 func _on_canvas_input(event: InputEvent) -> void:
-	var tap: bool = (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT) or (event is InputEventScreenTouch and event.pressed)
-	if not tap:
+	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var at: Vector2 = event.position
 	for id: String in _boxes:

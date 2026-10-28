@@ -65,9 +65,13 @@ func _unhandled_input(event: InputEvent) -> void:
 		_go()
 	elif event.is_action_pressed(&"pause"):
 		_leave(Main.TITLE)
-	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		_tap(event.position)
-	elif event is InputEventScreenTouch and event.pressed:
+
+
+## Clicks and taps come here: this full-screen Control stops them before
+## _unhandled_input. A tap arrives as an emulated click, so it isn't read twice.
+func _gui_input(event: InputEvent) -> void:
+	if not _leaving and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		accept_event()
 		_tap(event.position)
 
 
