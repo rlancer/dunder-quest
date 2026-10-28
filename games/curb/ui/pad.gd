@@ -4,7 +4,7 @@ extends CanvasLayer
 ## Barry's yellow legal pad: the plan, in Rust, with blanks to fill. Left and
 ## right move between the blanks, up and down change what's in one, and Enter
 ## (or the Run button) plays the scene out. By mouse or touch, tap a blank to
-## open its options under it and tap one to put it in. The scene waits while
+## pick it and tap one of its options to put that in. The scene waits while
 ## the pad is open.
 
 signal run_requested(plan: Plan)
@@ -15,7 +15,6 @@ const CODE_TOP := 40.0
 const CODE_LEFT := 46.0
 const STEP := 11.0
 const PAD := 2.0
-const MENU_ROW := 14.0
 
 var plan: Plan
 var _hint: String = ""
@@ -24,9 +23,8 @@ var _canvas: Control
 var _run_button: Button
 var _close_button: Button
 var _boxes: Dictionary = {}
-## The blank whose options are listed under it, or "", and each option's row.
-var _menu: String = ""
-var _menu_rows: Array[Rect2] = []
+## Where each of the picked blank's options is listed, to tap.
+var _option_boxes: Array[Rect2] = []
 var _blink: float = 0.0
 var _closed_ms: int = -1000
 ## Line to mark as the one Sharon objected to last time, or 0.
@@ -68,7 +66,6 @@ func open(p: Plan, hint: String) -> void:
 	plan = p
 	_hint = hint
 	_slot = 0
-	_menu = ""
 	visible = true
 	get_tree().paused = true
 	StageAudio.play(get_tree(), preload("res://assets/audio/bump.wav"))
@@ -109,20 +106,15 @@ func _input(event: InputEvent) -> void:
 	if not visible:
 		return
 	var order := plan.slot_order
-	if event.is_action_pressed(&"pause") and _menu != "":
-		_menu = ""
-		_canvas.queue_redraw()
-	elif event.is_action_pressed(&"pause"):
+	if event.is_action_pressed(&"pause"):
 		close()
 	elif event.is_action_pressed(&"run") or (event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)):
 		_run()
 	elif event.is_action_pressed(&"move_left", true) and not order.is_empty():
 		_slot = posmod(_slot - 1, order.size())
-		_menu = ""
 		_tick()
 	elif event.is_action_pressed(&"move_right", true) and not order.is_empty():
 		_slot = posmod(_slot + 1, order.size())
-		_menu = ""
 		_tick()
 	elif event.is_action_pressed(&"move_up", true) and not order.is_empty():
 		plan.set_pick(order[_slot], plan.pick(order[_slot]) - 1)
@@ -146,22 +138,16 @@ func _on_canvas_input(event: InputEvent) -> void:
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 	var at: Vector2 = event.position
-	if _menu != "":
-		for index in _menu_rows.size():
-			if _menu_rows[index].has_point(at):
-				plan.set_pick(_menu, index)
-				_menu = ""
-				_tick()
-				return
+	for index in _option_boxes.size():
+		if _option_boxes[index].has_point(at):
+			plan.set_pick(plan.slot_order[_slot], index)
+			_tick()
+			return
 	for id: String in _boxes:
 		if (_boxes[id] as Rect2).grow(3).has_point(at):
 			_slot = plan.slot_order.find(id)
-			_menu = "" if _menu == id else id
 			_tick()
 			return
-	if _menu != "":
-		_menu = ""
-		_canvas.queue_redraw()
 
 
 func _draw_pad() -> void:
@@ -216,58 +202,41 @@ func _draw_pad() -> void:
 		number += 1
 
 	var bottom := PANEL.end.y
+	_option_boxes.clear()
 	if selected != "":
-		var options := plan.options(selected)
-		var row := PackedStringArray()
-		for index in options.size():
-			var label := str(options[index]) if str(options[index]) != "" else "(nothing)"
-			row.append("[%s]" % label if index == plan.pick(selected) else label)
-		var text := "Options:  " + "   ".join(row)
-		if CodeDraw.width(text) > PANEL.size.x - 16:
-			# Too long to list them all: show the one that's in, and how many.
-			var current := str(options[plan.pick(selected)])
-			text = "Option %d of %d: %s   (Up/Down for the others)" % [plan.pick(selected) + 1, options.size(), current if current != "" else "(nothing)"]
-		c.draw_string(font, Vector2(PANEL.position.x + 8, bottom - 52), text, HORIZONTAL_ALIGNMENT_LEFT, PANEL.size.x - 16, CodeDraw.SIZE, Palette.RUST.darkened(0.25))
+		_draw_options(selected, bottom - 52)
 	if _hint != "":
 		var hint_lines := CodeDraw.wrap("Barry, thinking: " + _hint, PANEL.size.x - 16)
 		for i in mini(hint_lines.size(), 2):
 			c.draw_string(font, Vector2(PANEL.position.x + 8, bottom - 39 + i * 11), hint_lines[i], HORIZONTAL_ALIGNMENT_LEFT, -1, CodeDraw.SIZE, Palette.PAD_INK.lightened(0.25))
-	var keys := "Tap a blank, then tap what goes in it" if TouchControls.active else "Left/Right: blank   Up/Down: change   Enter: run"
+	var keys := "Tap a blank, then tap an option" if TouchControls.active else "Left/Right: blank   Up/Down: change   Enter: run"
 	c.draw_string(font, Vector2(PANEL.position.x + 8, bottom - 8), keys, HORIZONTAL_ALIGNMENT_LEFT, PANEL.size.x - 130, CodeDraw.SIZE, Palette.STEEL_DARK)
-	_draw_menu()
 
 
-## The open blank's options, one row each, under the blank (or over it, near
-## the bottom of the pad), with the one that's in now marked.
-func _draw_menu() -> void:
-	_menu_rows.clear()
-	if _menu == "" or not _boxes.has(_menu):
-		return
+## The picked blank's options, each a box to tap, the one that's in filled.
+## They share a line, ending at y, when they fit; if not, one a line, upward.
+func _draw_options(slot: String, y: float) -> void:
 	var c := _canvas
 	var font := Palette.mono()
-	var box: Rect2 = _boxes[_menu]
-	var options := plan.options(_menu)
 	var labels := PackedStringArray()
-	var w := box.size.x
-	for option: Variant in options:
-		var label := str(option) if str(option) != "" else "(nothing)"
-		labels.append(label)
-		w = maxf(w, CodeDraw.width(label) + 16)
-	var h := MENU_ROW * labels.size()
-	var x := clampf(box.position.x, PANEL.position.x + 4, PANEL.end.x - 4 - w)
-	var y := box.end.y + 1
-	if y + h > PANEL.end.y - 4:
-		y = maxf(PANEL.position.y + 24, box.position.y - 1 - h)
-	var menu := Rect2(x, y, w, h)
-	c.draw_rect(menu.grow(1), Palette.RUST)
-	c.draw_rect(menu, Palette.PAPER)
+	for option: Variant in plan.options(slot):
+		labels.append(str(option) if str(option) != "" else "(nothing)")
+	var lead := "Options:"
+	var left := PANEL.position.x + 8 + CodeDraw.width(lead) + 8
+	var room := PANEL.end.x - 8 - left
+	var total := 0.0
+	for label in labels:
+		total += CodeDraw.width(label) + 14
+	var stacked := total > room
+	c.draw_string(font, Vector2(PANEL.position.x + 8, y - (labels.size() - 1) * STEP if stacked else y), lead, HORIZONTAL_ALIGNMENT_LEFT, -1, CodeDraw.SIZE, Palette.RUST.darkened(0.25))
+	var x := left
 	for index in labels.size():
-		var row := Rect2(x, y + index * MENU_ROW, w, MENU_ROW)
-		_menu_rows.append(row)
-		var current := index == plan.pick(_menu)
-		if current:
-			c.draw_rect(row, Color(Palette.RUST, 0.22))
-		if index > 0:
-			c.draw_line(row.position, Vector2(row.end.x, row.position.y), Color(Palette.PAD_INK, 0.15), 1.0)
-		c.draw_string(font, row.position + Vector2(4, 10), ">" if current else " ", HORIZONTAL_ALIGNMENT_LEFT, -1, CodeDraw.SIZE, Palette.RUST)
-		c.draw_string(font, row.position + Vector2(12, 10), labels[index], HORIZONTAL_ALIGNMENT_LEFT, -1, CodeDraw.SIZE, Palette.PAD_INK)
+		var w := minf(CodeDraw.width(labels[index]) + 8, room)
+		var at := Vector2(left, y - (labels.size() - 1 - index) * STEP) if stacked else Vector2(x, y)
+		var box := Rect2(at + Vector2(-4, -9), Vector2(w, STEP - 1))
+		_option_boxes.append(box.grow_individual(2, 1, 2, 1))
+		var on := index == plan.pick(slot)
+		c.draw_rect(box, Color(Palette.RUST, 0.22) if on else Color(1, 1, 1, 0.5))
+		c.draw_rect(box, Palette.RUST if on else Palette.PAD_INK.lightened(0.4), false, 1.0)
+		c.draw_string(font, at, labels[index], HORIZONTAL_ALIGNMENT_LEFT, w - 8, CodeDraw.SIZE, Palette.PAD_INK)
+		x += w + 6
