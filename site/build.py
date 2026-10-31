@@ -948,18 +948,18 @@ LAUNCH = [
         ("URL", f"{SITE_URL}play/"),
     ], "A link post straight to the game. Check it loads on a phone first: most players will tap it there."),
 ]
-## Curb Your Oxidation's own launch, in the same shape as LAUNCH. Never name
-## the show it's an homage to.
+## Curb Your Oxidation's own launch, in the same shape as LAUNCH. These are
+## Rob's own posts, the one place that names the show, as "inspired by".
 CURB_LAUNCH = [
     ("LinkedIn", "", "", [
-        "I wanted a fun way to learn Rust, so I had Claude make me a game themed on my favorite LA cringe comedy. "
+        "I wanted a fun way to learn Rust, so I had Claude make me a game inspired by Curb Your Enthusiasm. "
         "What it made is pure brilliance.\n\n"
         "In Curb Your Oxidation, the borrow checker is the unwritten social contract. Barry Danvers plots his petty etiquette "
         "standoffs in Rust, and his wife Sharon cuts in at the exact line rustc would reject, with the real error code.\n\n"
         "Everyone's vibe coding now. This one makes you understand the rules.\n\n"
         f"Learn Rust. Mind your manners. 👇\n{SITE_URL}curb/\n\n"
         "#rustlang #learntocode #gamedev",
-    ], "Upload the Curb trailer as a native video rather than leaning on the link card. Posting it from your own account, you may swap \"my favorite LA cringe comedy\" for the show's name, as \"inspired by\", with nothing that suggests the network is involved."),
+    ], "Upload the Curb trailer as a native video rather than leaning on the link card. Post it from your own account: it names the show, which only Rob's own posts may do. Keep it \"inspired by\", with nothing that suggests the network is involved."),
 ]
 
 
@@ -1507,7 +1507,7 @@ def build_brand_launch(prefix: str) -> str:
 <section class="section kit" aria-labelledby="launch-curb-h">
   <p class="kicker">curb.__launch__</p>
   <h2 id="launch-curb-h">Curb Your Oxidation</h2>
-  <p class="lede">The Rust game's posts. The hook: a fun way to learn Rust, in a world where everyone's vibe coding. Like everything public about Curb, they never name the show.</p>
+  <p class="lede">The Rust game's posts. The hook: a fun way to learn Rust, in a world where everyone's vibe coding. They're for Rob's own accounts, so unlike the rest of Curb's copy they name the show, as "inspired by".</p>
   <ol class="launch">{curb}</ol>
 </section>
 
