@@ -948,6 +948,28 @@ LAUNCH = [
         ("URL", f"{SITE_URL}play/"),
     ], "A link post straight to the game. Check it loads on a phone first: most players will tap it there."),
 ]
+## Curb Your Oxidation's own launch, in the same shape as LAUNCH. Never name
+## the show it's an homage to.
+CURB_LAUNCH = [
+    ("LinkedIn", "", "", [
+        "Everyone's vibe coding now. You describe what you want, the AI writes it, and you hit run.\n\n"
+        "That works fine until the compiler says no.\n\n"
+        "Rust is where vibes stop working. You can't sweet-talk the borrow checker. If you moved a value and then tried to use it, "
+        "you get error[E0382], and pasting the error back to the AI until it goes away doesn't teach you anything. "
+        "At some point somebody in the room has to understand the rules.\n\n"
+        "So I made a game that teaches them.\n\n"
+        "Curb Your Oxidation is a comedy game about learning Rust. Barry Danvers lives by rules nobody else has heard of. "
+        "Rust works the same way. Its borrow checker is basically the unwritten social contract: who owns what, who can borrow it, "
+        "and when you have to give it back.\n\n"
+        "Each scene starts with Barry planning his next petty etiquette standoff, written out as Rust on a legal pad. "
+        "The plan plays in his head, and then his wife Sharon cuts in at the exact line the borrow checker would reject, "
+        "quoting the real rustc error code. Fix the plan and he gets to carry it out. "
+        "Every plan in the game is checked against the real Rust compiler, so nothing it teaches is made up.\n\n"
+        "Vibe coding is great for getting something running. Knowing why it runs, or why it won't, is still the actual job.\n\n"
+        f"Learn Rust. Mind your manners. 👇\n{SITE_URL}curb/\n\n"
+        "#rustlang #learntocode #gamedev #programming",
+    ], "Upload the Curb trailer as a native video rather than leaning on the link card. If there's room, the spelling-game story fits just before the link."),
+]
 
 
 ## The brand kit's pages, in the order help(dunder_quest) lists them:
@@ -1489,6 +1511,7 @@ def build_brand_youtube(prefix: str) -> str:
 
 def build_brand_launch(prefix: str) -> str:
     launch = "".join(launch_post(*post) for post in LAUNCH)
+    curb = "".join(launch_post(*post) for post in CURB_LAUNCH)
     body = f"""
 <section class="section kit" aria-labelledby="launch-h">
   <p class="kicker">dunder_quest.__launch__</p>
@@ -1496,6 +1519,13 @@ def build_brand_launch(prefix: str) -> str:
   <p class="lede">Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
   <ol class="launch">{launch}</ol>
   <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
+</section>
+
+<section class="section kit" aria-labelledby="launch-curb-h">
+  <p class="kicker">curb.__launch__</p>
+  <h2 id="launch-curb-h">Curb Your Oxidation</h2>
+  <p class="lede">The Rust game's posts. The hook: everyone's vibe coding now, and Rust is where vibes stop compiling. Like everything public about Curb, they never name the show.</p>
+  <ol class="launch">{curb}</ol>
 </section>"""
     return brand_page("launch", body, prefix)
 
@@ -1518,7 +1548,8 @@ def launch_post(platform: str, when: str, title: str, posts: list[str], tips: st
     for i, post in enumerate(posts):
         label, text = post if isinstance(post, tuple) else (f"Post {i + 1} of {len(posts)}" if len(posts) > 1 else "Post", post)
         blocks += block(label, text)
-    return (f'<li><h3><span class="when">{esc(when)}</span> {esc(platform)}</h3>'
+    when = f'<span class="when">{esc(when)}</span> ' if when else ""  # Curb's launch has no times yet
+    return (f'<li><h3>{when}{esc(platform)}</h3>'
             f"{blocks}<p class=\"fine\">{esc(tips)}</p></li>")
 
 
