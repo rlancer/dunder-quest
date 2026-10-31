@@ -959,7 +959,7 @@ CURB_LAUNCH = [
         "Everyone's vibe coding now. This one makes you understand the rules.\n\n"
         f"Learn Rust. Mind your manners. 👇\n{SITE_URL}curb/\n\n"
         "#rustlang #learntocode #gamedev",
-    ], "Upload the Curb trailer as a native video rather than leaning on the link card. If there's room, the spelling-game story fits just before the link."),
+    ], "Upload the Curb trailer as a native video rather than leaning on the link card. Posting it from your own account, you may swap \"my favorite LA cringe comedy\" for the show's name, as \"inspired by\", with nothing that suggests the network is involved."),
 ]
 
 
