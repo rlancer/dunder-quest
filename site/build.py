@@ -952,22 +952,13 @@ LAUNCH = [
 ## the show it's an homage to.
 CURB_LAUNCH = [
     ("LinkedIn", "", "", [
-        "Everyone's vibe coding now. You describe what you want, the AI writes it, and you hit run.\n\n"
-        "That works fine until the compiler says no.\n\n"
-        "Rust is where vibes stop working. You can't sweet-talk the borrow checker. If you moved a value and then tried to use it, "
-        "you get error[E0382], and pasting the error back to the AI until it goes away doesn't teach you anything. "
-        "At some point somebody in the room has to understand the rules.\n\n"
-        "So I made a game that teaches them.\n\n"
-        "Curb Your Oxidation is a comedy game about learning Rust. Barry Danvers lives by rules nobody else has heard of. "
-        "Rust works the same way. Its borrow checker is basically the unwritten social contract: who owns what, who can borrow it, "
-        "and when you have to give it back.\n\n"
-        "Each scene starts with Barry planning his next petty etiquette standoff, written out as Rust on a legal pad. "
-        "The plan plays in his head, and then his wife Sharon cuts in at the exact line the borrow checker would reject, "
-        "quoting the real rustc error code. Fix the plan and he gets to carry it out. "
-        "Every plan in the game is checked against the real Rust compiler, so nothing it teaches is made up.\n\n"
-        "Vibe coding is great for getting something running. Knowing why it runs, or why it won't, is still the actual job.\n\n"
+        "I wanted a fun way to learn Rust, so I had Claude make me a game themed on my favorite LA cringe comedy. "
+        "What it made is pure brilliance.\n\n"
+        "In Curb Your Oxidation, the borrow checker is the unwritten social contract. Barry Danvers plots his petty etiquette "
+        "standoffs in Rust, and his wife Sharon cuts in at the exact line rustc would reject, with the real error code.\n\n"
+        "Everyone's vibe coding now. This one makes you understand the rules.\n\n"
         f"Learn Rust. Mind your manners. 👇\n{SITE_URL}curb/\n\n"
-        "#rustlang #learntocode #gamedev #programming",
+        "#rustlang #learntocode #gamedev",
     ], "Upload the Curb trailer as a native video rather than leaning on the link card. If there's room, the spelling-game story fits just before the link."),
 ]
 
