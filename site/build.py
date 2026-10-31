@@ -1504,19 +1504,19 @@ def build_brand_launch(prefix: str) -> str:
     launch = "".join(launch_post(*post) for post in LAUNCH)
     curb = "".join(launch_post(*post) for post in CURB_LAUNCH)
     body = f"""
-<section class="section kit" aria-labelledby="launch-h">
-  <p class="kicker">dunder_quest.__launch__</p>
-  <h2 id="launch-h">Launch day</h2>
-  <p class="lede">Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
-  <ol class="launch">{launch}</ol>
-  <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
-</section>
-
 <section class="section kit" aria-labelledby="launch-curb-h">
   <p class="kicker">curb.__launch__</p>
   <h2 id="launch-curb-h">Curb Your Oxidation</h2>
-  <p class="lede">The Rust game's posts. The hook: everyone's vibe coding now, and Rust is where vibes stop compiling. Like everything public about Curb, they never name the show.</p>
+  <p class="lede">The Rust game's posts. The hook: a fun way to learn Rust, in a world where everyone's vibe coding. Like everything public about Curb, they never name the show.</p>
   <ol class="launch">{curb}</ol>
+</section>
+
+<section class="section kit" aria-labelledby="launch-h">
+  <p class="kicker">dunder_quest.__launch__</p>
+  <h2 id="launch-h">Dunder Quest's launch day</h2>
+  <p class="lede">Post on a Tuesday, Wednesday or Thursday, starting with Hacker News at 8:30 AM Eastern, when both the US and Europe are reading. The rest follow through the day. Each one says what Opus 5.5 built and plainly what other models made. The ones with room for a story say why it's a learning game at all.</p>
+  <ol class="launch">{launch}</ol>
+  <p class="fine">Never ask for upvotes on any of them. Sharing a post is fine; asking for votes gets it removed. Once one does well, mention it in the others.</p>
 </section>"""
     return brand_page("launch", body, prefix)
 
