@@ -29,6 +29,7 @@ node_modules/
 deploy/.cloudflare/
 .playwright-mcp/
 
-# Local agent tooling
-.claude/
+# Local agent tooling, except the preview server config
+.claude/*
+!.claude/launch.json
 .grok/
