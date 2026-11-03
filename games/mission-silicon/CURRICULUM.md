@@ -30,7 +30,7 @@ Explicitly out of scope: writing code by hand, algorithms, data structures beyon
 
 ## The running example: Forkcast
 
-The learner is a first-time founder in the Bay Area launching an AI startup. The startup is **Forkcast** *(candidate name)*, an AI dinner concierge: tell it "somewhere quiet for six on Friday, one vegetarian, near the Mission" and it finds a restaurant and books the table. It starts as a landing page and grows into a company with partner restaurants in several cities, so it hits every topic in a natural order.
+The learner is a first-time founder in the Bay Area launching an AI startup. The startup is **Forkcast**, an AI dinner concierge: tell it "somewhere quiet for six on Friday, one vegetarian, near the Mission" and it finds a restaurant and books the table. It starts as a landing page and grows into a company with partner restaurants in several cities, so it hits every topic in a natural order.
 
 It's an AI product, but most of what it needs isn't AI: bookings, accounts, payments, partner systems and a database that mustn't lose anything. That's the point. The model is one call in the middle of an ordinary web app (Module 13 covers it in depth; it appears from stage 1 as "the backend calls a model's API").
 
