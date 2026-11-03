@@ -18,6 +18,7 @@ Read AGENTS.md first as always; its fourth-game entry summarises the rules below
 
 - **Audience and goal.** Non-technical people, would-be founders above all, who want to build with AI. They learn enough to name the parts, read an AI's plan, ask for the right thing and spot classic mistakes. The player never writes code; that's what makes it distinct from the other three games.
 - **The homage.** A Bay Area startup sitcom. Same limits as Curb Your Oxidation: copy format, tone and tropes closely; homage names only; no verbatim lines; no recreation of the theme tune; don't name the show anywhere public. Leave out the raunchy bits and the ethnic-stereotype gags.
+- **Stay close to the show.** The repo is public, so the show and its characters are described, never named, which makes drifting into generic startup comedy the main risk. SHOW.md ties every character to their counterpart's habits and every episode to a specific borrowed set piece; keep it that way, and check each episode against the show before building it.
 - **The premise.** You're a non-technical founder who moves into an incubator house to launch an AI startup, Forkcast, an AI dinner concierge that finds and books restaurant tables. Forkcast is also the curriculum's running example; its stages are the season's arc.
 - **The AI teammate.** The character the player directs is an eager, overconfident AI coding assistant. The finale is the player telling it no.
 - **The curriculum leads.** It can change for teaching reasons; the show follows it, and every module must stay covered by at least one episode.
@@ -28,7 +29,7 @@ Read AGENTS.md first as always; its fourth-game entry summarises the rules below
 
 Everything marked *(candidate)* in SHOW.md, plus:
 
-- **Names.** The game (working title *The Bay Area*), the product (*Forkcast*), the folder (`build-with-ai` is a placeholder; rename it once the game has a name, and update AGENTS.md and these docs), and the cast (Gus, Hank, Thorne, Dev, Jordan, Bix, Galen Brightwater of Hubbub, two unnamed investors). Check each against the homage rules: winking, never the show's real names.
+- **Names.** The game (working title *The Bay Area*), the product (*Forkcast*), the folder (`build-with-ai` is a placeholder; rename it once the game has a name, and update AGENTS.md and these docs), and the cast (Gus, Hank, Thorne, Dev, Jordan, Bix, Galen Brightwater of Hubbub, and the unnamed investors, associate and adult CEO, plus the AI teammate and the garage server it's named after). Check each against the homage rules: winking, never the show's real names.
 - **Look and sound.** Palette, accent colour, title-card font (OFL, like Curb's Libre Franklin), and the music direction (original, in the show's glitchy electronic vein).
 - **The core loop in detail.** SHOW.md's sketch is "plan with the AI, then a live demo where simulated traffic hits what you built; runway is the score". Undecided: how the player picks and connects pieces, how much the simulation shows, how failure plays out, how Gus's bad advice is presented, what a perfect episode looks like.
 - **Portrait or landscape**, and how the planning board fits a phone.
