@@ -1,6 +1,6 @@
 # The show: working the homage into the curriculum
 
-The fourth game is a homage to a Bay Area startup sitcom: a shy coder's app becomes a company, run out of a loud founder's incubator house, chased by a guru-led tech giant and a parade of absurd investors, and nearly killed every season by its own success.
+The fourth game is a homage to **Silicon Valley** (HBO, 2014–2019, created by Mike Judge, John Altschuler and Dave Krinsky): Richard Hendricks's compression app becomes Pied Piper, run out of Erlich Bachman's Hacker Hostel, chased by Gavin Belson's Hooli and a parade of absurd investors, and nearly killed every season by its own success.
 
 [CURRICULUM.md](CURRICULUM.md) is the reference for **what** the game teaches: the topics, in order, and the running example (Forkcast). This doc is **how** the show carries it: who's who, what each episode is, and which module each one covers. The curriculum can change, but it changes for teaching reasons; the show follows it and every module stays covered.
 
@@ -12,13 +12,13 @@ Same approach as Curb Your Oxidation, adapted:
 
 - **Copy the format, tone and tropes closely.** The incubator house, the garage server rack, the pitch-conference stage, the tech giant's campus, the bickering engineers, the deadpan insults, the founder who throws up before big moments, the investor meetings that go sideways, success that's always about to destroy the company.
 - **Three limits.** No real people's or characters' names (homage names only). No verbatim catchphrases or lines from the show. No recreation of its theme tune; original music in the same glitchy, electronic style is fine.
-- **Don't name the show in anything public**: the game, the site, the trailers, the video descriptions. In this repo it's "the show".
+- **Don't name the show in anything players or viewers see**: the game, the site, the trailers, the video descriptions. These planning docs name it, and its characters, so the homage can be checked against the source; nothing from them goes into the game except homage names.
 - **Leave out what doesn't suit a broad, non-technical audience**: the raunchy set pieces and the gags built on national or ethnic stereotypes.
 - **Stay distinct from the other three games**: no quiz duels (Dunder Quest), no character running a script you wrote (Flatmates.js), no plan-in-your-head interrupted at the failing line, and no freeze frame with a tuba sting (Curb Your Oxidation). The player doesn't write code.
 
-## Why the show isn't named here
+## Staying close to Silicon Valley
 
-This repo is public, so these docs follow the same rule as the game: the show is described, never named, and neither are its characters (Curb's and Flatmates' docs do the same). That makes it easy to drift into a generic startup comedy, so everything below is tied to specific, recognisable things from the show: each character's counterpart and signature habits, and each episode's borrowed set piece. If a scene could be in any office comedy, it's too far away; push it back toward the show.
+The easy failure is drifting into a generic startup comedy. So everything below is tied to specific, recognisable things from the show: each character's counterpart and signature habits, and each episode's borrowed set piece. If a scene could be in any office comedy, it's too far away; push it back toward the show.
 
 ## The premise
 
@@ -34,7 +34,7 @@ The player is the show's audience surrogate made literal: the non-technical foun
 
 The curriculum's core skill is directing an AI that writes the code, and the show's last stretch was about AI that gets too powerful. So the startup's newest hire is an AI coding assistant, and it's the character the player actually directs.
 
-- It's a homage to the show's late-season AI: the one the deadpan sysadmin built on his garage server, which "fixed" every bug by deleting the code. Thorne built ours too, on his garage server, and it's named after it *(name candidate)*.
+- It's a homage to Son of Anton, the AI Gilfoyle built on top of Anton, his garage server, which "fixed" every bug by deleting the code. Thorne built ours too, on his garage server, and it's named after it *(name candidate)*.
 - It's fast, tireless, eager and overconfident (curriculum Module 0). It builds what you ask, which isn't always what you need.
 - The human engineers react to it: one is threatened by it, one is quietly using it to do his job, one wants it to rewrite everything in his favourite language.
 - The joke runs both ways: you're building an AI product with an AI, and both of them can be confidently wrong (Module 13: hallucination, prompt injection).
@@ -47,17 +47,17 @@ Each character is a close homage to one of the show's, keeping their look, habit
 | Character | The show's counterpart, and what to keep | Curriculum role |
 | --- | --- | --- |
 | You, Forkcast's founder | New: the non-technical founder the show only ever laughed at, now the hero | The learner |
-| **Gus**, the incubator owner | The bombastic owner of the incubator in his suburban ranch house, who takes ten percent of every startup living there. Coasting on one startup he sold years ago; robe, bare feet, grand pronouncements, branding obsessions; a mentor who's as likely to sabotage you as help. | Says every misconception out loud, with total confidence. Each module's "Misconceptions" list is his dialogue; spotting where he's wrong is a core skill. |
-| **Hank**, your reluctant CTO | The shy genius founder: stammers in pitches, throws up before big moments, stubborn about doing things the right way, and pushed into leading when he'd rather code. Here he's who you'd be if you could code. | Explains how things actually work (Modules 1, 2); a perfectionist who over-engineers, so he's also the voice of premature scaling (9). |
-| **Thorne**, the deadpan sysadmin | The long-haired, menacing systems engineer with a cheerful interest in the dark arts, who built and named the server in the garage and holds everyone in contempt, his rival coder most of all. | Servers, hosting, security, distributed failure (8, 10, 11). Trusts nothing; usually right. Built the AI teammate. |
-| **Dev**, the app developer | The rival coder: vain, insecure, forever one-upped by the sysadmin, briefly famous and then humiliated. Their trading of insults is the house's background noise. (Keep the rivalry, not the show's nationality jokes.) | Frontend, React, the language wars with Thorne (3, 4). Chases what's fashionable. |
-| **Jordan**, the operations lead | The earnest refugee from the tech giant: devoted to the founder, unnervingly calm, cheerfully mentioning a bleak past, fond of odd corporate team exercises and very thorough spreadsheets. | Process: testing, backups, checklists, privacy, the boring things that save the company (6, 12). |
-| **Bix**, the friend who fails upward | The founder's sweet, hapless best friend, who's poached by the giant, paid to do nothing on its roof, and keeps landing jobs he's not qualified for. | "It works on my machine"; deploys from his laptop; gets hired by the tech giant anyway (8, 12). |
-| **Galen Brightwater**, guru CEO of **Hubbub** | The tech giant's CEO: a spiritual adviser at his elbow, speeches about making the world a better place, a copycat of your product built by hundreds of engineers, whole teams fired on a whim, and a lawsuit claiming he owns your idea. | Buzzwords and anti-patterns: microservices for everything, scale from day one, copy the competitor (9, 10, 11). |
-| **The loud investor** *(name TBD)* | The brash billionaire who made his fortune putting radio on the internet: flashy car with doors that open upward, obsessed with how many billions he has, wants growth now and revenue never. | Vanity metrics and burn; makes cost and runway real (5, 8, 9). |
-| **The quiet investor** *(name TBD)* | The socially strange visionary VC: long silences, odd fixations, sudden insight. | Asks the one question that matters: "what's the simplest version that works?" (Capstone checklist). |
-| **The associate** *(name TBD)* | The investor's sharp, sceptical associate who believes in the founder when no one else does. | Fundraising and money sense: runway, cost, what investors actually check (5, 8). |
-| **The adult CEO** *(name TBD)* | The veteran executive the board installs over the founder, who wants to stop building the product and sell a hardware box instead. | One episode (9): on-premises box vs the cloud (8), and dashboards that measure the wrong thing (6). |
+| **Gus**, the incubator owner | **Erlich Bachman**: the bombastic owner of the Hacker Hostel in his suburban Palo Alto house, who takes ten percent of every startup living there. Coasting on Aviato, the one startup he sold; robe, bare feet, grand pronouncements, branding obsessions; a mentor who's as likely to sabotage you as help. | Says every misconception out loud, with total confidence. Each module's "Misconceptions" list is his dialogue; spotting where he's wrong is a core skill. |
+| **Hank**, your reluctant CTO | **Richard Hendricks**: the shy genius founder: stammers in pitches, throws up before big moments, stubborn about doing things the right way, and pushed into leading when he'd rather code. Here he's who you'd be if you could code. | Explains how things actually work (Modules 1, 2); a perfectionist who over-engineers, so he's also the voice of premature scaling (9). |
+| **Thorne**, the deadpan sysadmin | **Bertram Gilfoyle**: the long-haired, menacing systems engineer with a cheerful interest in the dark arts, who built Anton, the server in the garage, and holds everyone in contempt, his rival coder most of all. | Servers, hosting, security, distributed failure (8, 10, 11). Trusts nothing; usually right. Built the AI teammate. |
+| **Dev**, the app developer | **Dinesh Chugtai**: the rival coder: vain, insecure, forever one-upped by the sysadmin, briefly famous and then humiliated. Their trading of insults is the house's background noise. (Keep the rivalry, not the show's nationality jokes.) | Frontend, React, the language wars with Thorne (3, 4). Chases what's fashionable. |
+| **Jordan**, the operations lead | **Jared Dunn**: the earnest refugee from Hooli: devoted to the founder, unnervingly calm, cheerfully mentioning a bleak past, fond of odd corporate team exercises and very thorough spreadsheets. | Process: testing, backups, checklists, privacy, the boring things that save the company (6, 12). |
+| **Bix**, the friend who fails upward | **Nelson "Big Head" Bighetti**: the founder's sweet, hapless best friend, who's poached by Hooli, paid to do nothing on its roof, and keeps landing jobs he's not qualified for. | "It works on my machine"; deploys from his laptop; gets hired by the tech giant anyway (8, 12). |
+| **Galen Brightwater**, guru CEO of **Hubbub** | **Gavin Belson**, CEO of **Hooli**: a spiritual adviser (Denpok) at his elbow, speeches about making the world a better place, a copycat of your product (Nucleus) built by hundreds of engineers, whole teams fired on a whim, and a lawsuit claiming he owns your idea. | Buzzwords and anti-patterns: microservices for everything, scale from day one, copy the competitor (9, 10, 11). |
+| **The loud investor** *(name TBD)* | **Russ Hanneman**: the brash billionaire who made his fortune putting radio on the internet: flashy car with doors that open upward, obsessed with how many billions he has, wants growth now and revenue never. | Vanity metrics and burn; makes cost and runway real (5, 8, 9). |
+| **The quiet investor** *(name TBD)* | **Peter Gregory** (and later Laurie Bream) of Raviga: the socially strange visionary VC: long silences, odd fixations, sudden insight. | Asks the one question that matters: "what's the simplest version that works?" (Capstone checklist). |
+| **The associate** *(name TBD)* | **Monica Hall**: the investor's sharp, sceptical associate who believes in the founder when no one else does. | Fundraising and money sense: runway, cost, what investors actually check (5, 8). |
+| **The adult CEO** *(name TBD)* | **Jack Barker**: the veteran executive the board installs over the founder, who wants to stop building the product and sell a hardware box instead. | One episode (9): on-premises box vs the cloud (8), and dashboards that measure the wrong thing (6). |
 
 The engineers' bickering is a teaching device: on most decisions two of them argue for different options, and the trade-off between them is the lesson (Module 3's dials, Module 7's freshness vs speed, Module 10's consistency vs availability).
 
@@ -73,16 +73,16 @@ Each episode borrows a specific set piece from the show; the right-hand column s
 | 2 | **The Whiteboard**: Hank draws the internet for you; the landing page and waitlist go up | 0 | 1, 2 | The house's late-night whiteboard sessions, and the founder failing to explain the product in one sentence. |
 | 3 | **Tabs and Spaces**: the team splits over which language to build in | 1 | 3 | The tabs-versus-spaces fight that nearly ends a relationship. |
 | 4 | **Demo Day**: the MVP has to find a real table for an investor by Friday | 1 | 4, 5, 13 (first model call) | The founder throwing up before the pitch, and the investor meeting that goes sideways. |
-| 5 | **The Spreadsheet**: Gus has been keeping the waitlist and bookings in a shared spreadsheet | 1 | 6 (OLTP side) | The incubator owner's "help": a branding obsession and a bright idea that nearly sinks the company. |
+| 5 | **The Spreadsheet**: Gus has been keeping the waitlist and bookings in a shared spreadsheet | 1 | 6 (OLTP side) | Erlich's "help": a branding obsession and a bright idea that nearly sinks the company. |
 | 6 | **Log In**: users want accounts; restaurants want to see only their own bookings | 2 | 5, 11 | The focus group of ordinary people who can't work out the brilliant product the engineers love. |
 | 7 | **Launch Party**: going live in front of everyone | 3 | 8, 12 | The absurdly lavish startup launch party paid for with money they don't have. |
-| 8 | **Viral**: a celebrity posts about Forkcast; the garage server melts and the AI bill hits five figures | 4 | 7, 9 | The live stream that goes huge while the garage server overheats and the team scrambles to keep it alive. |
-| 9 | **The Board Meeting**: the investors want dashboards that slow the app, and the board installs an adult CEO | 5 | 6 (OLAP side), 8 | The founder pushed out of his own company, and the new CEO who wants to sell a box. |
-| 10 | **Hubbub Dine**: the tech giant clones you, with hundreds of engineers and microservices | 6 | 9, 10 | The giant's copycat platform, built by a huge team, that collapses at its big demo. |
-| 11 | **Charged Twice**: real deposits, restaurants' booking systems, and two parties at one table | 6 | 10 | The pivot to a network spread across thousands of devices, and how badly it can go wrong at scale. |
-| 12 | **The Leak**: Bix pasted the model API key somewhere public, and Hubbub sues | 6 | 11 | The giant's lawsuit claiming it owns the product, and the sysadmin's casual hacking. |
-| 13 | **The Conference**: the agent books live on stage, and a planted review hijacks it | 7 | 13 | The startup conference finale: the giant demos first, and the team pulls something together overnight. |
-| 14 | **Finale**: the AI proposes rebuilding everything; you defend the simple version | All | Capstone | The series finale: the AI too powerful to release, the team sabotaging their own launch, and a documentary-style flash-forward years later. |
+| 8 | **Viral**: a celebrity posts about Forkcast; the garage server melts and the AI bill hits five figures | 4 | 7, 9 | The live stream that goes huge while Anton overheats in the garage and the team scrambles to keep it alive. |
+| 9 | **The Board Meeting**: the investors want dashboards that slow the app, and the board installs an adult CEO | 5 | 6 (OLAP side), 8 | Richard pushed out as CEO, and Jack Barker's "box". |
+| 10 | **Hubbub Dine**: the tech giant clones you, with hundreds of engineers and microservices | 6 | 9, 10 | Hooli's Nucleus, the copycat built by a huge team, that collapses at its big demo. |
+| 11 | **Charged Twice**: real deposits, restaurants' booking systems, and two parties at one table | 6 | 10 | PiperNet, the pivot to a decentralised internet spread across thousands of phones, and how badly it can go wrong at scale. |
+| 12 | **The Leak**: Bix pasted the model API key somewhere public, and Hubbub sues | 6 | 11 | Hooli's lawsuit claiming it owns Pied Piper because Richard wrote some of it on Hooli time, and Gilfoyle's casual hacking. |
+| 13 | **The Conference**: the agent books live on stage, and a planted review hijacks it | 7 | 13 | TechCrunch Disrupt: Hooli demos first, and the team pulls something together overnight. |
+| 14 | **Finale**: the AI proposes rebuilding everything; you defend the simple version | All | Capstone | The series finale: PiperNet's AI, too powerful to release, the team sabotaging their own launch, and a documentary-style flash-forward years later. |
 
 Every curriculum module appears at least once. Modules 6, 8, 10, 11 and 13 get two episodes each: data, hosting, distributed failure and security are the most expensive to get wrong, and 13 is the product itself.
 
