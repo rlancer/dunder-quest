@@ -79,7 +79,7 @@ Every curriculum module appears at least once. Modules 6, 10, 11 and 13 get two 
 
 ## The game format
 
-A first sketch, to be designed properly later:
+A first sketch, to be designed properly later. It's built in **Godot 4.7** like the other three games, as its own project in `games/build-with-ai/`, so it reuses the repo's web export, CI, bot tests and art and trailer tools. This audience is the likeliest of the four to arrive on a phone from a social post, so keep the web build lean and design for a portrait screen from the start. If phone-first ever becomes the top priority, revisit a web build (TypeScript, React or a 2D library) before any game code is written, not after.
 
 - **Plan, then demo.** In each episode the player directs the AI to build or change Forkcast, choosing pieces (a cache here, a queue there, Postgres not a spreadsheet) while the engineers weigh in. Then comes the episode's live moment, a launch, a demo, a traffic spike, where simulated users hit what was built and the consequences play out on screen: pages slow, the cache says a booked table is free, a diner is charged twice.
 - **Runway is the score.** Cloud bills, model bills, salaries and mistakes burn the startup's money. Over-engineering burns it as surely as outages do, which teaches the curriculum's "simplest version that works" without saying it.
