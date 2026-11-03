@@ -94,7 +94,18 @@ A first sketch, to be designed properly later. It's built in **Godot 4.7** like 
 - **Runway is the score.** Cloud bills, model bills, salaries and mistakes burn the startup's money. Over-engineering burns it as surely as outages do, which teaches the curriculum's "simplest version that works" without saying it.
 - **Gus is a trap.** His confident advice is sometimes right, mostly a misconception. The player learns to tell which.
 - **Episodes, not levels.** A cold open before the title card, a cliffhanger cut to black at the end, a "previously on" recap when you return. It's pixel art like the other games.
-- **The title sequence** is a homage to the show's: a pan across the Bay as startup logos appear, merge and vanish, with Forkcast's appearing, and later Hubbub Dine's, as the season goes on.
+- **The title sequence** parodies the show's; see below.
+
+## The title sequence
+
+The show's intro was a toy-town flyover of Silicon Valley with the tech giants' buildings and logos popping up, being bought, swallowed and replaced, and it was updated as the real industry changed. Ours does the same for today's AI boom, and moves it to **San Francisco**, where the AI companies are now.
+
+- **The flyover.** A pixel-art pan across San Francisco, in the show's bright, toy-like style: in over the Golden Gate Bridge with fog rolling off the hills, across the Painted Ladies and the Mission, into SoMa and Mission Bay, past the Transamerica Pyramid and Salesforce Tower, out along the Bay Bridge. Landmarks are fine to show as they are.
+- **The AI companies.** Buildings pop up with logos for today's hot AI companies, roughly where they actually are: the big labs, the chip maker everyone depends on, the social giant that pivoted to AI, the search giant's AI lab, the AI search startups, the data and infrastructure companies. Then the show's gags, updated: a lab's logo grows until it shadows the block; a startup is bought and its logo is swallowed by a giant's; an old company's sign is crossed out and replaced with the same name plus "AI"; a billboard reads "AGI next quarter"; a logo spins through three rebrands in a second.
+- **Parody names, not the real ones.** The show used real logos as satire. Ours should use winking parodies of each company, like everything else in this homage: recognisable at a glance, never the real name or logo. Candidates: **ClosedAI** (OpenAI), **Anthropomorphic** (Anthropic), **Envydia** (Nvidia), **Metta** (Meta), **DeepThink** (Google DeepMind), **Perplexed** (Perplexity), **Databrix** (Databricks), **Salesfarce Tower** (Salesforce Tower), all *(candidate)*. This is the same call as the cast's homage names, and a safer one for a game than real trademarks.
+- **Our own story is in it.** Hubbub's campus sits among them. Forkcast first appears as a tiny pixel on the roof of the incubator house, which here is a run-down Victorian in the Mission *(candidate; the show's was in Palo Alto)*. As the season goes on, the intro changes with it, like the show's: Forkcast's logo grows; Hubbub Dine appears next door the episode after Hubbub clones it; after the leak, a lawyer's billboard goes up.
+- **The music** is original, in the show's glitchy, electronic vein (the ground rules: no recreation of the theme).
+- **Length.** About fifteen seconds, skippable after the first time, ending on the game's title card.
 
 ## Checks
 

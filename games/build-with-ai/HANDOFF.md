@@ -30,6 +30,7 @@ Read AGENTS.md first as always; its fourth-game entry summarises the rules below
 Everything marked *(candidate)* in SHOW.md, plus:
 
 - **Names.** The game (working title *The Bay Area*), the product (*Forkcast*), the folder (`build-with-ai` is a placeholder; rename it once the game has a name, and update AGENTS.md and these docs), and the cast (Gus, Hank, Thorne, Dev, Jordan, Bix, Galen Brightwater of Hubbub, and the unnamed investors, associate and adult CEO, plus the AI teammate and the garage server it's named after). Check each against the homage rules: winking, never the show's real names.
+- **The title sequence's AI companies.** SHOW.md plans a San Francisco flyover parodying the show's intro with today's AI companies, under winking parody names (ClosedAI, Anthropomorphic, Envydia...) instead of real names and logos. Rob to confirm parody names, and pick the final list.
 - **Look and sound.** Palette, accent colour, title-card font (OFL, like Curb's Libre Franklin), and the music direction (original, in the show's glitchy electronic vein).
 - **The core loop in detail.** SHOW.md's sketch is "plan with the AI, then a live demo where simulated traffic hits what you built; runway is the score". Undecided: how the player picks and connects pieces, how much the simulation shows, how failure plays out, how Gus's bad advice is presented, what a perfect episode looks like.
 - **Portrait or landscape**, and how the planning board fits a phone.
