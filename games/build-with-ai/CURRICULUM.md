@@ -4,7 +4,7 @@ Working title for the fourth game. This is the curriculum only; the game gets pl
 
 ## Who it's for
 
-People who aren't programmers and want to build things, mostly web apps, by working with an AI coding assistant. Founders, designers, product managers, analysts, small-business owners, curious parents.
+People who aren't programmers and want to build things, mostly web apps, by working with an AI coding assistant. Would-be founders above all, and also designers, product managers, analysts, small-business owners, curious parents.
 
 They don't need to write code. The AI does that. What they lack is the map: the names of the pieces, what each one is for, where things usually go wrong, and which questions to ask. Without the map they can't tell a good plan from a bad one, can't describe what they want, and can't tell when the AI is confidently building the wrong thing.
 
@@ -28,20 +28,22 @@ Explicitly out of scope: writing code by hand, algorithms, data structures beyon
 - **Misconceptions are named.** Each module lists the wrong beliefs it's correcting.
 - **Nothing untrue.** Simplify, never falsify. If a simplification is lossy, say so ("roughly", "usually").
 
-## The running example: Crumb
+## The running example: Forkcast
 
-Crumb is a pre-order app for a neighbourhood bakery. Customers order bread online for Saturday pickup. It starts tiny and grows into a chain across a city, then a country, so it hits every topic in a natural order.
+The learner is a first-time founder in the Bay Area launching an AI startup. The startup is **Forkcast** *(candidate name)*, an AI dinner concierge: tell it "somewhere quiet for six on Friday, one vegetarian, near the Mission" and it finds a restaurant and books the table. It starts as a landing page and grows into a company with partner restaurants in several cities, so it hits every topic in a natural order.
 
-| Stage | What Crumb needs | Modules |
+It's an AI product, but most of what it needs isn't AI: bookings, accounts, payments, partner systems and a database that mustn't lose anything. That's the point. The model is one call in the middle of an ordinary web app (Module 13 covers it in depth; it appears from stage 1 as "the backend calls a model's API").
+
+| Stage | What Forkcast needs | Modules |
 | --- | --- | --- |
-| 0. A web page | The bakery's hours and menu, online | 1, 2 |
-| 1. Taking orders | A form, somewhere to keep orders | 4, 5, 6 |
-| 2. Accounts | Customers log in, see past orders; staff see everything | 5, 11 |
-| 3. Going live | A real domain, always on, updates without breaking | 8, 12 |
-| 4. Saturday rush | 2,000 people at 7am; the site slows down | 7, 9 |
-| 5. "What sells?" | The owner wants sales reports without slowing the shop | 6 |
-| 6. Ten bakeries | Several shops, shared stock, a delivery partner | 9, 10 |
-| 7. AI features | "Suggest a loaf", a support chatbot | 13 |
+| 0. Landing page | A page explaining the idea, with a waitlist sign-up | 1, 2 |
+| 1. The MVP | Type what you want, get suggestions from a model, save the request | 4, 5, 6 |
+| 2. Accounts | Users save preferences and see past bookings; restaurants see their own bookings | 5, 11 |
+| 3. Launch | A real domain, always on, updates without breaking | 8, 12 |
+| 4. Going viral | A post takes off, 50,000 sign-ups overnight; the site slows and the AI bill explodes | 7, 9 |
+| 5. Investor metrics | The board wants dashboards (bookings, retention, by city) without slowing the app | 6 |
+| 6. Real bookings | Restaurants' booking systems, deposits through a payment provider, more cities | 9, 10 |
+| 7. A smarter AI | Answers grounded in real menus and reviews; an agent that books for you | 13 |
 
 ---
 
@@ -66,16 +68,16 @@ Misconceptions:
 **Goal:** One mental picture of what happens when someone opens a website, that every later module hangs on.
 
 Concepts:
-- **Client and server.** Your browser (the client) asks; a computer somewhere (the server) answers. Analogy: a customer at a counter and a kitchen out back.
+- **Client and server.** Your browser (the client) asks; a computer somewhere (the server) answers. Analogy: a diner at a table and a kitchen out back.
 - **Request and response.** Every click that fetches something is a request; the reply is a response. They're written in **HTTP**, a standard format both sides agree on. **HTTPS** is the same, sealed in an envelope nobody along the way can read.
-- **URL and DNS.** A URL is an address (`https://crumb.example/menu`). **DNS** is the phone book that turns the name `crumb.example` into the numeric address of a server (an **IP address**).
+- **URL and DNS.** A URL is an address (`https://forkcast.example/search`). **DNS** is the phone book that turns the name `forkcast.example` into the numeric address of a server (an **IP address**).
 - **Frontend, backend, database.** The three-layer picture:
-  - Frontend: what runs in the user's browser or phone. The shop floor.
-  - Backend: what runs on the server. The kitchen and the till.
-  - Database: where the information is kept for good. The order book in the safe.
+  - Frontend: what runs in the user's browser or phone. The dining room.
+  - Backend: what runs on the server. The kitchen and the front desk.
+  - Database: where the information is kept for good. The reservations book.
 - **API.** The menu of requests a backend accepts, with the exact form each one takes. Analogy: the order slip format the kitchen will accept. Apps talk to each other through APIs too (payments, maps, email, AI models).
-- **JSON.** The most common format for data going back and forth: readable labelled values, like `{"loaf": "sourdough", "qty": 2}`.
-- **Static vs dynamic.** A static site sends the same files to everyone (Crumb stage 0). A dynamic site builds the answer per request, from the database (stage 1 onward).
+- **JSON.** The most common format for data going back and forth: readable labelled values, like `{"party": 6, "night": "Friday", "vegetarian": true}`.
+- **Static vs dynamic.** A static site sends the same files to everyone (Forkcast's landing page, stage 0). A dynamic site builds the answer per request, from the database (stage 1 onward).
 
 Misconceptions:
 - "The website is on my computer." Only a copy of the frontend is; everything else stays on the server.
@@ -122,31 +124,31 @@ Every language sits somewhere on a few dials. Teach the dials, then place the la
 
 ### The languages
 
-| Language | Best at | Where Crumb might use it |
+| Language | Best at | Where Forkcast might use it |
 | --- | --- | --- |
 | **HTML** | The structure and content of a page. Describes, doesn't compute; usually not counted as a programming language. | Every page |
 | **CSS** | How a page looks: layout, colours, fonts, phone vs desktop. | Every page |
-| **JavaScript** | The only programming language every browser runs; also runs servers (Node.js). | Making the order form interactive |
+| **JavaScript** | The only programming language every browser runs; also runs servers (Node.js). | Making the search box and booking flow interactive |
 | **TypeScript** | JavaScript with static types added; turns into JavaScript before running. The default for serious web work now. | The whole web app, front and back |
-| **Python** | Readable, huge ecosystem for data, science, AI and automation; solid for backends (Django, FastAPI). | Sales analysis, the AI features, maybe the backend |
-| **SQL** | Asking questions of a database ("all orders for Saturday, by loaf"). Not a general-purpose language, but the one that outlives every other. | Every database query |
-| **Go** | Simple, fast, built for network services that handle many requests at once; compiles to one file that's easy to deploy. Much cloud infrastructure (Docker, Kubernetes) is written in it. | A high-traffic ordering service at stage 6 |
+| **Python** | Readable, huge ecosystem for data, science, AI and automation; solid for backends (Django, FastAPI). | The AI features, the investor metrics, maybe the backend |
+| **SQL** | Asking questions of a database ("all bookings for Friday, by restaurant"). Not a general-purpose language, but the one that outlives every other. | Every database query |
+| **Go** | Simple, fast, built for network services that handle many requests at once; compiles to one file that's easy to deploy. Much cloud infrastructure (Docker, Kubernetes) is written in it. | A high-traffic booking service at stage 6 |
 | **Rust** | Speed close to C/C++ without its memory bugs. Systems, performance-critical services, WebAssembly, developer tools (many new JavaScript and Python tools are written in Rust). Steeper learning curve. | Probably nowhere, and that's a lesson too |
-| **Java, Kotlin, C#** | Large, long-lived business systems; Android (Kotlin); Windows and games in Unity (C#). Stable, fast, very widely employed. | If a big partner's systems use them |
-| **Swift / Kotlin** | Native iPhone (Swift) and Android (Kotlin) apps. | A Crumb phone app, if a website isn't enough |
-| **C, C++** | Operating systems, browsers, game engines, devices with tiny chips. Maximum control and speed. | Inside the tools Crumb uses, never written by Crumb |
+| **Java, Kotlin, C#** | Large, long-lived business systems; Android (Kotlin); Windows and games in Unity (C#). Stable, fast, very widely employed. | If a big restaurant group's systems use them |
+| **Swift / Kotlin** | Native iPhone (Swift) and Android (Kotlin) apps. | A Forkcast phone app, if a website isn't enough |
+| **C, C++** | Operating systems, browsers, game engines, devices with tiny chips. Maximum control and speed. | Inside the tools Forkcast uses, never written by Forkcast |
 | **Shell (Bash, PowerShell)** | Gluing commands together, automation, scripts that deploy things. | The deploy script |
-| **PHP, Ruby** | Older web workhorses still running much of the web (WordPress is PHP; Ruby on Rails powers many startups). | If Crumb started as a WordPress site |
+| **PHP, Ruby** | Older web workhorses still running much of the web (WordPress is PHP; Ruby on Rails powers many startups). | If the landing page started as a WordPress site |
 
 ### Notebooks
 
-A **notebook** is a document mixing code, its output, charts and notes, run a piece at a time. It's the analyst's lab bench: brilliant for exploring data and explaining findings, wrong for running a live app. Crumb's owner asking "which loaves sell on rainy days?" is a notebook job; taking orders is not.
+A **notebook** is a document mixing code, its output, charts and notes, run a piece at a time. It's the analyst's lab bench: brilliant for exploring data and explaining findings, wrong for running a live app. The founder asking "do people book more on rainy days?" is a notebook job; taking bookings is not.
 
 The curriculum uses **marimo**, a Python notebook that's a good fit for building with AI:
 
 - **Reactive.** Change one cell and every cell that depends on it reruns, like a spreadsheet. Older notebooks let you run cells in any order and end up showing results that no longer match the code; marimo doesn't.
 - **Plain Python files.** A marimo notebook is a `.py` file, so it lives in Git (Module 2) with readable diffs, and an AI assistant can read and edit it like any other code.
-- **Becomes an app.** The same notebook can run as a script, or be served as a small interactive web app with sliders and charts, which is handy for giving the owner a sales dashboard without building a frontend.
+- **Becomes an app.** The same notebook can run as a script, or be served as a small interactive web app with sliders and charts, which is handy for giving investors a metrics dashboard without building a frontend.
 
 Learners will also see **Jupyter** (the long-standing standard, files ending `.ipynb`) and Google Colab; same idea, and worth recognising by name.
 
@@ -171,8 +173,8 @@ Misconceptions:
 Concepts:
 - **HTML, CSS, JavaScript** as structure, style and behaviour. Analogy: the walls, the paint, the electrics.
 - **The DOM.** The browser's live model of the page, which JavaScript changes to update what you see without reloading.
-- **Components.** Modern frontends are built from reusable pieces (a "loaf card", an "order button"), each owning its look and behaviour. **React** is the most common tool for this (see below); Vue, Svelte and Angular are others.
-- **State.** What the page currently remembers: what's in the basket, whether the menu is open. Most frontend bugs are state bugs ("the basket says 3, the total says 2").
+- **Components.** Modern frontends are built from reusable pieces (a "restaurant card", a "book button"), each owning its look and behaviour. **React** is the most common tool for this (see below); Vue, Svelte and Angular are others.
+- **State.** What the page currently remembers: the party size picked so far, whether the filters panel is open. Most frontend bugs are state bugs ("the form says 6 people, the confirmation says 4").
 - **Rendering on the client vs the server.** A **single-page app** builds pages in the browser (snappy once loaded). **Server-side rendering** sends ready-made pages (faster first load, better for search engines). Frameworks like Next.js mix both. Teach this as a dial, not a war.
 - **Responsive design.** One site that works on a phone and a desktop.
 - **Accessibility.** Building so people using screen readers, keyboards or zoom can use it. It's also often a legal requirement.
@@ -184,12 +186,12 @@ Concepts:
 React gets its own section because it's what AI tools build with by default: ask most AI app builders or coding assistants for a web app and it usually comes back as React, often with Next.js. The learner will meet its vocabulary in nearly every plan and error message, so the goal is to recognise what they're looking at, not to write it.
 
 - **What it is.** A JavaScript library, made by Meta, for building interfaces out of components (strictly a library, though people often call it a framework). You describe what the screen should look like for the current state, and React updates the page when the state changes.
-- **JSX.** HTML-like markup written inside JavaScript: `<LoafCard name="Sourdough" price={4} />`. It looks like HTML but is turned into JavaScript by the build step.
-- **Props.** The settings a component is given from outside, like the `name` and `price` above. A loaf card doesn't decide which loaf it shows; it's told.
-- **State.** What a component remembers and can change, like the number in the basket. When state changes, React redraws the parts that depend on it. Where a piece of state lives (in one component, shared across the page, or on the server) is the question behind most React bugs.
+- **JSX.** HTML-like markup written inside JavaScript: `<RestaurantCard name="The Golden Fork" rating={4.5} />`. It looks like HTML but is turned into JavaScript by the build step.
+- **Props.** The settings a component is given from outside, like the `name` and `rating` above. A restaurant card doesn't decide which restaurant it shows; it's told.
+- **State.** What a component remembers and can change, like the party size someone has picked. When state changes, React redraws the parts that depend on it. Where a piece of state lives (in one component, shared across the page, or on the server) is the question behind most React bugs.
 - **Hooks.** Functions whose names start with `use`, like `useState` (remember a value) and `useEffect` (do something after drawing, like fetching data). Enough to recognise them in code an AI writes.
 - **What comes with it.** **Next.js**, a framework built on React that adds pages, routing, server-side rendering and backend endpoints in one project; **Tailwind**, styling written as short class names right in the markup; component kits like **shadcn/ui**, ready-made buttons, forms and dialogs. **React Native** uses the same ideas to build phone apps.
-- **Why it's the default, and when that's fine.** The largest ecosystem, the most examples, and so the code AI tools are best at writing. That's a good reason to accept it unless something argues otherwise. The alternatives, **Vue**, **Svelte** and **Angular**, do the same job and are worth recognising by name; a static site (Crumb stage 0) may need none of them.
+- **Why it's the default, and when that's fine.** The largest ecosystem, the most examples, and so the code AI tools are best at writing. That's a good reason to accept it unless something argues otherwise. The alternatives, **Vue**, **Svelte** and **Angular**, do the same job and are worth recognising by name; a static site (Forkcast's landing page) may need none of them.
 
 Misconceptions:
 - "React is a language." It's JavaScript or TypeScript plus a library.
@@ -206,14 +208,14 @@ What to tell your AI: "Mobile first", "make it accessible", "use our existing co
 **Goal:** Know what the server side does, and the vocabulary for asking for it.
 
 Concepts:
-- **The backend is where the rules live.** Prices, stock, who can see what, what counts as a valid order. The frontend asks; the backend decides.
-- **Routes and endpoints.** Each kind of request has an address: `POST /orders` places one, `GET /orders/42` reads one. **REST** is the most common style for designing these; **GraphQL** lets the frontend ask for exactly the fields it wants. Both are fine.
+- **The backend is where the rules live.** Prices, availability, who can see what, what counts as a valid booking. The frontend asks; the backend decides.
+- **Routes and endpoints.** Each kind of request has an address: `POST /bookings` makes one, `GET /bookings/42` reads one. **REST** is the most common style for designing these; **GraphQL** lets the frontend ask for exactly the fields it wants. Both are fine.
 - **HTTP methods and status codes.** GET reads, POST creates, PUT/PATCH updates, DELETE removes. Responses carry a code: 200 OK, 404 not found, 401/403 not allowed, 500 the server broke. Knowing these makes error messages readable.
-- **Authentication vs authorization.** Authentication: who are you? (logging in.) Authorization: what are you allowed to do? (customers see their orders; staff see everyone's.) Different problems; both needed.
+- **Authentication vs authorization.** Authentication: who are you? (logging in.) Authorization: what are you allowed to do? (diners see their own bookings; a restaurant sees only bookings at that restaurant.) Different problems; both needed.
 - **Sessions and tokens.** How the server remembers you're logged in between requests: a session cookie, or a signed token (like a **JWT**). Prefer an established auth service or library over a home-made login.
 - **Third-party services.** Payments (Stripe), email, maps, login with Google: called through their APIs. **Webhooks** are the reverse: their server calls yours when something happens ("payment succeeded").
-- **Background jobs and queues.** Work that shouldn't make the user wait (sending the confirmation email, resizing photos) goes on a **queue** and a **worker** does it soon after. Analogy: the cashier takes your order and passes the ticket to the kitchen; you don't stand at the till while the bread bakes.
-- **Scheduled jobs (cron).** Things that run on a timer: "close orders at 6pm Friday."
+- **Background jobs and queues.** Work that shouldn't make the user wait (sending the confirmation email, resizing photos) goes on a **queue** and a **worker** does it soon after. Analogy: the waiter takes your order and passes the ticket to the kitchen; you don't stand at the counter while it's cooked.
+- **Scheduled jobs (cron).** Things that run on a timer: "send everyone with a booking tonight a reminder at 4pm."
 - **Backend-as-a-service.** Products like Supabase and Firebase bundle a database, logins and storage, so a small app may need very little custom backend. A good fit for many AI-built apps; know that it's a trade (less control, some lock-in).
 
 Misconceptions:
@@ -234,10 +236,10 @@ What to tell your AI: "Validate this on the server", "who is allowed to do this?
 
 ### Relational databases (SQL)
 
-- Data lives in **tables** (customers, orders, loaves) of **rows** and **columns**, with a **schema** declaring what each column holds.
-- Tables point at each other with **keys** (an order row holds a customer's id) instead of copying data, so a change happens in one place.
-- **SQL** is how you ask: `SELECT loaf, COUNT(*) FROM orders WHERE day = 'Saturday' GROUP BY loaf`.
-- **Transactions.** A group of changes that happen all together or not at all. Taking payment and reserving the last croissant must both happen, or neither. **ACID** is the name for these guarantees.
+- Data lives in **tables** (users, restaurants, bookings) of **rows** and **columns**, with a **schema** declaring what each column holds.
+- Tables point at each other with **keys** (a booking row holds a user's id) instead of copying data, so a change happens in one place.
+- **SQL** is how you ask: `SELECT restaurant, COUNT(*) FROM bookings WHERE night = 'Friday' GROUP BY restaurant`.
+- **Transactions.** A group of changes that happen all together or not at all. Taking the deposit and holding the last 8pm table must both happen, or neither. **ACID** is the name for these guarantees.
 - **Indexes.** Like a book's index: make finding rows fast, at a small cost when writing. Missing indexes are the most common reason an app gets slow as it grows.
 - **Migrations.** Versioned, repeatable changes to the schema ("add a phone column"), kept in Git with the code. Never hand-edit production's structure.
 - **Postgres** is the sensible default; MySQL and SQLite (a database in a single file, great for small apps) are also common.
@@ -250,7 +252,7 @@ Teach these as tools shaped for particular jobs, not as rivals to SQL:
 | --- | --- | --- | --- |
 | Document | Flexible JSON-like records | Data whose shape varies | MongoDB, Firestore |
 | Key-value | A giant dictionary: key in, value out, very fast | Caches, sessions, counters | Redis, DynamoDB |
-| Search | Text indexed for fuzzy search and ranking | "sourdo" finds "sourdough" | Elasticsearch, OpenSearch |
+| Search | Text indexed for fuzzy search and ranking | "veggie" finds "vegetarian" | Elasticsearch, OpenSearch |
 | Vector | Stores meaning as lists of numbers to find "similar" things | AI search and recommendations (Module 13) | pgvector, Pinecone |
 | Time series | Measurements over time | Metrics, sensors | TimescaleDB, InfluxDB |
 | Graph | Things and the links between them | Social networks, fraud | Neo4j |
@@ -261,9 +263,9 @@ Rule of thumb: start with Postgres; it can do most of these passably, and add a 
 
 The key distinction this module builds to:
 
-- **OLTP (online transaction processing):** the shop till. Lots of small, fast reads and writes: place this order, update that stock count. Your app's main database.
-- **OLAP (online analytical processing):** the accountant's office. Few, huge questions across everything: sales by loaf by month by shop, for three years. Built to scan millions of rows quickly.
-- Running big OLAP questions on the OLTP database slows the shop down (Crumb stage 5: the owner's report makes Saturday ordering crawl).
+- **OLTP (online transaction processing):** the front desk. Lots of small, fast reads and writes: make this booking, mark that table taken. Your app's main database.
+- **OLAP (online analytical processing):** the accountant's office. Few, huge questions across everything: bookings by city by month by restaurant, for three years. Built to scan millions of rows quickly.
+- Running big OLAP questions on the OLTP database slows the app down (Forkcast stage 5: the investor dashboard makes Friday-night booking crawl).
 - So data is copied into a **data warehouse** (BigQuery, Snowflake, Redshift, or DuckDB for small jobs) built for analysis, often storing data by column instead of by row so it can scan one column fast. The copying is a **pipeline**, called **ETL** or **ELT** (extract, transform, load, in one order or the other).
 - A **data lake** keeps raw files of every kind cheaply, to be organised later.
 - This is where marimo notebooks and Python come back (Module 3): analysts point them at the warehouse, not the live app.
@@ -287,15 +289,16 @@ What to tell your AI: "Show me the schema before writing code", "use a migration
 **Goal:** Understand the single most common performance fix, and its famous catch.
 
 Concepts:
-- **A cache keeps a copy of an answer close by so you don't have to work it out again.** Analogy: the baker keeps the day's best-seller on the counter instead of fetching it from the back each time.
+- **A cache keeps a copy of an answer close by so you don't have to work it out again.** Analogy: a barista keeps the most-ordered pastries by the till instead of fetching them from the back each time.
 - **Where caches live**, from nearest the user to furthest:
   - **Browser cache**: the user's own machine keeps images and files.
   - **CDN** (content delivery network, like Cloudflare): copies of your files on servers around the world, so a user in Sydney isn't fetching from London.
   - **Application cache**: the backend keeps recent answers in memory or in **Redis**, so it doesn't re-ask the database.
   - **Database cache**: the database keeps hot data in memory itself.
 - **Hit and miss.** A hit finds the answer in the cache; a miss has to fetch it. The **hit rate** is what makes a cache worth it.
-- **Stale data and invalidation.** A copy can go out of date: the cache says "3 croissants left" after they've sold. Fixes: a **TTL** (time to live: forget after 60 seconds), or clearing the cached copy whenever the real data changes. Deciding when a copy is too old to trust is famously one of the hard problems in computing.
-- **What's safe to cache.** The menu: yes, for minutes. Today's stock: for seconds, maybe. A user's basket or their account page: never in a shared cache, or one customer sees another's.
+- **Stale data and invalidation.** A copy can go out of date: the cache says the 8pm table is free after someone has booked it. Fixes: a **TTL** (time to live: forget after 60 seconds), or clearing the cached copy whenever the real data changes. Deciding when a copy is too old to trust is famously one of the hard problems in computing.
+- **What's safe to cache.** A restaurant's photos and menu: yes, for hours. Tonight's free tables: for seconds, maybe. A user's bookings or account page: never in a shared cache, or one user sees another's.
+- **Caching AI calls.** Model calls are slow and paid per use (Module 13), so an AI startup caches hard: the same question needn't pay for the same answer twice, and model providers also offer **prompt caching**, a cheaper rate for a long prompt that's sent again unchanged. It's the first fix when the AI bill explodes (Forkcast stage 4).
 
 Misconceptions:
 - "Caching is free speed." It's speed paid for with the risk of wrong answers.
@@ -336,17 +339,17 @@ What to tell your AI: "Set up a staging environment", "deploy from CI, not my la
 **Goal:** What happens when lots of people show up, and the honest news that most apps never need much of this.
 
 Concepts:
-- **Latency vs throughput.** Latency: how long one request takes. Throughput: how many you can handle per second. A bakery can be quick per customer and still have a queue out the door.
+- **Latency vs throughput.** Latency: how long one request takes. Throughput: how many you can handle per second. A restaurant can be quick per diner and still have a queue out the door.
 - **Find the bottleneck first.** Measure before fixing. It's usually the database, then the network, rarely the language.
 - **Vertical scaling:** a bigger server. Simple, has a ceiling, and often the right first move.
 - **Horizontal scaling:** more servers sharing the work, behind a **load balancer** that hands each request to one of them. Like opening more tills.
-- **Stateless servers.** For horizontal scaling, any server must be able to handle any request, so nothing important can live only in one server's memory (put sessions in the database or Redis). Analogy: any cashier can serve any customer because the order book is shared, not in one cashier's head.
+- **Stateless servers.** For horizontal scaling, any server must be able to handle any request, so nothing important can live only in one server's memory (put sessions in the database or Redis). Analogy: any host can seat any guest because the reservations book is shared, not in one host's head.
 - **Scaling the database** is the hard part:
   - **Read replicas**: copies that handle reads, while one main database handles writes. Replicas lag slightly behind (Module 10).
-  - **Sharding**: splitting data across several databases (each bakery's orders on its own). Powerful, complex, a last resort.
+  - **Sharding**: splitting data across several databases (each city's bookings on its own). Powerful, complex, a last resort.
   - **Connection pooling**: databases can only hold so many conversations at once; a pool shares them.
 - **CDNs and caches** take load off everything behind them (Module 7).
-- **Queues smooth spikes.** At 7am Saturday, accept orders into a queue instantly and process them steadily, instead of falling over (Module 5).
+- **Queues smooth spikes.** When the launch post goes viral, accept sign-ups into a queue instantly and process them steadily, instead of falling over (Module 5).
 - **Autoscaling.** Adding and removing servers automatically with demand (serverless does this for you).
 - **Rate limiting.** Capping how many requests one user or bot can make, to protect everyone else.
 
@@ -362,14 +365,14 @@ What to tell your AI: "Keep this simple until we measure a problem", "make the s
 
 **Goal:** Give the learner the instincts behind the strangest bugs: the ones that happen only sometimes, only under load, only when two things happen at once.
 
-As soon as Crumb has more than one computer (a backend and a database, ten shops, a delivery partner), it's a distributed system.
+As soon as Forkcast has more than one computer (a backend and a database, a model provider, restaurants' booking systems, a payment provider), it's a distributed system.
 
 Concepts:
 - **The network is unreliable.** Messages get lost, delayed, duplicated or arrive out of order. A request that times out might have failed, or might have succeeded and only the reply got lost. You often can't tell which.
 - **Partial failure.** One part breaks while the rest keeps going. The payment service is down; the website is fine. The system must decide what to do: retry, wait, show a message, fall back.
-- **Retries and idempotency.** If you retry, you might do the thing twice: charge twice, order twice. An **idempotent** operation is safe to repeat (setting stock to 5 rather than subtracting 1). An **idempotency key** lets a server recognise "I've already done this one."
-- **Race conditions.** Two customers buy the last croissant at the same moment; both are told yes. Fixes: transactions and locks in the database (Module 6), or checking-and-reserving in one step.
-- **Consistency.** Do all copies agree right now? With replicas and caches, they can disagree briefly. **Eventual consistency** means they'll agree soon, not instantly: the shop in one district sees a stock count a second out of date.
+- **Retries and idempotency.** If you retry, you might do the thing twice: charge twice, book twice. An **idempotent** operation is safe to repeat (setting tonight's free tables to 3 rather than subtracting 1). An **idempotency key** lets a server recognise "I've already done this one."
+- **Race conditions.** Two users book the last 8pm table at the same moment; both are told yes. Fixes: transactions and locks in the database (Module 6), or checking-and-reserving in one step.
+- **Consistency.** Do all copies agree right now? With replicas and caches, they can disagree briefly. **Eventual consistency** means they'll agree soon, not instantly: a server in one city sees a table as free a second after it was booked elsewhere.
 - **The CAP trade-off** (simplified): when the network between two parts breaks, each part must either keep answering with possibly stale data (stay available) or refuse until it can confirm (stay consistent). You can't have both during the break. Which is right depends on the data: a menu can be a bit stale; a bank balance shouldn't be.
 - **Time and ordering.** Different computers' clocks disagree slightly, so "which happened first?" is harder than it sounds.
 - **Monoliths vs microservices.** One app is easier to build, test and debug. Splitting into many services lets large teams move independently, at the price of every problem above appearing between them. For an AI-assisted solo builder, a monolith is almost always right.
@@ -414,13 +417,13 @@ What to tell your AI: "Where are the secrets stored?", "check that users can onl
 
 Concepts:
 - **Tests** are code that checks code:
-  - **Unit tests** check one small piece ("the price of 2 loaves with a discount is right").
-  - **Integration tests** check pieces together ("placing an order saves it to the database").
+  - **Unit tests** check one small piece ("the deposit for a party of six is right").
+  - **Integration tests** check pieces together ("making a booking saves it to the database").
   - **End-to-end tests** drive the real app like a user would, in a browser.
-- **Tests are your spec.** Describe behaviour as tests ("ordering after Friday 6pm is refused") and you have a checkable definition of done that the AI can run.
+- **Tests are your spec.** Describe behaviour as tests ("booking a table in the past is refused") and you have a checkable definition of done that the AI can run.
 - **Types and linters** catch whole classes of mistakes automatically (Module 3).
 - **Reading errors.** Error messages and **stack traces** name what went wrong and where. Paste the whole thing to the AI, not a summary.
-- **Debugging** is the scientific method: reproduce, form a guess, test it, narrow down. "It doesn't work" is not a bug report; "when I order two loaves, the total shows one" is.
+- **Debugging** is the scientific method: reproduce, form a guess, test it, narrow down. "It doesn't work" is not a bug report; "when I book for six, the confirmation says four" is.
 - **Code review.** Reading a change before it goes in. With AI, review the plan and the tests closely, and ask the AI to explain any part you don't follow.
 - **Small changes.** Small, frequent, reviewed changes beat one giant one. They're easier to check and easier to undo (Module 2).
 
@@ -434,15 +437,15 @@ What to tell your AI: "Write a failing test first", "explain this change", "what
 
 ## Module 13: AI inside your app
 
-**Goal:** Using AI models as a part of what you build, not just as the builder.
+**Goal:** Using AI models as a part of what you build, not just as the builder. For an AI startup this is the product's core, which is why it comes last: it only works on top of everything before it.
 
 Concepts:
 - **Calling a model.** AI models are used through an API like any other service (Module 5): send text (and images), get text back. Your backend calls it, never the frontend, so the key stays secret.
 - **Tokens, context and cost.** Models read and write in **tokens** (word fragments). You pay per token, and each model has a **context window**, a limit on how much it can read at once. Long conversations and big documents cost more.
 - **Models make things up.** Answers can sound right and be wrong (**hallucination**). Design for it: show sources, keep a human in the loop for anything that matters.
-- **Embeddings and RAG.** An **embedding** turns text into numbers that capture meaning, so "rye" and "dark bread" end up close together. Stored in a vector database (Module 6). **RAG** (retrieval-augmented generation) finds the relevant documents first, then gives them to the model, so Crumb's chatbot answers from Crumb's actual allergy info, not a guess.
-- **Tools and agents.** Models can be given **tools** (look up an order, check stock) and decide when to use them. An **agent** loops: think, use a tool, look at the result, repeat. Powerful; give tools the least power they need.
-- **Prompt injection.** Text the model reads (a customer message, a web page) can contain instructions that try to hijack it. Treat model output as untrusted, and don't give a chatbot powers you wouldn't give an anonymous customer.
+- **Embeddings and RAG.** An **embedding** turns text into numbers that capture meaning, so "cosy" and "intimate" end up close together. Stored in a vector database (Module 6). **RAG** (retrieval-augmented generation) finds the relevant documents first, then gives them to the model, so Forkcast answers from restaurants' actual menus and allergy info, not a guess.
+- **Tools and agents.** Models can be given **tools** (search restaurants, check a table, make a booking) and decide when to use them. An **agent** loops: think, use a tool, look at the result, repeat. Powerful; give tools the least power they need.
+- **Prompt injection.** Text the model reads (a restaurant review, a web page) can contain instructions that try to hijack it. Treat model output as untrusted, and don't give a chatbot powers you wouldn't give an anonymous customer.
 - **Privacy.** Know what data you're sending to an AI provider and what they do with it.
 
 Misconceptions:
@@ -453,32 +456,34 @@ What to tell your AI: "Call the model from the backend", "ground answers in our 
 
 ---
 
-## Capstone: Crumb, the whole picture
+## Capstone: Forkcast, the whole picture
 
-The learner assembles Crumb's final architecture from everything above and can explain each part:
+The learner assembles Forkcast's final architecture from everything above and can explain each part:
 
 ```
- Customers' browsers / phones
+ Diners' browsers / phones
             |
-           CDN  (cached menu, images)
+           CDN  (cached pages, photos)
             |
       Load balancer
        /    |    \
    App servers (stateless, TypeScript)  ---- Auth provider
        |      \         \                ---- Payments (webhooks)
-       |     Redis      Queue --> Workers (emails, stock sync)
+       |       \         \               ---- Restaurants' booking systems
+       |        \         \              ---- Model API (cached answers)
+       |     Redis      Queue --> Workers (emails, reminders, table sync)
        |    (cache)
    Postgres (main, OLTP) --> read replicas
        |
    Pipeline (ELT)
        |
-   Data warehouse (OLAP) --> owner's dashboards, analysts' marimo notebooks
+   Data warehouse (OLAP) --> investor dashboards, analysts' marimo notebooks
 
-   AI assistant: backend --> model API, with RAG over the menu and allergy docs
+   AI concierge: backend --> model API, with RAG over menus and reviews (vector search in Postgres)
    Around it all: Git, CI/CD, staging, logs, alerts, backups
 ```
 
-And the honest version: stage 1 Crumb is one app on one host with one Postgres database, and that's correct. Every box above earns its place by solving a problem Crumb actually had.
+And the honest version: stage 1 Forkcast is one app on one host with one Postgres database and a call to a model's API, and that's correct. Every box above earns its place by solving a problem Forkcast actually had.
 
 ### Questions to ask before building anything
 
@@ -524,8 +529,8 @@ A plain-words definition for every bolded term above, to grow into an in-game co
 Notes for the next pass, not decisions:
 
 - **It must stay distinct from the other three games** (see AGENTS.md): no quiz duels (Dunder Quest), no character running your script (Flatmates.js), no plan-plays-out-then-gets-interrupted (Curb Your Oxidation). And unlike the others it doesn't teach one language, and the player doesn't write code.
-- **Crumb's growth is a natural campaign.** Each stage is a level; the player's app (or whatever the homage equivalent becomes) faces the stage's problem live: the Saturday rush, the owner's slow report, the double-charged customer.
+- **Forkcast's growth is a natural campaign.** Each stage is a level; the player's startup faces the stage's problem live: the viral spike, the investors' slow dashboard, the double-charged diner.
 - **The concepts are spatial, which suits a builder/management game.** Users flowing in, requests travelling to servers, a database as a vault, a cache as a shelf, a queue as a literal queue. Placing, connecting and tuning pieces, then watching traffic hit them, would make trade-offs felt rather than told: a cache that goes stale, a single server that melts, a retry that charges twice.
-- **The player directs an AI builder character.** It mirrors the real skill being taught: describing what you want, then checking the result. The assistant could be eager and occasionally overconfident (suggesting Kubernetes for a bake sale) and the player learns to say no.
+- **The player directs an AI builder character.** It mirrors the real skill being taught: describing what you want, then checking the result. The assistant could be eager and occasionally overconfident (suggesting Kubernetes for a waitlist page) and the player learns to say no.
 - **Natural puzzle shapes per module:** pick the right language for a job card (3); choose OLTP or OLAP for a request (6); set a TTL that's fresh enough and fast enough (7); survive a traffic spike with a budget (9); make a flaky network not double-charge (10); find the leaked key (11).
 - **Every claim checked.** Like `verify_rust.py` for Curb, the game's facts should have a check; at minimum this curriculum gets a technical review pass before content is built from it.
