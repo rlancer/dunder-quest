@@ -6,10 +6,11 @@ To pick this up in a new session, say:
 
 ## Where it stands
 
-Planning only. No game code, no Godot project, no site page yet. Names, look and orientation are settled. Three docs:
+Planning only. No game code, no Godot project, no site page yet. Names, look, orientation and the game design are settled. Four docs:
 
 - [CURRICULUM.md](CURRICULUM.md): **what** the game teaches. 14 modules and a capstone, for non-technical people building web apps with AI. The standing reference for topics.
-- [SHOW.md](SHOW.md): **how** the homage carries it. Premise, cast, a 14-episode season mapped to modules, and a first format sketch.
+- [SHOW.md](SHOW.md): **how** the homage carries it. Premise, cast, a 14-episode season mapped to modules.
+- [GAME.md](GAME.md): **how it plays**. The core loop, the simulation, the episode data, the phone screen, the checks, and Episode 8 (*Viral*) walked through end to end on paper.
 - This file: decisions so far, what's open, and what to do next.
 
 Read AGENTS.md first as always; its fourth-game entry summarises the rules below, and its other rules (open a PR for every change, notes go in AGENTS.md, asset generation is pre-approved) apply here too.
@@ -45,21 +46,24 @@ Read AGENTS.md first as always; its fourth-game entry summarises the rules below
 - **The curriculum leads.** It can change for teaching reasons; the show follows it, and every module must stay covered by at least one episode.
 - **Engine: Godot 4.7**, its own project in `games/mission-silicon/`, like the others, to reuse the web export, CI, bot tests and art and trailer tools.
 - **Notebooks are marimo; React gets its own section.** Both already in the curriculum.
+- **The core loop** (details in GAME.md): Aleister Jr. answers each episode's problem with a pull request; the player keeps or cuts each change, asks it the curriculum's "What to tell your AI" questions and sets a few dials, never wiring or writing code; then merges, and a live moment runs simulated diners through what was built. Nothing is marked right or wrong when chosen; only the live moment and Gerard's postmortem judge. Nothing is timed. A failed live moment is a scene, then take two.
+- **Runway is the score; time is the plan's budget.** Each episode starts from its own bank and board (no carry-over). Three marks: Live (goal held), Lean (runway at par), Ulrich (his card judged right; he's right about a third of the time).
+- **The simulation is a deterministic flow model**, so tests can enumerate every plan. Its numbers are illustrative; its shapes (queueing, cache hit rate and staleness, connection limits, retries without idempotency keys) are real.
+- **Each episode's data proves its own lesson**: the solution passes, Aleister's PR as proposed fails, every lesson-bearing decision changes the result, and no plan passes much cheaper than the solution.
 
 ## Open
 
-Everything still marked *(candidate)* in SHOW.md, plus:
+Everything still marked *(candidate)* in SHOW.md, the open list at the end of GAME.md, plus:
 
 - **The title sequence's company list.** SHOW.md plans a San Francisco flyover parodying the show's intro with today's AI companies under their real names (decided: real names, companies only, as pixel-art signs drawn for the game, never people's names). The final list is open.
-- **The core loop in detail.** SHOW.md's sketch is "plan with the AI, then a live demo where simulated traffic hits what you built; runway is the score". Undecided: how the player picks and connects pieces, how much the simulation shows, how failure plays out, how Ulrich's bad advice is presented, what a perfect episode looks like, and how the planning board lays out on a landscape phone screen.
 - **Where it sits on the home page splash** (Curb leads it; this joins Dunder Quest and Flatmates.js as a card once it's playable).
 
 ## Next steps
 
 In order, each as its own PR:
 
-1. **Write the game design doc** (`GAME.md` here): the core loop, the simulation model (requests, servers, caches, queues, databases, failures, runway), the episode data format, the UI on a landscape phone screen, and how each episode's lesson is checked. Walk one episode end to end on paper, probably 8 (*Viral*, Modules 7 and 9), since it exercises the simulation hardest.
-2. **Prototype that one episode** in a new Godot project, following Curb's layout: `data/` for the season as data, one scene script that builds every episode from it, `tests/bot.tscn` that plays it through, `tests/smoke.tscn`. Add a coverage test that fails if any curriculum module has no episode.
+1. ~~**Write the game design doc**~~: done, [GAME.md](GAME.md).
+2. **Prototype Episode 8** (*Viral*) from GAME.md's walk-through in a new Godot project, following Curb's layout: `data/` for the season as data, one scene script that builds every episode from it, `tests/bot.tscn` that plays it through, `tests/smoke.tscn`. Add a coverage test that fails if any curriculum module has no episode.
 3. **Wire it into the build**: `scripts/export_web.sh`, CI, and a page at `/mission-silicon/` in `site/build.py`, once the prototype is worth showing on dev.dunderquest.com.
 4. **Technical review of the content**: every claim real, per the curriculum's "nothing untrue" rule.
 
