@@ -171,7 +171,7 @@ Misconceptions:
 Concepts:
 - **HTML, CSS, JavaScript** as structure, style and behaviour. Analogy: the walls, the paint, the electrics.
 - **The DOM.** The browser's live model of the page, which JavaScript changes to update what you see without reloading.
-- **Components.** Modern frontends are built from reusable pieces (a "loaf card", an "order button"), each owning its look and behaviour. **React** is the most common framework for this; Vue, Svelte and Angular are others.
+- **Components.** Modern frontends are built from reusable pieces (a "loaf card", an "order button"), each owning its look and behaviour. **React** is the most common tool for this (see below); Vue, Svelte and Angular are others.
 - **State.** What the page currently remembers: what's in the basket, whether the menu is open. Most frontend bugs are state bugs ("the basket says 3, the total says 2").
 - **Rendering on the client vs the server.** A **single-page app** builds pages in the browser (snappy once loaded). **Server-side rendering** sends ready-made pages (faster first load, better for search engines). Frameworks like Next.js mix both. Teach this as a dial, not a war.
 - **Responsive design.** One site that works on a phone and a desktop.
@@ -179,11 +179,25 @@ Concepts:
 - **Web app vs native app.** A web app runs in the browser, one codebase, updates instantly. A native app is installed from an app store, with better access to the phone, and two codebases (or a cross-platform tool like React Native or Flutter). Start on the web unless there's a reason.
 - **Build step.** Frontend code is usually bundled and shrunk before it's shipped (tools like Vite). Why the AI talks about "building" a site.
 
+### React
+
+React gets its own section because it's what AI tools build with by default: ask most AI app builders or coding assistants for a web app and it usually comes back as React, often with Next.js. The learner will meet its vocabulary in nearly every plan and error message, so the goal is to recognise what they're looking at, not to write it.
+
+- **What it is.** A JavaScript library, made by Meta, for building interfaces out of components (strictly a library, though people often call it a framework). You describe what the screen should look like for the current state, and React updates the page when the state changes.
+- **JSX.** HTML-like markup written inside JavaScript: `<LoafCard name="Sourdough" price={4} />`. It looks like HTML but is turned into JavaScript by the build step.
+- **Props.** The settings a component is given from outside, like the `name` and `price` above. A loaf card doesn't decide which loaf it shows; it's told.
+- **State.** What a component remembers and can change, like the number in the basket. When state changes, React redraws the parts that depend on it. Where a piece of state lives (in one component, shared across the page, or on the server) is the question behind most React bugs.
+- **Hooks.** Functions whose names start with `use`, like `useState` (remember a value) and `useEffect` (do something after drawing, like fetching data). Enough to recognise them in code an AI writes.
+- **What comes with it.** **Next.js**, a framework built on React that adds pages, routing, server-side rendering and backend endpoints in one project; **Tailwind**, styling written as short class names right in the markup; component kits like **shadcn/ui**, ready-made buttons, forms and dialogs. **React Native** uses the same ideas to build phone apps.
+- **Why it's the default, and when that's fine.** The largest ecosystem, the most examples, and so the code AI tools are best at writing. That's a good reason to accept it unless something argues otherwise. The alternatives, **Vue**, **Svelte** and **Angular**, do the same job and are worth recognising by name; a static site (Crumb stage 0) may need none of them.
+
 Misconceptions:
+- "React is a language." It's JavaScript or TypeScript plus a library.
+- "React is the whole app." It's the frontend; Next.js can add some backend, but the data, rules and secrets still need the backend thinking in Module 5.
 - "Hiding a button keeps people out." The frontend runs on the user's machine; they can change anything there. Every real rule lives on the backend (Module 5, 11).
 - "The design is the app." It's one layer; a beautiful form that saves nothing is a picture.
 
-What to tell your AI: "Mobile first", "make it accessible", "use our existing components."
+What to tell your AI: "Mobile first", "make it accessible", "use our existing components", "use React with TypeScript", "keep components small", "where does this state live?"
 
 ---
 
@@ -499,6 +513,7 @@ A plain-words definition for every bolded term above, to grow into an in-game co
 | Load balancer | The host who seats each request at a free server |
 | OLAP | Big analytical questions over lots of data |
 | OLTP | Many small, fast reads and writes; the live app's work |
+| React | The most common JavaScript library for building interfaces from components |
 | Schema | The declared shape of the data |
 | Transaction | Changes that happen all together or not at all |
 
