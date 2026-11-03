@@ -1255,6 +1255,12 @@ def build_brand_curb(prefix: str) -> str:
   <h2 id="cy-cards-h">The social card and the thumbnail</h2>
   <ul class="cards">{card_list(img, [("curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game")])}{thumb_item(cy + "trailer.png", CURB_THUMB_ALT)}</ul>
   <p class="fine">The card is painted by <code>site/curb_art.py</code>, the thumbnail by <code>games/curb/tools/make_trailer.py</code>. The trailer itself is on <a href="{prefix}brand/trailers/">the trailers page</a>, and its upload form on <a href="{prefix}brand/youtube/">the YouTube page</a>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="cy-launch-h">
+  <p class="kicker">curb.__launch__</p>
+  <h2 id="cy-launch-h">The launch posts</h2>
+  <p class="lede">Curb's LinkedIn post and the rest of its launch copy lead <a href="{prefix}brand/launch/#launch-curb-h">the launch page</a>.</p>
 </section>"""
     return brand_page("curb", body, prefix, fonts="&family=Libre+Franklin:wght@800..900")
 
