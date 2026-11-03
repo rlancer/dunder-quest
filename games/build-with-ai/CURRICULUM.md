@@ -140,7 +140,15 @@ Every language sits somewhere on a few dials. Teach the dials, then place the la
 
 ### Notebooks
 
-A **notebook** (Jupyter, Google Colab) is a document mixing code, its output, charts and notes, run a piece at a time. It's the analyst's lab bench: brilliant for exploring data and explaining findings, wrong for running a live app. Crumb's owner asking "which loaves sell on rainy days?" is a notebook job; taking orders is not.
+A **notebook** is a document mixing code, its output, charts and notes, run a piece at a time. It's the analyst's lab bench: brilliant for exploring data and explaining findings, wrong for running a live app. Crumb's owner asking "which loaves sell on rainy days?" is a notebook job; taking orders is not.
+
+The curriculum uses **marimo**, a Python notebook that's a good fit for building with AI:
+
+- **Reactive.** Change one cell and every cell that depends on it reruns, like a spreadsheet. Older notebooks let you run cells in any order and end up showing results that no longer match the code; marimo doesn't.
+- **Plain Python files.** A marimo notebook is a `.py` file, so it lives in Git (Module 2) with readable diffs, and an AI assistant can read and edit it like any other code.
+- **Becomes an app.** The same notebook can run as a script, or be served as a small interactive web app with sliders and charts, which is handy for giving the owner a sales dashboard without building a frontend.
+
+Learners will also see **Jupyter** (the long-standing standard, files ending `.ipynb`) and Google Colab; same idea, and worth recognising by name.
 
 ### Rules of thumb for AI builders
 
@@ -244,7 +252,7 @@ The key distinction this module builds to:
 - Running big OLAP questions on the OLTP database slows the shop down (Crumb stage 5: the owner's report makes Saturday ordering crawl).
 - So data is copied into a **data warehouse** (BigQuery, Snowflake, Redshift, or DuckDB for small jobs) built for analysis, often storing data by column instead of by row so it can scan one column fast. The copying is a **pipeline**, called **ETL** or **ELT** (extract, transform, load, in one order or the other).
 - A **data lake** keeps raw files of every kind cheaply, to be organised later.
-- This is where notebooks and Python come back (Module 3): analysts point them at the warehouse, not the live app.
+- This is where marimo notebooks and Python come back (Module 3): analysts point them at the warehouse, not the live app.
 
 ### Keeping data safe
 
@@ -450,7 +458,7 @@ The learner assembles Crumb's final architecture from everything above and can e
        |
    Pipeline (ELT)
        |
-   Data warehouse (OLAP) --> owner's dashboards, analysts' notebooks (Python)
+   Data warehouse (OLAP) --> owner's dashboards, analysts' marimo notebooks
 
    AI assistant: backend --> model API, with RAG over the menu and allergy docs
    Around it all: Git, CI/CD, staging, logs, alerts, backups
