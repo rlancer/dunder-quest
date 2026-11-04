@@ -247,6 +247,25 @@ SCENES = {
         "scribbled sticky notes and no readable writing, a sagging sofa pushed to the side, a tall bay window "
         "with evening light. Warm, a little forlorn. " + STYLE
     ),
+    "launch": ROOM + (
+        "the overgrown back garden of a shabby old Victorian house in San Francisco's Mission District, dressed "
+        "for an absurdly lavish startup launch party on a sunny Saturday afternoon, before the guests arrive: in "
+        "the centre an enormous, gleaming ice sculpture of a big bearded man in a robe holding up a giant fork and "
+        "gazing into the distance, on a draped table; a huge arch of hundreds of green and white balloons over a "
+        "patio; a DJ booth with towering speakers; a tall pyramid tower of champagne glasses; a big outdoor screen "
+        "on a stand showing a simple white fork icon on a dark slate background, no words; strings of party lights between a lemon tree "
+        "and the back porch, a peeling clapboard wall and a sagging fence behind. Extravagant and obviously far "
+        "more than anyone can afford. " + STYLE
+    ),
+    "aftermath": ROOM + (
+        "the overgrown back garden of a shabby old Victorian house in San Francisco's Mission District at two in "
+        "the morning after an absurdly lavish startup launch party: a half-melted ice sculpture of a big man holding "
+        "up a giant fork, its head fallen off and lying on the table in a puddle; a sagging, half-deflated arch of "
+        "green and white balloons with loose balloons drifting on the grass; a DJ booth switched off; a toppled "
+        "tower of champagne glasses and empty bottles; a big outdoor screen on a stand still showing a simple white fork icon on a dark slate "
+        "background, no words; strings of party lights, some out; paper cups everywhere; a dark sky with the city glow. "
+        "Quiet, deflated, funny. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

@@ -23,6 +23,8 @@ const SPOTS := {
 	"front": Vector2(62, 92), "notebook": Vector2(178, 156),
 	# The bookings' store and logins (Episodes 5 and 6).
 	"sheet": Vector2(178, 92), "backups": Vector2(238, 92), "copy": Vector2(238, 156), "login": Vector2(238, 36),
+	# Deploys (Episode 7): Melon's laptop or the pipeline, staging, error tracking.
+	"laptop": Vector2(62, 156), "ci": Vector2(62, 156), "staging": Vector2(4, 156), "tracking": Vector2(4, 36),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -60,6 +62,11 @@ const BUBBLES := {
 	"stuffing": ["login", "Leaked passwords!"], "sql_injection": ["login", "' OR 1=1 --"],
 	"plain_passwords": ["db", "Passwords readable!"], "fast_hash": ["db", "Hashes cracked!"],
 	"pw_rules": ["login", "Needs a symbol?!"], "no_login": ["phones", "No accounts!"],
+	"laptop_deploy": ["laptop", "From Melon's laptop!"], "no_tests": ["app", "Booked? Not kept!"],
+	"wrong_tests": ["ci", "212 tests passed!"], "no_staging": ["app", "Setting missing!"],
+	"real_data": ["front", "Nonna's apostrophe!"], "no_tracking": ["phones", "Nobody's noticed"],
+	"errors_hidden": ["front", "Enjoy the party!"], "rollback": ["ci", "Rolling back"],
+	"no_rollback": ["app", "Fixing it live"],
 }
 ## The home-made login's passwords, as its badge (Episode 6).
 const PW_NAMES := {"plain": "as typed", "fast": "fast hash", "slow": "slow hash"}
@@ -178,6 +185,13 @@ func _present(c: Dictionary) -> Dictionary:
 		out["front"] = true
 	if c.get("notebook", false):
 		out["notebook"] = true
+	# Deploys (Episode 7).
+	if c.has("deploy"):
+		out["laptop" if str(c["deploy"]) == "laptop" else "ci"] = true
+	if c.get("staging", false):
+		out["staging"] = true
+	if c.get("tracking", false):
+		out["tracking"] = true
 	return out
 
 
@@ -208,6 +222,9 @@ func _layout() -> void:
 				# The MVP's backend (Episodes 3 and 4): its language underneath.
 				if cfg.has("front"):
 					label = "Big server" if cloud else "Aleister"
+					# Episode 7's launch: a platform host, not one big server.
+					if cloud and cfg.has("deploy"):
+						label = "Platform"
 					sub = LANG_NAMES.get(str(cfg.get("lang", "")), "") if cfg.get("mvp", false) else "prototype"
 				elif cloud:
 					label = "App x%d" % int(cfg["app"]["count"])
@@ -314,6 +331,21 @@ func _layout() -> void:
 			"git":
 				label = "GitHub"
 				sub = "per change" if str(cfg.get("commits", "daily")) == "each" else "daily"
+			"laptop":
+				label = "Melon's"
+				sub = "laptop"
+			"ci":
+				label = "CI"
+				sub = "deploys"
+				if cfg.get("tests", false):
+					label = "CI + tests"
+					sub = "a booking" if str(cfg.get("test_check", "")) == "booking" else "page opens"
+			"staging":
+				label = "Staging"
+				sub = "a copy"
+			"tracking":
+				label = "Errors"
+				sub = "hidden" if cfg.get("errors_hidden", false) else "tracked"
 		var badges := []
 		if id == "app":
 			if cfg.get("polyglot", false):
@@ -390,6 +422,11 @@ func _layout() -> void:
 				badges.append("voice")
 		if id == "notebook" and cfg.get("notebook_app", false):
 			badges.append("runs the app")
+		# Episode 7: Ulrich's error page, and the second region.
+		if id == "front" and cfg.get("errors_hidden", false):
+			badges.append("no errors")
+		if id == "app" and cfg.get("region", false):
+			badges.append("2 regions")
 		var rect := Rect2(_spot(id), Vector2(W, H))
 		_boxes[id] = {"rect": rect, "label": label, "sub": sub, "new": not before.has(id), "badges": badges}
 		var b := Button.new()
@@ -411,6 +448,15 @@ func _process(delta: float) -> void:
 	_clock += delta
 	if live:
 		queue_redraw()
+
+
+## Whether the box just right of this one, on the same row, has badges.
+func _neighbour_badged(r: Rect2) -> bool:
+	for other in _boxes.values():
+		var o: Rect2 = other["rect"]
+		if is_equal_approx(o.position.y, r.position.y) and o.position.x > r.position.x and o.position.x - r.end.x < 12.0 and not other["badges"].is_empty():
+			return true
+	return false
 
 
 func _wires() -> Array:
@@ -449,8 +495,21 @@ func _wires() -> Array:
 			out.append(["db", "copy", "replica"])
 		if has.call("login") and has.call("app"):
 			out.append(["app", "login", "login"])
-		if has.call("git") and has.call("app"):
-			out.append(["git", "app", "history"])
+		# Deploys (Episode 7): what's live comes from Melon's laptop, or
+		# from Git through the pipeline (by way of staging).
+		if has.call("ci"):
+			if has.call("git"):
+				out.append(["git", "ci", "history"])
+			out.append(["ci", "app", "deploy"])
+			if has.call("staging"):
+				out.append(["ci", "staging", "deploy"])
+		else:
+			if has.call("git") and has.call("app"):
+				out.append(["git", "app", "history"])
+			if has.call("laptop") and has.call("app"):
+				out.append(["laptop", "app", "deploy"])
+		if has.call("tracking") and has.call("phones"):
+			out.append(["phones", "tracking", "errors"])
 		if has.call("notebook") and not cfg.get("notebook_app", false):
 			out.append(["app", "notebook", "data"])
 		return out
@@ -613,7 +672,8 @@ func _draw() -> void:
 			var bw := font.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 4
 			# The agent's badges stack under it, clear of the payments box's.
 			# Any box's badges wrap rather than run off the board's edge.
-			if bx > r.position.x and ((id in ["agent", "phones", "front"] and bx + bw > r.end.x) or bx + bw > size.x - 2):
+			# So do a box's whose neighbour on the right has badges of its own.
+			if bx > r.position.x and (((id in ["agent", "phones", "front"] or _neighbour_badged(r)) and bx + bw > r.end.x) or bx + bw > size.x - 2):
 				bx = r.position.x
 				by += 12.0
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)

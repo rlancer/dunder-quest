@@ -14,6 +14,10 @@ const TICK := 60.0
 const KINDS := ["browse", "tables", "search", "my_bookings", "book"]
 ## A tick counts as down when more than this share of requests fail.
 const DOWN_SHARE := 0.25
+## How heavily each deploy finding weighs against the others (Episode 7), so
+## the cause of a long outage is named before the change that started it.
+const DEPLOY_WEIGHT := {"laptop_deploy": 100.0, "no_staging": 30.0, "no_tracking": 20.0,
+	"errors_hidden": 25.0, "no_rollback": 20.0, "rollback": 1.0}
 
 var ep: Dictionary
 var plan: Plan
@@ -110,6 +114,11 @@ var login_done: float = 0.0
 var takeovers: float = 0.0
 var pw_exposed: float = 0.0
 var _breached: bool = false
+## Deploys (Episode 7): each scripted change of the night, whether it reached
+## the diners, why, and when it was noticed and fixed. And the tick the
+## first change that got through was noticed, when the rollback is offered.
+var _changes: Array = []
+var _first_notice: int = -1
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -129,6 +138,66 @@ func _init(episode: Dictionary, p: Plan, staging_scale: float = 1.0) -> void:
 	for g in ep["goal"]:
 		if g["metric"] == "dashboard_age":
 			_age_limit = float(g["max"])
+	_plan_deploys()
+
+
+## Deploys (Episode 7). Off unless the episode has `live.deploy`.
+##
+## Deployed from a laptop, Forkcast is whatever is on that laptop: its
+## settings (`deploy.laptop`) replace the board's, nothing is tested or tried
+## first, and there's no earlier build to go back to. Deployed by CI, every
+## change is built from Git; its tests stop a change that breaks what they
+## check (only that), and a staging copy with the host's settings stops a
+## change that breaks on the host's settings. What gets through is noticed in
+## a minute or two with error tracking (unless the app catches every error
+## and passes none on), or when a diner says so; then it's rolled back to the
+## last build CI kept, if the rollback is taken, or fixed by hand.
+func _plan_deploys() -> void:
+	var dep: Dictionary = live.get("deploy", {})
+	if dep.is_empty():
+		return
+	var laptop := str(cfg.get("deploy", "laptop")) == "laptop"
+	if laptop:
+		var on_it: Dictionary = dep.get("laptop", {})
+		for k in on_it:
+			cfg[k] = on_it[k]
+	var heard: bool = cfg.get("tracking", false) and not cfg.get("errors_hidden", false)
+	for c in dep["changes"]:
+		var why := ""
+		if laptop:
+			why = "laptop_deploy"
+		else:
+			match str(c.get("caught_by", "")):
+				"tests":
+					if not cfg.get("tests", false):
+						why = "no_tests"
+					elif str(cfg.get("test_check", "")) != str(c["check"]):
+						why = "wrong_tests"
+				"staging":
+					if not cfg.get("staging", false):
+						why = str(c["tag"])
+				_:
+					why = str(c["tag"])
+		if why == "":
+			continue
+		var silent: bool = c.get("silent", false)
+		var quick := heard and not silent
+		var noticed := int(c["at"]) + int(dep["notice"]["tracking" if quick else "none"])
+		var unheard := ""
+		if not quick and not silent:
+			unheard = "errors_hidden" if cfg.get("errors_hidden", false) else "no_tracking"
+		_changes.append({"at": int(c["at"]), "silent": silent, "tag": why, "unheard": unheard,
+			"noticed": noticed, "fixed": -1, "laptop": laptop})
+		if _first_notice < 0 or noticed < _first_notice:
+			_first_notice = noticed
+
+
+## A hotfix's tick, or (`"tick": "noticed"`) the tick the first change that
+## got through is noticed; -1 when there's none.
+func _hotfix_tick(h: Dictionary) -> int:
+	if str(h["tick"]) == "noticed":
+		return _first_notice
+	return int(h["tick"])
 
 
 func done() -> bool:
@@ -138,7 +207,7 @@ func done() -> bool:
 ## The hotfix due at this tick, if Aleister has one to offer and it applies.
 func hotfix_due() -> Dictionary:
 	for h in live.get("hotfixes", []):
-		if int(h["tick"]) == tick and not _hotfixed.has(h["id"]) and _needs_met(h):
+		if _hotfix_tick(h) == tick and not _hotfixed.has(h["id"]) and _needs_met(h):
 			return h
 	return {}
 
@@ -159,7 +228,8 @@ func step() -> Dictionary:
 
 func _apply_hotfixes() -> void:
 	for h in live.get("hotfixes", []):
-		if int(h["tick"]) <= tick and not _hotfixed.has(h["id"]) and _needs_met(h):
+		var at := _hotfix_tick(h)
+		if at >= 0 and at <= tick and not _hotfixed.has(h["id"]) and _needs_met(h):
 			_hotfixed[h["id"]] = true
 			if plan.hotfix.get(h["id"], false):
 				for change in h.get("changes", []):
@@ -346,6 +416,33 @@ func _tick() -> Dictionary:
 		if why != "":
 			code_down = why
 			built = false
+
+	# The night's changes (Episode 7) that got through: a loud one breaks
+	# every page until it's fixed; a silent one says "Booked!" and doesn't
+	# keep the booking, and nobody hears until a diner turns up. Once one is
+	# noticed it's rolled back in minutes (CI kept the last build, and the
+	# rollback was taken) or fixed by hand. See `_plan_deploys`.
+	var deploy_down := false
+	var deploy_lost := 0.0
+	var deploy_tags := {}
+	var dep: Dictionary = live.get("deploy", {})
+	for st in _changes:
+		if tick < int(st["at"]):
+			continue
+		if tick == int(st["noticed"]):
+			var back: bool = not st["laptop"] and cfg.get("rollback_build", false)
+			st["fixed"] = tick + int(dep["rollback"] if back else dep["by_hand"])
+			st["phase"] = "rollback" if back else ("" if st["laptop"] else "no_rollback")
+		if int(st["fixed"]) >= 0 and tick >= int(st["fixed"]):
+			continue
+		if st["silent"]:
+			deploy_lost = 1.0
+		else:
+			deploy_down = true
+		deploy_tags[st["tag"]] = st["silent"]
+		var phase: String = st.get("phase", "") if int(st["fixed"]) >= 0 else str(st["unheard"])
+		if phase != "":
+			deploy_tags[phase] = st["silent"]
 
 	# Caches.
 	var hits := {"menus": 0.0, "tables": 0.0, "my_bookings": 0.0}
@@ -583,6 +680,11 @@ func _tick() -> Dictionary:
 				var wh_res := _box(_warehouse, dash_q * scan * float(wh["columnar_share"]), float(wh["capacity"]), float(wh["latency"]))
 				dash_ok = 1.0 - wh_res["drop"]
 				util["warehouse"] = wh_res["u"]
+	# A broken deploy (Episode 7): every page errors, wherever it runs.
+	if deploy_down:
+		app_ok = 0.0
+		dash_ok = 0.0
+		down_now = true
 	var net: Dictionary = Season.pieces()["network"]
 	var page := float(net["base"]) + (0.0 if cfg.get("cdn", false) else float(net["no_cdn"])) + latency + float(chain_lat["browse"])
 	var book_page := float(net["base"]) + book_latency + float(chain_lat["book"])
@@ -621,7 +723,7 @@ func _tick() -> Dictionary:
 			fit_share = float(fit[str(cfg.get("detail", "none"))] if cfg.get("spec", false) else fit["none"])
 		else:
 			calls = 0.0
-	if not built:
+	if not built or deploy_down:
 		calls = 0.0
 	# Switched off by a hotfix (Episode 12): no searches, no calls of ours.
 	var ai_off: bool = cfg.get("ai_off", false)
@@ -911,7 +1013,7 @@ func _tick() -> Dictionary:
 
 	var booked_now: float = r["book"] * TICK * book_success
 	booked += booked_now
-	var lost_now := booked_now * minf(1.0, over_share + made_up_tables)
+	var lost_now := booked_now * minf(1.0, over_share + made_up_tables + deploy_lost)
 	lost += lost_now
 	takeovers += stuffed * TICK
 	book_tries += r["book"] * TICK
@@ -962,11 +1064,11 @@ func _tick() -> Dictionary:
 		var why := code_down if code_down != "" else ("sold" if cfg.get("sold", false) else "nothing_built")
 		tags.append(why)
 		_blame(why, total * TICK * 1000.0)
-	elif not cloud and (_garage["down"] > 0 or down_now):
+	elif not cloud and (_garage["down"] > 0 or (down_now and not deploy_down)):
 		tags.append("garage_melt")
 	# Requests lost to bugs in the code (Episode 3) are the bugs' findings,
 	# not the boxes'.
-	elif lost > 0.0 and (bug_share == 0.0 or lost - (r["search"] + r["book"]) * TICK * bug_share > 1.0):
+	elif lost > 0.0 and not deploy_down and (bug_share == 0.0 or lost - (r["search"] + r["book"]) * TICK * bug_share > 1.0):
 		if cloud and util.get("app", 0.0) > 0.9:
 			tags.append(_biggest(parts, {"assets": "no_cdn", "signup": "no_queue", "scrape": "scraper", "services": "service_chain"}, "app_overload"))
 		if cloud and util.get("db", 0.0) > 0.9:
@@ -1076,6 +1178,14 @@ func _tick() -> Dictionary:
 			var why := "plain_passwords" if breach_now == "plain" else "fast_hash"
 			tags.append(why)
 			_blame(why, 2.0e5)
+	# Deploys (Episode 7): why the change got through, and why it stayed.
+	for why in deploy_tags:
+		tags.append(why)
+		var weight := float(DEPLOY_WEIGHT.get(why, 10.0))
+		if deploy_tags[why]:
+			_blame(why, booked_now * weight * 100.0)
+		else:
+			_blame(why, total * TICK * weight)
 
 	return {
 		"tick": tick, "diners": diners, "page": minf(page, 30.0), "err": err_share, "down": down_now,
@@ -1336,6 +1446,13 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["live_copy"]["monthly"])
 	if cfg.get("logins", false) and str(cfg.get("auth", "home")) == "service":
 		m += float(pieces["auth_service"]["monthly"])
+	# Deploys (Episode 7).
+	if cfg.get("staging", false):
+		m += float(pieces["staging"]["monthly"])
+	if cfg.get("tracking", false):
+		m += float(pieces["tracking"]["monthly"])
+	if cfg.get("region", false):
+		m += float(pieces["region"]["monthly"])
 	return m
 
 

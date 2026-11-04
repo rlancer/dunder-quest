@@ -49,6 +49,12 @@
 		"live_copy": {"label": "Live copy", "term": "replica (not a backup)", "plain": "A second database on a rented server that copies every change the moment it happens. Every change, mistakes included.", "monthly": 150},
 		"auth_service": {"label": "Login", "term": "auth service", "plain": "Someone else's login, made for the job: it keeps the passwords, limits guesses, checks for passwords leaked elsewhere and sends the reset emails. Our app only learns who logged in.", "monthly": 100},
 		"home_login": {"label": "Login", "term": "home-made login", "plain": "The login Aleister wrote tonight: an email and password box, the passwords kept in our own database."},
+		"platform": {"label": "Platform", "term": "platform as a service (PaaS)", "plain": "A platform host runs Forkcast's backend for us: give it a build and it runs it, on its servers, with a managed Postgres beside it."},
+		"laptop": {"label": "Melon's laptop", "term": "deploying from a laptop", "plain": "Melon's copy of Forkcast, from whenever he last copied it, with his own settings and whatever he changed to make it work on his machine. Whatever is on it is what goes live."},
+		"ci": {"label": "CI", "term": "CI/CD pipeline", "plain": "A clean machine that builds every change from Git, runs the tests and deploys that exact build, the same way every time. It keeps the last good build, to go back to."},
+		"staging": {"label": "Staging", "term": "staging environment", "plain": "A second copy of Forkcast on the same host, with the same settings and made-up diners. Each change goes there first, and its pages are opened before it goes live.", "monthly": 100},
+		"tracking": {"label": "Errors", "term": "error tracking", "plain": "Errors the app doesn't handle, on a diner's phone or our server, are sent here the moment they happen, with where they happened, and Gerard's phone buzzes.", "monthly": 30},
+		"region": {"label": "Second region", "term": "multi-region failover", "monthly": 700},
 		"index": {"label": "Menu index", "term": "vector index (for RAG)", "plain": "Every restaurant's menu and allergy notes, stored as embeddings in our own Postgres, so the concierge can find the right ones and answer from them.", "monthly": 20}
 	},
 	"_languages": "typed: a static type checker reads the code before it runs. familiar: how many times more mistakes the AI makes than in the languages it has seen most of. work_x: server work for the same requests.",

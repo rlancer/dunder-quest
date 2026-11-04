@@ -49,7 +49,8 @@ func _ready() -> void:
 		else:
 			built += 1
 			add_child(_tile(ep, at))
-	var foot := UI.place(UI.label("%d of 14 episodes playable.  Marks: Live, Lean, Ulrich." % built, Palette.BODY, Palette.SLATE_MID), Rect2(0, y0 + 2 * TILE.y + GAP + 4, 480, 12)) as Label
+	var have := ("All %d episodes playable." % built) if built == outline.size() else "%d of %d episodes playable." % [built, outline.size()]
+	var foot := UI.place(UI.label(have + "  Marks: Live, Lean, Ulrich.",Palette.BODY, Palette.SLATE_MID), Rect2(0, y0 + 2 * TILE.y + GAP + 4, 480, 12)) as Label
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(foot)
 

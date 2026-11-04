@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it, then the front half's Episodes 1 to 6. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it, then the front half's Episodes 1 to 7. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -116,6 +116,7 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **A spreadsheet as the database** (built, Episode 5) | The bookings' store | Code that reads the sheet for a free table and the next empty row, then writes there, has a gap of a second plus a little per row; two bookings inside it land on one row and the later wins, a share 1 − e^(−b × gap ÷ tabs) of them. Tabs per restaurant spread the bookings, not close the gap. The last table goes twice through Episode 11's race with the sheet's gap. A database writes each booking whole, with a gap of milliseconds | `overwritten`, `double_booking` |
 | **A deletion and the backups** (built, Episode 5) | The database | At a scripted tick the AI deletes the restaurants. A backup restored before (a drill) is back in minutes; an untested one is empty, a live copy deleted them too, and with neither they're typed back in all night; rebuilt from the AI's memory, they're back fast with a share of tables made up, and bookings at those are lost | `restored`, `untested_backup`, `copy_not_backup`, `no_backup`, `ai_rebuilt` |
 | **Logins** (built, Episode 6) | The login | With no accounts nobody logs in; password rules make a share give up. From a scripted tick bots try passwords leaked from another site, and a share are real (people reuse them): a home-made login with no limit lets every one in, a login service stops nearly all. At another, a home-made login whose query is built from what's typed hands over the users table, readable as stored: as typed, all; a fast unsalted hash, most; a slow salted hash, none that night. A login service keeps the passwords itself | `no_login`, `pw_rules`, `stuffing`, `sql_injection`, `plain_passwords`, `fast_hash` |
+| **Deploys** (built, Episode 7) | The way changes go live | Scripted changes go out during the night. From a laptop, each goes out as it is, from a copy with that laptop's settings (`deploy.laptop`: the key in the app), and a broken one is fixed by hand. By CI, tests stop a change that breaks what they check (only that), and staging, with the host's settings, stops one that breaks on them; what gets through is noticed in minutes with error tracking (never if the app hides every error), or when someone says so, and rolled back to the last build if the rollback is taken. A loud break errors every page; a silent one says "Booked!" and keeps nothing | `laptop_deploy`, `no_tests`, `wrong_tests`, `no_staging`, `real_data`, `no_tracking`, `errors_hidden`, `rollback`, `no_rollback` |
 | **Mobile first** (built, Episode 4) | The web app | Laid out for a desktop, the book button is off a phone's screen for a share of the diners on phones, who give up | `not_mobile` |
 | **The season in one night** (the Finale) | Everything | Every behaviour above on at once, each configured by its own keys of `live`, as its episode had it. No new code was needed to combine them | |
 
@@ -798,19 +799,123 @@ Cliffhanger: the living room after the focus group (a new backdrop: folding chai
 
 Season 3's focus group, where the engineers watch ordinary people fail to understand the platform they think is brilliant, through the glass; and Erlich, right for the wrong reason, which the show did often. Here: Gerard's twelve paid in pizza, the woman who thought a symbol meant an emoji, the curious trattoria owner, Ulrich right about the login service because he likes the buttons, and Gilroy reading Danesh's password aloud. If a fan wouldn't recognise the focus group and the Gilfoyle-Dinesh contempt, it's drifted; they would.
 
-## From Episode 6's board to Episode 8's
+## Episode 7 on paper: *Launch Party*
 
-Episode 7 isn't built yet; this is the path the first six leave for it, so the continuity check can hold from 1 to 14.
+Stage 3, Modules 8 (getting it online: local and production, a platform host, CI/CD, staging, error tracking, "deploying is a one-off") and 12 (quality: tests are code that checks code, and only what they check; "the AI wrote tests, so it's tested"; "no errors means no bugs"). Borrowed set piece: the absurdly lavish launch party paid for with money the hosts don't have (Erlich's, bankrolled by Big Head until his money runs out), with the friend who fails upward helping in the worst way. The lines are in `data/season.json`.
+
+### Continuity
+
+The starting board is Episode 6's solution: the TypeScript MVP on Aleister with Postgres on Aleister and restored backups, the login service and the restaurant pages' ownership check, and everything before it (the static landing page and the form, Git committing every change, the notebook, the $2 fee on the server, the model key on the server). Nothing changes (no `changed`). New keys: `deploy` (`laptop`: Melon offers to put it online from his laptop, as the cold open says), `tests` and `test_check` (`page`), `staging`, `tracking`, `errors_hidden`, `rollback_build`, `region` and `cluster` (all off). The board adds four spots: Melon's laptop or the CI box at (62, 156), staging at (4, 156) and error tracking at (4, 36), wired from the web app.
+
+Melon's copy of the app has the model key in it (in the app's settings, with the prefix that makes the build put it in the app, "so it'd just work"). That's `deploy.laptop` in the live data: deployed from his laptop, the night runs with `key_where: frontend`. It's also the habit that comes back in Episode 12, where his line with the key reaches the app through the pipeline (see below).
+
+### Cold open
+
+Saturday noon, the back garden, dressed for a launch (a new backdrop: an eight-foot ice sculpture of Ulrich holding a fork and gazing into the future, a forty-foot balloon arch, a DJ booth, a champagne tower, a big screen glowing green). Veronica asks who is paying for eight feet of Ulrich. Melon (Ricky's oldest friend, here for the weekend): he is, on his card; every time he calls them they raise the limit. Gerard has blown up six hundred balloons and can no longer feel his lips. Ricky: at eight the article goes out and anyone can book; off Aleister, onto a real host. Melon can put it up: he has all of Forkcast on his laptop, and it works on his machine. Gilroy: Melon's laptop is where code goes to be remembered wrong.
+
+Title card: **LAUNCH PARTY**.
+
+### Brief
+
+Veronica: at eight the article goes live and anyone can book, seven thousand at once by half past, with Walter's partners in the garden watching on their phones. Aleister has planned it: Launch Forkcast. Melon deploys it from his laptop, and anything Ulrich wants tonight, Aleister will ship live.
+
+- **Budget**: $400k in the bank, $30k a month, so 13.3 months of runway before the night (the fee earns some back). 8 hours to build.
+- **Goal**: up all night (no more than 5 minutes down), nine bookings in ten work, every booking kept, nobody else on our key.
+
+### Aleister's pull request: "Launch Forkcast"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Go live**: a platform host and a managed Postgres | Aleister | 2h | +$700 | Needed: at seven thousand diners Aleister overheats. Its bad default is that Melon deploys it, and every change after it, from his laptop | Ricky: somebody else's servers and somebody else's 3am; Gilroy: seven hundred a month to keep Aleister from his life's work |
+| **Tests**: 212 of them, all passing | Aleister | 1h | — | Needed, with a bad default (the dial): every test checks that the home page opens. They only run in a pipeline | Gerard finds 212 very reassuring; Gilroy: nobody's asked what they check |
+| **Deploy from CI** (from an ask) | Aleister | 1.5h | — | Each change built from Git on a clean machine, tested, deployed the same way every time, with the last good build kept | Ricky: what's in Git is what's live; Melon: but his laptop's right here |
+| **Staging** (from an ask) | Aleister | 1h | +$100 | A copy on the same host with the same settings and made-up diners; each change goes there first and its pages are opened | Gilroy: a dress rehearsal, no audience; Veronica: a hundred a month for a Forkcast nobody uses |
+| **Error tracking** (from an ask) | Aleister | 0.5h | +$30 | Errors the app doesn't handle are reported the moment they happen | Gerard's last company heard about errors from the news, once from a priest; Danesh: thirty dollars to be told we're bad at this |
+| **Kubernetes** | Aleister | 20h | — | The too-big card: a cluster to run one app for one party | Danesh: everyone serious runs it; Gilroy: one app, one party |
+| **Second region** (from a decoy) | Aleister | 1h | +$700 | A standby copy in another region. A bad deploy goes to both, so it saves nothing tonight | Aleister: two of everything; Gilroy: two of the same broken thing |
+| **No errors** | Ulrich (wrong) | 0.5h | — | Every error caught and replaced by "Enjoy the party!", and passed on to nobody, so error tracking has nothing to report | Ulrich: at Aviato nobody ever told him about an error; Gilroy: the errors still happen, we just stop hearing about them |
+
+Ulrich is wrong, which leaves him right five times in fourteen, about a third. His card is Module 12's misconception "no errors means no bugs" (and Module 8's "it's live, so it's done"): a friendly error page is fine, but his reports nothing.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **How does the code get onto the host?** | Melon: he copies it up from his laptop; he changed some stuff so it'd just work. Gilroy: his copy is three weeks old, with his own settings and whatever he typed at 2am; nobody knows what's on it, including Melon. Ricky: CI | Adds **Deploy from CI** (1.5h) |
+| **What do the tests check?** | Gerard read them: each checks that the home page opens, 212 times. Ricky: book a table, look it up, see it's there | Just facts (the dial) |
+| **Where do we try a change before diners see it?** | Aleister: on the diners. Gilroy: staging; if it breaks there, it broke in private | Adds **Staging** (1h) |
+| **How will we know if something breaks?** | Aleister: someone will tell us, probably on the internet. Ricky: error tracking | Adds **Error tracking** (0.5h) |
+| **What will this cost at 10x the traffic?** | Veronica: the host is $700 a month whatever happens; the AI is about $9k tonight, and ten times the diners is ten times that | Just facts (Module 8's cost) |
+| **Make sure it never goes down.** (decoy) | Aleister, delighted | Adds **Second region** (1h) |
+
+### The dials
+
+- **Tests check** (on the CI box, with Tests): that the page opens (Aleister's default) or a booking: book a table, then look it up (an hour more).
+
+### The live moment: Saturday, 7pm to 11pm, the launch party
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 7:00pm | 0 | The garden's full: five hundred on Forkcast |
+| 7:45pm | 45 | **Ulrich: dessert's on us tonight!** Aleister ships it. It breaks saving the booking: diners see "Booked!" and nothing is kept, and nothing errors, so nobody hears until diners turn up for tables that aren't theirs. A test that books a table stops it; the page-opens tests pass |
+| 8:00pm | 60 | The article goes live: three thousand, then seven thousand by 8:30. On Aleister, it overheats |
+| 8:45pm | 105 | **Ulrich wants his face on the banner.** The photo needs a setting Aleister has on its own machine and in the tests, not on the host: every page errors. Staging, with the host's settings, stops it |
+| 9:00pm | 120 | A scanning bot reads every new app it can find. If Melon's copy is live, the key is in the app: strangers on our key, 300 a minute growing to 1,200 |
+| 9:45pm | 165 | **Ulrich's toast: all forty restaurants on the home page.** The code breaks on the apostrophe in Nonna's, and every page errors. Tests and staging use made-up restaurants, so nothing stops it in any plan |
+| on notice | | **Hotfix** (only with CI): "Roll back to the last good build? CI kept it: two minutes. Or I'll write a fix, live!" Offered the minute the first broken change is noticed: two minutes after it with error tracking, thirty without (or with Ulrich's card). Cut, Aleister fixes it live in forty |
+| 10:30pm | 210 | The ice sculpture's head falls off |
+| 11:00pm | 240 | Two thousand. End |
+
+The new behaviour is `live.deploy` (see the simulation's table). Deployed from Melon's laptop, every change goes out as it is, from a copy with the key in the app, and when one breaks there's no earlier build to go back to: Aleister fixes it by hand. Deployed by CI, a change is stopped by the tests if it breaks what they check, and by staging if it breaks on the host's settings; what gets through is noticed in two minutes with error tracking, or thirty when a guest says so, and is rolled back in two if the hotfix is kept.
+
+The solution's night: the platform host, CI with tests that book a table, staging and error tracking, the rollback kept. The dessert special and the banner never reach a diner; the toast breaks the home page for four minutes (two to notice, two to roll back). 21,700 bookings, none lost, nobody on our key, a model bill of $8.7k and $43k of fees.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | Aleister melts, Melon's laptop ships every change and the key: down 134 minutes, 5,160 bookings lost, 88,800 strangers' calls. Fails, 6.69 months |
+| Aleister's PR as proposed | 23.5 hours: can't merge |
+| Minus Kubernetes (the bot's take one) | On the host, still from Melon's laptop, with Ulrich's error page: down 130 minutes, 5,720 bookings lost, the key read out. Fails, 5.85 |
+| The solution from Melon's laptop (cut CI) | No tests, no staging, no way back: down 84 minutes, 5,720 lost, 88,800 strangers' calls. Fails, 6.07 |
+| The solution without tests, or with tests that check the page opens | The dessert special goes live: 2,043 bookings lost before a diner tells us. Fails, 11.40 |
+| The solution without staging | The banner breaks every page too: down 8 minutes. Fails |
+| The solution without error tracking, or with Ulrich's card | Nobody hears about the toast for half an hour: down 32 minutes, 81% of bookings. Fails, 13.86 or 13.85 |
+| The solution with the rollback cut | Aleister fixes it live: down 42 minutes. Fails, 13.80 |
+| The solution on Aleister (cut Go live) | Aleister overheats at the article: down 60 minutes. Fails, 13.84 |
+| The solution plus Kubernetes | 27 hours: can't merge |
+| The solution plus the second region | Passes, at 13.73: misses Lean |
+| The solution: ask how the code gets onto the host, where we try a change and how we'll know, keep Go live, Tests (checking a booking), CI, staging and error tracking, cut Kubernetes, the second region and Ulrich's card, keep the rollback | 14.037 months of runway; par 14.03 |
+
+### Postmortem
+
+New findings: we deployed from Melon's laptop ("deploying by hand from a laptop"); Melon's copy shipped the key inside the app ("anything in the frontend is public", as in Episode 4); bookings said "Booked!" and weren't kept ("a regression, with no tests"); 212 tests passed and bookings weren't kept ("tests that check the wrong thing"); Ulrich's banner broke every page ("no staging environment"); an apostrophe broke the home page ("a bug only real data finds", in every night, the solution's too); nobody noticed for half an hour ("no error tracking"); every error said "Enjoy the party!" ("swallowed errors"); we fixed it live, by hand ("fixing forward instead of rolling back"); and, in the solution's own postmortem, the two-minute rollback. The spreadsheet adds bookings lost and minutes down.
+
+Marks: Live, Lean (14.03 months or better), Ulrich (cut "No errors").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Deploy from CI, not a laptop** (every change from version control, built on a clean machine, tested, tried somewhere set up like production and deployed the same way every time, with an automated rollback; Martin Fowler's *Continuous Integration*), **Check what the tests check** (lots of tests can pass while checking very little; Martin Fowler's *Test Coverage*, on coverage reached with low-quality tests) and **Hear about errors first** (error tracking reports unhandled errors as they happen; an error the code catches is reported only if the code passes it on; Sentry's JavaScript docs).
+
+Cliffhanger: the back garden at 2am (a new backdrop: the ice sculpture headless in a puddle, the balloon arch sagging, the screen still glowing). Every booking kept; Gerard still can't feel his lips. Melon's card company lowered his limit to zero, very nicely. Veronica: a chef with nine million followers was here and booked a table for Thursday, through Forkcast. Gilroy: the host sent its first bill, seven hundred dollars for what Aleister did for free. Ricky: Gilroy, no. Gilroy: Aleister heard that too. (Episode 8: Viral, where Gilroy has moved it all back to Aleister and the chef posts on Thursday night.)
+
+### Checking it against the show
+
+Season 3's "Bachmanity Insanity": the lavish party Erlich throws with Big Head's money, the money running out under it, and Big Head's sweet, oblivious help. Here: the eight-foot ice Ulrich, the six hundred balloons, Melon paying on a card whose limit keeps rising until it's zero, and Melon's laptop, "it works on my machine", as the deploy. The live changes Ulrich shouts for at his own party are Erlich treating the product as his show. Gilroy's possessiveness about Aleister sets up Episode 8's garage. If a fan wouldn't recognise Erlich's party and Big Head's help, it's drifted; they would.
+
+## From the front half's boards to Episode 8's
+
+The path the first seven episodes take, so the continuity check holds from 1 to 14.
 
 - **Episode 2 ended with**: the concierge prototype on Aleister (garage), with a one-page spec, private; a static landing page on a static host; the form service keeping the waitlist; Git, committing every change. Its board's keys are Episode 1's (`host`, `app`, `model`, `feed`, `stories`, `sold`, `concierge`, `spec`, `detail`, `everything`) plus `page`, `static`, `backend`, `postgres`, `form`, `accounts`, `apps`, `git`, `commits`, `video` and `rollback`.
-- **Episode 3, *Tabs and Spaces*** (built): the MVP's backend is written in TypeScript on Aleister (`mvp`, `lang`), with a TypeScript web app (`front`) and Veronica's notebook (`notebook`). The prototype's `concierge` and `spec` carry into it. It still runs on Aleister.
-- **Episode 4, *Demo Day*** (built): it ends with a $2 booking fee worked out on the server (`fee`, `price_where: server`), the web app laid out mobile first (`layout`), and the model key on the server with Aleister calling the model (`key_where: server`, `direct_ai: false`), plus `notebook_app`, `investor`, `polyglot`, `price_hidden` and `voice`, all off.
-- **Episode 5, *The Spreadsheet*** (built): the bookings move from Ulrich's spreadsheet into Postgres on Aleister (`store: postgres`; the main simulation's `db` box shows for it while `host` is still `garage`), with nightly backups that have been restored (`backups`, `restore_tested`), plus `sheet_tabs` (1), `live_copy`, `own_db` and `rebuilt`, all off.
-- **Episode 6, *Log In*** (built): accounts through a login service (`logins`, `auth: service`) and the restaurant pages' ownership check (`restaurant_check`), plus `pw_store` (`plain`, unused with the service), `pw_rules` and `own_id`, off. So **Episode 6 ends with** every key above.
-- **Episode 7, *Launch Party***: off Aleister onto a platform host with managed Postgres, deployed by CI with tests and staging (Episode 8's continuity note), deployed from Melon's laptop. Episode 2's rollback (`live.bad_change`, `rollback`, `git`, `commits`) is the start of its scripted bad deploy. Its board must start with every key Episode 6 ends with (or name them in `changed`).
-- **Episode 12** starts with the model key back in the app's code (`key_where: frontend`), which Episode 4 took out. Nothing checks it (Episode 11's board has no `key_where`), but the story should say how it got back: the obvious place is Episode 7's deploy from Melon's laptop, whose copy of the app has the key in it "so it just works" (Melon's README in Episode 12 is the same habit). Say so in Episode 7's postmortem or Episode 12's cold open. This is still open.
-- **Episode 12** also starts with no ownership check on the diners' booking links (`owner_check: false`). Episode 6's check is a different page (the restaurants', `restaurant_check`), so the two don't contradict each other, and Episode 12's postmortem can say the booking links were the page nobody checked.
-- **Episode 8's cold open** then moves everything to Aleister. `cases.gd` compares every key of Episode 7's ending board with Episode 8's starting board, so Episode 8 will need `"changed"` listing `host` and every front-half key its board doesn't carry (the landing page, the form, Git, the store, the logins and the rest), or those keys added to its board. Either way, add them in Episode 7's PR and say why in its cold open. Episode 8's database is the main simulation's cloud `db` again, so `store`, `backups` and the login keys can go in `changed`; the backups and the login service are still there in the story, just not on the board.
+- **Episode 3, *Tabs and Spaces***: the MVP's backend is written in TypeScript on Aleister (`mvp`, `lang`), with a TypeScript web app (`front`) and Veronica's notebook (`notebook`). The prototype's `concierge` and `spec` carry into it. It still runs on Aleister.
+- **Episode 4, *Demo Day***: it ends with a $2 booking fee worked out on the server (`fee`, `price_where: server`), the web app laid out mobile first (`layout`), and the model key on the server with Aleister calling the model (`key_where: server`, `direct_ai: false`), plus `notebook_app`, `investor`, `polyglot`, `price_hidden` and `voice`, all off.
+- **Episode 5, *The Spreadsheet***: the bookings move from Ulrich's spreadsheet into Postgres on Aleister (`store: postgres`; the main simulation's `db` box shows for it while `host` is still `garage`), with nightly backups that have been restored (`backups`, `restore_tested`), plus `sheet_tabs` (1), `live_copy`, `own_db` and `rebuilt`, all off.
+- **Episode 6, *Log In***: accounts through a login service (`logins`, `auth: service`) and the restaurant pages' ownership check (`restaurant_check`), plus `pw_store` (`plain`, unused with the service), `pw_rules` and `own_id`, off.
+- **Episode 7, *Launch Party***: off Aleister onto a platform host with a managed Postgres (`host: cloud`, the app box labelled "Platform"), deployed by CI (`deploy: ci`) with tests that book a table (`tests`, `test_check: booking`), staging and error tracking (`staging`, `tracking`), and the rollback taken (`rollback_build`), plus `errors_hidden`, `region` and `cluster`, off. So **Episode 7 ends with** every key above.
+- **Episode 8's cold open** moves everything to Aleister: Gilroy, offended by the host's first bill, did it overnight, and the pipeline still runs, deploying to Aleister now. Episode 8's board is the main simulation's, so its `changed` names `host` and every front-half key its board doesn't carry (the landing page, the form, Git, the MVP's keys, the store and backups, the logins, the deploy keys). They're still there in the story (the landing page, the login service, the backups, the pipeline), just not on the board. `app` (one medium server, sessions in memory), `model` and `cluster` carry over as they are.
+- **Episode 12** starts with the model key back in the app's code (`key_where: frontend`), which Episode 4 took out. Its cold open now says how: Melon's habit from Episode 7 (his copy had the key in the app "so it'd just work") came back from his Hubbub laptop. He put the key in the app's settings with the prefix that makes the build ship it, and it went through the pipeline: every test passed, because the tests check bookings and nothing checks where the key is (Module 12's "only what they test", Episode 7's lesson). No board or number changed: Episode 11's board has no `key_where`, and Episode 12's starts where it always did.
+- **Episode 12** also starts with no ownership check on the diners' booking links (`owner_check: false`). Episode 6's check is a different page (the restaurants', `restaurant_check`), so the two don't contradict each other.
 
 ## Episode 8 on paper: *Viral*
 
@@ -818,7 +923,7 @@ Stage 4, Modules 7 (caching) and 9 (scaling). Borrowed set piece: the live strea
 
 ### Continuity
 
-Episode 7 ends with Forkcast on a platform host with managed Postgres, deployed by CI. Episode 8's cold open undoes it: Gilroy, offended by paying anyone for hosting, moved everything to Aleister, his garage server, overnight. That's in character, and it gives the episode its set piece and its starting board.
+Episode 7 ends with Forkcast on a platform host with managed Postgres, deployed by CI, and the host's first bill. Episode 8's cold open undoes it: Gilroy, offended by paying anyone for hosting, moved everything to Aleister, his garage server, overnight (the pipeline still runs; it deploys to Aleister now). That's in character, and it gives the episode its set piece and its starting board. Its `changed` names `host` and the front half's keys its board doesn't draw (see "From the front half's boards to Episode 8's").
 
 ### Cold open
 
@@ -1212,7 +1317,7 @@ The board gains things that were always true but never drawn: **Melon's repo** (
 
 ### Cold open
 
-Monday, 10am, Hubbub's lawyers' conference room downtown (a new backdrop: a long table of binders, a wall of law books, the city through the glass). Veronica: forty pages, and page one says Forkcast belongs to Hubbub because it was written on a Hubbub laptop. Melon (new face: Wilson "Melon" Mellini, Ricky's oldest friend) explains, sweetly: Hubbub hired him after the keynote, as a Senior Vision Lead who sits on the roof; he wanted to show the roof guys Forkcast, so he put it on his GitHub from his work laptop, with a README so they could try the AI part, with the key in it, so it'd just work. Gilroy: it just worked for everyone, four thousand dollars of everyone. Melon deleted the file on Sunday, though, so that's fixed. Gilroy has been in the law firm's printer since the coffee came (their wifi password is on the whiteboard); it's printing a cat. Ulrich has retained his cousin, who has done a great many parking appeals. Gerard brought the bag, and a spare. Ricky looks for a bin.
+Monday, 10am, Hubbub's lawyers' conference room downtown (a new backdrop: a long table of binders, a wall of law books, the city through the glass). Veronica: forty pages, and page one says Forkcast belongs to Hubbub because it was written on a Hubbub laptop. Melon (new face: Wilson "Melon" Mellini, Ricky's oldest friend) explains, sweetly: Hubbub hired him after the keynote, as a Senior Vision Lead who sits on the roof; he wanted to show the roof guys Forkcast, so he put it on his GitHub from his work laptop, with a README so they could try the AI part, with the key in it, so it'd just work. Gilroy: it just worked for everyone, four thousand dollars of everyone. Melon deleted the file on Sunday, though, so that's fixed. And the AI part didn't work on his laptop, so he put the key in the app's settings, with the prefix that ships it; it went through the pipeline and every test passed (Gilroy: the tests check bookings; nothing checks where the key is: Episode 7's lesson coming back). Gilroy has been in the law firm's printer since the coffee came (their wifi password is on the whiteboard); it's printing a cat. Ulrich has retained his cousin, who has done a great many parking appeals. Gerard brought the bag, and a spare. Ricky looks for a bin.
 
 Title card: **THE LEAK**.
 
@@ -1535,7 +1640,7 @@ The series finale: Pied Piper's network, improved by its own AI, becomes too pow
 
 ## How the loop covers the season
 
-Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1 to 6 and 8 to 14 are walked on paper above and built; Episode 7 is a first sketch, to be walked the same way before each is built:
+Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. All fourteen are walked on paper above and built:
 
 | # | Episode | The PR's trap | What the live moment tests |
 | --- | --- | --- | --- |
@@ -1545,7 +1650,7 @@ Every episode uses the same loop; what changes is which pieces, asks, behaviours
 | 4 | Demo Day | The price rule and the model key in the frontend | The investor's assistant changes the price in the browser; the demo on a phone |
 | 5 | The Spreadsheet | Ulrich's spreadsheet kept as the database; backups never restored | Bookings written over each other and the last table twice; Aleister deletes the restaurants |
 | 6 | Log In | A home-made login, passwords as typed; no ownership check on the restaurant pages | The focus group: a curious restaurateur changes the number in the URL; leaked passwords tried on our login; a breach |
-| 7 | Launch Party | Deploying from Melon's laptop | A bad change mid-party; staging, tests and error tracking catch it, or don't |
+| 7 | Launch Party | Deploying from Melon's laptop; tests that check the page opens | Ulrich's three live changes at his party: tests, staging and error tracking with a rollback each catch one |
 | 8 | Viral | Above | Above |
 | 9 | The Board Meeting | Dashboards on the live database; Mack's box | Friday bookings crawl while the board refreshes its dashboards |
 | 10 | Hubbub Dine | Microservices because Hubbub has them; no rate limit | Hubbub's clone demos beside yours and collapses; Hubbub's scraper |
@@ -1567,7 +1672,6 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episode 7 in detail (walk it like the built ones first; the path from Episode 6's board to Episode 8's is above).
 - Whether there's a hub between episodes (the house). For now the title screen is a season screen: fourteen tiles, each built one with its best runway and marks.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.
