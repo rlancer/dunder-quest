@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 and 10 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -93,6 +93,8 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Sessions** | App servers | Sessions in server memory with more than one server behind the load balancer: each request lands on a server that doesn't know the diner with probability 1 − 1/N, logging them out | `stateless` |
 | **Connection limit** | Database | Each app server holds a pool of 10 connections; Postgres allows 100 by default. Servers beyond the limit get errors on every database call | `too_many_connections` |
 | **Rate limit** | Model API, payment provider | Calls above the provider's per-minute limit fail with HTTP 429 | `rate_limited` |
+| **Scraper and our own rate limit** (built, Episode 10) | Load balancer, app servers | A scraper's machines each ask for tonight's tables many times a minute, with combinations the cache never holds. A per-client limit lets each through up to the limit and turns the rest away with a 429 for almost no work; set under what a busy diner does (thirty a minute), it turns away a share of real diners too. A CAPTCHA stops most of the scraper and makes some diners give up | `scraper`, `limit_too_tight`, `captcha` |
+| **Service chain** (built, Episode 10) | Microservices on a cluster | Each kind of request crosses a number of network calls between services (a booking eight). Each call adds latency and work and fails now and then (1 in 100), and a request needs every call on its path, so success is the product: 0.99⁸ ≈ 92% | `service_chain` |
 | **Queue** | Queue + worker | Requests that can wait cost the app almost nothing to enqueue; a worker drains them at its own rate. The backlog shows as a literal line of tiny diners | `no_queue` (when a spike hit without one) |
 | **Load balancer** | Appears by itself when a box has more than one server | Splits load evenly | |
 | **Autoscale** | App servers, serverless | Server count follows load between a min and a max, with a warm-up delay | |
@@ -417,6 +419,104 @@ Cliffhanger: Saturday morning, the kitchen. Mack: Hubbub called, they loved the 
 
 The show's season 2 to 3 turn: the board removes the founder as CEO, an affable, grey-haired veteran salesman takes over, keeps the founder on in a lesser title, and steers the company toward selling a physical box instead of the platform; the engineers are appalled and the founder is sidelined in his own company. Here: Walter's silence and the vote, Ulrich voting against you and claiming a heavy heart, Mack keeping you on as Head of Product, the box, Gilroy's flat "A box." The board watching numbers on a big screen nods to the show's obsession with vanity metrics in front of investors. Mack leaking the product to Hubbub is ours, not the show's, and sets up the next episode's clone (the show's Nucleus). If a fan wouldn't recognise the board scene and the box, it's drifted; they would.
 
+## Episode 10 on paper: *Hubbub Dine*
+
+Stage 6, Modules 9 (scaling: rate limiting, horizontal scaling to a measured need, "microservices scale better" as the misconception) and 10 (distributed systems: monoliths against microservices, and why a chain of network calls fails more often than one program). Borrowed set piece: Hooli's Nucleus, the copycat built by hundreds of engineers that collapses at its big launch, and Gavin Belson on stage with his spiritual adviser. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 9 ended with Mack telling Hubbub how Forkcast works, with slides. The starting board is Episode 9's solution with its hotfix: cloud, three small app servers with sessions in Redis, the cache, the CDN, the queue, the index, the AI cache, and the board's dashboard on the analytics database copying hourly, with error alerts (the copy job fixed). Nothing on the board changes, so `changed` is empty and `cases.gd`'s continuity check passes as it stands. The budget does change: the board lets Mack go in the cold open (the show's Jack Barker is ousted and Richard reinstated), so the burn drops back to $80k.
+
+The board gains a box that isn't ours: **HubbubBot**, Hubbub's scraper, drawn at the bottom left and wired to the load balancer (`"scraper": true` on the board; Episode 11 can drop it with `changed`).
+
+### Cold open
+
+Wednesday, 10am, Hubbub's keynote hall (a new backdrop: a glossy stage, a giant gradient screen, a zen garden and a bonsai). Galen Brightwater, serene, in cashmere, prayer beads at his wrist, announces Hubbub Dine: four hundred engineers, two hundred and twelve microservices, live this Friday at six, when he'll book the whole hall a table on stage. Danesh: that's literally Forkcast. Ricky: why does he know our restaurants? Gilroy: a man with silver hair and a boat gave him the slides. Veronica: the board let Mack go this morning; you're CEO again. Ulrich has had tea with Galen's spiritual adviser, who says Forkcast needs microservices. Gerard has brought a bag for Ricky; he brings a bag to everything now.
+
+Title card: **HUBBUB DINE**.
+
+### Brief
+
+Veronica: Friday at six a million people watch Galen's keynote with a dinner app open, and some will try ours. Bookings have to work while the internet compares the two: nineteen in twenty, not nine in ten.
+
+- **Budget**: $1.05M in the bank, $80k a month, so 12.9 months of runway on the board as it stands. 16 hours to build.
+- **Goal**: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered.
+
+### Aleister's pull request: "Beat Hubbub tonight"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **More servers**, set to six | Aleister | 0.5h | +$150 a server | Horizontal scaling: needed, with a bad default. Its dial runs from four to eight; Aleister picked six, double what we have, for a night nobody has measured | Danesh for (spare everything); Veronica: how many is "everyone"? |
+| **Clone the clone**: voice booking, loyalty, a metaverse table | Aleister | 30h | — | Feature parity with a copycat. Can't be built in 16 hours, and it wouldn't keep the site up | Danesh: it's basically poetry; Gerard's previous company copied a rival into the ground |
+| **8 services**: microservices on a container cluster | Ulrich (wrong) | 12h | +$4,000 | Every request now crosses several network calls between services. A booking crosses eight; each works 99 times in 100, so all eight together work about 92 times in 100, and every call adds a little delay and a little work | Ulrich: two hundred and twelve for Hubbub, eight is humble; Gilroy: every arrow is a network call, and any call can fail |
+| **Rate limit API** (from an ask) | Aleister | 1h | — | Counts each client's requests at the front door and turns away the excess with a 429. Aleister's default, a thousand a minute per client, lets most of the scraper through | Gilroy for (sixty machines, a fair share each); Danesh: some diners tap through thirty restaurants a minute |
+
+Ulrich is wrong this time, which leaves him right once in three across the prototype, as the season wants. His card is Module 9's misconception, "microservices scale better", and he got it from the competitor's guru: SHOW.md gives Galen "microservices for everything, copy the competitor".
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Who's calling our API?** | Gilroy: since the keynote, sixty machines in one cloud, each asking for tonight's tables about fifteen hundred times a minute, calling themselves HubbubBot. Ricky: that's how Hubbub Dine knows the city | Adds **Rate limit API** (1h, free) |
+| **Where's the bottleneck?** | Aleister: last Friday the app servers were at half capacity at the peak, the database at a tenth. Ricky: three servers carry about thirty thousand diners, four about forty, if HubbubBot doesn't eat them first. Veronica: if Hubbub Dine falls over, its audience comes here, thirty-five thousand at once | Just facts: four servers |
+| **What if one service fails?** | Gilroy: a booking through eight services needs all eight; at ninety-nine in a hundred each, that's about ninety-two. Gerard: and somebody has to work out where | Just facts: the chain multiplies |
+| **What will this cost at 10x traffic?** | Veronica: $150 a server, $4,000 for the cluster, and every HubbubBot request is one we pay to answer | Just facts |
+| **Make it bot-proof.** (decoy) | Aleister, delighted | Adds **Add CAPTCHAs** (2h): a puzzle before every search and booking. It stops most of the scraper, and some diners give up |
+| **Make it web-scale.** (decoy) | Aleister: you remembered! | Adds **Shard by city** (12h, +$800), Episode 8's decoy again: the database is at a fraction of its capacity |
+
+### The dials
+
+- **App servers** (with the card): four to eight; Aleister's default six.
+- **Rate limit, per client** (with the card, on the load balancer): 10, 100 or 1,000 requests a minute; Aleister's default 1,000.
+
+### The live moment: Friday, 5pm to 11pm
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 5:00pm | 0 | 3,000 diners. Galen's keynote starts at six |
+| 6:00pm | 60 | **Hubbub Dine goes live, and so does HubbubBot**: sixty machines at 1,500 requests a minute each, 1,500 a second for tonight's tables, every one a combination nobody else asks for, so the cache never has it. Without a rate limit the app servers drown at once |
+| 7:00pm | 120 | 15,000 diners, as last Friday |
+| 8:00pm | 180 | **Hubbub Dine falls over on stage.** Its audience comes to Forkcast: 34,000 diners by 8:15. **Hotfix**: Aleister offers two more app servers ($300 a month). Four servers already carry it; three don't |
+| 8:00 to 10:30pm | 180 to 330 | The plateau. With microservices, one booking in thirteen fails somewhere between the services. With the limit at ten a minute, busy diners get 429s. With CAPTCHAs, diners give up |
+| 11:00pm | 360 | 3,000 diners. End |
+
+The solution's night: the rate limit at a hundred a minute lets each of HubbubBot's sixty machines through a hundred times a minute, a hundred requests a second in all, and turns the other 1,400 a second away at the door for almost no work; real diners, at a few requests a minute and thirty at the most, never meet it. Four small servers carry the 34,000 at about 80%. Bookings work 98.8% of the time, pages stay under half a second.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | HubbubBot swamps three servers from 6pm: down for 235 minutes, fails everything |
+| Aleister's PR as proposed | 42.5 hours: can't merge |
+| Minus the clone (the bot's take one) | Fits, and fails: six servers, no rate limit and microservices. The scraper swamps the app after the surge, and the service chain fails bookings (60% work). 12.35 months |
+| No rate limit, six servers | HubbubBot and the surge max the app out: pages at 5 seconds, fails |
+| No rate limit, seven or eight servers | Passes, at 13.04 or 13.02: paying $450 to $600 a month to serve Hubbub's scraper. Misses Lean |
+| Rate limit cut from the solution | The scraper: down for 95 minutes, fails |
+| Rate limit at 1,000 a minute | 1,000 scrapes a second get through: the app maxes out at the surge, fails |
+| Rate limit at 10 a minute | HubbubBot stops, and so do busy diners: 79% of bookings work, fails |
+| Keep Ulrich's microservices | One booking in thirteen fails between services, and the extra calls max out the app: 67% of bookings, fails, and $4,000 a month (12.41) |
+| CAPTCHAs | The scraper mostly stops; 15% of searches and bookings give up: fails |
+| Three servers (cut the servers card) | Fine until Hubbub Dine falls over, then maxed out: fails |
+| The solution: rate limit at 100 a minute, four app servers, hotfix cut | 13.113 months of runway; par 13.11 |
+| Five, six, seven or eight servers, or the hotfix kept, or three servers plus the hotfix | Passes, with less runway: misses Lean |
+| The solution plus shards | Passes, at 12.99: misses Lean |
+
+### Postmortem
+
+New findings: Hubbub's scraper swamped the app servers ("no rate limit, or one set too high"); the rate limit turned away real diners; bookings failed somewhere between the services ("microservices: every call between them can fail"); diners gave up at the CAPTCHA. The generic ones (app servers or database maxed out, the model provider's rate limit, overbuilt) carry over.
+
+Marks: Live, Lean (13.11 months or better), Ulrich (cut the microservices).
+
+### Lesson cards and cliffhanger
+
+Two codex cards: **Rate limiting** (cap each client's requests a minute and turn the rest away with a 429, so one greedy client can't use up the app for everyone; set the cap above what your busiest real users do) and **Monolith and microservices** (small services let separate teams build and deploy alone, at the price of more moving parts, calls over the network, delay that adds up along a chain, harder testing; one app is simpler).
+
+Cliffhanger: Saturday morning, the kitchen. Veronica: forty restaurants left Hubbub Dine last night and signed with Forkcast, on one condition: deposits, real money, through their own booking systems, so no-shows pay, by next Friday. Gilroy: money, moving between computers that don't trust each other, over a network. Twice. Gerard: I'll get the bag. (Episode 11: Charged Twice.)
+
+### Checking it against the show
+
+Season 2's Nucleus: Gavin Belson pours hundreds of Hooli engineers into a copy of Pied Piper, announces it with messianic grandeur, and it collapses at launch, while the small team's product holds. Here: Galen's keynote, his spiritual adviser (unseen, but having tea with Ulrich, who fits right in), the copycat with two hundred and twelve microservices, the boast about booking the hall a table live on stage, and the on-stage collapse while Forkcast stays up. The board ousting the adult CEO and restoring the founder is the show's arc too (Jack Barker's exit). Hubbub learning the product from Mack, and scraping it, are ours, built on the show's idea that Hooli copies by brute force. Ricky not quite throwing up, with Gerard now carrying a bag everywhere, is the running gag moved on a step. If a fan wouldn't recognise Galen's keynote and the collapse, it's drifted; they would.
+
 ## How the loop covers the season
 
 Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
@@ -451,7 +551,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 and 10 to 14 in detail (walk each like Episodes 8 and 9 first).
+- Episodes 1 to 7 and 11 to 14 in detail (walk each like Episodes 8 to 10 first).
 - Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.

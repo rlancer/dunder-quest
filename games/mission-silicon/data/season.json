@@ -34,7 +34,9 @@
 		"mack": {"name": "Mack", "full": "Mack Barlow", "role": "the CEO the board brought in",
 			"look": {"skin": "#e8b48c", "hair": "#c8c8c8", "style": "neat", "shirt": "#2a3a5a", "tie": true}},
 		"walter": {"name": "Walter", "full": "Walter Gregorian", "role": "Ravello Capital, very quiet",
-			"look": {"skin": "#f0d0b8", "hair": "#e0e0e0", "style": "neat", "shirt": "#4a4a4a"}}
+			"look": {"skin": "#f0d0b8", "hair": "#e0e0e0", "style": "neat", "shirt": "#4a4a4a"}},
+		"galen": {"name": "Galen", "full": "Galen Brightwater", "role": "guru CEO of Hubbub",
+			"look": {"skin": "#ecc8a8", "hair": "#b8b0a8", "style": "neat", "shirt": "#d8d0c0"}}
 	},
 	"episodes": [
 		{
@@ -419,6 +421,175 @@
 					{"who": "mack", "say": "They asked a lot of questions about how Forkcast works. I answered all of them. In detail. With slides."},
 					{"who": "gilroy", "say": "You what."},
 					{"who": "ricky", "say": "I'm going to be sick."}
+				]
+			}
+		},
+		{
+			"id": 10,
+			"title": "Hubbub Dine",
+			"stage": 6,
+			"modules": [9, 10],
+			"borrowed": "Hooli's Nucleus, the copycat built by hundreds of engineers, collapsing at its big launch, and Gavin Belson on stage with his spiritual adviser",
+			"place": "Hubbub's campus, the keynote hall. Wednesday, 10am.",
+			"backdrop": "keynote",
+			"cold_open": [
+				{"who": "galen", "say": "Dinner. Humanity's oldest network. Hubbub has spent a year reimagining it."},
+				{"who": "galen", "say": "Four hundred engineers. Two hundred and twelve microservices. One purpose: the table you deserve. Hubbub Dine."},
+				{"who": "danesh", "say": "That's Forkcast. That is literally Forkcast. His logo is a fork."},
+				{"who": "galen", "say": "Friday at six, in the dinner rush, I'll book this whole hall a table, live, on stage. Smaller companies are welcome to watch."},
+				{"who": "ricky", "say": "Why does he know where all our restaurants are? Why does he know our NAME?"},
+				{"who": "gilroy", "say": "A man with silver hair and a boat gave him the slides on Saturday."},
+				{"who": "veronica", "say": "About that. The board let Mack go this morning. You're CEO again. Congratulations, I think."},
+				{"who": "ulrich", "say": "And I've just had tea with Galen's spiritual adviser. Wonderful man. Barefoot, like me. He says we need microservices."},
+				{"who": "gerard", "say": "I brought a bag for Ricky. I bring a bag to everything now."}
+			],
+			"brief": [
+				{"who": "veronica", "say": "Friday at six, a million people watch Galen's keynote with a dinner app open. Some of them will be trying ours."},
+				{"who": "veronica", "say": "Bookings have to work while the whole internet compares us with Hubbub Dine. Nineteen in twenty, not nine in ten."},
+				{"who": "aleister", "say": "I've written a plan! It's called Beat Hubbub Tonight. More servers! Every feature they have! It's going to be a bloodbath. A friendly one."}
+			],
+			"budget": {"bank": 1050000, "burn": 80000, "time": 16, "time_unit": "h", "par": 13.11},
+			"board": {"host": "cloud", "app": {"count": 3, "size": "S", "sessions": "redis"}, "index": true, "cache": true,
+				"cdn": true, "queue": true, "ai_cache": true, "model": "standard", "rust": false, "cluster": false, "shards": false,
+				"rows": {"menus": {"ttl": 3600, "scope": "shared"}, "tables": {"ttl": 30, "scope": "shared"}, "my_bookings": {"ttl": 60, "scope": "per_user"}},
+				"dashboard": true, "tiles": 40, "db_x": 1, "replica": false, "warehouse": true, "alerts": true, "pipeline": "hourly", "pipeline_fixed": true,
+				"scraper": true, "limiter": false, "rate_limit": 1000, "captcha": false, "clone": false},
+			"pr": {
+				"title": "Beat Hubbub tonight",
+				"cards": [
+					{"id": "servers", "by": "aleister", "label": "More servers", "term": "horizontal scaling", "time": 0.5,
+						"plain": "Everyone will try both apps tonight, so more app servers behind the load balancer. I've set us to six: double!",
+						"changes": [],
+						"takes": [{"who": "danesh", "say": "If Galen's audience all try us at once, I want spare servers. Spare everything."},
+							{"who": "veronica", "say": "How many is 'everyone'? Six is double the server bill for a night nobody's measured."}]},
+					{"id": "clone", "by": "aleister", "label": "Clone the clone", "term": "feature parity", "time": 30,
+						"plain": "Copy every feature Hubbub Dine announced: voice booking, a loyalty scheme, and a table in the metaverse.",
+						"changes": [{"set": "clone", "to": true}],
+						"takes": [{"who": "danesh", "say": "They copied us, so we copy them copying us. It's basically poetry."},
+							{"who": "gerard", "say": "A company I used to work for copied every feature a rival had. Then the rival went out of business, and so did we."}]},
+					{"id": "micro", "by": "ulrich", "ulrich_right": false, "label": "8 services", "term": "microservices", "time": 12,
+						"plain": "Split Forkcast into eight services that call each other over the network, on a container cluster. Like Hubbub, but humble.",
+						"changes": [{"set": "cluster", "to": true}],
+						"takes": [{"who": "ulrich", "say": "Hubbub has two hundred and twelve. I'm asking for eight. That's humility. His adviser would weep."},
+							{"who": "gilroy", "say": "Every arrow between them is a network call, and any call can fail. A booking would need eight of them to work."}]},
+					{"id": "ratelimit", "by": "aleister", "from_ask": "who", "label": "Rate limit API", "term": "rate limiting", "time": 1,
+						"plain": "Count each client's requests at the front door, and turn away anything over the limit with error 429. I've set a generous thousand a minute!",
+						"changes": [{"set": "limiter", "to": true}],
+						"takes": [{"who": "gilroy", "say": "Sixty machines. Each gets its fair share and not one request more. I find that beautiful."},
+							{"who": "danesh", "say": "Careful. Some diners tap through thirty restaurants in a minute. I'm one of them."}]},
+					{"id": "captcha", "by": "aleister", "from_ask": "botproof", "label": "Add CAPTCHAs", "term": "CAPTCHA", "time": 2,
+						"plain": "Make every diner prove they're human before each search and each booking. Bots hate it!",
+						"changes": [{"set": "captcha", "to": true}],
+						"takes": [{"who": "aleister", "say": "Select every square with a fork in it!"},
+							{"who": "veronica", "say": "People hate it too. Every puzzle is a moment to give up and try Hubbub Dine."}]},
+					{"id": "shards", "by": "aleister", "from_ask": "webscale", "label": "Shard by city", "term": "database sharding", "time": 12,
+						"plain": "Split the database into one per city. Web-scale, like last time!",
+						"changes": [{"set": "shards", "to": true}],
+						"takes": [{"who": "aleister", "say": "I kept the plan from last time. Just in case. I'm always just in case."},
+							{"who": "gilroy", "say": "The database isn't tonight's problem. That would make it three databases that aren't the problem."}]}
+				]
+			},
+			"asks": [
+				{"id": "who", "text": "Who's calling our API?", "decoy": false,
+					"reply": [{"who": "gilroy", "say": "Since the keynote, sixty machines in one cloud, each asking for tonight's tables about fifteen hundred times a minute. They call themselves HubbubBot."},
+						{"who": "ricky", "say": "They're copying every free table we have. That's how Hubbub Dine knows the city. On Friday they'll do it all night."},
+						{"who": "aleister", "say": "I could put a rate limit on our API! A limit for each client, at the front door."}],
+					"adds": ["ratelimit"]},
+				{"id": "bottleneck", "text": "Where's the bottleneck?", "decoy": false,
+					"reply": [{"who": "aleister", "say": "Last Friday the app servers were at half their capacity at the peak, and the database at a tenth of its."},
+						{"who": "ricky", "say": "So three app servers carry about thirty thousand diners, and four about forty. If HubbubBot doesn't eat them first."},
+						{"who": "veronica", "say": "And if Hubbub Dine falls over on stage, its audience comes here. Call it thirty-five thousand at once."}]},
+				{"id": "fails", "text": "What if one service fails?", "decoy": false,
+					"reply": [{"who": "ricky", "say": "Right now a booking is one app talking to one database."},
+						{"who": "gilroy", "say": "Split it into eight services and a booking needs all eight to answer. If each answers ninety-nine calls in a hundred, all eight answer about ninety-two."},
+						{"who": "gerard", "say": "So about one booking in thirteen fails, somewhere, and somebody has to work out where."}]},
+				{"id": "cost", "text": "What will this cost at 10x traffic?", "decoy": false,
+					"reply": [{"who": "veronica", "say": "Each app server is a hundred and fifty a month. The cluster for microservices is four thousand."},
+						{"who": "veronica", "say": "And every request HubbubBot sends is one we pay to answer so that Hubbub can show it as theirs."}]},
+				{"id": "botproof", "text": "Make it bot-proof.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Bot-proof! A CAPTCHA before every search and every booking. Nobody gets dinner without finding the forks!"}],
+					"adds": ["captcha"]},
+				{"id": "webscale", "text": "Make it web-scale.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Web-scale again! You remembered! I'll shard the database by city!"}],
+					"adds": ["shards"]}
+			],
+			"dials": [
+				{"id": "app.count", "box": "app", "label": "Servers", "needs": ["servers"], "options": [4, 5, 6, 7, 8], "default": 6},
+				{"id": "rate_limit", "box": "lb", "label": "Per client", "needs": ["ratelimit"], "options": [10, 100, 1000],
+					"names": {"10": "10 a minute", "100": "100 a minute", "1000": "1,000 a minute"}, "default": 1000}
+			],
+			"cache_rows": {
+				"menus": {"kind": "browse", "keys": 3000, "changes_per_hour": 0.04},
+				"tables": {"kind": "tables", "keys": 20000, "changes_per_hour": 30},
+				"my_bookings": {"kind": "my_bookings", "keys": 1, "per_user": true}
+			},
+			"users": 70000,
+			"live": {
+				"ticks": 360,
+				"clock": [17, 0],
+				"diners": [[0, 3000], [60, 8000], [120, 15000], [179, 15000], [180, 20000], [195, 34000], [270, 30000], [330, 8000], [360, 3000]],
+				"rates": {"browse": 2.0, "tables": 0.5, "search": 0.3, "my_bookings": 0.1, "book": 0.004},
+				"fee": 1.0,
+				"signups": {"per_diner": 0.0025},
+				"rows": 500000,
+				"analytics_rows": 5000000,
+				"dashboard": {"tiles": 40, "screens": 6, "refresh": 60},
+				"pipeline": {"nightly_at": -840},
+				"scraper": {"clients": 60, "per_client": [[0, 0], [59, 0], [60, 1500], [360, 1500]], "diner_peak": 30, "busy_share": 0.3},
+				"captcha": {"give_up": 0.15, "bots_through": 0.1},
+				"services": {"hops": {"browse": 3, "tables": 4, "search": 5, "my_bookings": 3, "book": 8}, "hop_fail": 0.01, "hop_latency": 0.02, "hop_work": 0.1},
+				"events": [{"tick": 0, "banner": "Galen's keynote starts at six"}, {"tick": 60, "banner": "Hubbub Dine is live. So is HubbubBot"},
+					{"tick": 120, "banner": "15,000 diners online"}, {"tick": 180, "banner": "Hubbub Dine fell over on stage!"},
+					{"tick": 200, "banner": "34,000 diners online"}, {"tick": 300, "banner": "The rush is easing off"}],
+				"hotfixes": [{"id": "two_more", "tick": 180, "label": "Add two app servers",
+					"say": "Hubbub Dine just fell over on stage, and its diners are coming here! Hotfix: add two more app servers? It's {monthly} a month.",
+					"changes": [{"add": "app.count", "by": 2}]}],
+				"corner": [
+					{"when": "scraper", "who": "gilroy", "say": "HubbubBot is eating the app servers. We're paying to feed their app."},
+					{"when": "limit_too_tight", "who": "danesh", "say": "I just got a 429. Me. A human. I was choosing between two ramen places."},
+					{"when": "service_chain", "who": "gerard", "say": "A booking failed somewhere between service four and service six. Nobody knows which. I'm making a spreadsheet."},
+					{"when": "captcha", "who": "veronica", "say": "People are failing the fork puzzle and booking with Hubbub instead. Well, they would be."},
+					{"when": "app_overload", "who": "ricky", "say": "The app servers are maxed out. Is that bad? That's bad."},
+					{"when": "db_overload", "who": "gilroy", "say": "The database is maxed out."},
+					{"when": "rate_limited", "who": "veronica", "say": "The model provider is turning our searches away."},
+					{"when": "calm", "who": "chaz", "say": "Hubbub's down and we're up! I'm texting Galen. I don't have his number. I'm texting everyone."}
+				]
+			},
+			"goal": [
+				{"metric": "down_ticks", "max": 5, "label": "Up all night"},
+				{"metric": "peak_latency", "max": 3.0, "label": "Pages under 3 seconds"},
+				{"metric": "booking_success", "min": 0.95, "label": "19 in 20 bookings work"},
+				{"metric": "search_success", "min": 0.95, "label": "19 in 20 searches answered"}
+			],
+			"solution": {
+				"keep": ["servers", "ratelimit"],
+				"asks": ["who", "bottleneck"],
+				"dials": {"app.count": 4, "rate_limit": 100},
+				"hotfix": {"two_more": false}
+			},
+			"free": [],
+			"postmortem": {
+				"scraper": {"title": "Hubbub's scraper swamped the app servers.", "plain": "Sixty of Hubbub's machines asked for tonight's tables about fifteen hundred times a minute each, and too much of that got through. Every request they sent was one our servers had to answer.", "term": "no rate limit, or one set too high", "tell_ai": "Rate limit our API, per client."},
+				"limit_too_tight": {"title": "The rate limit turned away real diners.", "plain": "Ten requests a minute slowed HubbubBot to a trickle, and it stopped the diners who flick through restaurants quickly too. They got error 429 instead of dinner.", "term": "a rate limit set below what real users do", "tell_ai": "Set the limit well above what a busy person does."},
+				"service_chain": {"title": "Bookings failed somewhere between the services.", "plain": "A booking had to cross eight services, each a call over the network. Each worked ninety-nine times in a hundred, so all eight together worked about ninety-two times in a hundred.", "term": "microservices: every call between them can fail", "tell_ai": "Keep this one app until we measure a problem."},
+				"captcha": {"title": "Diners gave up at the CAPTCHA.", "plain": "Every search and every booking asked diners to prove they were human first. Some couldn't, some wouldn't, and they went elsewhere.", "term": "a CAPTCHA's cost to real users", "tell_ai": "Rate limit the bots instead of puzzling the diners."},
+				"app_overload": {"title": "The app servers were maxed out.", "plain": "More traffic arrived than the app servers could handle, so pages crawled and then failed.", "term": "horizontal scaling: more servers behind a load balancer", "tell_ai": "Where's the bottleneck? Add a server."},
+				"db_overload": {"title": "The database couldn't keep up.", "plain": "More work arrived than one database could do, so requests waited and then failed.", "term": "database bottleneck", "tell_ai": "Where's the bottleneck?"},
+				"rate_limited": {"title": "The model provider turned searches away.", "plain": "Providers cap how many calls you can make a minute. Past the cap, searches failed with error 429.", "term": "rate limiting", "tell_ai": "What will this cost at 10x traffic?"},
+				"overbuilt": {"title": "We paid for machinery we didn't need.", "plain": "Every box costs money every month. The night went fine, but it went fine more expensively than it had to.", "term": "over-engineering", "tell_ai": "Keep this simple until we measure a problem."}
+			},
+			"lessons": [
+				{"term": "Rate limiting", "plain": "Cap how many requests each client can make a minute, and turn the rest away with error 429, so one greedy client can't use up the app for everyone else. Set the cap above what your busiest real users do, or it blocks them too.", "source": "https://docs.cloud.google.com/armor/docs/rate-limiting-overview"},
+				{"term": "Monolith and microservices", "plain": "Microservices split an app into small services that separate teams build and deploy on their own. The price is more moving parts: services call each other over the network, a long chain of calls adds delay, and the whole is harder to test. One app is simpler.", "source": "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices"}
+			],
+			"cliffhanger": {
+				"place": "The kitchen. Saturday morning.",
+				"backdrop": "kitchen",
+				"lines": [
+					{"who": "veronica", "say": "Forty restaurants left Hubbub Dine last night and signed with us. They have one condition."},
+					{"who": "veronica", "say": "Deposits. Real money, taken through their own booking systems, so no-shows pay. By next Friday."},
+					{"who": "gilroy", "say": "Money, moving between computers that don't trust each other, over a network. What could go wrong. Twice."},
+					{"who": "gerard", "say": "I'll get the bag."}
 				]
 			}
 		}

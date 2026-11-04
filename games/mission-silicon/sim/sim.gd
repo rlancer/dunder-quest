@@ -122,7 +122,11 @@ func _needs_met(h: Dictionary) -> bool:
 
 
 func diners_at(t: float) -> float:
-	var keys: Array = live["diners"]
+	return keyed(live["diners"], t)
+
+
+## A value over the night from keyframes [[tick, value], ...], straight lines between.
+static func keyed(keys: Array, t: float) -> float:
 	if t <= keys[0][0]:
 		return float(keys[0][1])
 	for i in range(1, keys.size()):
@@ -234,6 +238,51 @@ func _tick() -> Dictionary:
 		"book": r["book"] * book_app,
 		"signup": signups * float(w["signup"]["enqueue"] if queue else w["signup"]["app"]),
 	}
+	# Hubbub's scraper (Episode 10): `clients` machines, each asking for
+	# tonight's tables `per_client` times a minute, with combinations no diner
+	# asks for, so the cache never has them. A rate limit lets each client
+	# through at most `rate_limit` a minute and turns the rest away at the door
+	# with a 429, for almost no work. A limit under what a busy diner does
+	# turns away some of the diners too. Off unless the episode has a scraper.
+	var sc: Dictionary = live.get("scraper", {})
+	var limiter: bool = cfg.get("limiter", false)
+	var limit_pm := float(cfg.get("rate_limit", 0))
+	var scrape_in := 0.0
+	var scrape_through := 0.0
+	var diner_blocked := 0.0
+	if not sc.is_empty():
+		var per_client := keyed(sc["per_client"], tick)
+		var through_pm := minf(per_client, limit_pm) if limiter else per_client
+		var bots: Dictionary = live.get("captcha", {})
+		if cfg.get("captcha", false):
+			through_pm *= float(bots.get("bots_through", 1.0))
+		scrape_in = float(sc["clients"]) * per_client / 60.0 * scale
+		scrape_through = float(sc["clients"]) * through_pm / 60.0 * scale
+		var peak := float(sc.get("diner_peak", 0.0))
+		if limiter and limit_pm < peak:
+			diner_blocked = float(sc.get("busy_share", 0.0)) * (1.0 - limit_pm / peak)
+	parts["scrape"] = scrape_through * float(w.get("scrape", {}).get("app", 0.0)) + (scrape_in - scrape_through) * float(w.get("scrape", {}).get("turned_away", 0.0))
+
+	# Microservices (Episode 10): with the app split into services, each kind
+	# of request crosses `hops` network calls between them. Every call adds a
+	# little latency and a little work, and fails now and then; a request
+	# needs every call on its path to work, so the chances multiply. Off
+	# unless the episode describes the services.
+	var svc: Dictionary = live.get("services", {})
+	var chain_ok := {}
+	var chain_lat := {}
+	var chain_work := 0.0
+	for k in KINDS:
+		chain_ok[k] = 1.0
+		chain_lat[k] = 0.0
+	if cfg.get("cluster", false) and not svc.is_empty():
+		for k in KINDS:
+			var hops := float(svc["hops"].get(k, 0))
+			chain_ok[k] = pow(1.0 - float(svc["hop_fail"]), hops)
+			chain_lat[k] = hops * float(svc["hop_latency"])
+			chain_work += r[k] * hops * float(svc["hop_work"])
+	parts["services"] = chain_work
+
 	var app_load := 0.0
 	for k in parts:
 		app_load += parts[k]
@@ -272,6 +321,7 @@ func _tick() -> Dictionary:
 		"book": r["book"] * float(w["book"]["db"]),
 		"signup": signup_db_rate * float(w["signup"]["db"]),
 		"dashboard": dash_q * scan if dash_where == "primary" else 0.0,
+		"scrape": scrape_through * float(w.get("scrape", {}).get("db", 0.0)),
 	}
 	var db_load := 0.0
 	for k in db_parts:
@@ -339,8 +389,8 @@ func _tick() -> Dictionary:
 				dash_ok = 1.0 - wh_res["drop"]
 				util["warehouse"] = wh_res["u"]
 	var net: Dictionary = Season.pieces()["network"]
-	var page := float(net["base"]) + (0.0 if cfg.get("cdn", false) else float(net["no_cdn"])) + latency
-	var book_page := float(net["base"]) + book_latency
+	var page := float(net["base"]) + (0.0 if cfg.get("cdn", false) else float(net["no_cdn"])) + latency + float(chain_lat["browse"])
+	var book_page := float(net["base"]) + book_latency + float(chain_lat["book"])
 
 	# How old the board's numbers are. From the analytics database, as old as
 	# its last good copy (hourly, nightly or streamed), and a copy job that
@@ -380,6 +430,13 @@ func _tick() -> Dictionary:
 		"my_bookings": app_ok * (1.0 - (1.0 - db_ok) * (1.0 - hits["my_bookings"])),
 		"book": app_ok * db_ok,
 	}
+	# Turned away by too tight a rate limit, failed somewhere along a chain of
+	# services, or given up at a CAPTCHA.
+	var gave_up := float(live.get("captcha", {}).get("give_up", 0.0)) if cfg.get("captcha", false) else 0.0
+	for k in KINDS:
+		ok[k] *= (1.0 - diner_blocked) * chain_ok[k]
+	ok["search"] *= 1.0 - gave_up
+	ok["book"] *= 1.0 - gave_up
 	var signup_ok := app_ok if queue else app_ok * db_ok
 	var logout := (1.0 - 1.0 / count) if (cloud and count > 1 and sessions == "memory") else 0.0
 	var stale_fail: float = hits["tables"] * stale_tables * 0.5
@@ -425,7 +482,7 @@ func _tick() -> Dictionary:
 		tags.append("garage_melt")
 	elif lost > 0.0:
 		if cloud and util.get("app", 0.0) > 0.9:
-			tags.append(_biggest(parts, {"assets": "no_cdn", "signup": "no_queue"}, "app_overload"))
+			tags.append(_biggest(parts, {"assets": "no_cdn", "signup": "no_queue", "scrape": "scraper", "services": "service_chain"}, "app_overload"))
 		if cloud and util.get("db", 0.0) > 0.9:
 			tags.append(_biggest(db_parts, {"tables": "full_scan", "menus": "no_cache", "dashboard": "olap_on_oltp"}, "db_overload"))
 		if not cloud:
@@ -454,6 +511,18 @@ func _tick() -> Dictionary:
 		var why := "replica_slow" if dash_where == "replica" else "too_many_tiles"
 		tags.append(why)
 		_blame(why, dash_q * TICK * (1.0 - dash_ok) * 100.0)
+	if diner_blocked > 0.0:
+		tags.append("limit_too_tight")
+		_blame("limit_too_tight", total * TICK * diner_blocked)
+	var chain_lost := 0.0
+	for k in KINDS:
+		chain_lost += r[k] * TICK * (1.0 - chain_ok[k])
+	if chain_lost > 0.0:
+		tags.append("service_chain")
+		_blame("service_chain", chain_lost * 10.0)
+	if gave_up > 0.0:
+		tags.append("captcha")
+		_blame("captcha", (r["search"] + r["book"]) * TICK * gave_up * 10.0)
 	if dash_on and age > _age_limit:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
@@ -463,6 +532,7 @@ func _tick() -> Dictionary:
 		"tick": tick, "diners": diners, "page": minf(page, 30.0), "err": err_share, "down": down_now,
 		"util": util, "tags": tags, "hits": hits, "money": _money_so_far(), "count": count,
 		"backlog": _worker_backlog, "cloud": cloud, "dash": dash_on, "age": age,
+		"scrape_in": scrape_in, "scrape_through": scrape_through,
 	}
 
 
