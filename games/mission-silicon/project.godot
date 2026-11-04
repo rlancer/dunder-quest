@@ -21,6 +21,11 @@ config/icon="res://icon.svg"
 
 Progress="*res://core/progress.gd"
 Sideways="*res://ui/sideways.gd"
+Sound="*res://core/sound.gd"
+
+[audio]
+
+buses/default_bus_layout="res://core/default_bus_layout.tres"
 
 [display]
 

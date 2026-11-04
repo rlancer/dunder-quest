@@ -134,11 +134,11 @@ func show_card(id: String) -> void:
 	for take in c.get("takes", []):
 		var row := UI.hbox(4)
 		var face := Portrait.new(take["who"])
-		face.custom_minimum_size = Vector2(20, 20)
+		face.custom_minimum_size = Vector2(24, 24)
 		face.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		row.add_child(face)
 		var said := UI.label("%s: %s" % [Season.person(take["who"])["name"], take["say"]], Palette.BODY, Palette.SLATE, true)
-		said.custom_minimum_size.x = size.x - 40
+		said.custom_minimum_size.x = size.x - 44
 		row.add_child(said)
 		_body.add_child(row)
 	_body.add_child(_keep_button(id, Vector2(size.x - 14, Palette.TAP)))

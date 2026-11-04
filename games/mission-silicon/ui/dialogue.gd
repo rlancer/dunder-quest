@@ -20,19 +20,24 @@ var _shown_at: int = 0
 
 
 func _ready() -> void:
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	visible = false
 	var bubble := UI.place(UI.panel(Palette.WHITE, Palette.SLATE, 1), Rect2(8, 200, 464, 64))
 	bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bubble)
-	_portrait = UI.place(Portrait.new(), Rect2(14, 206, 52, 52)) as Portrait
+	_portrait = UI.place(Portrait.new(), Rect2(16, 208, 48, 48)) as Portrait
 	add_child(_portrait)
 	_name = UI.place(UI.label("", Palette.LABEL, Palette.GREEN_DARK), Rect2(74, 204, 380, 14)) as Label
 	add_child(_name)
 	_text = UI.place(UI.label("", Palette.LABEL, Palette.SLATE, true), Rect2(74, 218, 390, 44)) as Label
 	add_child(_text)
 	_place = UI.place(UI.label("", Palette.LABEL, Palette.WHITE), Rect2(8, 6, 300, 18)) as Label
+	# A slate tag, so the place reads on a bright backdrop too.
+	var tag := StyleBoxFlat.new()
+	tag.bg_color = Color(Palette.SLATE, 0.85)
+	tag.set_content_margin_all(3)
+	_place.add_theme_stylebox_override("normal", tag)
 	add_child(_place)
 	var hint := UI.place(UI.label("tap", Palette.BODY, Palette.SLATE_LIGHT), Rect2(446, 250, 24, 12))
 	add_child(hint)
@@ -41,6 +46,7 @@ func _ready() -> void:
 func play(lines: Array, place: String = "") -> void:
 	visible = true
 	_place.text = place
+	_place.size = Vector2.ZERO
 	_place.visible = place != ""
 	for line in lines:
 		var who: String = line["who"]
