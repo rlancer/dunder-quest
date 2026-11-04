@@ -81,6 +81,7 @@ func _build() -> void:
 	add_child(_top_right)
 
 	board = Board.new()
+	board.spots = ep.get("spots", {})
 	UI.place(board, Rect2(0, 20, 300, 216))
 	board.box_pressed.connect(_on_box)
 	add_child(board)
@@ -194,7 +195,8 @@ func _run() -> void:
 	backdrop.place = cliff.get("backdrop", "kitchen")
 	backdrop.visible = true
 	await dialogue.play(cliff["lines"], cliff.get("place", ""))
-	await card.black("", 60)
+	# The finale has no next episode: its black card says so, and holds.
+	await card.black(cliff.get("end", ""), 120 if cliff.has("end") else 60)
 	phase = "done"
 	finished.emit()
 	if not test_stay:
@@ -369,6 +371,20 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 			_thousands(roundi(f["fooled"])), _thousands(floori(float(f["unasked"]) + 0.5))]
 	if f.get("scrape_in", 0.0) > 0.0:
 		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
+	# An episode with every behaviour on (the finale) names its six lines.
+	if ep["live"].has("meters"):
+		var lines := {
+			"diners": "Diners online  %s" % _thousands(roundi(f["diners"])),
+			"page": "Page speed  %s" % page,
+			"errors": "Errors  %d%%" % roundi(f["err"] * 100.0),
+			"bookings": "Bookings  %s" % _thousands(roundi(sim.booked)),
+			"ai_bill": "AI bill  %s" % Palette.money(sim.model_bill),
+			"scraper": "HubbubBot  %d/s, %d let in" % [roundi(f.get("scrape_in", 0.0)), roundi(f.get("scrape_through", 0.0))],
+		}
+		var out := []
+		for m in ep["live"]["meters"]:
+			out.append(lines[m])
+		_meters.text = "\n".join(out)
 
 
 func _thousands(n: int) -> String:
@@ -457,6 +473,14 @@ func _postmortem(res: Dictionary) -> bool:
 		lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
 	if ep["live"].has("injection"):
 		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
+	# The spreadsheet has room for about fifteen lines above the marks. An
+	# episode with many goals (the finale's eleven) keeps the goals, the
+	# bill and the runway, and leaves out the rest.
+	if lines.size() + 1 > 15:
+		var keep := lines.slice(0, res["goals"].size())
+		keep.append("")
+		keep.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
+		lines = keep
 	lines.append("Runway: %.2f months (par %.2f)" % [res["runway"], res["par"]])
 	var y := 38.0
 	for line in lines:

@@ -115,8 +115,28 @@ func _check(ep: Dictionary) -> void:
 		p.hotfix[h["id"]] = not sol.hotfix.get(h["id"], false)
 		_judge_flip(ep, "hotfix %s %s" % [h["id"], p.hotfix[h["id"]]], p, sol_runway, false)
 
+	# The capstone: every box already on the board earns its place.
+	_capstone(ep)
+
 	# 5. No cheap way round.
 	_search(ep, sol, sol_runway)
+
+
+## The finale (`capstone` in its data): every box the season put on the
+## board must earn its place against the night's replay. Taking any one of
+## them away from the solution's board (each entry sets one part of the
+## board back to how it was before the episode that fixed it) must fail
+## the night, with a finding Gerard can read out.
+func _capstone(ep: Dictionary) -> void:
+	for entry in ep.get("capstone", []):
+		var copy: Dictionary = ep.duplicate(true)
+		Plan.apply_change(copy["board"], entry)
+		var r := _play(copy, Plan.solution(copy))
+		print("  without %s: %s" % [entry["label"], _summary(r)])
+		if r["passed"]:
+			_fail(ep, "the night passes without %s: it hasn't earned its place" % entry["label"])
+		elif not ep["postmortem"].has(r["tags"][0] if not r["tags"].is_empty() else ""):
+			_fail(ep, "without %s the top finding '%s' has no postmortem entry" % [entry["label"], r["tags"][0] if not r["tags"].is_empty() else ""])
 
 
 ## 6. Each episode starts where the one before it ended: every part of the

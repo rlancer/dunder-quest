@@ -51,7 +51,8 @@ func play(lines: Array, place: String = "") -> void:
 	for line in lines:
 		var who: String = line["who"]
 		_portrait.who = who
-		_name.text = Season.person(who).get("full", who)
+		# "as" is a documentary lower third (the finale's flash-forward).
+		_name.text = line.get("as", Season.person(who).get("full", who))
 		_text.text = line["say"]
 		await _wait()
 	visible = false

@@ -139,9 +139,15 @@ func _apply_hotfixes() -> void:
 					Plan.apply_change(cfg, change)
 
 
+## A hotfix needs cards kept, or (the finale, where the season's boxes are
+## already on the board) boxes the board has: a need that isn't a card is
+## read from the board.
 func _needs_met(h: Dictionary) -> bool:
 	for need in h.get("needs", []):
-		if not plan.active(need):
+		if plan.card(need).is_empty():
+			if not cfg.get(need, false):
+				return false
+		elif not plan.active(need):
 			return false
 	return true
 
@@ -254,11 +260,14 @@ func _tick() -> Dictionary:
 	var assets := 0.0 if cfg.get("cdn", false) else float(w["browse"]["assets"])
 	var queue: bool = cfg.get("queue", false)
 	var book_app := float(w["book"]["app_rust"] if cfg.get("rust", false) else w["book"]["app"])
+	# Phones calling the model themselves (the finale's decoy) skip our app
+	# for searches, and need the key in the app to do it.
+	var direct: bool = cfg.get("direct_ai", false)
 	var parts := {
 		"browse": r["browse"] * float(w["browse"]["app"]),
 		"assets": r["browse"] * assets,
 		"tables": r["tables"] * float(w["tables"]["app"]),
-		"search": r["search"] * float(w["search"]["app"]),
+		"search": 0.0 if direct else r["search"] * float(w["search"]["app"]),
 		"my_bookings": r["my_bookings"] * float(w["my_bookings"]["app"]),
 		"book": r["book"] * book_app,
 		"signup": signups * float(w["signup"]["enqueue"] if queue else w["signup"]["app"]),
@@ -505,7 +514,8 @@ func _tick() -> Dictionary:
 		calls += runs * float(ag["calls"]) * (float(ag["swarm_x"]) if cfg.get("swarm", false) else 1.0)
 	if cfg.get("checker", false):
 		calls *= 2.0
-	var limit := float(model["limit"]) * scale
+	# A higher limit from the provider (the finale) multiplies the cap.
+	var limit := float(model["limit"]) * float(cfg.get("limit_x", 1)) * scale
 	var asked := calls + stolen
 	var rate_err: float = maxf(0.0, asked - limit) / asked if asked > 0.0 else 0.0
 	var price := float(model["price"])
@@ -923,6 +933,11 @@ func result() -> Dictionary:
 		for g in ep["goal"]:
 			if g["metric"] == "agent_success":
 				blame["no_agent"] = 1.0e9
+	# A kept hotfix can carry its own finding (the finale's live, unreviewed
+	# fix), named first because it caused what follows.
+	for h in live.get("hotfixes", []):
+		if h.has("tag") and _hotfixed.has(h["id"]) and plan.hotfix.get(h["id"], false):
+			blame[h["tag"]] = 1.0e8
 	if passed and runway < float(budget["par"]):
 		blame["overbuilt"] = 1.0
 	var order := blame.keys()
