@@ -125,6 +125,14 @@ SCENES = {
         "spotlights in a dark ceiling rig, rows of empty audience chairs in the foreground at the very "
         "bottom. Hushed, expensive, slightly cult-like. " + STYLE
     ),
+    "hoststand": ROOM + (
+        "the entrance of a busy little Italian trattoria in San Francisco's North Beach on a Friday evening, "
+        "seen from just inside the door: a small wooden host stand in the centre with a reservation book, a "
+        "brass lamp and an old beige computer box with blinking lights tucked under it, a chalkboard of "
+        "specials with no readable writing, strings of warm bulbs, red-and-white checked tablecloths on full "
+        "tables behind with candles in wine bottles, framed photos on brick walls, a coat rack. Warm, crowded, "
+        "slightly chaotic dinner-rush glow. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

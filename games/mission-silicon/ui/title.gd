@@ -28,20 +28,24 @@ func _ready() -> void:
 	var sub := UI.place(UI.label("A Dunder Quest game. You can't code. Your AI can, a bit too confidently.", Palette.BODY, Palette.SLATE_MID, true), Rect2(0, 112, 480, 12)) as Label
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(sub)
-	var y := 132.0
-	for ep in Season.episodes():
+	# Two columns of episodes, so four (and more) fit on the card.
+	var eps := Season.episodes()
+	var y := 130.0
+	for i in eps.size():
+		var ep: Dictionary = eps[i]
 		var id := int(ep["id"])
-		var text := "EPISODE %d: %s" % [id, ep["title"].to_upper()]
+		var text := "%d. %s" % [id, ep["title"].to_upper()]
 		var best: Dictionary = Progress.best.get(str(id), {})
 		if not best.is_empty():
-			text += "   %.1f mo" % best["runway"]
-		var play := UI.button(text, "primary", Vector2(280, 32))
+			text += "  %.1f mo" % best["runway"]
+		var play := UI.button(text, "primary", Vector2(188, 32))
 		play.name = "Play_%d" % id
-		UI.place(play, Rect2(100, y, 280, 32))
+		UI.place(play, Rect2(48 + (i % 2) * 196, y + (i / 2) * 38, 188, 32))
 		play.pressed.connect(_play.bind(id))
 		add_child(play)
-		y += 38.0
-	var foot := UI.place(UI.label("Prototype: %d episodes of fourteen." % Season.episodes().size(), Palette.BODY, Palette.SLATE_MID), Rect2(0, y + 2, 480, 12)) as Label
+	y += ceili(eps.size() / 2.0) * 38.0
+	card.size.y = y + 18.0 - card.position.y
+	var foot := UI.place(UI.label("Prototype: %d episodes of fourteen." % eps.size(), Palette.BODY, Palette.SLATE_MID), Rect2(0, y + 2, 480, 12)) as Label
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(foot)
 

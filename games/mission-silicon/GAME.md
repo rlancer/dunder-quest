@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 and 10 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9, 10 and 11 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -98,9 +98,9 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Queue** | Queue + worker | Requests that can wait cost the app almost nothing to enqueue; a worker drains them at its own rate. The backlog shows as a literal line of tiny diners | `no_queue` (when a spike hit without one) |
 | **Load balancer** | Appears by itself when a box has more than one server | Splits load evenly | |
 | **Autoscale** | App servers, serverless | Server count follows load between a min and a max, with a warm-up delay | |
-| **Network faults** | Outside services, scripted per episode | A share of calls time out; of those, a share actually succeeded and only the reply was lost | `timeout_unknown` |
-| **Retries** | Calls to outside services | Off: timeouts are failures. On: a retry repeats the call, so the ones that had succeeded happen twice. On with an idempotency key: repeats are recognised and ignored | `double_charge` |
-| **Race** | Booking the last table | Check-then-book in two steps lets two parties get the same table, at a rate that grows with the square of booking traffic on hot tables. A transaction closes the gap | `double_booking` |
+| **Network faults** (built, Episode 11) | The payment provider, scripted per episode | Each booking at a deposit restaurant calls the provider (`pay`). A scripted share of calls time out (keyframes over the night); of those, a share actually succeeded and only the reply was lost. Timeouts happen at the same rate on a quiet night, so staging sees a tenth as many | `timeout_unknown` |
+| **Retries** (built, Episode 11) | Calls to the payment provider | Off: timeouts are reported as failures, so the ones that had succeeded charge diners for tables they're told they didn't get. On: a retry repeats the call, so the ones that had succeeded charge twice. On with an idempotency key: the provider recognises the repeat and answers with the first result. A backup provider can't recognise another provider's keys | `timeout_unknown`, `double_charge`, `backup_provider` |
+| **Race** (built, Episode 11) | Booking the last table | Check-then-book in two steps lets two parties get the same table: with hot-table bookings arriving at h a second over H tables and a gap of w seconds, at h²w/H, so it grows with the square of the traffic and a tenth of the load shows a hundredth of it. Waiting for the deposit inside the gap widens it. A transaction that holds the table closes it. On a decentralised copy across phones the gap is log₂(phones) rounds of gossip, whatever the database does, and phones that drop off lose bookings | `double_booking`, `forknet` |
 | **Analytics on the live database** (built, Episode 9) | Database, replica, warehouse | Dashboard queries are huge scans (screens × tiles / refresh, each a scan of every stored row). On the main database they take capacity from bookings, and a booking waits the database's full latency; on a read replica they swamp the copy instead; on a warehouse, stored by column, each is a small share of the work | `olap_on_oltp`, `replica_slow`, `too_many_tiles` |
 | **Pipeline freshness** (built, Episode 9) | Warehouse | The board's numbers are as old as the last good copy: hourly, nightly or streamed. A scripted copy failure stays broken until a hotfix fixes it, and the hotfix is only offered with alerts | `silent_failure`, `stale_numbers` |
 | **Secret exposure** | Wherever a key lives | A key in the frontend or a public repository is found by a scanning bot at a scripted tick, after which unknown usage runs up the bill | `leaked_key` |
@@ -517,6 +517,99 @@ Cliffhanger: Saturday morning, the kitchen. Veronica: forty restaurants left Hub
 
 Season 2's Nucleus: Gavin Belson pours hundreds of Hooli engineers into a copy of Pied Piper, announces it with messianic grandeur, and it collapses at launch, while the small team's product holds. Here: Galen's keynote, his spiritual adviser (unseen, but having tea with Ulrich, who fits right in), the copycat with two hundred and twelve microservices, the boast about booking the hall a table live on stage, and the on-stage collapse while Forkcast stays up. The board ousting the adult CEO and restoring the founder is the show's arc too (Jack Barker's exit). Hubbub learning the product from Mack, and scraping it, are ours, built on the show's idea that Hooli copies by brute force. Ricky not quite throwing up, with Gerard now carrying a bag everywhere, is the running gag moved on a step. If a fan wouldn't recognise Galen's keynote and the collapse, it's drifted; they would.
 
+## Episode 11 on paper: *Charged Twice*
+
+Stage 6, Module 10 (distributed systems: the unreliable network, partial failure, retries and idempotency, race conditions, consistency), with Module 6's transactions doing the fixing. Borrowed set piece: PiperNet, the founder's decentralised internet spread across thousands of phones, which works beautifully in a room and badly at scale. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 10 ended with forty restaurants leaving Hubbub Dine for Forkcast on one condition: deposits, by Friday. The starting board is Episode 10's solution with its hotfix cut: cloud, four small app servers with sessions in Redis, the cache, the CDN, the queue, the index, the AI cache, the board's dashboard on the analytics database copying hourly, error alerts, and the rate limit at a hundred a minute per client. One thing changes: HubbubBot leaves the board (`"changed": ["scraper"]`), and Gerard says why in the cold open: it stopped on Saturday, and Hubbub Dine is "pausing to reimagine". The rate limit stays; with no scraper it turns nobody away.
+
+### Cold open
+
+Monday, 6pm, a trattoria in North Beach, at the host stand (a new backdrop: checked tablecloths, candles in bottles, a beige booking-system box under the stand). Veronica has brought the team to meet one of the forty owners: be normal. Gilroy admires the booking system's fax modem. Ricky hasn't slept: he has everyone put their phones on the table and shows them ForkNet, where every phone keeps its own copy of tonight's tables and passes each booking to the phones nearby, with no servers in the middle. Danesh books table nine on his phone and it appears on Gerard's; it's actually beautiful. Gilroy: five phones, one room, one wifi; Friday is sixteen thousand phones on buses and in tunnels. Ulrich has been saying "decentralised" for years, mostly at parties, and will take his ten percent in ForkNet. Ricky: it worked every single time.
+
+Title card: **CHARGED TWICE**.
+
+### Brief
+
+Veronica: Friday the forty go live with deposits, twenty dollars a head, taken when you book and kept if you don't show; a normal busy Friday, sixteen thousand diners at the peak; nobody pays twice and nobody gets a table someone else already has. Aleister has a plan called Take Their Money (working title), and payments can't fail now: it made them retry until they work.
+
+- **Budget**: $1.0M in the bank, $80k a month, so 12.3 months of runway on the board as it stands. 12 hours to build.
+- **Goal**: up all night, pages under 3 seconds, nineteen bookings in twenty work, deposits go through (19 in 20), nobody charged wrongly (twice, or for a booking we said failed), and no table booked twice.
+
+### Aleister's pull request: "Take deposits by Friday"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Take deposits**, retrying on a timeout | Aleister | 3h | 90¢ a deposit | Needed: the goal is the deposits. Each one is a call to the payment provider over the network, and its default is to ask again when the provider doesn't answer in time. Some of the calls that time out went through, so a plain retry charges those diners twice | Veronica for (this is the business now); Gilroy: some calls won't come back, and some will come back late, which is worse |
+| **ForkNet**: tonight's tables on the diners' phones | Ricky | 6h | — | A decentralised network: every phone keeps a copy and gossips each booking to its neighbours. A booking takes log₂(phones) rounds to reach everyone, seven seconds at sixteen thousand phones, and in that window two phones can both sell the last table, whatever the database does; phones that drop into a tunnel lose bookings | Ricky: it worked on all five phones, every time; Gilroy: the copies disagree until the gossip catches up |
+| **ForkCoin**: deposits in our own cryptocurrency | Aleister | 24h | — | The episode's too-big card. Can't be built in 12 hours, and the restaurants asked for dollars | Danesh: if we have a coin, I'm early; Veronica: dollars |
+| **Deposit IDs**: one number per deposit, the same on every try | Ulrich (right) | 1h | — | An idempotency key. The provider remembers each key and answers a repeat with the first result instead of charging again | Ulrich: at Aviato every payment had a reference number; Danesh: the provider already gives every charge an ID (true, but it comes back in the answer, which is the part that gets lost) |
+| **Hold the table** (from an ask) | Aleister | 1h | — | Check the table is free and hold it in one transaction before taking the deposit; let it go if the deposit fails. Closes the race | Ricky: anyone can slip into that second and a half; Gerard's two weddings in one hall |
+
+Ulrich is right this time, his second in four, which keeps him near a third across the season if he's wrong in the next two. It's a real judgement: his line is a boast about Aviato, Danesh's objection sounds sensible, and only the asks show why a number of our own matters. ForkNet is the misconception the episode is built on: spreading it over more computers doesn't make it more reliable, it makes the copies disagree.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **What if this is sent twice?** | Aleister: then it sends it again. Gilroy: when a call times out we don't know if it worked; some did, and only the answer was lost; retry those and the provider takes the deposit twice. Ricky: unless every deposit carries its own key, the same one on every retry | Just facts: Ulrich's numbers are an idempotency key |
+| **What if the provider is down?** | Gilroy: it won't be down, it'll be slow: one call in a hundred early, one in fifty in the rush, one in seventeen at the peak. Veronica: about half of those went through anyway, so telling them it failed means they paid for a table we say they haven't got | Just facts: giving up on a timeout is wrong too |
+| **Can two people book the last table?** | Ricky: we check, wait for the deposit, then book; two parties in that gap both get it. Gilroy: almost never on a quiet night; it grows with the square of the traffic on the busy tables | Adds **Hold the table** (1h) |
+| **What will this cost at 10x traffic?** | Veronica: ninety cents a deposit; every wrong charge about forty dollars (refund, support, apology); every party turned away a hundred and fifty (dinner on us) | Just facts |
+| **Make it never fail.** (decoy) | Aleister, delighted | Adds **Backup provider** (2h, +$100): on a timeout, charge through a second provider, which has never seen our first provider's keys, so a timed-out deposit that went through is taken again |
+| **Make it web-scale.** (decoy) | Aleister: our tradition | Adds **Shard by city** (12h): doesn't fit beside the deposits |
+
+### The dials
+
+- **Payments: on a timeout** (with the deposits card): give up, or try again (Aleister's default).
+
+### The live moment: Friday, 5pm to 11pm
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 5:00pm | 0 | 3,000 diners. Deposits are live at the forty; four in ten bookings take one. One deposit call in a hundred times out |
+| 6:00 to 7:00pm | 60 to 120 | The rush builds to 16,000 diners. One call in fifty times out. Without a key, every retried timeout that had gone through is a second charge; with retries off, a charge for a table we said failed. Without the hold, two parties check the same last table inside the second and a half we spend waiting for the deposit |
+| 8:00pm | 180 | **The payment provider is slow**: one call in seventeen times out for fifty minutes. **Hotfix**: Aleister offers to stop retrying until it calms down, "so nobody gets charged twice". It's the misconception "errors mean it didn't happen": with the key, the retries were safe, and turning them off charges diners for tables they're told they didn't get |
+| 8:20 to 10pm | 200 to 300 | The plateau. On ForkNet, bookings gossip for seven seconds across sixteen thousand phones, the last tables sell several times over, and a twentieth of bookings vanish into tunnels |
+| 11:00pm | 360 | 3,000 diners. End |
+
+The solution's night: deposits with retries and Ulrich's numbers, and the table held in a transaction before the money moves. Of about 6,500 deposits, about 190 time out and are retried; the provider recognises the ninety-four that had gone through and answers them with the first result. The app servers peak at about a third of their capacity and the database under a tenth. Nobody is charged twice, no table is sold twice, and 99.9% of deposits go through.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | No deposits: the forty restaurants walk. Fails |
+| Aleister's PR as proposed | 34 hours: can't merge |
+| Minus ForkCoin (the bot's take one) | Fits, and fails: ForkNet books 151 tables twice and loses one booking in twenty (94% work). 12.06 months |
+| The solution without Ulrich's numbers | Retries charge 94 diners twice: fails, 12.30 |
+| The solution with retries off ("give up") | 94 diners charged for tables we said they didn't get: fails, 12.30 |
+| The solution with the hotfix kept | Retries off from 8pm: 64 charged for nothing: fails, 12.31 |
+| The solution plus the backup provider | 94 charged by both providers: fails, 12.28 |
+| The solution without the hold (cut the transaction) | 34 tables booked twice: fails, 12.28 |
+| **Staging** (a tenth of the traffic) without the hold | Passes: a hundredth of the double bookings, a third of one, which rounds to nobody. That's Module 10's "it worked when I tested it" |
+| Staging without Ulrich's numbers | Fails: nine diners charged twice. Timeouts happen at the same rate on a quiet night, there are just fewer of them; staging catches this one and misses the race |
+| Shards | 12 hours on top of the deposits: can't merge |
+| The solution: deposits retrying with Ulrich's numbers, hold the table, hotfix cut | 12.343 months of runway; par 12.34 |
+
+### Postmortem
+
+New findings: no deposits; diners charged twice ("retries without an idempotency key"); diners who paid for tables we said they didn't get ("a timeout means you don't know"); charged by both providers ("failover without idempotency"); two parties at one table ("a race condition; the fix is a transaction"); ForkNet's phones disagreeing ("eventual consistency: copies agree later, not now"). The generic ones (app servers or database maxed out, the model provider's rate limit, overbuilt) carry over. The spreadsheet adds a line: charged wrongly, booked twice.
+
+Marks: Live, Lean (12.34 months or better), Ulrich (keep his deposit IDs).
+
+### Lesson cards and cliffhanger
+
+Two codex cards: **Retries and idempotency** (a timed-out request may have worked with only the answer lost, so asking again can do it twice; an idempotency key, the same on every retry, lets the server spot the repeat and return the first result) and **Race conditions and transactions** (separate check and book steps let two people both be told yes; lock the row in a transaction while you check and book, and the second waits).
+
+Cliffhanger: Saturday morning, the kitchen. Gerard: every deposit taken once, every table sat once, and a spreadsheet of the spreadsheet. Veronica: then why is the AI bill four thousand dollars since midnight? Gilroy: someone's using our model key; Melon put it in a public repository on Tuesday, with a helpful README. Veronica: and Hubbub's lawyers have sent forty pages; page one says Forkcast belongs to them. Ricky is going to be sick. (Episode 12: The Leak.)
+
+### Checking it against the show
+
+Seasons 4 and 5's PiperNet: Richard's vision of a new internet with no servers, running on everyone's phones, demonstrated to friends where it works perfectly, and the engineers' dread of what it does at scale (in the show, nodes dropping off and a takeover once someone controls enough of the network). Here: Ricky up all night, the phones on the table, Danesh won over against his will, Gilroy's flat arithmetic about buses and tunnels, Ulrich claiming a share of an idea that isn't his. ForkCoin is the show's season 5 coin offering, moved forward. The double charges and the last table are ours, built on the show's running idea that the product works in the demo and breaks in the world. If a fan wouldn't recognise Ricky's phones on the table, it's drifted; they would.
+
 ## How the loop covers the season
 
 Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
@@ -551,7 +644,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 and 11 to 14 in detail (walk each like Episodes 8 to 10 first).
+- Episodes 1 to 7 and 12 to 14 in detail (walk each like Episodes 8 to 11 first).
 - Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.
