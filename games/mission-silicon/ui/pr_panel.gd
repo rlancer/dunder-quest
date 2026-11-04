@@ -185,6 +185,8 @@ func _piece_for(id: String) -> String:
 			return "scraper"
 		"pay":
 			return "payments"
+		"pkg":
+			return "package"
 	return id
 
 

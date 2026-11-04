@@ -1,4 +1,4 @@
-# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*) and 11 (*Charged Twice*)
+# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*) and 12 (*The Leak*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -468,5 +468,128 @@ Narrative (the trattoria, the fax modem, HubbubBot stopping, ForkNet on five pho
 | Eventual consistency: copies agree soon, not instantly | True (EC) |
 | "If it worked when I tested it, it works" is a misconception; distributed bugs depend on timing and load | True: the race is quadratic in load, so staging at a tenth sees a hundredth |
 | Transactions: taking the deposit and holding the last table must both happen, or neither (Module 6) | True; the episode's card holds the table first and releases it if the deposit fails, which is that guarantee across a database and an outside service (the outside call can't be inside the database's transaction, so it's done as hold, charge, then confirm or release) |
+
+No curriculum text changed.
+
+# Episode 12 (*The Leak*)
+
+The same pass for Episode 12, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new pieces in `data/pieces.json`, the new boxes, badges and bubbles in `ui/board.gd`, the live panel's and the postmortem's new lines, and the behaviours it added to `sim/sim.gd`, against CURRICULUM.md Module 11 (and Module 2's Git and packages). Same rule: simplify, never falsify. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| GH | [Removing sensitive data from a repository](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository), GitHub Docs: if you committed a secret, "as a first step you need to revoke and/or rotate that secret"; once it's rotated, rewriting the history "may not be warranted"; the commits "may still be accessible elsewhere"; you can't remove the data from other users' clones; if the commit exists in any forks it stays accessible there; rewriting history has numerous side effects |
+| OW | [A01:2021 Broken Access Control](https://top10.owasp.org/2021/A01_2021-Broken_Access_Control/index.html), OWASP Top 10: "viewing or editing someone else's account, by providing its unique identifier (insecure direct object references)"; access control "is only effective in trusted server-side code"; access controls "should enforce record ownership"; the example attacker who changes the `acct` parameter in the URL |
+| OS | [Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html), OWASP: exposed keys "should undergo immediate revocation"; restarting the application "does not itself revoke stolen credentials"; secrets in code leave commit history; environment variables are a weaker option than a secrets manager |
+| VT | [Env variables and modes](https://vite.dev/guide/env-and-mode), Vite: variables with the public prefix "will be exposed in client-side source code after Vite bundling" and "should not contain sensitive information such as API keys" |
+| REG | [AI code suggestions sabotage software supply chain](https://www.theregister.com/2025/04/12/ai_code_suggestions_sabotage_supply_chain/), The Register, April 2025: models "suggest code that incorporates software packages that don't exist"; attackers can create a malicious package under a hallucinated name; rerunning a prompt ten times, 43% of hallucinated packages came back every time; the name "slopsquatting" |
+| PH | [We Have a Package for You!](https://arxiv.org/abs/2406.10279), Spracklen et al., arXiv: hallucinated packages at least 5.2% of suggestions for commercial models, 21.7% for open ones; 205,474 unique hallucinated names; "a persistent and systemic phenomenon" |
+| NPM | [scripts](https://docs.npmjs.com/cli/v11/using-npm/scripts), npm Docs: `preinstall`, `install` and `postinstall` scripts run on `npm install` |
+| AR | As Episode 8: provider rate limits apply to the account the key belongs to, and calls past them get 429 |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| Strangers with our key call the provider directly and we pay for every call | True | That's what a stolen API key is. The usage numbers (300 a minute growing to 600 on the old key; 600 to 900 after the scanning bot; 300 to 900 from the package's author) are illustrative; $360 an hour matches the cliffhanger's $4k overnight |
+| The old key keeps working, wherever it's been copied, until it's rotated; deleting the file, scrubbing the history or making the repository private doesn't stop it | True | GH (rotate first; copies in clones and forks stay), OS (immediate revocation; restarting doesn't revoke) |
+| A key in the app's code is public, and a scanning bot finds it at a scripted tick | True (simplified) | VT (bundled into client-side code; never API keys). Bots scanning public code and app files for keys is the curriculum's own misconception ("nobody will bother attacking my little app"); the tick (7:30pm) is scripted |
+| A malicious package's install script sends the server's settings, keys included, to its author | True (simplified) | NPM (install scripts run arbitrary commands on install, with the installing process's environment); REG (malicious packages under hallucinated names). Harvesting environment variables is a common payload of malicious packages; the game's package is invented |
+| Strangers' calls count against our rate limit | True | AR: the limit belongs to the key's account, whoever makes the calls. With tonight's numbers it only bites in the worst plans |
+| Switching our AI search off doesn't stop the strangers | True | They don't go through our app |
+| A bot counting through booking numbers reads every booking that exists unless there's an ownership check; with the check, "not found" for almost no work | True | OW (IDOR, record ownership, the `acct` example). Four in five numbers existing is illustrative |
+| A leak of diners' bookings costs a lawyer ($60k) | True as illustration | GDPR breach handling (Episode 8's GDPR row); the amount is illustrative |
+| The firewall does nothing tonight | True (simplified) | A WAF matches known attack patterns. A request for booking 41023 is an ordinary request; a stolen key is used at the provider, not at our door. Real WAFs can add rate rules that slow enumeration; they can't tell whose booking is whose, which only the app knows (OW: access control belongs in server-side code) |
+| Episodes 8 to 11 unchanged | Checked | All new behaviours are off unless the episode configures `live.leak` or `live.idor`, or the config has `ai_off`; with no strangers the rate-limit sum is the same as before. The solutions are still 14.941, 12.856, 13.113 and 12.343 |
+
+## Episode 12 text
+
+### Cold open, brief, cliffhanger
+
+Narrative (the law firm, Melon on Hubbub's roof, the cousin who does parking appeals, Gilroy in the printer). Melon's mistake is real and common: a key in a README and in the app's code (VT). "I deleted the file on Sunday, so that's fixed" is the episode's misconception, said by a character and judged by the night. The lawsuit's claim (written on a Hubbub laptop) and its collapse (the Git history shows who wrote each line) are story; that Git records the author and date of every commit is true. The brief's numbers match the data: sixteen thousand diners (`live.diners`), one day (8 hours).
+
+### Pull request cards and takes
+
+| Card | Claim | Verdict | Change |
+| --- | --- | --- | --- |
+| Hide the key | Out of the app's code into the server's settings; only our server talks to the model | True | VT. The card says "the server's settings" rather than "an environment variable": OS prefers a secrets manager to environment variables, and either is on the server |
+| Hide the key, Aleister | "Leak fixed!" | Narrative (Aleister's misconception, judged by the night) | |
+| Hide the key, Ricky | Every phone that opens Forkcast downloads the key | True | VT |
+| Hide the key, Gilroy | Tuesday's code still has it, and so does everyone who copied it | True | GH |
+| Scrub the history | Rewrite every version to take the key out, then replace the repository | True as a description | GH describes the tools and the steps |
+| Scrub the history, Gilroy | Every fork, clone and bot that copied it keeps its copy | True | GH (forks, clones) |
+| Scrub the history, time | 6 hours | True as illustration | GH lists the side effects and the coordination (collaborators, forks, support for cached views); it doesn't fit beside the fixes, and isn't needed once the key is rotated |
+| Key-safe package | A package that "encrypts our keys automatically" | Narrative (Aleister's pitch); the package is invented | No package by that name was on npm when this was written (the registry returned 404, November 2026) |
+| Key-safe package, Gilroy | Every package is a stranger's code running next to our keys | True | Curriculum Module 2 ("more dependencies is free" is a misconception) |
+| Rewrite it all | A clean-room rewrite in 40 hours | Narrative; too long to fit, never judged on the night | |
+| Rotate the key | A new key, and the old one switched off at the provider so it stops working wherever it's been copied | True | GH, OS |
+| Rotate the key, Danesh | Everything using the key needs the new one at once, or it breaks | True | OS (rotation should be quick, preferably automated) |
+| Check who owns it | Check a booking belongs to whoever's asking; if not, answer as if it doesn't exist | True | OW. Answering "not found" rather than "forbidden" is a common choice so as not to confirm the number exists; either is a correct check |
+| Check who owns it, Gilroy | The number in the link is the only lock | True | OW |
+| Go private | Making the repository private so nobody can see the key, and keeping the key | Ulrich's misconception (curriculum Module 11: "it's a private repo, so the key is safe") | |
+| Go private, Gerard | It would stop anyone new from finding it there | True, and only that | |
+| Firewall everything, Gilroy | Asking for booking 41023 looks exactly like asking for 41022; the people on our key never come near our servers | True | |
+| Shard by city, Gilroy | Nobody's attacking the database | True: it stays under capacity all night | |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Where are the secrets stored? | True | Deleting a file is a new commit and the old ones keep it (GH); the key is in the app (VT); a key works until switched off (OS) |
+| Can a diner see someone else's booking? | True | OW's `acct` example, with a booking number |
+| What does this package do? | True (the package and its history are invented) | REG: models suggest nonexistent packages, often the same ones again (43% every time in ten runs), and attackers can publish under those names; NPM: install scripts run on install |
+| What will this cost at 10x traffic? | True as illustration | A stolen key's usage doesn't depend on our traffic; $360 an hour and $60k are illustrative |
+| Make it unhackable / Make it web-scale (decoys) | Narrative | Judged by the night |
+
+### Dials, hotfix, live moment
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| No dials | | |
+| Hotfix: switch AI search off "to be safe" | True as offered (Aleister's misconception, and the night judges it) | The strangers use the key at the provider; only rotating stops them |
+| Corner lines (the fantasy novel on our key, the bot reading the key out of the app in nine seconds, the package posting the key, someone counting booking numbers, Chaz, Melon on the roof) | Narrative, or true as above | |
+| Banners | True | Match `live.leak` (the scanning bot at 7:30pm) and `live.idor` (from 8:20pm) |
+| Bubbles "Strangers on old key!", "Key read from app!", "Sent our key away!", "Someone else's booking!", "AI search off"; badges "key in app", "owner check", "WAF"; Melon's repo box ("public repo", "now private"); the keysafe package box; the Model API's "old key" / "new key" | True | |
+| Live panel: "Strangers' calls N/min", "Bookings read N" (in place of the bookings count); postmortem's "Strangers' calls / Bookings read" line | True | The simulation's running numbers |
+
+### Postmortem findings
+
+| Tag | Verdict | Notes |
+| --- | --- | --- |
+| leaked_key, "a leaked secret: rotate it" | True | GH, OS |
+| key_in_app, "anything in the frontend is public" | True | VT; curriculum Module 4 |
+| fake_package, "a hallucinated package (slopsquatting)" | True | REG, PH |
+| idor, "broken access control (an insecure direct object reference)" | True | OW |
+| ai_off, "revoke the key, not the feature" | True | |
+| rate_limited, now "strangers' calls on our key counted against our cap" | True | AR |
+| app_overload, db_overload, overbuilt | True | As Episode 11 |
+
+### Codex cards and sources
+
+| Card | Verdict | Change |
+| --- | --- | --- |
+| A leaked key: rotate it first | True | Every part is in GH: rotate first; removing it from history may not be warranted once rotated; forks and other users' clones keep the commits. "Deleting it from the code isn't enough" is GH's premise (the data stays in the history until it's rewritten). Drafted with "anything in the app is public" too; GH doesn't say that, so it moved to the postmortem finding (sourced to VT) |
+| Authorization on every request | True | OW: IDOR by changing an identifier; checks in server-side code; record ownership |
+| Packages your AI made up | True | REG: nonexistent packages suggested, repeated names (43% every time), attackers can publish malicious packages under them. Drafted with Wikipedia's slopsquatting article as the source; it doesn't mention malicious packages or repetition, so the card cites REG |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| Melon's repo: his copy of the code on GitHub, open to anyone, with every version of every file he pushed | True |
+| keysafe-autoguard: a stranger's code, installed on our server and run with its settings | True (NPM) |
+| Firewall: $500 a month | Illustrative |
+
+## CURRICULUM.md, Modules 11 and 2
+
+| Claim | Verdict |
+| --- | --- |
+| Secrets live in environment variables or a secrets manager, never in code, never in Git, never in the frontend; anything in the frontend is public | True (OS, VT, GH) |
+| Authorization on every request; the most common real-world flaw is reading another user's data by changing a number in the URL | True (OW: broken access control is A01, the top category) |
+| AI tools sometimes invent package names that don't exist, and attackers register those names | True (REG, PH) |
+| "Nobody will bother attacking my little app": bots scan the internet automatically | True; the scripted scanning bot plays it |
+| "It's a private repo, so the key is safe": repos get shared, made public or leaked | True; Ulrich's card plays it (and GH: copies already made stay) |
+| Git keeps a save history of the whole project (Module 2) | True; the episode's theme: the history keeps the key, and the same history settles the lawsuit |
 
 No curriculum text changed.

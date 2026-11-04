@@ -40,7 +40,11 @@ func _ready() -> void:
 			text += "  %.1f mo" % best["runway"]
 		var play := UI.button(text, "primary", Vector2(188, 32))
 		play.name = "Play_%d" % id
-		UI.place(play, Rect2(48 + (i % 2) * 196, y + (i / 2) * 38, 188, 32))
+		# An odd one out at the end sits in the middle.
+		var x := 48.0 + (i % 2) * 196.0
+		if i == eps.size() - 1 and i % 2 == 0:
+			x = 146.0
+		UI.place(play, Rect2(x, y + (i / 2) * 38, 188, 32))
 		play.pressed.connect(_play.bind(id))
 		add_child(play)
 	y += ceili(eps.size() / 2.0) * 38.0

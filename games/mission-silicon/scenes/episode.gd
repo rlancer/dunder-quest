@@ -354,6 +354,12 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nCharged wrongly  %d\nTables booked twice  %d" % [
 			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked),
 			floori(float(f["bad_charges"]) + 0.5), floori(float(f["double_bookings"]) + 0.5)]
+	# A leaked key: strangers' calls and bookings read take the bookings'
+	# line and the sixth, to keep to six lines.
+	if ep["live"].has("leak"):
+		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nAI bill  %s\nStrangers' calls  %s/min\nBookings read  %s" % [
+			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), Palette.money(sim.model_bill),
+			_thousands(roundi(f["stolen"])), _thousands(roundi(f["peeked"]))]
 	if f.get("scrape_in", 0.0) > 0.0:
 		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
 
@@ -440,6 +446,8 @@ func _postmortem(res: Dictionary) -> bool:
 	lines.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
 	if ep["live"].has("payments"):
 		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
+	if ep["live"].has("leak"):
+		lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
 	lines.append("Runway: %.2f months (par %.2f)" % [res["runway"], res["par"]])
 	var y := 38.0
 	for line in lines:

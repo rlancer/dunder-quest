@@ -66,6 +66,11 @@ var dep_tries: float = 0.0
 var dep_done: float = 0.0
 var bad_charges: float = 0.0
 var double_bookings: float = 0.0
+## Secrets (Episode 12): calls strangers made on our model key, what they
+## cost us, and bookings read by someone they don't belong to.
+var stolen_calls: float = 0.0
+var stolen_bill: float = 0.0
+var peeked: float = 0.0
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -291,6 +296,20 @@ func _tick() -> Dictionary:
 			chain_work += r[k] * hops * float(svc["hop_work"])
 	parts["services"] = chain_work
 
+	# Bookings by number (Episode 12): from a scripted tick, a bot asks for
+	# booking after booking by counting through the numbers in the links.
+	# Without an ownership check, every number that exists shows someone
+	# else's booking; with one, the app answers "not found". A small load
+	# either way. Off unless the episode has `live.idor`.
+	var idor: Dictionary = live.get("idor", {})
+	var peek := 0.0
+	var peek_rate := 0.0
+	if not idor.is_empty() and tick >= int(idor["from"]):
+		peek = float(idor["per_minute"]) / 60.0
+		if not cfg.get("owner_check", false):
+			peek_rate = peek * float(idor["exists"])
+	parts["peek"] = peek * float(w["my_bookings"]["app"])
+
 	var app_load := 0.0
 	for k in parts:
 		app_load += parts[k]
@@ -330,6 +349,7 @@ func _tick() -> Dictionary:
 		"signup": signup_db_rate * float(w["signup"]["db"]),
 		"dashboard": dash_q * scan if dash_where == "primary" else 0.0,
 		"scrape": scrape_through * float(w.get("scrape", {}).get("db", 0.0)),
+		"peek": peek * float(w["my_bookings"]["db"]),
 	}
 	var db_load := 0.0
 	for k in db_parts:
@@ -421,14 +441,41 @@ func _tick() -> Dictionary:
 
 	# The model provider.
 	var calls: float = r["search"] * (1.0 - ai_hit)
+	# Switched off by a hotfix (Episode 12): no searches, no calls of ours.
+	var ai_off: bool = cfg.get("ai_off", false)
+	if ai_off:
+		calls = 0.0
+	# A leaked key (Episode 12). Strangers who have our key call the model
+	# provider directly, never through our app, and we pay for every call.
+	# Each place the key is exposed brings its own strangers, from the tick
+	# a scanner finds it: the old key in the Git history (already found)
+	# until it's rotated, whichever key is in the app's code once a bot reads
+	# the app, and whichever key the server has once a malicious package has
+	# sent it away. Deleting the file or making the repository private
+	# doesn't stop the old key working; only rotating it does. Their calls
+	# share our rate limit. Off unless the episode has `live.leak`.
+	var leak: Dictionary = live.get("leak", {})
+	var stolen_parts := {}
+	if not leak.is_empty():
+		var ex: Dictionary = leak["exposures"]
+		if not cfg.get("rotated", false):
+			stolen_parts["leaked_key"] = keyed(ex["history"], tick) / 60.0
+		if str(cfg.get("key_where", "server")) == "frontend":
+			stolen_parts["key_in_app"] = keyed(ex["bundle"], tick) / 60.0
+		if cfg.get("keysafe", false):
+			stolen_parts["fake_package"] = keyed(ex["package"], tick) / 60.0
+	var stolen := 0.0
+	for k in stolen_parts:
+		stolen += stolen_parts[k]
 	var limit := float(model["limit"]) * scale
-	var rate_err: float = maxf(0.0, calls - limit) / calls if calls > 0.0 else 0.0
+	var asked := calls + stolen
+	var rate_err: float = maxf(0.0, asked - limit) / asked if asked > 0.0 else 0.0
 	var price := float(model["price"])
 	if cfg.get("ai_cache", false):
 		price *= (1.0 - float(model["fixed_share"])) + float(model["fixed_share"]) * float(model["cached_rate"])
 	if cfg.get("model", "standard") == "big":
 		price *= 5.0
-	util["model"] = calls / limit
+	util["model"] = asked / limit
 
 	# What the diners get.
 	var ok := {
@@ -444,6 +491,8 @@ func _tick() -> Dictionary:
 	for k in KINDS:
 		ok[k] *= (1.0 - diner_blocked) * chain_ok[k]
 	ok["search"] *= 1.0 - gave_up
+	if ai_off:
+		ok["search"] = 0.0
 	ok["book"] *= 1.0 - gave_up
 	var signup_ok := app_ok if queue else app_ok * db_ok
 	var logout := (1.0 - 1.0 / count) if (cloud and count > 1 and sessions == "memory") else 0.0
@@ -543,7 +592,13 @@ func _tick() -> Dictionary:
 	_rows += booked_now
 	searched += r["search"] * TICK * ok["search"]
 	search_tries += r["search"] * TICK
-	leaks += leak_rate * TICK
+	leaks += (leak_rate + peek_rate) * TICK
+	peeked += peek_rate * TICK
+	if stolen > 0.0:
+		var stolen_now := stolen * (1.0 - rate_err) * TICK
+		stolen_calls += stolen_now
+		stolen_bill += stolen_now * float(leak["price"])
+		model_bill += stolen_now * float(leak["price"])
 	model_bill += calls * (1.0 - rate_err) * TICK * price
 	if cfg.get("cdn", false):
 		cdn_bill += r["browse"] * TICK * float(pieces["cdn"]["per_request"])
@@ -606,6 +661,16 @@ func _tick() -> Dictionary:
 		var why := "forknet" if forknet else "double_booking"
 		tags.append(why)
 		_blame(why, dbl_rate * TICK * 100.0 + r["book"] * TICK * forknet_lost * 10.0)
+	for why in stolen_parts:
+		if stolen_parts[why] > 0.0:
+			tags.append(why)
+			_blame(why, stolen_parts[why] * TICK * 100.0)
+	if peek_rate > 0.0:
+		tags.append("idor")
+		_blame("idor", peek_rate * TICK * 100.0)
+	if ai_off:
+		tags.append("ai_off")
+		_blame("ai_off", r["search"] * TICK * 10.0)
 	if dash_on and age > _age_limit:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
@@ -617,6 +682,7 @@ func _tick() -> Dictionary:
 		"backlog": _worker_backlog, "cloud": cloud, "dash": dash_on, "age": age,
 		"scrape_in": scrape_in, "scrape_through": scrape_through,
 		"pay": deposits_on, "bad_charges": bad_charges, "double_bookings": double_bookings,
+		"stolen": stolen * 60.0, "peeked": peeked,
 	}
 
 
@@ -644,7 +710,7 @@ func _incidents() -> float:
 	var inc: Dictionary = ep.get("incidents", {})
 	var total := 0.0
 	if leaks > 0.0:
-		total += float(inc.get("cache_leak", 0.0))
+		total += float(inc.get("leak", inc.get("cache_leak", 0.0)))
 	total += bad_charges * float(inc.get("bad_charge", 0.0))
 	total += double_bookings * float(inc.get("double_booking", 0.0))
 	return total
@@ -682,6 +748,8 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["alerts"]["monthly"])
 	if cfg.get("backup", false):
 		m += float(pieces["payments"]["backup_monthly"])
+	if cfg.get("waf", false):
+		m += float(pieces["waf"]["monthly"])
 	return m
 
 
@@ -704,6 +772,7 @@ func result() -> Dictionary:
 		# People are whole: the flow model's expected count, to the nearest one.
 		"bad_charges": floorf(bad_charges + 0.5),
 		"double_bookings": floorf(double_bookings + 0.5),
+		"key_abuse": floorf(stolen_calls + 0.5),
 	}
 	var goals := []
 	var passed := true
@@ -737,6 +806,7 @@ func result() -> Dictionary:
 		"passed": passed, "goals": goals, "metrics": metrics, "runway": runway, "par": float(budget["par"]),
 		"lean": runway >= float(budget["par"]) - 0.000001, "bank": bank, "burn": burn,
 		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
+		"stolen_bill": stolen_bill, "stolen_calls": stolen_calls, "peeked": peeked,
 		"booked": booked, "melts": melts, "tags": order, "monthly_extra": monthly_extra(),
 	}
 
