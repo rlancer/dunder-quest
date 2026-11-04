@@ -13,6 +13,7 @@ const H := 34.0
 const SPOTS := {
 	"phones": Vector2(4, 92), "cdn": Vector2(62, 36), "lb": Vector2(62, 92), "app": Vector2(120, 92),
 	"cache": Vector2(178, 36), "db": Vector2(178, 92), "model": Vector2(238, 36), "queue": Vector2(120, 156),
+	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -21,7 +22,11 @@ const BUBBLES := {
 	"db_overload": ["db", "Maxed out"], "too_many_connections": ["db", "Too many connections"],
 	"stale_tables": ["cache", "Stale table!"], "cache_leak": ["cache", "Someone else's bookings!"],
 	"stateless": ["lb", "Logged out?!"], "rate_limited": ["model", "429: rate limited"],
+	"olap_on_oltp": ["db", "Board's dashboard!"], "replica_slow": ["replica", "Timing out"],
+	"too_many_tiles": ["warehouse", "Too many tiles"], "silent_failure": ["warehouse", "Copy job failed"],
+	"stale_numbers": ["dash", "3am numbers"],
 }
+const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
 var cfg: Dictionary = {}
 var start_cfg: Dictionary = {}
@@ -66,6 +71,12 @@ func _present(c: Dictionary) -> Dictionary:
 		out["db"] = true
 	if c.get("queue", false):
 		out["queue"] = true
+	if cloud and c.get("warehouse", false):
+		out["warehouse"] = true
+	if cloud and c.get("replica", false):
+		out["replica"] = true
+	if c.get("dashboard", false):
+		out["dash"] = true
 	return out
 
 
@@ -101,18 +112,31 @@ func _layout() -> void:
 			"db":
 				label = "Postgres x3" if cfg.get("shards", false) else "Postgres"
 				sub = "indexed" if cfg.get("index", false) else "database"
+				if int(cfg.get("db_x", 1)) > 1:
+					sub = "%dx size" % int(cfg["db_x"])
 			"model":
 				label = "Model API"
 				sub = "per call"
 			"queue":
 				label = "Queue"
 				sub = "+ worker"
+			"warehouse":
+				label = "Analytics"
+				sub = PIPELINE_NAMES.get(str(cfg.get("pipeline", "hourly")), "")
+			"replica":
+				label = "Replica"
+				sub = "read copy"
+			"dash":
+				label = "Board"
+				sub = "%d tiles" % int(cfg.get("tiles", 0))
 		var badges := []
 		if id == "app":
 			if cfg.get("rust", false):
 				badges.append("Rust")
 			if cfg.get("cluster", false):
 				badges.append("K8s")
+			if cfg.get("alerts", false):
+				badges.append("alerts")
 		if id == "model":
 			if cfg.get("ai_cache", false):
 				badges.append("cached")
@@ -159,6 +183,15 @@ func _wires() -> Array:
 		out.append(["app", "queue", "queue"])
 		if has.call("db"):
 			out.append(["queue", "db", "queue"])
+	if has.call("warehouse") and has.call("db"):
+		out.append(["db", "warehouse", "pipeline"])
+	if has.call("replica") and has.call("db"):
+		out.append(["db", "replica", "replica"])
+	if has.call("dash"):
+		for source in ["warehouse", "replica", "db", "app"]:
+			if has.call(source):
+				out.append([source, "dash", "dash"])
+				break
 	return out
 
 
@@ -187,6 +220,8 @@ func _util(id: String) -> float:
 			return u.get("db", 0.0)
 		"model":
 			return u.get("model", 0.0)
+		"replica", "warehouse":
+			return u.get(id, 0.0)
 	return 0.0
 
 
@@ -254,7 +289,7 @@ func _draw() -> void:
 			draw_rect(Rect2(Vector2(bx, r.end.y + 1), Vector2(bw, 11)), Palette.GREEN)
 			draw_string(font, Vector2(bx + 2, r.end.y + 10), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
 			bx += bw + 2
-		if live and id in ["app", "db", "model"]:
+		if live and id in ["app", "db", "model", "replica", "warehouse"]:
 			var u := _util(id)
 			draw_rect(Rect2(r.position + Vector2(2, r.size.y - 6), Vector2(r.size.x - 4, 4)), Palette.RULE)
 			draw_rect(Rect2(r.position + Vector2(2, r.size.y - 6), Vector2((r.size.x - 4) * clampf(u, 0.0, 1.0), 4)), _heat_color(u))

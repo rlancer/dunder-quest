@@ -24,8 +24,12 @@ var _runs: int = 0
 
 func _initialize() -> void:
 	var started := Time.get_ticks_msec()
+	# CASES_EP=9 checks one episode, for quick tuning.
+	var only := OS.get_environment("CASES_EP")
 	for ep in Season.episodes():
-		_check(ep)
+		if only == "" or only == str(int(ep["id"])):
+			_continuity(ep)
+			_check(ep)
 	print("CASES %d runs in %.1fs" % [_runs, (Time.get_ticks_msec() - started) / 1000.0])
 	print("CASES result=%s" % ("ok" if _fails.is_empty() else "FAIL\n  " + "\n  ".join(_fails)))
 	quit(0 if _fails.is_empty() else 1)
@@ -109,6 +113,38 @@ func _check(ep: Dictionary) -> void:
 
 	# 5. No cheap way round.
 	_search(ep, sol, sol_runway)
+
+
+## 6. Each episode starts where the one before it ended: every part of the
+## previous solution's board (hotfixes kept) is the same on this one's,
+## unless `changed` names it and the cold open says why.
+func _continuity(ep: Dictionary) -> void:
+	var prev := Season.episode(int(ep["id"]) - 1)
+	if prev.is_empty():
+		return
+	var sol := Plan.solution(prev)
+	var cfg := sol.config()
+	for h in prev["live"].get("hotfixes", []):
+		if sol.hotfix.get(h["id"], false):
+			for change in h.get("changes", []):
+				Plan.apply_change(cfg, change)
+	var changed: Array = ep.get("changed", [])
+	for key in cfg:
+		if not changed.has(key) and not _same(cfg[key], ep["board"].get(key)):
+			_fail(ep, "starting board's %s isn't where episode %d ended: %s, not %s" % [key, prev["id"], cfg[key], ep["board"].get(key)])
+
+
+static func _same(a: Variant, b: Variant) -> bool:
+	if a is Dictionary and b is Dictionary:
+		if a.size() != b.size():
+			return false
+		for k in a:
+			if not b.has(k) or not _same(a[k], b[k]):
+				return false
+		return true
+	if (a is int or a is float) and (b is int or b is float):
+		return is_equal_approx(float(a), float(b))
+	return typeof(a) == typeof(b) and a == b
 
 
 func _judge_flip(ep: Dictionary, what: String, p: Plan, sol_runway: float, free: bool) -> void:

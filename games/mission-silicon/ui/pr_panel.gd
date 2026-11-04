@@ -67,8 +67,8 @@ func show_list() -> void:
 		open.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		open.clip_text = true
 		var tag := ""
-		if c.get("by", "") == "ulrich":
-			tag = "Ulrich: "
+		if c.get("by", "aleister") != "aleister":
+			tag = Season.person(c["by"])["name"] + ": "
 		elif c.has("from_ask"):
 			tag = "+ "
 		open.text = "%s%s  %s" % [tag, c["label"], _hours(c.get("time", 0))]
@@ -179,6 +179,8 @@ func _piece_for(id: String) -> String:
 			return "model_api"
 		"lb":
 			return "load_balancer"
+		"dash":
+			return "dashboard"
 	return id
 
 

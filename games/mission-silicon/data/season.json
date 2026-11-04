@@ -30,7 +30,11 @@
 			"look": {"skin": "#e8c0a0", "hair": "#5a3a24", "style": "bob", "shirt": "#3a4a6a"}},
 		"chaz": {"name": "Chaz", "full": "Chaz Haverman", "role": "investor, very loud",
 			"look": {"skin": "#f0b890", "hair": "#f0e0a0", "style": "spiky", "shades": true, "shirt": "#e03a8a"}},
-		"aleister": {"name": "Aleister Jr.", "full": "Aleister Jr.", "role": "the AI teammate", "look": {"screen": true}}
+		"aleister": {"name": "Aleister Jr.", "full": "Aleister Jr.", "role": "the AI teammate", "look": {"screen": true}},
+		"mack": {"name": "Mack", "full": "Mack Barlow", "role": "the CEO the board brought in",
+			"look": {"skin": "#e8b48c", "hair": "#c8c8c8", "style": "neat", "shirt": "#2a3a5a", "tie": true}},
+		"walter": {"name": "Walter", "full": "Walter Gregorian", "role": "Ravello Capital, very quiet",
+			"look": {"skin": "#f0d0b8", "hair": "#e0e0e0", "style": "neat", "shirt": "#4a4a4a"}}
 	},
 	"episodes": [
 		{
@@ -234,6 +238,187 @@
 					{"who": "chaz", "say": "Fifty thousand users! I want to see them. All of them. On a screen. Updating every hour."},
 					{"who": "chaz", "say": "In the boardroom. By Monday. Make it huge."},
 					{"who": "ricky", "say": "On... which database?"}
+				]
+			}
+		},
+		{
+			"id": 9,
+			"title": "The Board Meeting",
+			"short": "BOARD MEETING",
+			"stage": 5,
+			"modules": [6, 8],
+			"borrowed": "Richard pushed out as CEO by the board, and Jack Barker's box",
+			"place": "Ravello Capital's boardroom. Monday, 9am.",
+			"backdrop": "boardroom",
+			"cold_open": [
+				{"who": "chaz", "say": "Fifty thousand users! Where's my screen? I said a screen. I said huge."},
+				{"who": "walter", "say": "..."},
+				{"who": "walter", "say": "We've voted. Forkcast needs an experienced CEO."},
+				{"who": "veronica", "say": "This is Mack Barlow. He's run three companies."},
+				{"who": "mack", "say": "Four. One was a boat. Love the energy in this room. Love the little app."},
+				{"who": "ulrich", "say": "As a board member, I voted for Mack. As your mentor, I voted with a heavy heart. Both were yes."},
+				{"who": "mack", "say": "You stay on as Head of Product. You keep the robot. I'll handle the vision."},
+				{"who": "ricky", "say": "What... is the vision?"},
+				{"who": "mack", "say": "Two things. A dashboard on every screen in this building, live. And a box."},
+				{"who": "gilroy", "say": "A box."},
+				{"who": "mack", "say": "People can hold a box."}
+			],
+			"brief": [
+				{"who": "mack", "say": "The board comes back Friday night to watch the dinner rush on the big screen. With prospects. Box prospects."},
+				{"who": "veronica", "say": "A normal busy Friday: fifteen thousand diners at the peak. Bookings have to keep working while the board watches."},
+				{"who": "aleister", "say": "I've written a plan! It's called Dashboards For Everyone. Every number, live, every minute!"}
+			],
+			"budget": {"bank": 1100000, "burn": 85000, "time": 20, "time_unit": "h", "par": 12.85},
+			"board": {"host": "cloud", "app": {"count": 3, "size": "S", "sessions": "redis"}, "index": true, "cache": true,
+				"cdn": true, "queue": true, "ai_cache": true, "model": "standard", "rust": false, "cluster": false, "shards": false,
+				"rows": {"menus": {"ttl": 3600, "scope": "shared"}, "tables": {"ttl": 30, "scope": "shared"}, "my_bookings": {"ttl": 60, "scope": "per_user"}},
+				"dashboard": false, "tiles": 40, "db_x": 1, "replica": false, "warehouse": false, "alerts": false},
+			"pr": {
+				"title": "Dashboards for everyone",
+				"cards": [
+					{"id": "dashboard", "by": "aleister", "label": "Board dashboard", "term": "dashboard", "time": 3,
+						"plain": "Forty live tiles on the boardroom screen and the board's laptops, straight from our database, refreshing every minute!",
+						"changes": [{"set": "dashboard", "to": true}],
+						"takes": [{"who": "chaz", "say": "Forty tiles! Can it be forty-one? Is forty-one bigger?"},
+							{"who": "gerard", "say": "Every tile is a question for the database. Every screen, every minute. I'm only asking."}]},
+					{"id": "bigger_db", "by": "aleister", "label": "Biggest database", "term": "vertical scaling", "time": 1,
+						"plain": "Move Postgres to the biggest size there is: eight times the power, for eight times the price.",
+						"changes": [{"set": "db_x", "to": 8}],
+						"takes": [{"who": "danesh", "say": "Bigger is faster. I don't see the debate."},
+							{"who": "veronica", "say": "It'd work. It's also thirty-two hundred dollars a month, every month, for a screen."}]},
+					{"id": "replica", "by": "aleister", "label": "Read replica", "term": "read replica", "time": 2,
+						"plain": "A live copy of the database just for the dashboard, so its questions don't slow down bookings.",
+						"changes": [{"set": "replica", "to": true}],
+						"takes": [{"who": "ricky", "say": "A replica keeps the dashboard off the bookings. That part's real."},
+							{"who": "gilroy", "say": "It's a copy of the same kind of database. Same huge questions, same slow answers, now in a second place."}]},
+					{"id": "box", "by": "mack", "label": "The Box", "term": "on-premises hardware", "time": 40,
+						"plain": "Sell every restaurant a Forkcast server for its back office. Hardware! Margins! A box!",
+						"changes": [{"set": "box", "to": true}],
+						"takes": [{"who": "mack", "say": "Investors understand boxes. You can hold a box. You can't hold a cloud."},
+							{"who": "ricky", "say": "We'd be fixing two hundred servers in two hundred restaurant basements. With our hands."}]},
+					{"id": "warehouse", "by": "ulrich", "ulrich_right": true, "label": "Analytics DB", "term": "data warehouse and pipeline", "time": 4,
+						"plain": "Copy the bookings every hour into a separate database built for big questions, and point the dashboard at that.",
+						"changes": [{"set": "warehouse", "to": true}],
+						"takes": [{"who": "ulrich", "say": "You don't do the accounts at the front desk. At my last company the numbers had their own room. I had it painted."},
+							{"who": "gilroy", "say": "I've checked it twice. He's right. Somebody write down the date."}]},
+					{"id": "alerts", "by": "aleister", "from_ask": "breaks", "label": "Error alerts", "term": "monitoring and alerts", "time": 1,
+						"plain": "Track errors in the app and in every scheduled job, and message us the moment one fails.",
+						"changes": [{"set": "alerts", "to": true}],
+						"takes": [{"who": "gerard", "say": "At a previous company we found out things were broken from the news."},
+							{"who": "danesh", "say": "Alerts are for people who write bugs."}]},
+					{"id": "streaming", "by": "aleister", "from_ask": "realtime", "label": "Real-time stream", "term": "streaming pipeline", "time": 10,
+						"plain": "Stream every booking into the analytics database the moment it happens, on a managed event-streaming cluster.",
+						"needs": ["warehouse"],
+						"changes": [{"set": "pipeline", "to": "stream"}],
+						"takes": [{"who": "danesh", "say": "Real time is the only time."},
+							{"who": "veronica", "say": "Chaz asked for hourly. That's three thousand a month for the other fifty-nine minutes."}]},
+					{"id": "wall", "by": "aleister", "from_ask": "huge", "label": "Two hundred tiles", "term": "more dashboard tiles", "time": 1,
+						"plain": "Every number we have, on one enormous wall. Two hundred tiles!",
+						"changes": [{"set": "tiles", "to": 200}],
+						"takes": [{"who": "chaz", "say": "Now THAT is a dashboard."},
+							{"who": "walter", "say": "Which of these numbers would change what we do?"}]}
+				]
+			},
+			"asks": [
+				{"id": "oltp", "text": "Is this OLTP or OLAP work?", "decoy": false,
+					"reply": [{"who": "ricky", "say": "The app does lots of tiny jobs. Book this table, show my bookings. That's OLTP: the front desk."},
+						{"who": "ricky", "say": "Every tile asks a huge question across everything we've ever stored. That's OLAP: the accountant's office."},
+						{"who": "gilroy", "say": "Two hundred and forty of those a minute, on the database that takes the bookings."}]},
+				{"id": "fresh", "text": "How fresh do the numbers need to be?", "decoy": false,
+					"reply": [{"who": "walter", "say": "..."},
+						{"who": "walter", "say": "The board meets four times a year."},
+						{"who": "veronica", "say": "Chaz asked for every hour. An hour old is plenty for a board."}]},
+				{"id": "breaks", "text": "How will we know if it breaks?", "decoy": false,
+					"reply": [{"who": "aleister", "say": "Know? We'll... someone will mention it?"},
+						{"who": "gerard", "say": "At a previous company we learned the payroll job had stopped when the pay stopped. I'd like alerts, please."},
+						{"who": "aleister", "say": "Alerts! Great idea. Mine now."}],
+					"adds": ["alerts"]},
+				{"id": "cost", "text": "What will this cost at 10x traffic?", "decoy": false,
+					"reply": [{"who": "veronica", "say": "The biggest database costs eight times as much, whatever the traffic. That's forever, not just Friday."},
+						{"who": "veronica", "say": "The dashboard asks the same questions at any traffic. More diners just means more rows to add up."}]},
+				{"id": "realtime", "text": "Make it real-time.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Real-time! I'll stream every booking as it happens. It's only a small cluster. Of servers. That we run."}],
+					"adds": ["streaming"]},
+				{"id": "huge", "text": "Make it huge.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Huge! Chaz's favourite word. Two hundred tiles, coming up!"}],
+					"adds": ["wall"]}
+			],
+			"dials": [
+				{"id": "pipeline", "box": "warehouse", "label": "Copy every", "needs": ["warehouse"], "options": ["hourly", "nightly"],
+					"names": {"hourly": "hour", "nightly": "night"}, "default": "hourly"}
+			],
+			"cache_rows": {
+				"menus": {"kind": "browse", "keys": 3000, "changes_per_hour": 0.04},
+				"tables": {"kind": "tables", "keys": 20000, "changes_per_hour": 30},
+				"my_bookings": {"kind": "my_bookings", "keys": 1, "per_user": true}
+			},
+			"users": 60000,
+			"live": {
+				"ticks": 360,
+				"clock": [17, 0],
+				"diners": [[0, 2000], [90, 8000], [150, 15000], [270, 14000], [330, 5000], [360, 2000]],
+				"rates": {"browse": 2.0, "tables": 0.5, "search": 0.3, "my_bookings": 0.1, "book": 0.004},
+				"fee": 1.0,
+				"signups": {"per_diner": 0.0025},
+				"rows": 400000,
+				"analytics_rows": 5000000,
+				"dashboard": {"tiles": 40, "screens": 6, "refresh": 60},
+				"pipeline": {"nightly_at": -840, "fails_at": 180},
+				"events": [{"tick": 0, "banner": "The board is watching the big screen"}, {"tick": 60, "banner": "The dinner rush begins"},
+					{"tick": 150, "banner": "15,000 diners online"}, {"tick": 180, "banner": "The 8pm copy job runs"}, {"tick": 300, "banner": "The rush is easing off"}],
+				"hotfixes": [{"id": "rerun", "tick": 180, "label": "Fix and rerun the copy", "needs": ["warehouse", "alerts"],
+					"say": "Alert! The 8pm copy into the analytics database just failed: a restaurant put a noodle emoji in its name. Hotfix: handle it and rerun?",
+					"changes": [{"set": "pipeline_fixed", "to": true}]}],
+				"corner": [
+					{"when": "olap_on_oltp", "who": "gilroy", "say": "Every time the board's screen refreshes, somebody's booking waits behind it."},
+					{"when": "replica_slow", "who": "ricky", "say": "Bookings are fine. The replica's drowning. The board's screen just says 'Loading'."},
+					{"when": "too_many_tiles", "who": "veronica", "say": "Two hundred tiles. The analytics database is turning them away."},
+					{"when": "silent_failure", "who": "chaz", "say": "Why does the big screen still say seven o'clock? Did we break time?"},
+					{"when": "stale_numbers", "who": "mack", "say": "The screen says we've had nine bookings tonight. Nine. The prospects are looking at me."},
+					{"when": "db_overload", "who": "gilroy", "say": "The database is maxed out."},
+					{"when": "app_overload", "who": "ricky", "say": "The app servers are maxed out. Is that bad? That's bad."},
+					{"when": "rate_limited", "who": "veronica", "say": "The model provider is turning our searches away."},
+					{"when": "calm", "who": "chaz", "say": "Look at it go! Fifteen thousand! I'm screenshotting everything!"}
+				]
+			},
+			"goal": [
+				{"metric": "down_ticks", "max": 5, "label": "Up all night"},
+				{"metric": "peak_book_latency", "max": 3.0, "label": "Bookings under 3 seconds"},
+				{"metric": "booking_success", "min": 0.9, "label": "9 in 10 bookings work"},
+				{"metric": "dashboard_success", "min": 0.95, "label": "The board's screen works"},
+				{"metric": "dashboard_age", "max": 60, "label": "Numbers under an hour old"}
+			],
+			"solution": {
+				"keep": ["dashboard", "warehouse", "alerts"],
+				"asks": ["oltp", "breaks"],
+				"dials": {"pipeline": "hourly"},
+				"hotfix": {"rerun": true}
+			},
+			"free": [],
+			"postmortem": {
+				"no_dashboard": {"title": "There was no dashboard.", "plain": "The board asked for one screen of numbers and got none. The bookings were fine; the board meeting wasn't.", "term": "the requirement", "tell_ai": "Build what the board asked for, as simply as it works."},
+				"olap_on_oltp": {"title": "The board's dashboard slowed down the bookings.", "plain": "Every tile asked a huge question across everything we've ever stored, again every minute, on the same database taking Friday's bookings. Bookings waited behind the board's questions.", "term": "OLAP work on an OLTP database", "tell_ai": "Is this OLTP or OLAP work? Put the analytics in a data warehouse."},
+				"replica_slow": {"title": "The replica couldn't answer the dashboard.", "plain": "The copy kept the bookings safe, but it's the same kind of database, built for lots of small, quick questions. The dashboard's huge ones swamped it, and the board's screen timed out.", "term": "a read replica is still an OLTP database", "tell_ai": "Is this OLTP or OLAP work?"},
+				"too_many_tiles": {"title": "Two hundred tiles swamped the analytics database.", "plain": "Every tile is a question, and every screen asks it again every minute. Two hundred was more than our small analytics database could answer, and nobody could read them all anyway.", "term": "dashboard query load", "tell_ai": "Show the few numbers that change a decision."},
+				"silent_failure": {"title": "The 8pm copy job broke, and stayed broken.", "plain": "A restaurant's name broke the hourly copy into the analytics database. Nobody fixed it and ran it again, so the board's numbers stopped at 7pm and stayed there.", "term": "a failed pipeline job; alerts tell you, then someone fixes it", "tell_ai": "How will we know if it breaks? Add error tracking and alerts."},
+				"stale_numbers": {"title": "The board watched last night's numbers.", "plain": "The copy into the analytics database ran once a night, at 3am, so all Friday evening the big screen showed the morning's numbers.", "term": "a nightly batch pipeline", "tell_ai": "How fresh do the numbers need to be?"},
+				"db_overload": {"title": "The database couldn't keep up.", "plain": "More work arrived than one database could do, so requests waited and then failed.", "term": "database bottleneck", "tell_ai": "Where's the bottleneck?"},
+				"app_overload": {"title": "The app servers were maxed out.", "plain": "More traffic arrived than the app servers could handle, so pages crawled and then failed.", "term": "horizontal scaling: more servers behind a load balancer", "tell_ai": "Add a server, and make the servers stateless."},
+				"rate_limited": {"title": "The model provider turned searches away.", "plain": "Providers cap how many calls you can make a minute. Past the cap, searches failed with error 429.", "term": "rate limiting", "tell_ai": "What will this cost at 10x traffic?"},
+				"overbuilt": {"title": "We paid for machinery we didn't need.", "plain": "Every box costs money every month. The night went fine, but it went fine more expensively than it had to.", "term": "over-engineering", "tell_ai": "What's the simplest version that works?"}
+			},
+			"lessons": [
+				{"term": "OLTP and OLAP", "plain": "The app's database is the front desk: lots of small, quick jobs. Big questions across everything go to a separate copy built for them, a data warehouse, kept up to date by copying new data across in regular batches.", "source": "https://aws.amazon.com/compare/the-difference-between-olap-and-oltp/"},
+				{"term": "Monitoring and alerts", "plain": "Once it's live, you can't watch every screen and every job. Error tracking and alerts tell you something broke, ideally before your customers, or your board, do.", "source": "https://sre.google/sre-book/monitoring-distributed-systems/"}
+			],
+			"cliffhanger": {
+				"place": "The kitchen. Saturday morning.",
+				"backdrop": "kitchen",
+				"lines": [
+					{"who": "mack", "say": "Great news. Hubbub called. They loved the dashboard."},
+					{"who": "mack", "say": "They asked a lot of questions about how Forkcast works. I answered all of them. In detail. With slides."},
+					{"who": "gilroy", "say": "You what."},
+					{"who": "ricky", "say": "I'm going to be sick."}
 				]
 			}
 		}
