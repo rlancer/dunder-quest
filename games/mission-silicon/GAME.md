@@ -21,7 +21,7 @@ Each episode, something happens to Forkcast (a demo, a launch, a viral post) and
 4. **The pull request.** Aleister proposes. The board shows Forkcast as it stands, with the proposed changes ghosted in dashed green. The PR panel lists the changes, each with what it is in plain words, its real name, the time it takes to build and what it adds to the monthly bill. Ulrich's idea arrives as one more card, stamped with his face.
 5. **Review.** In any order, as often as they like:
    - **Keep or cut** each card. Tapping a card opens it: two of the engineers argue it in a line each (the trade-off is the lesson), and the card's numbers.
-   - **Ask.** A tray of questions, worded as the curriculum's "What to tell your AI" lines. Asking makes Aleister or an engineer answer with a fact (how often tonight's tables change, where the bottleneck is), and sometimes Aleister adds a better card. A couple of the questions are bad ones that Ulrich would ask ("Make it web-scale"); Aleister cheerfully obeys those too, adding the overkill they invite. That's Module 0's lesson in miniature: it builds what you ask.
+   - **Ask.** A list of questions (the Ask Aleister button), worded as the curriculum's "What to tell your AI" lines. Asking makes Aleister or an engineer answer with a fact (how often tonight's tables change, where the bottleneck is), and sometimes Aleister adds a better card. A couple of the questions are bad ones that Ulrich would ask ("Make it web-scale"); Aleister cheerfully obeys those too, adding the overkill they invite. That's Module 0's lesson in miniature: it builds what you ask.
    - **Dials.** Tapping a box on the board opens its settings: at most a few steppers (how many servers, how long the cache keeps tonight's tables, what happens on a timeout).
    - **Staging** (from Episode 7, when Module 8 introduces it): a quick run at a tenth of the traffic, showing a summary. It's honest, and it's honestly limited: races and cache staleness hide at low load, which is Module 10's misconception made playable.
 6. **Merge.** Disabled while the kept cards don't fit the time left ("I'll have the Kubernetes cluster ready by... a week on Tuesday"). Merging is how every change ships, all season, so Module 2's pull requests are taught by doing.
@@ -142,7 +142,7 @@ An episode, abbreviated (Episode 8 in full is in the walk-through below):
   "borrowed": "The live stream that goes huge while Anton overheats in the garage",
   "cold_open": [{"who": "ricky", "say": "..."}],
   "brief": [{"who": "veronica", "say": "..."}],
-  "budget": {"bank": 1200000, "burn": 80000, "time": 18, "time_unit": "hours", "par": 14.5},
+  "budget": {"bank": 1200000, "burn": 80000, "time": 18, "time_unit": "hours", "par": 14.9},
   "board": {"boxes": [{"id": "garage", "piece": "garage_server", "roles": ["app", "db"]}], "settings": {}},
   "pr": {"title": "Make Forkcast web-scale", "cards": [
     {"id": "cloud", "by": "aleister", "label": "Move to the cloud", "term": "managed hosting",
@@ -157,10 +157,10 @@ An episode, abbreviated (Episode 8 in full is in the walk-through below):
            "kinds": {"browse": 2.0, "tables": 0.5, "search": 0.3, "my_bookings": 0.1, "book": 0.002},
            "signups": {"total": 50000, "bursts": [[180, 0.3]]},
            "events": [{"tick": 180, "banner": "The chef posted again"}],
-           "hotfixes": [{"tick": 182, "card": "two_more"}]},
+           "hotfixes": [{"id": "one_more", "tick": 180, "say": "..."}]},
   "goal": [{"metric": "down_ticks", "max": 5}, {"metric": "peak_latency", "max": 3.0},
            {"metric": "leaks", "max": 0}, {"metric": "booking_success", "min": 0.9}],
-  "solution": {"keep": ["cloud", "cache", "cdn", "queue", "index", "ai_cache"], "dials": {"...": "..."}, "hotfix": {"two_more": "keep"}},
+  "solution": {"keep": ["cloud", "cache", "cdn", "queue", "index", "ai_cache"], "dials": {"...": "..."}, "hotfix": {"one_more": true}},
   "postmortem": {"garage_melt": {"plain": "...", "term": "...", "tell_ai": "..."}},
   "lesson": {"plain": "...", "term": "...", "source": "..."},
   "cliffhanger": [{"who": "chaz", "say": "..."}]
@@ -182,7 +182,7 @@ Planning:
 
 ```
 +--------------------------------------------------------------------------------+
-| VIRAL      Runway 14.8 mo (+$1.5k/mo)      Time 13.5 / 18 h      Goal (i)  ||  |  20
+| VIRAL      Runway 14.8 mo                                       Time 12.5 / 18h  |  20
 +-----------------------------------------------+--------------------------------+
 |  diners    edge      app          data        | Make Forkcast web-scale        |
 |                                               |  Move to the cloud   4h  KEEP  |
@@ -192,12 +192,12 @@ Planning:
 |                  [ Queue ]->[ Worker ]        |  Rewrite in Rust     8h  CUT   |
 |                                               |  [U] Forty servers   1h  CUT   |
 +-----------------------------------------------+--------------------------------+
-| Ask: (Where's the bottleneck?) (How stale can this be?) (...)  >  [  MERGE  ]  |  34
+| [ The PR ] [ Ask Aleister ]                     [ Staging ] [    MERGE    ]  |  34
 +--------------------------------------------------------------------------------+
    board 300 x 216                                  PR panel 180 x 216
 ```
 
-- Tapping a card swaps the list for its detail (the takes, the numbers, a big KEEP/CUT switch, a back arrow). Tapping a box swaps it for the box's dials (◀ value ▶ steppers).
+- Tapping a card swaps the list for its detail (the takes, the numbers, a big KEEP/CUT switch, a back arrow). Tapping a box swaps it for the box's dials (◀ value ▶ steppers). Ask Aleister swaps it for the questions. (The prototype first had the questions as a strip of chips along the bottom; they overflowed the width, so they live in the panel.)
 - Dialogue uses Curb's arrangement: a bubble with a close-up portrait, tap to advance.
 - Live, the PR panel becomes the cast corner and the event feed, and the bottom strip becomes pause, 2× and the clock.
 
@@ -238,7 +238,7 @@ Title card: **VIRAL**.
 Veronica: the chef posts again tomorrow evening, right in the Friday dinner rush, to an audience that's awake this time. Eighteen hours. Gilroy: the garage won't survive it.
 
 - **Budget**: $1.2M in the bank, $80k a month, so 15.0 months of runway. 18 hours to build.
-- **Goal**: up all night (no more than 5 minutes down), pages under 3 seconds at the peak, nobody sees anyone else's bookings, nine bookings in ten succeed.
+- **Goal**: up all night (no more than 5 minutes down), pages under 3 seconds at the peak, nobody sees anyone else's bookings, nine bookings in ten succeed, nineteen searches in twenty get an answer.
 
 ### The starting board
 
@@ -282,21 +282,27 @@ Ulrich's line is the Module 9 misconception: more servers means faster.
 | 6:30pm | 90 | Dinner rush: 3,000 diners. On the garage, Aleister overheats around here and goes down for half an hour, then again |
 | 7:30pm | 150 | 12,000 diners. Without the index, the database creeps toward 100% as bookings pile up, then times out. Without the CDN, the app drowns in photos |
 | 8:00pm | 180 | **The chef posts again.** 24,000 diners, and a third of the night's 50,000 sign-ups in half an hour. Without the queue, sign-ups swamp the app. Without the AI cache, searches pass the provider's limit and fail with 429s, and the bill races |
-| 8:02pm | 182 | **Hotfix.** Aleister: "Traffic doubled! Add two more app servers? +$600 a month." It helps only if sessions are in Redis (otherwise diners start getting logged out) and only if the database isn't the real bottleneck |
+| 8:00pm | 180 | **Hotfix**, the moment the post lands. Aleister: "Traffic just doubled! Add another app server? It's $300 a month." It helps only if sessions are in Redis (otherwise diners start getting logged out) and only if the database isn't the real bottleneck |
 | 9:00 to 10:30pm | 240 to 330 | Plateau, then falling off. Stale tables show up as "sorry, just taken" at booking time, more with a longer TTL. A shared "My bookings" row leaks from the first hit |
 | 11:00pm | 360 | 1,500 diners. End |
 
-The solution's night, roughly: on 1 server, the app peaks near two thirds of capacity before the post; with the hotfix, three servers carry the doubled load. The index takes the tables query from the biggest load on the database to a small one, and the cache takes most of what's left (menus for an hour, tonight's tables for 10 to 30 seconds, my bookings per user or off). The AI cache keeps searches under the provider's limit and the night's model bill in four figures instead of five.
+The solution's night: two small app servers carry the evening at about half capacity, and the hotfix's third carries the doubled load. The index takes the tables query from the biggest load on the database to a small one (tonight's tables cache poorly: there are too many different searches), and the cache takes the menus (an hour) off it entirely. Tonight's tables cache for 30 seconds or less; my bookings per user or off. The AI cache keeps searches under the provider's limit and the night's model bill near $3k instead of five figures.
+
+These are the prototype's results, from `tests/cases.gd`:
 
 | Plan | Result |
 | --- | --- |
-| Do nothing | The garage melts by 6:30pm: fails "up all night" |
-| Aleister's PR as proposed | Doesn't fit 18 hours (Kubernetes): can't merge |
-| Aleister's PR minus Kubernetes | Fits exactly (18 hours, Rust included), but the cache leaks "My bookings" at its defaults, and Rust changes nothing: fails |
-| Keep Ulrich's forty servers | Too many connections, and logouts: fails, and $6k a month |
-| The solution: cloud, cache (fixed), CDN, queue, index, AI cache, sessions in Redis, hotfix kept | About 14.8 months of runway; par 14.5 |
-| The solution without the index | Survives on the cache until the post, then the database falls over on cache misses: fails "pages under 3 seconds" |
-| The solution with tonight's tables cached for an hour | Too many "sorry, just taken": fails "nine bookings in ten" |
+| Do nothing | The garage melts in the dinner rush and keeps melting: fails everything but the leak |
+| Aleister's PR as proposed | 59 hours: can't merge |
+| Aleister's PR minus Kubernetes | 19 hours: still can't merge |
+| Minus Kubernetes and Rust (the bot's take one) | Fits, and fails: the cache leaks "My bookings" at its defaults, the forty servers run out of connections, and diners get logged out |
+| The solution, but stay in the garage | Holds until the post, then the garage melts: fails |
+| Keep Ulrich's forty servers | Too many connections: fails, and $6k a month |
+| The solution: cloud with two small servers, cache (menus an hour, tables 30 seconds, my bookings per user), CDN, queue, index, AI cache, sessions in Redis, hotfix kept | 14.94 months of runway; par 14.9 |
+| The solution without the index | The database scans: fails "9 in 10 bookings" and "19 in 20 searches" |
+| The solution without the hotfix | The app maxes out after the post: fails "pages under 3 seconds" |
+| The solution with tonight's tables cached for ten minutes or an hour | Too many "sorry, just taken": fails "9 in 10 bookings" |
+| Three, four or five servers, or medium ones | Passes, with less runway: misses Lean |
 
 ### Postmortem
 
@@ -304,7 +310,7 @@ Gerard's spreadsheet: diners served, page speed at the peak, errors, phantom tab
 
 > **The database read every booking ever made, every time someone looked for a table.** It got slower as the night went on because every new booking made the next search longer. *Real term: a full table scan; the fix is an index.* Tell your AI: "Where's the bottleneck?" and "Add an index for this query."
 
-Marks: Live, Lean (14.5 months or better), Ulrich (cut the forty servers).
+Marks: Live, Lean (14.9 months or better), Ulrich (cut the forty servers).
 
 ### Lesson card and cliffhanger
 

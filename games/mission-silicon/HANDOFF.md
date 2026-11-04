@@ -6,7 +6,7 @@ To pick this up in a new session, say:
 
 ## Where it stands
 
-Planning only. No game code, no Godot project, no site page yet. Names, look, orientation and the game design are settled. Four docs:
+**A playable prototype of Episode 8 (*Viral*)**, as its own Godot project here, with its checks passing (see [README.md](README.md)). It isn't in the web build or on the site yet. Art is placeholder (cast close-ups and backdrops drawn in code; no music or SFX), and the title cards use Libre Franklin ExtraBold until Montserrat's files are added to `assets/fonts/`. Names, look, orientation and the game design are settled. Four docs:
 
 - [CURRICULUM.md](CURRICULUM.md): **what** the game teaches. 14 modules and a capstone, for non-technical people building web apps with AI. The standing reference for topics.
 - [SHOW.md](SHOW.md): **how** the homage carries it. Premise, cast, a 14-episode season mapped to modules.
@@ -63,9 +63,11 @@ Everything still marked *(candidate)* in SHOW.md, the open list at the end of GA
 In order, each as its own PR:
 
 1. ~~**Write the game design doc**~~: done, [GAME.md](GAME.md).
-2. **Prototype Episode 8** (*Viral*) from GAME.md's walk-through in a new Godot project, following Curb's layout: `data/` for the season as data, one scene script that builds every episode from it, `tests/bot.tscn` that plays it through, `tests/smoke.tscn`. Add a coverage test that fails if any curriculum module has no episode.
-3. **Wire it into the build**: `scripts/export_web.sh`, CI, and a page at `/mission-silicon/` in `site/build.py`, once the prototype is worth showing on dev.dunderquest.com.
-4. **Technical review of the content**: every claim real, per the curriculum's "nothing untrue" rule.
+2. ~~**Prototype Episode 8**~~: done. The simulation, the data, one scene script, and the checks (`tests/cases.gd`, `coverage.gd`, `smoke.tscn`, `bot.tscn`, all run by `tests/check.sh`). Tuning it against `cases.gd` changed a few numbers in GAME.md's walk-through (two small servers plus a one-server hotfix; par 14.9), and GAME.md now has the results table.
+3. **Wire it into the build**: an `export_presets.cfg` (copy Curb's, exporting to `build/site/mission-silicon/play/`), `scripts/export_web.sh`, `tests/check.sh` in CI, and a page at `/mission-silicon/` in `site/build.py`, so it can be played on dev.dunderquest.com.
+4. **Real assets**: Montserrat ExtraBold in `assets/fonts/`, the cast painted and the backdrops generated like Curb's (`tools/`), and the glitchy electronic music and stings. Then play it on a phone held sideways.
+5. **Technical review of the content**: every claim real, per the curriculum's "nothing untrue" rule. The lesson cards carry a `source` each.
+6. **The next episodes**: walk each on paper in GAME.md like Episode 8 (the season sketch is there), then add it to `data/season.json`. The simulation's behaviours table lists what later episodes will need that isn't built yet (retries, races, analytics on the live database, leaked keys, authorization, the agent).
 
 ## Useful references in the repo
 
