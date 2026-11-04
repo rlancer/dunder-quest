@@ -296,8 +296,15 @@ func _on_staging() -> void:
 	if not res.get("merge", true):
 		lines.append("- It doesn't fit the time we have.")
 	else:
+		# A count that rounds to nobody at a tenth of the traffic isn't
+		# nobody: say so (Episode 11's race shows up here as under 1).
+		var raw: Dictionary = res.get("raw", {})
 		for g in res["goals"]:
-			lines.append(("+ " if g["ok"] else "- ") + g["label"])
+			var note := ""
+			var x := float(raw.get(g["metric"], 0.0))
+			if g["ok"] and x > 0.0 and x < 0.5:
+				note = " (under 1 here)"
+			lines.append(("+ " if g["ok"] else "- ") + g["label"] + note)
 	lines.append("Staging is quieter than the real night. Some problems only show up at full load.")
 	panel.show_text("Staging", lines)
 
@@ -379,8 +386,10 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 	_top_right.add_theme_color_override("font_color", Palette.WHITE)
 	_top_left.text = "Bank %s" % Palette.money(f["money"])
 	var page: String = "down" if f["down"] else "%.1f s" % f["page"]
-	_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nAI bill  %s" % [
-		_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked), Palette.money(sim.model_bill)]
+	# "Server errors", not "Errors": requests that failed outright, beside
+	# lines like "Hitting a bug" for requests that ran and got it wrong.
+	_meters.text = "Diners online  %s\nPage speed  %s\nServer errors  %d%%\nBookings  %s\nAI bill  %s" % [
+		_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), _thousands(roundi(sim.booked)), Palette.money(sim.model_bill)]
 	# The board's numbers only when the goal is about them: the meters have
 	# room for six lines above the cast corner.
 	if f.get("dash", false) and ep["goal"].any(func(g: Dictionary) -> bool: return str(g["metric"]).begins_with("dashboard")):
@@ -388,22 +397,22 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 	# Deposits: the night's wrong charges and double bookings take the AI
 	# bill's place, to keep to six lines.
 	if ep["live"].has("payments"):
-		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nCharged wrongly  %d\nTables booked twice  %d" % [
-			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked),
-			floori(float(f["bad_charges"]) + 0.5), floori(float(f["double_bookings"]) + 0.5)]
+		_meters.text = "Diners online  %s\nPage speed  %s\nServer errors  %d%%\nBookings  %s\nCharged wrongly  %s\nTables booked twice  %s" % [
+			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), _thousands(roundi(sim.booked)),
+			_count(f["bad_charges"]), _count(f["double_bookings"])]
 	# A leaked key: strangers' calls and bookings read take the bookings'
 	# line and the sixth, to keep to six lines.
 	if ep["live"].has("leak"):
-		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nAI bill  %s\nStrangers' calls  %s/min\nBookings read  %s" % [
+		_meters.text = "Diners online  %s\nPage speed  %s\nServer errors  %d%%\nAI bill  %s\nStrangers' calls  %s/min\nBookings read  %s" % [
 			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), Palette.money(sim.model_bill),
 			_thousands(roundi(f["stolen"])), _thousands(roundi(f["peeked"]))]
 	# AI inside the app: made-up answers, answers and jobs the planted
 	# review steered, and what the agent did unasked take the last three
 	# lines, to keep to six.
 	if ep["live"].has("injection"):
-		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nMade-up answers  %s\nJobs fooled by review  %s\nDone without asking  %s" % [
+		_meters.text = "Diners online  %s\nPage speed  %s\nServer errors  %d%%\nMade-up answers  %s\nJobs fooled by review  %s\nDone without asking  %s" % [
 			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), _thousands(roundi(f["made_up"])),
-			_thousands(roundi(f["fooled"])), _thousands(floori(float(f["unasked"]) + 0.5))]
+			_thousands(roundi(f["fooled"])), _count(f["unasked"])]
 	if f.get("scrape_in", 0.0) > 0.0:
 		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
 	# An episode with every behaviour on (the finale) names its six lines.
@@ -411,7 +420,7 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 		var lines := {
 			"diners": "Diners online  %s" % _thousands(roundi(f["diners"])),
 			"page": "Page speed  %s" % page,
-			"errors": "Errors  %d%%" % roundi(f["err"] * 100.0),
+			"errors": "Server errors  %d%%" % roundi(f["err"] * 100.0),
 			"bookings": "Bookings  %s" % _thousands(roundi(sim.booked)),
 			"ai_bill": "AI bill  %s" % Palette.money(sim.model_bill),
 			"scraper": "HubbubBot  %d/s, %d let in" % [roundi(f.get("scrape_in", 0.0)), roundi(f.get("scrape_through", 0.0))],
@@ -422,17 +431,27 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 			"bugs": "Hitting a bug  %s" % ("-" if f["down"] else "%d%%" % roundi(100.0 * float(f.get("bug", 0.0)))),
 			"unpaid": "Paid no fee  %s" % _thousands(roundi(f.get("underpaid", 0.0))),
 			"strangers": "Strangers' calls  %s/min" % _thousands(roundi(f.get("stolen", 0.0))),
-			"lost": "Bookings lost  %s" % _thousands(floori(float(f.get("lost", 0.0)) + 0.5)),
-			"twice": "Tables booked twice  %d" % floori(float(f.get("double_bookings", 0.0)) + 0.5),
+			"lost": "Bookings lost  %s" % _count(f.get("lost", 0.0)),
+			"twice": "Tables booked twice  %s" % _count(f.get("double_bookings", 0.0)),
 			"logins": "Logins working  %d%%" % roundi(100.0 * sim.login_done / maxf(sim.login_tries, 0.000001)),
 			"read": "Bookings read  %s" % _thousands(roundi(f.get("peeked", 0.0))),
-			"takeovers": "Accounts taken over  %s" % _thousands(floori(float(f.get("takeovers", 0.0)) + 0.5)),
-			"passwords": "Passwords readable  %s" % _thousands(floori(float(f.get("pw_exposed", 0.0)) + 0.5)),
+			"takeovers": "Accounts taken over  %s" % _count(f.get("takeovers", 0.0)),
+			"passwords": "Passwords readable  %s" % _count(f.get("pw_exposed", 0.0)),
 		}
 		var out := []
 		for m in ep["live"]["meters"]:
 			out.append(lines[m])
 		_meters.text = "\n".join(out)
+
+
+## A count of people or things from the flow model, which deals in
+## expected values: to the nearest one, except that a count above nothing
+## that would round to 0 says "under 1" (Episode 13's 0.46 unasked deposits).
+func _count(v: Variant) -> String:
+	var x := float(v)
+	if x > 0.0 and x < 0.5:
+		return "under 1"
+	return _thousands(floori(x + 0.5))
 
 
 func _thousands(n: int) -> String:
@@ -459,22 +478,23 @@ func _hotfix(h: Dictionary, cfg: Dictionary) -> bool:
 	for change in h.get("changes", []):
 		Plan.apply_change(after, change)
 	var say := str(h["say"]).replace("{monthly}", Palette.money(Sim.monthly_of(after) - Sim.monthly_of(cfg)))
-	var modal := UI.place(UI.panel(Palette.WHITE, Palette.GREEN, 2), Rect2(40, 60, 260, 120))
+	# Room for four lines of Aleister (the finale's live fix) above the buttons.
+	var modal := UI.place(UI.panel(Palette.WHITE, Palette.GREEN, 2), Rect2(40, 52, 260, 132))
 	modal.name = "Hotfix"
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	_overlay.add_child(modal)
 	var face := UI.place(Portrait.new("aleister"), Rect2(6, 8, 48, 48))
 	modal.add_child(face)
 	modal.add_child(UI.place(UI.label("HOTFIX", Palette.LABEL, Palette.GREEN_DARK), Rect2(60, 8, 192, 14)))
-	modal.add_child(UI.place(UI.label(say, Palette.BODY, Palette.SLATE, true), Rect2(60, 22, 194, 54)))
+	modal.add_child(UI.place(UI.label(say, Palette.BODY, Palette.SLATE, true), Rect2(60, 22, 194, 66)))
 	var keep := UI.button("KEEP", "primary", Vector2(90, 30))
 	keep.name = "HotfixKeep"
-	UI.place(keep, Rect2(60, 82, 90, 30))
+	UI.place(keep, Rect2(60, 94, 90, 30))
 	keep.pressed.connect(func() -> void: hotfix_answered.emit(true))
 	modal.add_child(keep)
 	var cut := UI.button("CUT", "cut", Vector2(90, 30))
 	cut.name = "HotfixCut"
-	UI.place(cut, Rect2(160, 82, 90, 30))
+	UI.place(cut, Rect2(160, 94, 90, 30))
 	cut.pressed.connect(func() -> void: hotfix_answered.emit(false))
 	modal.add_child(cut)
 	var answer: bool = await hotfix_answered
@@ -511,7 +531,10 @@ func _postmortem(res: Dictionary) -> bool:
 	for g in res["goals"]:
 		lines.append(("+ " if g["ok"] else "- ") + g["label"])
 	lines.append("")
-	lines.append("Page speed at peak: %.1f s" % m["peak_latency"])
+	var raw: Dictionary = res.get("raw", {})
+	# Nothing built (the pilot's sale) served no pages at all.
+	if m["peak_latency"] > 0.0:
+		lines.append("Page speed at peak: %.1f s" % m["peak_latency"])
 	if ep["live"].has("landing"):
 		lines.append("On the waitlist: %s (%d%% of sign-ups)" % [_thousands(roundi(res["signed"])), roundi(m["signup_success"] * 100.0)])
 		lines.append("Hosting this month: %s" % Palette.money(res["monthly_extra"]))
@@ -523,7 +546,7 @@ func _postmortem(res: Dictionary) -> bool:
 		lines.append("Searches answered: %d%%" % roundi(m["search_success"] * 100.0))
 		lines.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
 	if ep["live"].has("payments"):
-		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
+		lines.append("Charged wrongly: %s   Booked twice: %s" % [_count(raw.get("bad_charges", m["bad_charges"])), _count(raw.get("double_bookings", m["double_bookings"]))])
 	if ep["live"].has("leak"):
 		if ep["live"].has("idor"):
 			lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
@@ -532,16 +555,16 @@ func _postmortem(res: Dictionary) -> bool:
 	if ep["live"].has("code"):
 		lines.append("Requests that hit a bug: %.1f%%" % (m["bug_share"] * 100.0))
 	if ep["live"].has("tamper"):
-		lines.append("Bookings that paid no fee: %s" % _thousands(roundi(m["underpaid"])))
+		lines.append("Bookings that paid no fee: %s" % _count(raw.get("underpaid", m["underpaid"])))
 	if ep["live"].has("sheet"):
-		lines.append("Lost: %s   Booked twice: %d" % [_thousands(roundi(m["lost_bookings"])), roundi(m["double_bookings"])])
+		lines.append("Lost: %s   Booked twice: %s" % [_count(raw.get("lost_bookings", m["lost_bookings"])), _count(raw.get("double_bookings", m["double_bookings"]))])
 	if ep["live"].has("login"):
 		lines.append("Logins working: %d%%   Bookings read: %s" % [roundi(m["login_success"] * 100.0), _thousands(roundi(res["peeked"]))])
-		lines.append("Taken over: %s   Passwords read: %s" % [_thousands(roundi(m["takeovers"])), _thousands(roundi(m["pw_exposed"]))])
+		lines.append("Taken over: %s   Passwords readable: %s" % [_count(raw.get("takeovers", m["takeovers"])), _count(raw.get("pw_exposed", m["pw_exposed"]))])
 	if ep["live"].has("deploy"):
-		lines.append("Bookings lost: %s   Minutes down: %d" % [_thousands(roundi(m["lost_bookings"])), roundi(m["down_ticks"])])
+		lines.append("Bookings lost: %s   Minutes down: %d" % [_count(raw.get("lost_bookings", m["lost_bookings"])), roundi(m["down_ticks"])])
 	if ep["live"].has("injection"):
-		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
+		lines.append("Made up: %s  Fooled: %s  Unasked: %s" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), _count(raw.get("unasked", m["unasked"]))])
 	# The spreadsheet has room for about fifteen lines above the marks. An
 	# episode with many goals (the finale's eleven) keeps the goals, the
 	# bill and the runway, and leaves out the rest.
@@ -579,9 +602,16 @@ func _postmortem(res: Dictionary) -> bool:
 		var f: Dictionary = ep["postmortem"].get(tag, {})
 		if f.is_empty() or shown >= 3:
 			continue
+		# A little air between one finding and the next.
+		if shown > 0:
+			var gap := Control.new()
+			gap.custom_minimum_size.y = 6
+			col.add_child(gap)
 		shown += 1
+		# A dot, not a colon, after "Real term": many terms have a colon of
+		# their own ("microservices: every call between them can fail").
 		for part in [[f["title"], Palette.SLATE, Palette.LABEL], [f["plain"], Palette.SLATE, Palette.BODY],
-				["Real term: " + f["term"], Palette.GREEN_DARK, Palette.BODY], ["Tell your AI: \"%s\"" % f["tell_ai"], Palette.SLATE_MID, Palette.BODY]]:
+				["Real term · " + f["term"], Palette.GREEN_DARK, Palette.BODY], ["Tell your AI: \"%s\"" % f["tell_ai"], Palette.SLATE_MID, Palette.BODY]]:
 			var l := UI.label(part[0], part[2], part[1], true)
 			l.custom_minimum_size.x = 218
 			col.add_child(l)

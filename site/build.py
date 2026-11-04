@@ -7,9 +7,9 @@ the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
 JavaScript game, gets its own page in `flatmates/` and its export in
 `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
-`curb/` and `curb/play/`. Mission Silicon, the prototype of the
-fourth game, is in `mission-silicon/` and `mission-silicon/play/`; it isn't
-on the splash yet.
+`curb/` and `curb/play/`. Mission Silicon, the fourth game, is in
+`mission-silicon/` and `mission-silicon/play/`, and has a card on the
+splash after Dunder Quest and Flatmates.js.
 
     python site/build.py build/site
     python site/build.py --play build/site/play/index.html
@@ -290,7 +290,7 @@ def page(title: str, body: str, prefix: str, active: str = "", description: str 
 <footer class="foot">
   <p><img src="{prefix}static/img/tin.png" alt="" width="12" height="12"> {foot or "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="{prefix}">All games</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest</a> · <a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{prefix}curb/">Curb Your Oxidation</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
+  <p><a href="{prefix}">All games</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest</a> · <a href="{prefix}play/">Play in your browser</a> · <a href="{prefix}lessons/">Lessons</a> · <a href="{prefix}guide/">How to play</a> · <a href="{prefix}flatmates/">Flatmates.js</a> · <a href="{prefix}curb/">Curb Your Oxidation</a> · <a href="{prefix}mission-silicon/">Mission Silicon</a> · <a href="{CHANNEL}">YouTube</a> · <a href="{REPO}">Source on GitHub</a></p>
   <p><a class="help" href="{prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 {scripts}
@@ -412,7 +412,7 @@ def build_home(bank: dict, prefix: str = "") -> str:
 
 
 SPLASH_DESC = ("Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest "
-               "and JavaScript in Flatmates.js. Play them in your browser.")
+               "and JavaScript in Flatmates.js, and how apps are built with AI in Mission Silicon. Play them in your browser.")
 
 
 def build_splash(prefix: str = "") -> str:
@@ -434,6 +434,11 @@ def build_splash(prefix: str = "") -> str:
          "Two mismatched flatmates in a very small Croydon flat. Swap between Clive and Jazz across six stops, from "
          "calling a method to awaiting two promises, and script the one you aren't playing.",
          "Meet the flatmates"),
+        ("game-ms", "Build with AI", "Mission Silicon", f"{prefix}mission-silicon/", f"{prefix}mission-silicon/play/",
+         "mission-silicon.png", MS_ALT,
+         "You can't code. Your AI teammate can, a bit too confidently. Fourteen episodes in an incubator house, from a "
+         "landing page to sixty cities: read its pull request, cut what you don't need, and watch the night play out.",
+         "Meet the house"),
     ]
     cards = "".join(f"""
     <li class="game {cls}">
@@ -473,10 +478,10 @@ def build_splash(prefix: str = "") -> str:
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, or JavaScript?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, or no code at all?</h2>
   <ul class="games">{cards}
   </ul>
-  <p class="count">Every snippet in every game is checked against the real thing: Python, Node and rustc. Trailers for all three are on <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every coding game is checked against the real thing: Python, Node and rustc. Trailers are on <a href="{CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 """
     ## Links to the old home's sections (in trailer descriptions, for one) now
@@ -484,7 +489,7 @@ def build_splash(prefix: str = "") -> str:
     old = f'<script>if (/^#(download|trailer)$/.test(location.hash)) location.replace("{prefix}{QUEST_PAGE}" + location.hash);</script>'
     return page("", body, prefix, description=SPLASH_DESC, path="", nav=HOME_NAV, brand="", play="curb/play/",
                 fonts=FRANKLIN, full_title="Dunder Quest · Games that teach programming",
-                foot="Dunder Quest. Pixel-art games that teach Python, JavaScript and Rust.",
+                foot="Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, and building apps with AI.",
                 scripts=f'{old}\n<script src="{prefix}static/trailer.js"></script>')
 
 

@@ -599,4 +599,13 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .game-copy .cta { margin: auto 0 0; padding-top: 12px; align-items: center; }
 .game-more { font: 1.35rem var(--label); color: var(--gold); }
 .game-fm:hover { border-color: #f7de1f; }
+.game-ms:hover { border-color: #2bb673; }
+/* Three games: three across on a wide screen; at two across the third
+   spans the row, art beside its copy. */
+@media (min-width: 1000px) { .games { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 761px) and (max-width: 999px) {
+  .game:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; }
+  .game:last-child:nth-child(odd) .game-art { flex: 1 1 50%; }
+  .game:last-child:nth-child(odd) .game-copy { flex: 1 1 50%; }
+}
 @media (max-width: 760px) { .games { grid-template-columns: 1fr; } }

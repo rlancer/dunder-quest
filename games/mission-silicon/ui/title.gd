@@ -33,6 +33,11 @@ func _ready() -> void:
 	add_child(line)
 	var sub := UI.place(UI.label("A Dunder Quest game. You can't code. Your AI can, a bit too confidently.", Palette.BODY, Palette.SLATE_MID), Rect2(0, 58, 480, 12)) as Label
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# A new label's first minimum width is measured at the default font
+	# size (555 px for this line), which stretched it past the screen and
+	# pushed the centred text right. Clipping drops that minimum; the line
+	# fits with room to spare.
+	sub.clip_text = true
 	add_child(sub)
 
 	var outline: Array = Season.data().get("outline", [])
@@ -65,7 +70,9 @@ func _tile(ep: Dictionary, at: Vector2) -> Button:
 	UI.style(b, "normal")
 	b.add_theme_stylebox_override("normal", UI.box(Palette.WHITE, Palette.GREEN, 1))
 	b.pressed.connect(_play.bind(id))
-	_fill(b, id, ep.get("tile", ep.get("short", ep["title"])), Palette.GREEN_DARK, Palette.SLATE)
+	# The episode's own title, as its title card has it ("Tabs and Spaces",
+	# "The Board Meeting"), not the top bar's shortened capitals.
+	_fill(b, id, ep.get("tile", ep["title"]), Palette.GREEN_DARK, Palette.SLATE)
 	var best: Dictionary = Progress.best.get(str(id), {})
 	if best.is_empty():
 		b.add_child(UI.place(UI.label("new", Palette.BODY, Palette.GREEN_DARK), Rect2(4, 47, 52, 11)))
@@ -86,24 +93,17 @@ func _tile(ep: Dictionary, at: Vector2) -> Button:
 func _soon(entry: Dictionary, at: Vector2) -> Control:
 	var p := UI.place(UI.panel(Color(Palette.RULE, 0.6), Palette.SLATE_LIGHT, 1), Rect2(at, TILE))
 	p.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_fill(p, int(entry["id"]), entry.get("short", entry["title"]), Palette.SLATE_LIGHT, Palette.SLATE_MID)
+	_fill(p, int(entry["id"]), entry["title"], Palette.SLATE_LIGHT, Palette.SLATE_MID)
 	p.add_child(UI.place(UI.label("soon", Palette.BODY, Palette.SLATE_LIGHT), Rect2(4, 56, 52, 11)))
 	return p
 
 
 func _fill(c: Control, id: int, title: String, number_color: Color, title_color: Color) -> void:
 	c.add_child(UI.place(UI.title(str(id), 16, number_color), Rect2(4, 1, 52, 20)))
-	var t := UI.place(UI.label(_case(title), Palette.BODY, title_color, true), Rect2(4, 21, 54, 26)) as Label
+	var t := UI.place(UI.label(title, Palette.BODY, title_color, true), Rect2(4, 21, 54, 26)) as Label
 	t.clip_text = false
 	c.add_child(t)
 
-
-## "THE BOARD MEETING" and "The Board Meeting" both arrive; tiles use title case.
-func _case(title: String) -> String:
-	var words := []
-	for w in title.split(" "):
-		words.append(w.substr(0, 1).to_upper() + w.substr(1).to_lower())
-	return " ".join(words)
 
 
 func _play(id: int) -> void:
