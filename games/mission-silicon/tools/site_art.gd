@@ -10,8 +10,8 @@ extends Node
 
 ## The screenshot on the card, kept alive until it has been drawn.
 var _shot: ImageTexture
-const SHOTS := {"83_planning.png": "planning.png", "85_live.png": "trouble.png",
-	"89_dials.png": "dials.png", "87_postmortem_take_one.png": "postmortem.png", "90_live.png": "live.png"}
+const SHOTS := {"97_planning.png": "planning.png", "99_live.png": "trouble.png",
+	"103_dials.png": "dials.png", "101_postmortem_take_one.png": "postmortem.png", "104_live.png": "live.png"}
 
 
 func _ready() -> void:
@@ -51,7 +51,7 @@ func _draw_card(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 1200, 630), Palette.PAPER)
 	c.draw_rect(Rect2(0, 0, 1200, 16), Palette.GREEN)
 	if _shot == null:
-		var img := Image.load_from_file(ProjectSettings.globalize_path("res://tests/shots/90_live.png"))
+		var img := Image.load_from_file(ProjectSettings.globalize_path("res://tests/shots/104_live.png"))
 		img.resize(600, 338, Image.INTERPOLATE_LANCZOS)
 		_shot = ImageTexture.create_from_image(img)
 	c.draw_rect(Rect2(556, 150, 608, 346), Palette.SLATE)

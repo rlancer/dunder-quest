@@ -538,6 +538,8 @@ func _postmortem(res: Dictionary) -> bool:
 	if ep["live"].has("login"):
 		lines.append("Logins working: %d%%   Bookings read: %s" % [roundi(m["login_success"] * 100.0), _thousands(roundi(res["peeked"]))])
 		lines.append("Taken over: %s   Passwords read: %s" % [_thousands(roundi(m["takeovers"])), _thousands(roundi(m["pw_exposed"]))])
+	if ep["live"].has("deploy"):
+		lines.append("Bookings lost: %s   Minutes down: %d" % [_thousands(roundi(m["lost_bookings"])), roundi(m["down_ticks"])])
 	if ep["live"].has("injection"):
 		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
 	# The spreadsheet has room for about fifteen lines above the marks. An

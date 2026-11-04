@@ -178,7 +178,8 @@ func _piece_for(id: String) -> String:
 		"app":
 			var cfg := plan.config()
 			if cfg.get("mvp", false):
-				return "mvp"
+				# Episode 7's launch moves the MVP onto a platform host.
+				return "platform" if cfg["host"] == "cloud" and cfg.has("deploy") else "mvp"
 			if cfg["host"] == "cloud":
 				return "app_server"
 			return "prototype" if cfg.has("concierge") else "garage_server"
@@ -189,7 +190,7 @@ func _piece_for(id: String) -> String:
 		"web":
 			return "backend"
 		"db":
-			return "bookings_db" if plan.config().has("store") else "postgres"
+			return "bookings_db" if plan.config().has("store") and plan.config()["host"] != "cloud" else "postgres"
 		"copy":
 			return "live_copy"
 		"login":

@@ -1,4 +1,4 @@
-# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 3 (*Tabs and Spaces*), 4 (*Demo Day*), 5 (*The Spreadsheet*), 6 (*Log In*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
+# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 3 (*Tabs and Spaces*), 4 (*Demo Day*), 5 (*The Spreadsheet*), 6 (*Log In*), 7 (*Launch Party*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -1228,3 +1228,100 @@ Narrative. The fitness app is unnamed and made up. Gilroy: every leaked password
 | Prefer an established auth service or library over a home-made login | True; CS and PWS list what a home-made login has to get right |
 | Passwords stored hashed, never as text | True; PWS, NIST |
 | Authorization on every request; changing a number in the URL | True; BOLA |
+
+# Episode 7 (*Launch Party*)
+
+The same pass for Episode 7, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new pieces in `data/pieces.json`, the board's new boxes, sub-lines, badges and bubbles, the live panel and the postmortem, and the additions to `sim/sim.gd`, against CURRICULUM.md's Modules 8 and 12. Same rule: **simplify, never falsify**. Reviewed November 2026; every source below was fetched for this pass.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| CI | [Continuous Integration](https://martinfowler.com/articles/continuousIntegration.html), Martin Fowler: "works on my machine" is a well-known phrase for a reason, and a clean build catches what a local one misses; anyone should be able to "bring in a clean machine, check the sources out of the repository, issue a single command"; self-testing code is "a necessary prerequisite"; set up the test environment "to be as exact a mimic of our production environment as possible", since "every difference results in a risk that what happens under test won't happen in production"; with automated deploys, "automated rollback", to "quickly go back to the last known good state" |
+| TC | [TestCoverage](https://martinfowler.com/bliki/TestCoverage.html), Martin Fowler: coverage "is of little use as a numeric statement of how good your tests are"; "high coverage numbers are too easy to reach with low quality testing", tests without assertions being the extreme; it's useful for "finding untested parts of a codebase" |
+| SEN | [Usage](https://docs.sentry.io/platforms/javascript/usage/), Sentry JavaScript SDK docs: the SDK "automatically reports errors, uncaught exceptions, and unhandled rejections"; an error the code handles itself is reported by passing it to `captureException()` |
+| Earlier keys | VT (a key in the frontend is public; Episode 12), YAGNI (Episode 14), GIT (Episodes 1 and 2) |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| Deployed from a laptop, a change goes out as it is, with that laptop's settings; nothing runs the tests or tries it first, and there's no earlier build to go back to | True (simplified) | CI ("works on my machine"; a clean machine from the repository). "No earlier build" is true of Melon's copying-up, not of every laptop deploy; the finding says so of his |
+| Melon's copy has the model key in the app, so it'd work on his machine; bots read it within the hour | True of this copy | VT, as Episode 12. The copy, not laptops in general, carries the key; the board's `deploy.laptop` override is Melon's |
+| Tests stop a change that breaks what they check, and only that: 212 tests that open the home page let a broken booking through | True | TC (high counts with low-quality tests); CI (a test suite catches what it's written to catch) |
+| A broken save that still says "Booked!" is silent: no error is thrown, so nothing reports it, and it's found when diners turn up | True (simplified) | A bug that returns success throws nothing for error tracking to catch (SEN reports errors and unhandled exceptions). Thirty minutes until someone says so is the story's |
+| Staging with the host's settings stops a change that breaks on the host's settings | True | CI (mimic production; every difference is a risk) |
+| A bug only real data shows (an apostrophe in a restaurant's name) gets past tests and staging with made-up data | True | A classic; CI's "every difference results in a risk" covers data as well as settings. The finding says to test with realistic data and to track errors for what still gets through |
+| With error tracking, a loud break is heard in two minutes; without, in thirty, from a guest | True (simplified) | SEN (reported automatically as it happens). The minutes are illustrative |
+| An app that catches every error and shows "Enjoy the party!" reports nothing, even with tracking | True of this code | SEN: a handled error is reported only if the code passes it on (`captureException`). The finding's advice is a friendly page that still reports |
+| From CI, a rollback to the last build takes two minutes; a fix written live takes forty | True (simplified) | CI (automated rollback to the last known good state). The minutes are the story's |
+| A second region gets a bad deploy too, and costs another host | True | A deploy goes to every region it's configured for; redundancy protects against a region failing, not against shipping a bug. The postmortem calls it over-engineering for one night (YAGNI) |
+| Kubernetes takes twenty hours | Narrative | Too long to fit, as other episodes' too-big cards |
+| Every other episode unchanged | Checked | `live.deploy` is off unless an episode configures it; the `"noticed"` hotfix tick only applies to a hotfix that says so; the pieces' monthly costs only count when their keys are on. All thirteen other runways match to nine places (see HANDOFF.md) |
+
+## Text
+
+### Cold open, brief, cliffhanger
+
+Narrative. The ice sculpture, Melon's card, Gerard's balloons. Melon's "it works on my machine" is the misconception the episode answers (CI). Gilroy's line about the host's first bill sets up Episode 8.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Go live: a platform host runs the code, with a managed Postgres beside it | True | Curriculum Module 8. The $700 a month is illustrative |
+| Tests: 212, all passing; Gilroy: nobody's asked what they check | True as the trap | TC |
+| Deploy from CI: a clean machine builds from Git, runs the tests, deploys that build, keeps the last one | True | CI |
+| Staging: same host, same settings, made-up diners; pages opened before it goes live | True | CI. $100 a month is illustrative |
+| Error tracking: unhandled errors, on phones and the server, sent as they happen, with where | True | SEN (the JavaScript SDK; server SDKs do the same). $30 a month is illustrative |
+| Kubernetes: scales to millions | Narrative | Aleister's overreach; it doesn't fit the night |
+| Second region: it can never go down; Gilroy: a bad deploy goes to both | True | See the shapes table |
+| No errors (Ulrich, wrong): catch everything, say "Enjoy the party!" | True as the trap | SEN |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| How does the code get onto the host? Melon's three-week-old copy; Ricky: CI | True | CI |
+| What do the tests check? Each opens the home page; a test should book a table and look it up | True | TC |
+| Where do we try a change before diners see it? Staging | True | CI |
+| How will we know if something breaks? Error tracking, before a diner tells us | True | SEN |
+| What will this cost at 10x the traffic? The host is flat; the AI is per question, about nine thousand tonight; ten times the diners is ten times the AI bill | True | As earlier episodes: a per-request model bill scales with use. Tonight's model bill in the simulation is $8.7k |
+| Make sure it never goes down (decoy) | Narrative | It adds the second region |
+
+### Dials, hotfix, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Dial: tests check "page opens" or "a booking" (+1h) | True | TC |
+| Hotfix: roll back to the last good build, or Aleister writes a fix live | True | CI |
+| Postmortem: laptop_deploy | True | CI |
+| Postmortem: key_in_app, "anything in the frontend is public" | True | VT; as Episode 12 |
+| Postmortem: no_tests, "a regression, with no tests"; wrong_tests, "tests that check the wrong thing" | True | TC; CI |
+| Postmortem: no_staging, real_data | True | CI |
+| Postmortem: no_tracking, errors_hidden ("show a friendly error page, and still report every error") | True | SEN |
+| Postmortem: rollback, no_rollback ("roll back first, then fix") | True | CI |
+| Postmortem: garage_melt, overbuilt | True | As Episodes 8 and 14 |
+| Card: Deploy from CI, not a laptop | True | CI, each clause ("tries it somewhere set up like production": the production mimic) |
+| Card: Check what the tests check | True | TC |
+| Card: Hear about errors first | True | SEN, both halves |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| platform | True; curriculum Module 8 |
+| laptop, ci | True; CI |
+| staging | True; CI. The price is illustrative |
+| tracking | True; SEN. The price is illustrative |
+| region | True; see the shapes table. The price is illustrative |
+
+## CURRICULUM.md, Modules 8 and 12
+
+| Claim | Verdict |
+| --- | --- |
+| Deploy from a pipeline, not a laptop; what's in Git is what's live | True; CI |
+| Staging before production | True; CI |
+| Rollback to the last good build | True; CI |
+| Tests that check the right thing; many passing tests can check little | True; TC |
+| Error tracking, so you hear before your users tell you | True; SEN |
