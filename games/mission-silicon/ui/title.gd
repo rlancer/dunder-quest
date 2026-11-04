@@ -64,7 +64,7 @@ func _tile(ep: Dictionary, at: Vector2) -> Button:
 	UI.style(b, "normal")
 	b.add_theme_stylebox_override("normal", UI.box(Palette.WHITE, Palette.GREEN, 1))
 	b.pressed.connect(_play.bind(id))
-	_fill(b, id, ep.get("short", ep["title"]), Palette.GREEN_DARK, Palette.SLATE)
+	_fill(b, id, ep.get("tile", ep.get("short", ep["title"])), Palette.GREEN_DARK, Palette.SLATE)
 	var best: Dictionary = Progress.best.get(str(id), {})
 	if best.is_empty():
 		b.add_child(UI.place(UI.label("new", Palette.BODY, Palette.GREEN_DARK), Rect2(4, 47, 52, 11)))

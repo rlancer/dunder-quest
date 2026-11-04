@@ -189,7 +189,11 @@ func _piece_for(id: String) -> String:
 		"web":
 			return "backend"
 		"db":
-			return "postgres"
+			return "bookings_db" if plan.config().has("store") else "postgres"
+		"copy":
+			return "live_copy"
+		"login":
+			return "auth_service" if str(plan.config().get("auth", "home")) == "service" else "home_login"
 		"cache":
 			return "redis"
 		"model":

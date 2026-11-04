@@ -21,6 +21,8 @@ const SPOTS := {
 	"form": Vector2(120, 36), "git": Vector2(62, 156),
 	# The MVP (Episodes 3 and 4): the web app, and Veronica's notebook.
 	"front": Vector2(62, 92), "notebook": Vector2(178, 156),
+	# The bookings' store and logins (Episodes 5 and 6).
+	"sheet": Vector2(178, 92), "backups": Vector2(238, 92), "copy": Vector2(238, 156), "login": Vector2(238, 36),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -52,7 +54,15 @@ const BUBBLES := {
 	"type_bugs": ["app", "undefined!"], "unfamiliar": ["app", "Zig, from memory"], "boundary": ["front", "partySize?"],
 	"logic_bugs": ["app", "Wrong night"], "not_mobile": ["front", "Button off-screen"], "price_in_app": ["front", "Fee: $0.00!"],
 	"hidden_price": ["front", "Hidden. Still $0!"],
+	"overwritten": ["sheet", "Written over!"], "no_backup": ["db", "Restaurants gone!"],
+	"untested_backup": ["backups", "Backup's empty!"], "copy_not_backup": ["copy", "Deleted here too!"],
+	"restored": ["backups", "Restoring..."], "ai_rebuilt": ["db", "Made-up tables!"],
+	"stuffing": ["login", "Leaked passwords!"], "sql_injection": ["login", "' OR 1=1 --"],
+	"plain_passwords": ["db", "Passwords readable!"], "fast_hash": ["db", "Hashes cracked!"],
+	"pw_rules": ["login", "Needs a symbol?!"], "no_login": ["phones", "No accounts!"],
 }
+## The home-made login's passwords, as its badge (Episode 6).
+const PW_NAMES := {"plain": "as typed", "fast": "fast hash", "slow": "slow hash"}
 ## Each language as the box's sub-line (Episode 3).
 const LANG_NAMES := {"ts": "TypeScript", "js": "JavaScript", "rust": "Rust", "zig": "Zig", "python": "Python"}
 ## Specs as the prototype's badge (Episode 1).
@@ -70,6 +80,11 @@ var live: bool = false
 var frame: Dictionary = {}
 var _boxes: Dictionary = {}
 var _clock: float = 0.0
+## Where this frame's badges were drawn.
+var _badge_rects: Array[Rect2] = []
+## Bubble places already worked out, keyed by box, width, badges and the
+## bubbles before it (the board-wide search is too slow to run every frame).
+var _spot_cache: Dictionary = {}
 
 
 func _ready() -> void:
@@ -118,8 +133,17 @@ func _present(c: Dictionary) -> Dictionary:
 		out["lb"] = true
 	if c.get("cache", false):
 		out["cache"] = true
-	if cloud:
+	if cloud or str(c.get("store", "")) == "postgres":
 		out["db"] = true
+	# The bookings' store (Episode 5): a spreadsheet until it's a database.
+	if c.has("store") and str(c["store"]) != "postgres":
+		out["sheet"] = true
+	if c.get("backups", false):
+		out["backups"] = true
+	if c.get("live_copy", false):
+		out["copy"] = true
+	if c.get("logins", false):
+		out["login"] = true
 	if c.get("queue", false):
 		out["queue"] = true
 	if cloud and c.get("warehouse", false):
@@ -207,6 +231,8 @@ func _layout() -> void:
 			"db":
 				label = "Postgres"
 				sub = "indexed" if cfg.get("index", false) else "database"
+				if not cloud:
+					sub = "on Aleister"
 				if int(cfg.get("db_x", 1)) > 1:
 					sub = "%dx size" % int(cfg["db_x"])
 				if cfg.get("shards", false):
@@ -273,6 +299,18 @@ func _layout() -> void:
 			"notebook":
 				label = "Notebook"
 				sub = "Python"
+			"sheet":
+				label = "Sheet"
+				sub = "40 tabs" if int(cfg.get("sheet_tabs", 1)) > 1 else "Gerard's"
+			"backups":
+				label = "Backups"
+				sub = "nightly"
+			"copy":
+				label = "Live copy"
+				sub = "replica"
+			"login":
+				label = "Login"
+				sub = "service" if str(cfg.get("auth", "home")) == "service" else "our own"
 			"git":
 				label = "GitHub"
 				sub = "per change" if str(cfg.get("commits", "daily")) == "each" else "daily"
@@ -316,8 +354,15 @@ func _layout() -> void:
 				badges.append("checker")
 		if id == "db" and cfg.get("txn", false):
 			badges.append("txn")
-		if id == "db" and cfg.get("owner_check", false):
+		if id == "db" and (cfg.get("owner_check", false) or cfg.get("restaurant_check", false)):
 			badges.append("owner check")
+		if id == "backups" and cfg.get("restore_tested", false):
+			badges.append("restored")
+		if id == "login":
+			if str(cfg.get("auth", "home")) == "home":
+				badges.append(PW_NAMES.get(str(cfg.get("pw_store", "plain")), ""))
+			if cfg.get("pw_rules", false):
+				badges.append("rules")
 		if id == "phones" and str(cfg.get("key_where", "")) == "frontend":
 			badges.append("key in app")
 		if id == "phones" and cfg.get("direct_ai", false):
@@ -395,6 +440,15 @@ func _wires() -> Array:
 			out.append(["app", "model", "model"])
 		if has.call("db"):
 			out.append(["app", "db", "db"])
+		if has.call("sheet"):
+			out.append(["app", "sheet", "db"])
+		var store := "db" if has.call("db") else "sheet"
+		if has.call("backups") and has.call(store):
+			out.append([store, "backups", "backup"])
+		if has.call("copy") and has.call("db"):
+			out.append(["db", "copy", "replica"])
+		if has.call("login") and has.call("app"):
+			out.append(["app", "login", "login"])
 		if has.call("git") and has.call("app"):
 			out.append(["git", "app", "history"])
 		if has.call("notebook") and not cfg.get("notebook_app", false):
@@ -533,6 +587,7 @@ func _draw() -> void:
 				var t := fposmod(_clock * 0.6 + float(i) / n, 1.0)
 				draw_rect(Rect2(ends[0].lerp(ends[1], t) - Vector2(1, 1), Vector2(2, 2)), dot)
 	# Boxes.
+	_badge_rects.clear()
 	for id in _boxes:
 		var b: Dictionary = _boxes[id]
 		var r: Rect2 = b["rect"]
@@ -562,6 +617,7 @@ func _draw() -> void:
 				bx = r.position.x
 				by += 12.0
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)
+			_badge_rects.append(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)))
 			draw_string(font, Vector2(bx + 2, by + 10), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
 			bx += bw + 2
 		if live and id in ["app", "db", "model", "replica", "warehouse", "web", "signups_db"]:
@@ -580,12 +636,14 @@ func _draw() -> void:
 			draw_circle(r.position + Vector2(10 + i * 7, -t * 24.0), 2.0 + t * 3.0, Color(0.4, 0.4, 0.45, 0.6 * (1.0 - t)))
 	# Bubbles.
 	if live:
-		var y_used := {}
 		var drawn: Array[Rect2] = []
 		for tag in frame.get("tags", []):
 			if not BUBBLES.has(tag):
 				continue
 			var spot: String = BUBBLES[tag][0]
+			# Before there's a database, the bookings are in the spreadsheet.
+			if spot == "db" and not _boxes.has("db") and _boxes.has("sheet"):
+				spot = "sheet"
 			if not _boxes.has(spot):
 				spot = "app"
 			if not _boxes.has(spot):
@@ -593,24 +651,86 @@ func _draw() -> void:
 			var text: String = BUBBLES[tag][1]
 			var r: Rect2 = _boxes[spot]["rect"]
 			var tw := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 8
-			var stack := int(y_used.get(spot, 0))
-			y_used[spot] = stack + 1
-			var pos := Vector2(clampf(r.get_center().x - tw / 2.0, 2, size.x - tw - 2), r.position.y - 15 - stack * 14)
-			if pos.y < 2:
-				pos.y = r.end.y + 12 + stack * 14
-			# Neighbouring boxes' bubbles can share a row: lift this one clear of any it would cover.
-			for _try in 6:
-				var hit := false
-				for d in drawn:
-					if d.intersects(Rect2(pos, Vector2(tw, 13)).grow(-0.5)):
-						pos.y = d.position.y - 14 if d.position.y - 14 >= 2 else d.end.y + 1
-						hit = true
-						break
-				if not hit:
-					break
+			var pos := _bubble_spot(r, tw, drawn)
 			drawn.append(Rect2(pos, Vector2(tw, 13)))
 			draw_rect(Rect2(pos, Vector2(tw, 13)), Palette.RED)
 			draw_string(font, pos + Vector2(4, 10), text, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
+
+
+## Where a bubble for box `r` goes: just above the box, or under it and its
+## badges, or a row further out, the first place that covers no box, no
+## badge and no other bubble. Crowded boards (Demo Day's, the finale's) can
+## run out of those; then the clear place on the whole board nearest the
+## box, and only if there's none, a place clear of the other bubbles.
+func _bubble_spot(r: Rect2, tw: float, drawn: Array[Rect2]) -> Vector2:
+	var key := "%s|%s|%s|%s|%s" % [r, tw, _boxes.keys(), _badge_rects, drawn]
+	if _spot_cache.has(key):
+		return _spot_cache[key]
+	if _spot_cache.size() > 256:
+		_spot_cache.clear()
+	var spot := _find_bubble_spot(r, tw, drawn)
+	_spot_cache[key] = spot
+	return spot
+
+
+func _bubble_clear(rect: Rect2, drawn: Array[Rect2], of_boxes: bool) -> bool:
+	for d in drawn:
+		if d.intersects(rect):
+			return false
+	if not of_boxes:
+		return true
+	for id in _boxes:
+		if (_boxes[id]["rect"] as Rect2).intersects(rect):
+			return false
+	for b in _badge_rects:
+		if b.intersects(rect):
+			return false
+	return true
+
+
+func _find_bubble_spot(r: Rect2, tw: float, drawn: Array[Rect2]) -> Vector2:
+	var under := r.end.y + 1.0
+	for b in _badge_rects:
+		if b.position.x < r.end.x and b.end.x > r.position.x and b.position.y >= r.end.y and b.position.y < r.end.y + 30.0:
+			under = maxf(under, b.end.y + 1.0)
+	var rows := []
+	for k in 4:
+		rows.append(r.position.y - 14.0 - k * 14.0)
+		rows.append(under + k * 14.0)
+	var cx := r.get_center().x - tw / 2.0
+	var xs := [cx, r.position.x, r.end.x - tw, cx - tw / 2.0 - 4.0, cx + tw / 2.0 + 4.0]
+	var fallback := Vector2(-1, -1)
+	for y in rows:
+		if y < 2.0 or y + 13.0 > size.y - 2.0:
+			continue
+		for x0 in xs:
+			var x := clampf(x0, 2.0, size.x - tw - 2.0)
+			var rect := Rect2(Vector2(x, y), Vector2(tw, 13)).grow(-0.5)
+			if not _bubble_clear(rect, drawn, false):
+				continue
+			if fallback.x < 0.0:
+				fallback = Vector2(x, y)
+			if _bubble_clear(rect, drawn, true):
+				return Vector2(x, y)
+	# Nowhere near the box: the nearest clear place on the board.
+	var best := Vector2(-1, -1)
+	var best_d := INF
+	var gy := 2.0
+	while gy + 13.0 <= size.y - 2.0:
+		var gx := 2.0
+		while gx + tw <= size.x - 2.0:
+			var rect := Rect2(Vector2(gx, gy), Vector2(tw, 13)).grow(-0.5)
+			var d := rect.get_center().distance_squared_to(r.get_center())
+			if d < best_d and _bubble_clear(rect, drawn, true):
+				best = Vector2(gx, gy)
+				best_d = d
+			gx += 4.0
+		gy += 2.0
+	if best.x >= 0.0:
+		return best
+	if fallback.x >= 0.0:
+		return fallback
+	return Vector2(clampf(r.get_center().x - tw / 2.0, 2, size.x - tw - 2), maxf(2.0, r.position.y - 14.0))
 
 
 func _dashed(a: Vector2, b: Vector2, c: Color) -> void:

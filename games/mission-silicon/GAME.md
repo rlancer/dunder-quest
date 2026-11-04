@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it, then the front half's Episodes 1 to 4. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it, then the front half's Episodes 1 to 6. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -104,7 +104,7 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Analytics on the live database** (built, Episode 9) | Database, replica, warehouse | Dashboard queries are huge scans (screens × tiles / refresh, each a scan of every stored row). On the main database they take capacity from bookings, and a booking waits the database's full latency; on a read replica they swamp the copy instead; on a warehouse, stored by column, each is a small share of the work | `olap_on_oltp`, `replica_slow`, `too_many_tiles` |
 | **Pipeline freshness** (built, Episode 9) | Warehouse | The board's numbers are as old as the last good copy: hourly, nightly or streamed. A scripted copy failure stays broken until a hotfix fixes it, and the hotfix is only offered with alerts | `silent_failure`, `stale_numbers` |
 | **Secret exposure** (built, Episode 12) | The model key, wherever it lives | Each place a key is exposed brings its own strangers from the tick it's found, calling the model provider directly (never through our app) on our bill and our rate limit: the old key in the Git history (already found) until it's rotated; whichever key is in the app's code once a scanning bot reads the app; whichever key the server has once a malicious package sends it away. Deleting the file or making the repository private doesn't stop the old key working; only rotating it does. Switching our own search off stops our diners, not the strangers | `leaked_key`, `key_in_app`, `fake_package`, `ai_off` |
-| **Authorization** (built, Episode 12) | Booking requests | From a scripted tick a bot counts through booking numbers; without an ownership check, every number that exists shows someone else's booking (a leak, and a lawyer); with one, "not found" for almost no work | `idor` |
+| **Authorization** (built, Episode 12; Episode 6 reuses it) | Booking requests | From a scripted tick a bot (Episode 6: one curious restaurateur, on the restaurant pages, with their own check) counts through booking numbers; without an ownership check, every number that exists shows someone else's booking (a leak, and a lawyer); with one, "not found" for almost no work | `idor` |
 | **Grounding** (built, Episode 13) | The AI concierge, the menu index | Without retrieval over the real menus, a share of answers about dishes and allergies are made up (one in seven), as confident as the rest; retrieval cuts that to about one in a hundred, never to none, for longer prompts (uncached) and a small search of the index. A bigger model or a second AI checking cuts it only a little, since neither has seen the menus | `hallucination` |
 | **Agents and tools** (built, Episode 13) | The agent | A share of searches become jobs the agent carries out in a loop, several model calls each, none from the answer cache (more with agents talking to each other, or a second AI checking every answer, which can run past the provider's rate limit). Asking the diner before a step loses a share of jobs: a few before paying, a third before every step | `confirm_fatigue`, `rate_limited` |
 | **Prompt injection** (built, Episode 13) | Text the model reads | From a scripted tick a planted review sits on one restaurant's page; a share of answers read it, and of those, one in two follow it, or one in fifty with what it reads marked as data (never none). A steered answer repeats the review's message; a steered job pays a deposit nobody chose unless the diner has to confirm (nearly all say no), and with every tool our app has it also cancels other diners' bookings at that restaurant, which only not having the tool prevents | `prompt_injection`, `no_confirm`, `excess_agency` |
@@ -113,6 +113,9 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **A live, unreviewed fix** (built, the Finale) | Any part of the board | A hotfix can carry its own postmortem tag, named first when it's kept (`tag`); the finale's deletes the hold on the table and the ownership check. A hotfix's needs can also be boxes already on the board, not only cards | `unreviewed` |
 | **The code** (built, Episode 3) | The backend, in the language its dial sets | The AI makes logic mistakes in any language, more in one it has seen little of (Zig five times as many, Rust one and a half). In a dynamic language (JavaScript, or Python in a notebook) type-shaped mistakes, a misspelt field or a word where a number goes, reach the night; a static type checker stops them before anything runs. A backend in another language from the web app adds mistakes at the boundary, where a booking is defined twice. A request that hits one fails. A faster language does the same work with less of the server. Nothing serves diners without a backend and a web app, or a notebook running the app, which stops when its laptop closes | `type_bugs`, `unfamiliar`, `boundary`, `logic_bugs`, `notebook_app`, `no_backend`, `no_frontend` |
 | **The price in the app** (built, Episode 4) | The booking fee | Worked out in the app, the fee is whatever the phone sends, and from a scripted tick a share of bookings come in with it edited to nothing; hiding the price box changes nothing. Worked out on the server, edits are ignored | `price_in_app`, `hidden_price`, `no_fee` |
+| **A spreadsheet as the database** (built, Episode 5) | The bookings' store | Code that reads the sheet for a free table and the next empty row, then writes there, has a gap of a second plus a little per row; two bookings inside it land on one row and the later wins, a share 1 − e^(−b × gap ÷ tabs) of them. Tabs per restaurant spread the bookings, not close the gap. The last table goes twice through Episode 11's race with the sheet's gap. A database writes each booking whole, with a gap of milliseconds | `overwritten`, `double_booking` |
+| **A deletion and the backups** (built, Episode 5) | The database | At a scripted tick the AI deletes the restaurants. A backup restored before (a drill) is back in minutes; an untested one is empty, a live copy deleted them too, and with neither they're typed back in all night; rebuilt from the AI's memory, they're back fast with a share of tables made up, and bookings at those are lost | `restored`, `untested_backup`, `copy_not_backup`, `no_backup`, `ai_rebuilt` |
+| **Logins** (built, Episode 6) | The login | With no accounts nobody logs in; password rules make a share give up. From a scripted tick bots try passwords leaked from another site, and a share are real (people reuse them): a home-made login with no limit lets every one in, a login service stops nearly all. At another, a home-made login whose query is built from what's typed hands over the users table, readable as stored: as typed, all; a fast unsalted hash, most; a slow salted hash, none that night. A login service keeps the passwords itself | `no_login`, `pw_rules`, `stuffing`, `sql_injection`, `plain_passwords`, `fast_hash` |
 | **Mobile first** (built, Episode 4) | The web app | Laid out for a desktop, the book button is off a phone's screen for a share of the diners on phones, who give up | `not_mobile` |
 | **The season in one night** (the Finale) | Everything | Every behaviour above on at once, each configured by its own keys of `live`, as its episode had it. No new code was needed to combine them | |
 
@@ -611,18 +614,203 @@ Cliffhanger: Ravello, after the demo. Walter, after a silence: "Yes." Veronica: 
 
 The pilot and season 1: Richard throwing up before every big moment, and the pitch meetings that go sideways (the VCs who poke holes, the room that won't take him seriously), then Russ Hanneman, the billionaire who put radio on the internet, arriving loud and wanting in. Here: Gerard's bags, Ulrich's nodding, Chaz's fax machines, his assistant breaking the demo in front of the room, and Walter's one-word yes. If a fan wouldn't recognise the bag and the loud investor, it's drifted; they would.
 
-## From Episode 4's board to Episode 8's
+## Episode 5 on paper: *The Spreadsheet*
 
-Episodes 5 to 7 aren't built yet; this is the path the first four leave for them, so the continuity check can hold from 1 to 14.
+Stage 1, Module 6's OLTP side (why a database: files and spreadsheets break when two people write at once; transactions; keeping data safe with backups tested by restoring one), with Module 6's misconceptions "a spreadsheet is a database" (Ulrich) and "the AI can fix my data later" (the hotfix). Borrowed set piece: the loud owner's "help", a branding obsession and a bright idea that nearly sinks the company (Erlich's). The lines are in `data/season.json`.
+
+### Continuity
+
+The starting board is Episode 4's solution: the TypeScript MVP on Aleister, the web app laid out mobile first, the notebook, the $2 fee worked out on the server, the model key on the server, the landing page, the form and Git. Nothing changes (no `changed`). New keys: `store` (`sheet`: over the weekend Ulrich had Aleister move the bookings into Gerard's shared spreadsheet, as Episode 4's cliffhanger said), `sheet_tabs` (1), `backups`, `restore_tested`, `live_copy`, `own_db` and `rebuilt` (all off). The board adds three spots: the spreadsheet (or Postgres, in the same place) at (178, 92), the backups at (238, 92) and the live copy at (238, 156).
+
+### Cold open
+
+Monday, 9am, Gerard's desk (a new backdrop: one immaculate desk, a huge monitor of colour-coded spreadsheet). Fifteen thousand people's bookings in his spreadsheet; teal is confirmed. Ulrich moved them in so he could see them: a founder should feel his bookings. Ricky: two people book at the same moment, what happens? Ulrich: twice the bookings; that's growth. Danesh: a couple turned up at Nonna's for a table a man from Daly City also had; he'd brought his mother. Gerard has been fixing them by hand and hasn't slept since Thursday; at his last job he didn't sleep for a quarter.
+
+Title card: **THE SPREADSHEET**.
+
+### Brief
+
+Veronica: on Friday the whole waitlist can book, two thousand at a time at the peak, and Walter's money isn't for buying strangers dinner. Aleister kept the spreadsheet because Ulrich asked, and made it better: Spreadsheet Scale.
+
+- **Budget**: $400k in the bank (Walter's yes), $30k a month, so 13.3 months of runway (the fee earns some back). 6 hours to build.
+- **Goal**: never down 20 minutes, nine bookings in ten work, every booking kept, no table booked twice.
+
+### Aleister's pull request: "Spreadsheet Scale"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **One tab each**: a tab per restaurant | Aleister | 2h | — | Bookings collide forty times less, and still collide; the last table still goes twice. With Postgres it does nothing, and leaves no time for the drill | Gerard will colour-code the tabs; Ricky: fewer people in each tab, nothing stopping two landing on one row |
+| **Nightly backups** | Aleister | 0.5h | +$20 | Needed, with a bad default: nobody has ever restored one | Gerard always wanted backups (at his last company the backup was a man called Doug); Gilroy: never restored, it's a file |
+| **Own database** | Aleister (Ricky's idea) | 30h | — | The too-big card | Ricky: just a file and some rules about the file; Veronica: this Friday |
+| **Postgres** (from an ask), on Aleister | Aleister | 3h | — | The fix: each booking written whole, no write wiping out another, the gap between looking and booking down to milliseconds | Ricky: tables, keys, a schema; Ulrich: you can't colour-code Postgres |
+| **Restore drill** (from an ask) | Aleister | 1h | — | Restore last night's backup onto a spare database and check it on Wednesday | Gerard: a fire drill for data; Danesh: what could be wrong with a copy? |
+| **Live copy** (from a decoy) | Aleister | 1h | +$150 | A replica that copies every change, the deletion included | Aleister: nothing can ever be lost; Gilroy: including the changes you'll regret |
+| **Keep it** (the sheet) | Ulrich (wrong) | 0.5h | — | Overrides Postgres: the bookings stay in his spreadsheet | Ulrich: can you open Postgres on your phone?; Gilroy: a database until two people write at once, which is every Friday |
+
+Ulrich is wrong, which leaves him right four times in twelve. His card is Module 6's misconception "a spreadsheet is a database", and it overrides the fix the way "Hide it" did in Episode 4.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **What if two people book at once?** | Aleister: they both book. Gilroy read the code: it reads the whole sheet for a free table and the next empty row, then writes; two at once find the same row and the second writes over the first. Ricky: that's what a database is for; Postgres can run on Aleister | Adds **Postgres** (3h) |
+| **Have we ever restored a backup?** | Aleister: never needed to. Gerard: then we don't know it works; a backup you've never restored is a hope | Adds **Restore drill** (1h) |
+| **Show me the schema first.** | Ricky: restaurants, tables pointing at restaurants, bookings pointing at tables and diners; a name changed once, everywhere. Gilroy: four spellings of Nonna's in the sheet | Just facts (Module 6's tables and keys) |
+| **Make sure we never lose anything.** (decoy) | Aleister, delighted | Adds **Live copy** (1h) |
+
+### The dials
+
+None.
+
+### The live moment: Friday, 6pm to 10pm, the waitlist books
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 6:00pm | 0 | The whole waitlist can book: three hundred online |
+| 6:30pm | 30 | The dinner rush: 1,200, then two thousand by 7:30. On the spreadsheet, bookings land on each other's rows, more as the sheet grows, and the last tables go twice |
+| 8:40pm | 160 | Gerard asks Aleister Jr. to tidy up the test data, and it deletes all forty restaurants. **Hotfix**: "I'll put them back from memory. Ten minutes?" |
+| 9:20pm | 200 | The rush eases |
+
+The new behaviours are `live.sheet` and `live.wipe` (see the simulation's table), and Episode 11's race (`live.race`) with the spreadsheet's gap. The spreadsheet's gap is reading the sheet and writing the row: a second, plus a little for every row already in it (6,000 at the start). Two bookings inside the gap land on one row and the later write wins, so with b bookings a second the share written over is 1 − e^(−b × gap ÷ tabs); at the peak, more than half. The last table goes twice at h²w/H, as in Episode 11, with the spreadsheet's second as w. In Postgres a booking can't wipe out another, and the gap is Episode 11's fifty milliseconds: at this traffic, a fifth of a double booking all night, which rounds to nobody (Episode 11's sixteen thousand diners and a deposit wait inside the gap are what make it matter). The deletion only happens in a database (the spreadsheet plans have already failed): a tested backup is back in fifteen minutes; an untested one is empty (it had been copying the test database), a live copy deleted them too, and with neither Gilroy types them back in for the rest of the night; Aleister's rebuild from memory is back in ten minutes with a third of the tables made up.
+
+The solution's night: Postgres on Aleister, nightly backups, the drill on Wednesday, the hotfix cut. 6,529 bookings, none lost, none twice, fifteen minutes down while Gerard restores, a model bill of $2.6k and $13k of fees.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | 3,822 of 7,048 bookings written over, and six tables booked twice. Fails, 8.60 months (the comped dinners) |
+| Aleister's PR as proposed | 33 hours: can't merge |
+| Minus our own database (the bot's take one) | Ulrich's sheet in forty tabs: 140 bookings written over, six tables twice. Fails, 13.50 |
+| Postgres, no backups | The restaurants are gone from 8:40: down 80 minutes, 73% of bookings. Fails, 13.60 |
+| Postgres and backups, no drill | The backup is empty: the same. Fails, 13.59 |
+| Postgres and the live copy, with or without backups | The copy deleted them too: the same. Fails, 13.52 to 13.53 |
+| The solution plus the hotfix | Back in ten minutes with made-up tables: 467 bookings at tables that don't exist. Fails, 13.05 |
+| The solution plus Ulrich's card | Back on the spreadsheet: fails, 8.59 |
+| The solution plus "One tab each" | 6.5 hours: can't merge |
+| The solution plus the live copy | Passes, at 13.60: misses Lean |
+| The solution: ask both questions, keep Postgres, backups and the drill, cut the tabs, our own database, the live copy, Ulrich's card and the hotfix | 13.663 months of runway; par 13.66 |
+
+### Postmortem
+
+New findings: the spreadsheet wrote bookings over each other ("lost updates: a spreadsheet isn't a database"); two parties got the same last table ("a race condition"); Aleister deleted the restaurants and there was no copy ("no backups"); the backup was empty ("an untested backup"); the live copy deleted them too ("replication isn't a backup"); Aleister rebuilt them from memory and made some up ("the AI can't fix your data later"); and, in the solution's own postmortem, the backup put them back ("a tested restore"). The spreadsheet adds bookings lost and tables booked twice.
+
+Marks: Live, Lean (13.66 months or better), Ulrich (cut "Keep it").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Transactions** (all together or not at all, and nobody sees them half done, which is what lets many people book at once; the PostgreSQL tutorial), **Test your backups** (what you want is a restore, and you only know you can restore by doing it) and **A copy isn't a backup** (replication isn't recoverability: a bad delete reaches every copy), both from the Google SRE book's chapter on data integrity.
+
+Cliffhanger: Saturday morning, the kitchen. Gerard has archived the spreadsheet to his desktop; he visits it. Ulrich wants accounts for the diners, their names in teal; Veronica: the forty restaurants want to log in and see their own bookings. Danesh: logins are easy. Gilroy: said everyone, right before the breach. Gerard has found a focus group. (Episode 6: Log In.)
+
+### Checking it against the show
+
+Erlich's "help" all through season 1 and 2: the bright idea nobody asked for, the branding obsession (here, teal), and his total confidence that it's a contribution. Here: Ulrich moving fifteen thousand bookings into Gerard's spreadsheet so he can feel them, Gerard's very thorough spreadsheets (Jared's), and Aleister Jr. deleting the restaurants while tidying up, which is Son of Anton "fixing" a bug by deleting the code. If a fan wouldn't recognise Erlich's help and Jared's spreadsheets, it's drifted; they would.
+
+## Episode 6 on paper: *Log In*
+
+Stage 2, Modules 5 (authentication against authorization; sessions; prefer an established auth service or library over a home-made login) and 11 (authorization on every request; passwords hashed, never as text, or better, not stored at all; "nobody will bother attacking my little app"). Borrowed set piece: the focus group of ordinary people who can't work out the brilliant product the engineers love. The lines are in `data/season.json`.
+
+### Continuity
+
+The starting board is Episode 5's solution: the bookings in Postgres on Aleister, with nightly backups that have been restored. Nothing changes. New keys: `logins` (off), `auth` (`home`, Aleister's habit), `pw_store` (`plain`), `pw_rules`, `restaurant_check` and `own_id` (off). The login box sits at (238, 36). Episode 12 starts with `owner_check` false and its own ownership lesson, so this episode's check is a separate key: the restaurants' pages, `/restaurants/7`, which Episode 6 fixes. Episode 12's hole is the diners' booking links, a different page.
+
+### Cold open
+
+Monday, 8am, the kitchen, the morning a breach is on the news (a new backdrop: laptops glowing with red warning banners). Danesh's fitness app has been hacked, thirty million passwords; they take his security very seriously. Gilroy has read Danesh's password: his own name and the year he was born ("it's a strong year"). Every password on that list is being tried on every login on the internet today, including the one they're about to build. Ulrich: then don't build one; he's seen the buttons, little logos in a row. Ricky: we are not choosing how we keep people's passwords by the buttons. Gerard's focus group arrives at six: twelve ordinary people, paid in pizza.
+
+Title card: **LOG IN**.
+
+### Brief
+
+Veronica: diners get accounts on Friday to see their bookings, and the forty restaurants log in to see theirs; Gerard's focus group tries it first. Aleister has written the login itself.
+
+- **Budget**: $410k in the bank, $30k a month, so 13.7 months of runway. 6 hours to build.
+- **Goal**: up all evening, nine in ten can log in, each restaurant sees only its own bookings, no accounts taken over, no passwords anyone could read.
+
+### Aleister's pull request: "Accounts"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Accounts**: an email and a password, the login written by Aleister | Aleister | 2h | — | Needed, with a bad default: home-made, the passwords as typed (the dial), no limit on guesses, and its query built from what's typed | Danesh: logins are a solved problem; Gilroy: solved by other people |
+| **Forkcast ID**: our own sign-in for every app | Aleister (Ricky's idea) | 16h | — | The too-big card | Ricky: it's a platform; Veronica: it's a login, by Friday |
+| **Login service** | Ulrich (right) | 1h | +$100 | Someone else's login: it keeps the passwords, limits guesses, checks for leaked ones and sends the resets. Overrides the home-made login | Ulrich wants the buttons, little logos in teal; Veronica: a hundred a month, forever, for a box you type your email in |
+| **Check the owner** (from an ask) | Aleister | 1h | — | The restaurant pages check whose number it is | Gilroy: logging in says who you are, not what you can see; Danesh: normal people don't know the address bar is there |
+| **Password rules** (from a decoy) | Aleister | 0.5h | — | Sixteen characters, a symbol, a new one monthly: a third of the focus group gives up | Aleister: hackers hate rules; Veronica: twelve people paid in pizza trying to think of a symbol |
+
+Ulrich is right, for the worst reason (the buttons), which makes him right five times in thirteen. His card is Module 5's "prefer an established auth service or library over a home-made login", and without it nothing in the six hours makes the home-made login safe: it has no limit on guesses, and it hands over its users table to the first person who types a database command into it.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Who can see each restaurant's bookings?** | Aleister: each restaurant's page is its number; Nonna's is seven. Gilroy: and eight is the place across the street, and nothing checks whose number it is. Ricky: who you are, then what you can see, checked on every request | Adds **Check the owner** (1h) |
+| **What stops someone guessing passwords?** | Aleister: nothing, which is very welcoming. Gilroy: thirty million real passwords are going round, and people reuse them. Ricky: a limit on guesses, a leaked-password check, two-factor; login services do all of that | Just facts (Ulrich's card is the decision) |
+| **How are the passwords stored?** | Aleister: as typed, so it can email them back. Gilroy: a stolen copy is everyone's password, for their email too. Ricky: a slow salted hash like bcrypt; a fast one like plain SHA-256 is looked up in tables made in advance; or don't keep them at all | Just facts (the dial) |
+| **How does it remember I'm logged in?** | Ricky: a session, a long random number in a cookie. Gilroy: so the cookie is the key to the account. Danesh: or a signed token, a JWT | Just facts (Module 5's sessions and tokens) |
+| **Make it unhackable.** (decoy) | Aleister, delighted | Adds **Password rules** (0.5h) |
+
+### The dials
+
+- **Passwords** (on the login box, with Accounts): as typed (Aleister's default), a fast hash, or a slow hash with a salt (an hour more). With the login service it changes nothing (`free`): the service keeps the passwords.
+
+### The live moment: Friday, 6pm to 10pm, the focus group, then the diners
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 6:00pm | 0 | Gerard's focus group tries Forkcast |
+| 6:30pm | 30 | One of them owns a trattoria, and he's curious: he changes the seven in the address bar to an eight, twice a minute |
+| 7:00pm | 60 | Bots start trying the fitness app's passwords on our login, three hundred a minute; one in a hundred is someone's real, reused password |
+| 9:00pm | 180 | Someone types a database command into Aleister's login box |
+| 9:30pm | 210 | The focus group goes home |
+
+The new behaviour is `live.login`; the curious restaurateur is Episode 12's `live.idor` with its own `guard` (`restaurant_check`) and `needs` (`logins`: no logins, no restaurant pages). With the home-made login every guessed password works (540 accounts taken over by 10pm), and at 9pm the users table is out, readable as it was stored: as typed, all fifteen thousand; a fast unsalted hash, nine in ten by lookup; a slow salted hash, none tonight, though the guessed accounts are still lost. The login service stops nearly all the guesses (a tenth of an account all night, which rounds to nobody) and has no table of ours to hand over.
+
+The solution's night: the login service, the ownership check. Every login works, nobody reads across the street, nobody's account or password goes, the model bill is $2.8k and the fees $14k; the service adds $100 a month.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | No logins: fails, 14.02 months |
+| Aleister's PR as proposed | 19 hours: can't merge |
+| Minus Forkcast ID (the bot's take one) | The service, without the check: the trattoria owner reads 378 of the place across the street's bookings, and the lawyer. Fails, 13.31 |
+| Home-made login with the check, passwords as typed | 540 accounts taken over, 15,000 passwords readable. Fails, 12.65 |
+| The same, fast hash | 540 taken over, 13,500 passwords cracked. Fails, 12.65 |
+| The same, slow hash with a salt | No passwords readable, but 540 accounts taken over and the users table out. Fails, 13.49 |
+| The solution plus the password rules | A third can't make a password: 65% can log in. Fails |
+| The solution plus Forkcast ID | 20 hours: can't merge |
+| The solution: ask who can see each restaurant's bookings, keep Accounts, Ulrich's login service and the check, cut Forkcast ID and the rules | 13.977 months of runway; par 13.97 |
+
+### Postmortem
+
+New findings: a restaurant read another restaurant's bookings ("broken access control", as in Episode 12); bots logged in as our diners ("credential stuffing"); someone typed a database command into the login box ("SQL injection"); every password was readable ("plain-text passwords"); most hashed passwords were cracked within hours ("a fast, unsalted hash"); a third of the focus group couldn't make a password ("password composition rules"); nobody could log in ("no authentication"). The spreadsheet adds logins working, bookings read, accounts taken over and passwords readable.
+
+Marks: Live, Lean (13.97 months or better), Ulrich (keep "Login service").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Check the owner, every time** (every request that asks for a record by its number checks you're allowed it; OWASP API Security's broken object level authorization), **Never store passwords as typed** (a slow, salted hash such as Argon2id or bcrypt; fast hashes are poor for passwords; OWASP's Password Storage Cheat Sheet) and **Password rules that work** (no symbols or regular changes demanded; length, a leaked-password blocklist and a limit on failed attempts; NIST SP 800-63B).
+
+Cliffhanger: the living room after the focus group (a new backdrop: folding chairs in a half circle, a login box on the wall screen, the pizza). Eleven of the twelve logged in first time; the twelfth wanted to know if he could still see across the street. Walter's partners want a launch, press and a party; Ulrich wants ice sculptures and a hundred thousand dollars of balloons. Ricky: it can't run on Aleister any more, not for a launch. Gilroy: Aleister heard that. (Episode 7: Launch Party.)
+
+### Checking it against the show
+
+Season 3's focus group, where the engineers watch ordinary people fail to understand the platform they think is brilliant, through the glass; and Erlich, right for the wrong reason, which the show did often. Here: Gerard's twelve paid in pizza, the woman who thought a symbol meant an emoji, the curious trattoria owner, Ulrich right about the login service because he likes the buttons, and Gilroy reading Danesh's password aloud. If a fan wouldn't recognise the focus group and the Gilfoyle-Dinesh contempt, it's drifted; they would.
+
+## From Episode 6's board to Episode 8's
+
+Episode 7 isn't built yet; this is the path the first six leave for it, so the continuity check can hold from 1 to 14.
 
 - **Episode 2 ended with**: the concierge prototype on Aleister (garage), with a one-page spec, private; a static landing page on a static host; the form service keeping the waitlist; Git, committing every change. Its board's keys are Episode 1's (`host`, `app`, `model`, `feed`, `stories`, `sold`, `concierge`, `spec`, `detail`, `everything`) plus `page`, `static`, `backend`, `postgres`, `form`, `accounts`, `apps`, `git`, `commits`, `video` and `rollback`.
 - **Episode 3, *Tabs and Spaces*** (built): the MVP's backend is written in TypeScript on Aleister (`mvp`, `lang`), with a TypeScript web app (`front`) and Veronica's notebook (`notebook`). The prototype's `concierge` and `spec` carry into it. It still runs on Aleister.
-- **Episode 4, *Demo Day*** (built): the MVP's first public afternoon. It ends with a $2 booking fee worked out on the server (`fee`, `price_where: server`), the web app laid out mobile first (`layout`), and the model key on the server with Aleister calling the model (`key_where: server`, `direct_ai: false`). So **Episode 4 ends with** every key above plus `mvp`, `front`, `lang`, `notebook`, `notebook_app`, `investor`, `polyglot`, `fee`, `price_where`, `price_hidden`, `layout`, `direct_ai`, `key_where` and `voice`.
-- **Episode 5, *The Spreadsheet***: Episode 4's cliffhanger has Ulrich open Forkcast to the whole waitlist and keep the bookings in Gerard's spreadsheet. Ulrich's spreadsheet (and Gerard's copy of the waitlist) give way to Postgres. That's where the board first has a database of its own (the main simulation's `db`, which needs `host` to be `cloud`, or a new host type).
-- **Episode 6, *Log In***: accounts and the ownership check. Mind Episode 12, whose starting board has no ownership check (`owner_check: false`) and whose lesson is IDOR: either Episode 6's check covers restaurants seeing only their own bookings (and Episode 12's hole is a new booking link), or Episode 12 says in `changed` why it's gone.
-- **Episode 7, *Launch Party***: off Melon's laptop onto a platform host with managed Postgres, deployed by CI with tests and staging (Episode 8's continuity note). Episode 2's rollback (`live.bad_change`, `rollback`, `git`, `commits`) is the start of its scripted bad deploy.
-- **Episode 12** starts with the model key back in the app's code (`key_where: frontend`), which Episode 4 took out. Nothing checks it (Episode 11's board has no `key_where`), but the story should say how it got back: the obvious place is Episode 7's deploy from Melon's laptop, whose copy of the app has the key in it "so it just works" (Melon's README in Episode 12 is the same habit). Say so in Episode 7's postmortem or Episode 12's cold open.
-- **Episode 8's cold open** then moves everything to Aleister. `cases.gd` compares every key of Episode 7's ending board with Episode 8's starting board, so Episode 8 will need `"changed"` listing `host` and every front-half key its board doesn't carry (the landing page, the form, Git and the rest), or those keys added to its board. Either way, add them in Episode 7's PR and say why in its cold open.
+- **Episode 4, *Demo Day*** (built): it ends with a $2 booking fee worked out on the server (`fee`, `price_where: server`), the web app laid out mobile first (`layout`), and the model key on the server with Aleister calling the model (`key_where: server`, `direct_ai: false`), plus `notebook_app`, `investor`, `polyglot`, `price_hidden` and `voice`, all off.
+- **Episode 5, *The Spreadsheet*** (built): the bookings move from Ulrich's spreadsheet into Postgres on Aleister (`store: postgres`; the main simulation's `db` box shows for it while `host` is still `garage`), with nightly backups that have been restored (`backups`, `restore_tested`), plus `sheet_tabs` (1), `live_copy`, `own_db` and `rebuilt`, all off.
+- **Episode 6, *Log In*** (built): accounts through a login service (`logins`, `auth: service`) and the restaurant pages' ownership check (`restaurant_check`), plus `pw_store` (`plain`, unused with the service), `pw_rules` and `own_id`, off. So **Episode 6 ends with** every key above.
+- **Episode 7, *Launch Party***: off Aleister onto a platform host with managed Postgres, deployed by CI with tests and staging (Episode 8's continuity note), deployed from Melon's laptop. Episode 2's rollback (`live.bad_change`, `rollback`, `git`, `commits`) is the start of its scripted bad deploy. Its board must start with every key Episode 6 ends with (or name them in `changed`).
+- **Episode 12** starts with the model key back in the app's code (`key_where: frontend`), which Episode 4 took out. Nothing checks it (Episode 11's board has no `key_where`), but the story should say how it got back: the obvious place is Episode 7's deploy from Melon's laptop, whose copy of the app has the key in it "so it just works" (Melon's README in Episode 12 is the same habit). Say so in Episode 7's postmortem or Episode 12's cold open. This is still open.
+- **Episode 12** also starts with no ownership check on the diners' booking links (`owner_check: false`). Episode 6's check is a different page (the restaurants', `restaurant_check`), so the two don't contradict each other, and Episode 12's postmortem can say the booking links were the page nobody checked.
+- **Episode 8's cold open** then moves everything to Aleister. `cases.gd` compares every key of Episode 7's ending board with Episode 8's starting board, so Episode 8 will need `"changed"` listing `host` and every front-half key its board doesn't carry (the landing page, the form, Git, the store, the logins and the rest), or those keys added to its board. Either way, add them in Episode 7's PR and say why in its cold open. Episode 8's database is the main simulation's cloud `db` again, so `store`, `backups` and the login keys can go in `changed`; the backups and the login service are still there in the story, just not on the board.
 
 ## Episode 8 on paper: *Viral*
 
@@ -1347,7 +1535,7 @@ The series finale: Pied Piper's network, improved by its own AI, becomes too pow
 
 ## How the loop covers the season
 
-Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1 to 4 and 8 to 14 are walked on paper above and built; the rest are a first sketch, to be walked the same way before each is built:
+Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1 to 6 and 8 to 14 are walked on paper above and built; Episode 7 is a first sketch, to be walked the same way before each is built:
 
 | # | Episode | The PR's trap | What the live moment tests |
 | --- | --- | --- | --- |
@@ -1355,8 +1543,8 @@ Every episode uses the same loop; what changes is which pieces, asks, behaviours
 | 2 | The Whiteboard | A full backend and database for a landing page | Waitlist sign-ups during Ulrich's party; a bad change with and without Git to roll back |
 | 3 | Tabs and Spaces | Each box's language: Danesh's fashionable pick, Gilroy's fast one | Build time to the deadline, bugs the AI makes in less common languages, types catching them; Veronica's question as a marimo notebook job |
 | 4 | Demo Day | The price rule and the model key in the frontend | The investor's assistant changes the price in the browser; the demo on a phone |
-| 5 | The Spreadsheet | Ulrich's spreadsheet kept as the database | Two hosts booking at once lose a booking; a backup that's never been restored |
-| 6 | Log In | A home-made login; no ownership check on bookings | The focus group: a curious diner changes the number in the URL |
+| 5 | The Spreadsheet | Ulrich's spreadsheet kept as the database; backups never restored | Bookings written over each other and the last table twice; Aleister deletes the restaurants |
+| 6 | Log In | A home-made login, passwords as typed; no ownership check on the restaurant pages | The focus group: a curious restaurateur changes the number in the URL; leaked passwords tried on our login; a breach |
 | 7 | Launch Party | Deploying from Melon's laptop | A bad change mid-party; staging, tests and error tracking catch it, or don't |
 | 8 | Viral | Above | Above |
 | 9 | The Board Meeting | Dashboards on the live database; Mack's box | Friday bookings crawl while the board refreshes its dashboards |
@@ -1379,7 +1567,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 5 to 7 in detail (walk each like the built ones first; the path from Episode 4's board to Episode 8's is above).
+- Episode 7 in detail (walk it like the built ones first; the path from Episode 6's board to Episode 8's is above).
 - Whether there's a hub between episodes (the house). For now the title screen is a season screen: fourteen tiles, each built one with its best runway and marks.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.

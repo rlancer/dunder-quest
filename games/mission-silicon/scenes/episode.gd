@@ -422,6 +422,12 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 			"bugs": "Hitting a bug  %s" % ("-" if f["down"] else "%d%%" % roundi(100.0 * float(f.get("bug", 0.0)))),
 			"unpaid": "Paid no fee  %s" % _thousands(roundi(f.get("underpaid", 0.0))),
 			"strangers": "Strangers' calls  %s/min" % _thousands(roundi(f.get("stolen", 0.0))),
+			"lost": "Bookings lost  %s" % _thousands(floori(float(f.get("lost", 0.0)) + 0.5)),
+			"twice": "Tables booked twice  %d" % floori(float(f.get("double_bookings", 0.0)) + 0.5),
+			"logins": "Logins working  %d%%" % roundi(100.0 * sim.login_done / maxf(sim.login_tries, 0.000001)),
+			"read": "Bookings read  %s" % _thousands(roundi(f.get("peeked", 0.0))),
+			"takeovers": "Accounts taken over  %s" % _thousands(floori(float(f.get("takeovers", 0.0)) + 0.5)),
+			"passwords": "Passwords readable  %s" % _thousands(floori(float(f.get("pw_exposed", 0.0)) + 0.5)),
 		}
 		var out := []
 		for m in ep["live"]["meters"]:
@@ -527,6 +533,11 @@ func _postmortem(res: Dictionary) -> bool:
 		lines.append("Requests that hit a bug: %.1f%%" % (m["bug_share"] * 100.0))
 	if ep["live"].has("tamper"):
 		lines.append("Bookings that paid no fee: %s" % _thousands(roundi(m["underpaid"])))
+	if ep["live"].has("sheet"):
+		lines.append("Lost: %s   Booked twice: %d" % [_thousands(roundi(m["lost_bookings"])), roundi(m["double_bookings"])])
+	if ep["live"].has("login"):
+		lines.append("Logins working: %d%%   Bookings read: %s" % [roundi(m["login_success"] * 100.0), _thousands(roundi(res["peeked"]))])
+		lines.append("Taken over: %s   Passwords read: %s" % [_thousands(roundi(m["takeovers"])), _thousands(roundi(m["pw_exposed"]))])
 	if ep["live"].has("injection"):
 		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
 	# The spreadsheet has room for about fifteen lines above the marks. An

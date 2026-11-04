@@ -72,7 +72,11 @@ func goal_card(goals: Array, budget: Dictionary) -> void:
 func lesson_card(lesson: Dictionary) -> void:
 	_begin(Palette.PAPER)
 	_content.add_child(UI.place(UI.label("CODEX", Palette.LABEL, Palette.GREEN_DARK), Rect2(60, 60, 360, 14)))
-	_content.add_child(UI.place(UI.title(lesson["term"], 26, Palette.SLATE), Rect2(60, 74, 360, 34)))
+	# A long term shrinks to fit the card's width rather than run off the screen.
+	var px := 26
+	while px > 16 and Palette.titles().get_string_size(lesson["term"], HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > 360:
+		px -= 1
+	_content.add_child(UI.place(UI.title(lesson["term"], px, Palette.SLATE), Rect2(60, 74 + (26 - px) * 0.5, 360, 34)))
 	_content.add_child(UI.place(UI.label(lesson["plain"], Palette.HEAD, Palette.SLATE, true), Rect2(60, 114, 360, 100)))
 	_content.add_child(UI.place(UI.label("tap", Palette.BODY, Palette.SLATE_LIGHT), Rect2(446, 250, 24, 12)))
 	await _wait(0)
