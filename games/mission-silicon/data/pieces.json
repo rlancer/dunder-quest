@@ -1,0 +1,31 @@
+{
+	"_note": "Illustrative numbers: plausible and rounded, chosen so each lesson reads. Work is in units of about a millisecond of server time; capacity is units per second. The shapes are real (see GAME.md).",
+	"backlog_limit": 20,
+	"network": {"base": 0.2, "no_cdn": 0.4},
+	"pieces": {
+		"phones": {"label": "Diners", "term": "clients", "plain": "Everyone on Forkcast right now, on their phones."},
+		"garage_server": {"label": "Aleister", "term": "self-hosted server", "plain": "Gilroy's server in the garage, running the app and the database together.",
+			"capacity": 1000, "latency": 0.05, "monthly": 0, "overheat": {"above": 0.8, "ticks": 20, "down": 30}},
+		"app_server": {"label": "App", "term": "app server", "plain": "Rented servers running Forkcast's backend.",
+			"sizes": {"S": {"capacity": 500, "monthly": 150}, "M": {"capacity": 1000, "monthly": 300}, "L": {"capacity": 2000, "monthly": 600}},
+			"latency": 0.05, "pool": 10},
+		"load_balancer": {"label": "Balancer", "term": "load balancer", "plain": "Hands each request to whichever server is free."},
+		"postgres": {"label": "Postgres", "term": "managed database", "plain": "The reservations book, run for you by the host.",
+			"capacity": 1000, "latency": 0.02, "monthly": 400, "max_connections": 100},
+		"redis": {"label": "Redis", "term": "cache", "plain": "A nearby copy of recent answers, so the database isn't asked twice.", "monthly": 100},
+		"cdn": {"label": "CDN", "term": "content delivery network", "plain": "Copies of photos and pages on servers near every diner.", "monthly": 50, "per_request": 0.00001},
+		"queue": {"label": "Queue", "term": "queue and worker", "plain": "Work that can wait goes in a line; a worker gets through it.", "monthly": 50, "worker_capacity": 1000},
+		"model_api": {"label": "Model API", "term": "AI model API", "plain": "The AI model Forkcast asks, paid per call.",
+			"price": 0.02, "fixed_share": 0.8, "cached_rate": 0.1, "latency": 2.0, "limit": 80, "answer_keys": 300000, "answer_ttl": 3600},
+		"cluster": {"label": "Kubernetes", "term": "container cluster", "monthly": 4000},
+		"shards": {"label": "Shards", "term": "sharded database", "monthly": 800, "capacity_x": 3}
+	},
+	"work": {
+		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},
+		"tables": {"app": 0.3, "db_per_row": 0.00007, "db_indexed": 0.3},
+		"search": {"app": 5.0, "db": 0.5},
+		"my_bookings": {"app": 0.3, "db": 0.5},
+		"book": {"app": 5.0, "app_rust": 2.0, "db": 3.0},
+		"signup": {"app": 250.0, "enqueue": 0.2, "db": 1.0}
+	}
+}
