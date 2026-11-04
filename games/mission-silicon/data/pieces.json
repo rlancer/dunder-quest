@@ -43,6 +43,12 @@
 		"front": {"label": "Web app", "term": "frontend (TypeScript, React)", "plain": "The pages diners use in their browser: the search box, the results, the book button. It runs on each diner's own phone or laptop, and asks our backend for everything else."},
 		"mvp": {"label": "Aleister", "term": "backend server", "plain": "Forkcast's backend, running on Aleister in the garage: it answers the web app's requests, asks the AI model and keeps the bookings. Its language is the one the AI writes it in."},
 		"notebook": {"label": "Notebook", "term": "marimo notebook (Python)", "plain": "Code, its results and notes in one document, run a piece at a time on Veronica's laptop. Change one cell and the cells that depend on it run again."},
+		"sheet": {"label": "Spreadsheet", "term": "a shared spreadsheet", "plain": "Gerard's spreadsheet of every booking, shared with the house. Aleister reads it to find a free table and the next empty row, then writes the booking there."},
+		"bookings_db": {"label": "Postgres", "term": "relational database", "plain": "A real database on Aleister: restaurants, tables and bookings in tables of their own, with keys between them. It keeps every change whole, and lets many diners write at once."},
+		"backups": {"label": "Backups", "term": "database backups", "plain": "A copy of the database every night at 3am, kept off Aleister, to restore from if something's lost.", "monthly": 20},
+		"live_copy": {"label": "Live copy", "term": "replica (not a backup)", "plain": "A second database on a rented server that copies every change the moment it happens. Every change, mistakes included.", "monthly": 150},
+		"auth_service": {"label": "Login", "term": "auth service", "plain": "Someone else's login, made for the job: it keeps the passwords, limits guesses, checks for passwords leaked elsewhere and sends the reset emails. Our app only learns who logged in.", "monthly": 100},
+		"home_login": {"label": "Login", "term": "home-made login", "plain": "The login Aleister wrote tonight: an email and password box, the passwords kept in our own database."},
 		"index": {"label": "Menu index", "term": "vector index (for RAG)", "plain": "Every restaurant's menu and allergy notes, stored as embeddings in our own Postgres, so the concierge can find the right ones and answer from them.", "monthly": 20}
 	},
 	"_languages": "typed: a static type checker reads the code before it runs. familiar: how many times more mistakes the AI makes than in the languages it has seen most of. work_x: server work for the same requests.",

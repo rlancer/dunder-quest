@@ -1,4 +1,4 @@
-# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 3 (*Tabs and Spaces*), 4 (*Demo Day*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
+# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 3 (*Tabs and Spaces*), 4 (*Demo Day*), 5 (*The Spreadsheet*), 6 (*Log In*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -1084,3 +1084,147 @@ Narrative. The bags, Chaz and his fax machines, Walter's yes. Gerard's spreadshe
 | marimo: reactive, plain Python files, can become an app | True; MAR |
 | Hiding a button keeps people out (misconception) | True as a misconception; MDNF |
 | The backend calls the model, never the frontend, so the key stays secret | True; VT |
+
+# Episodes 5 (*The Spreadsheet*) and 6 (*Log In*)
+
+The same pass for Episodes 5 and 6, done before they merged: every technical claim a player can see in their entries in `data/season.json`, the new pieces in `data/pieces.json`, the board's new boxes, sub-lines, badges and bubbles, the live panel and the postmortem, and the additions to `sim/sim.gd`, against CURRICULUM.md's Modules 5, 6 and 11. Same rule: **simplify, never falsify**. Reviewed November 2026; every source below was fetched for this pass.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| PGT | [Transactions](https://www.postgresql.org/docs/current/tutorial-transactions.html), PostgreSQL tutorial: a transaction "bundles multiple steps into a single, all-or-nothing operation"; "the intermediate states between the steps are not visible to other concurrent transactions"; "when multiple transactions are running concurrently, each one should not be able to see the incomplete changes made by others" |
+| SRE | [Data Integrity: What You Read Is What You Wrote](https://sre.google/sre-book/data-integrity/), Google's *Site Reliability Engineering*: "No one really wants to make backups; what people really want are restores"; "you only know that you can recover your recent state if you actually do so"; "replication and redundancy are not recoverability"; "a corrupt database row or errant delete are pushed to all of your copies" |
+| BOLA | [API1:2023 Broken Object Level Authorization](https://api-security.owasp.org/editions/2023/en/0xa1-broken-object-level-authorization), OWASP API Security Top 10: attackers manipulate "the ID of an object that is sent within the request"; Scenario 1 swaps shop names in the URL to read thousands of stores' sales data; check access "in every function that uses an input from the client to access a record in the database" |
+| PWS | [Password Storage Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html), OWASP: "Passwords should never be stored in plain text"; salting protects against "pre-computing hashes using rainbow tables or database-based lookups"; MD5 and SHA-1 "were designed to be fast" and are poor choices; use "strong, slow hashing algorithms such as Argon2id, bcrypt, or PBKDF2" |
+| CS | [Credential Stuffing Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Credential_Stuffing_Prevention_Cheat_Sheet.html), OWASP: credential stuffing is "testing username/password pairs obtained from the breach of another site", relying on password reuse; defences include multi-factor authentication, limiting a client's request rate, checking new passwords against breached password datasets, and bot detection |
+| NIST | [SP 800-63B](https://pages.nist.gov/800-63-4/sp800-63b.html), NIST Digital Identity Guidelines: verifiers "SHALL NOT impose other composition rules" and "SHALL NOT require subscribers to change passwords periodically"; compare new passwords against a blocklist of commonly used, expected or compromised ones; passwords "SHALL be salted and hashed"; a rate-limiting mechanism "that effectively limits the number of failed authentication attempts" |
+| SQLI | [SQL Injection Prevention Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html), OWASP: "SQL injection occurs when untrusted data becomes part of a query's SQL syntax"; prepared statements "treat bound values as data rather than SQL syntax" |
+| Earlier keys | The race (Episode 11), IDOR and the lawyer (Episode 12) |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| A spreadsheet written by "read the sheet for the next empty row, then write there" loses a booking when two land inside the gap; the later write wins | True of this code | It's the lost-update shape of any read-then-write with nothing holding the data in between. The card and the ask describe this code, Aleister's, not every way of writing to a spreadsheet (a spreadsheet's own append call is safer); the misconception the episode answers is curriculum Module 6's "a spreadsheet is a database, until two people edit it at once" |
+| The gap grows with the rows already in the sheet | True (simplified) | Reading the whole sheet takes longer the bigger it is. A second plus 0.05 ms a row is illustrative |
+| The share written over is 1 − e^(−b × gap ÷ tabs) | True | The chance another Poisson arrival lands inside the gap. Forty tabs divide the rate per tab, so collisions are rarer and still happen |
+| The last table goes twice through Episode 11's race, with the spreadsheet's gap; in Postgres the gap is Episode 11's fifty milliseconds and the night's expected double bookings round to nobody | True (simplified) | As Episode 11 (h²w/H). The finding says a database narrows the gap from seconds to milliseconds, not that it closes it; Episode 11 closes it with a transaction. `tag_min` keeps a night whose expected count is a fifth of a booking from naming the finding; the expected comps are still on the bill |
+| A database writes each booking whole and doesn't let one write wipe out another | True | PGT (all-or-nothing, concurrent changes not seen half done). Postgres runs each statement as its own transaction |
+| A scripted deletion of the restaurants by the AI, tidying up test data | Narrative, and a real kind of incident | An AI agent with database access deleting production data has happened; the game shows one way, without naming any company |
+| A backup restored before comes back in fifteen minutes; one never restored is empty (it copied the test database) | True of this backup | SRE: you only know you can restore by doing it. The game doesn't say every untested backup is empty; the finding says this one had been copying the wrong database and nobody knew |
+| A live copy deletes them too | True | SRE: an errant delete is pushed to all copies; replication isn't recoverability |
+| Rebuilt from the AI's memory: back in ten minutes with a third of the tables made up | True (simplified) | A model asked to recreate data it doesn't have fills gaps with what's plausible (Episode 13's grounding, curriculum Module 13); the share is the story's. Module 6's misconception "the AI can fix my data later" |
+| Bots try email and password pairs leaked from another site; a share work because of reuse; a home-made login with no limit lets every one in; a login service stops nearly all | True (simplified) | CS. "Nearly all": the service's pass-through is one in five thousand, a tenth of an account all night here, not zero |
+| A home-made login that builds its query from what's typed hands over the users table | True of this code | SQLI. The finding is about Aleister's login, and says proven login code doesn't build queries that way |
+| The stolen table is readable as stored: as typed, all; a fast unsalted hash, nine in ten by lookup; a slow salted hash, none that night | True (simplified) | PWS: salts defeat precomputed lookups; fast hashes are cheap to attack; slow ones are costly per guess. The shares are the story's; "none that night" is a statement about one night, and the slow-hash plan still fails for the stolen accounts and the stolen table |
+| A login service keeps the passwords itself | True | That's the product (curriculum Modules 5 and 11: "better still, use an auth provider and don't store them at all") |
+| Password rules make a third of the focus group give up | True as illustration | NIST: no composition rules or periodic changes. The share is the story's |
+| A restaurant changes the number in the address bar and reads another restaurant's bookings, without the ownership check | True | BOLA, Scenario 1 (shops in the URL). Episode 12's `live.idor`, with its own `guard` and `needs` |
+| Every other episode unchanged | Checked | Every new behaviour is off unless an episode configures `live.sheet`, `live.wipe` or `live.login`; `guard` defaults to `owner_check`, `needs` to nothing, `tag_min` to zero. All eleven runways match to nine places (see HANDOFF.md) |
+
+## The Spreadsheet text
+
+### Cold open, brief, cliffhanger
+
+Narrative. Gerard's teal, Ulrich feeling his bookings, the man from Daly City and his mother, Gerard's archived spreadsheet. Ricky's question in the cold open is the episode's ask.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| One tab each: fewer bumps; Ricky: still nothing stopping two landing on one row | True | See the shapes table |
+| Nightly backups, kept off Aleister; Gilroy: never restored, it's a file | True | SRE |
+| Own database | Narrative | Too long to fit |
+| Postgres on Aleister: each booking written whole, two at once don't write over each other | True | PGT |
+| Ricky: tables, keys, a schema; nothing typed out twice | True | Curriculum Module 6 |
+| Restore drill: restore onto a spare database and check | True | SRE |
+| Live copy: copies every change; Gilroy: including the ones you'll regret | True | SRE |
+| Keep it (the sheet; Ulrich, wrong): a spreadsheet is a database | True as a misconception | Curriculum Module 6 |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| What if two people book at once? Gilroy's reading of Aleister's code; Ricky: that's what a database is for | True | See the shapes table; PGT |
+| Have we ever restored a backup? A backup you've never restored is a hope | True | SRE; curriculum Module 6's own line |
+| Show me the schema first: three tables pointing at each other; a name changed once | True | Curriculum Module 6 (keys instead of copies) |
+| Make sure we never lose anything (decoy) | Narrative | |
+
+### Hotfix, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Hotfix: put the restaurants back from memory | True as the trap | See the shapes table |
+| Postmortem: overwritten, "lost updates: a spreadsheet isn't a database" | True | |
+| Postmortem: double_booking, "a race condition"; milliseconds in a database, not a second or more | True | As Episode 11 |
+| Postmortem: no_backup, untested_backup, copy_not_backup, restored | True | SRE |
+| Postmortem: ai_rebuilt, "an AI fills gaps with what's likely" | True | Curriculum Module 0 and 13 |
+| Card: Transactions | True | PGT, each clause; "that's what lets many people book at once" applies it to Forkcast |
+| Card: Test your backups | True | SRE, both halves |
+| Card: A copy isn't a backup | True | SRE |
+
+## Log In text
+
+### Cold open, brief, cliffhanger
+
+Narrative. The fitness app is unnamed and made up. Gilroy: every leaked password is tried on every login on the internet today; true in spirit (CS: bots test breached pairs against other sites), and it's his line. Ulrich's buttons are the joke; the card doesn't claim the buttons are why it works.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Accounts: the passwords as typed, so Aleister can email them back | True as the problem | PWS. A site that can email you your password is storing it readably |
+| Danesh: logins are a solved problem; Gilroy: solved by other people | Narrative, and true | Curriculum Module 5 |
+| Forkcast ID | Narrative | Too long to fit |
+| Login service (Ulrich, right): keeps the passwords, limits guesses, checks for leaked ones, sends resets | True | Curriculum Module 5; CS lists the defences such services offer. The $100 a month is illustrative |
+| Veronica: a hundred a month, forever | True as a trade-off | |
+| Check the owner: answer as if it doesn't exist | True | BOLA; as Episode 12 |
+| Danesh: normal people don't know the address bar is there | Narrative | Curriculum Module 5's misconception, "users won't call my API directly"; the night disproves it |
+| Password rules; Veronica's pizza line | True as the trap | NIST |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Who can see each restaurant's bookings? Change the seven to an eight | True | BOLA |
+| What stops someone guessing passwords? Reuse; a limit, a leaked-password check, two-factor | True | CS; NIST |
+| How are the passwords stored? Slow salted hash like bcrypt; fast like plain SHA-256 looked up in tables made in advance | True | PWS (SHA-256 isn't named there, but it's a fast general-purpose hash of the same family as SHA-1; unsalted, it's open to precomputed lookups) |
+| How does it remember I'm logged in? A session, a random number in a cookie; or a signed token, a JWT | True | Curriculum Module 5 |
+| Make it unhackable (decoy) | Narrative | |
+
+### Dials, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Dial: as typed, fast hash, slow and salted (+1h); no effect with the service | True | PWS |
+| Postmortem: idor | True | BOLA |
+| Postmortem: stuffing, "credential stuffing" | True | CS |
+| Postmortem: sql_injection | True | SQLI |
+| Postmortem: plain_passwords | True | PWS |
+| Postmortem: fast_hash, "hashed is not the same as safe" | True | PWS |
+| Postmortem: pw_rules, "the standard now says not to demand symbols or regular changes" | True | NIST |
+| Postmortem: no_login | Narrative | |
+| Card: Check the owner, every time | True | BOLA (check in every function that takes a record's ID) |
+| Card: Never store passwords as typed | True | PWS, each clause |
+| Card: Password rules that work | True | NIST, each clause |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| sheet, bookings_db | True; see the shapes table and PGT |
+| backups, live_copy | True; SRE. The prices are illustrative |
+| auth_service, home_login | True; curriculum Module 5 |
+
+## CURRICULUM.md, Modules 5, 6 and 11
+
+| Claim | Verdict |
+| --- | --- |
+| Files and spreadsheets break when two people write at once | True as the shape; see the shapes table |
+| Transactions: all together or not at all | True; PGT |
+| Backups, tested by actually restoring one | True; SRE |
+| Authentication against authorization | True; BOLA |
+| Prefer an established auth service or library over a home-made login | True; CS and PWS list what a home-made login has to get right |
+| Passwords stored hashed, never as text | True; PWS, NIST |
+| Authorization on every request; changing a number in the URL | True; BOLA |

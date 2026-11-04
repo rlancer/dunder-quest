@@ -222,6 +222,31 @@ SCENES = {
         "chairs, a big wall screen showing a single plain green slide with no words, minimalist abstract "
         "art, a tall window onto the city and the bay. Calm, sparse, intimidating, money in the air. " + STYLE
     ),
+    "spreadsheet": ROOM + (
+        "a corner of a shabby old Victorian house in San Francisco's Mission District used as a startup "
+        "incubator, on a Monday morning: one immaculately tidy desk against the back wall, with a huge monitor "
+        "filled edge to edge by a colourful spreadsheet grid of thousands of tiny cells in teal, yellow and pink "
+        "with no readable writing, a second laptop showing the same grid, neat labelled box files, a row of "
+        "perfectly aligned pens, a printed stack of grid pages with coloured tabs, a cold cup of tea, a small "
+        "potted succulent, a wall calendar with every day crossed off, a tall window with grey morning light. "
+        "Orderly to the point of worrying. " + STYLE
+    ),
+    "breach": ROOM + (
+        "the kitchen of a shabby old Victorian house in San Francisco's Mission District used as a startup "
+        "incubator, early on a Monday morning, the morning a data breach is on the news: a big wooden table with "
+        "several open laptops whose screens glow with a red warning banner and a padlock icon with no readable "
+        "writing, a phone on the table lit up red, a small wall television showing a red news ticker with no "
+        "readable words, cold coffee mugs, a half-eaten bowl of cereal, a tall bay window with flat grey "
+        "dawn light. Uneasy red glow against the grey. " + STYLE
+    ),
+    "focusgroup": ROOM + (
+        "the big living room of a shabby old Victorian house in San Francisco's Mission District used as a "
+        "startup incubator, just after a consumer focus group has left: a half circle of mismatched folding "
+        "chairs facing a wall screen showing a plain login box with no readable words, a few borrowed tablets "
+        "and phones left on the chairs, a folding table of open pizza boxes and paper cups, a flip chart with "
+        "scribbled sticky notes and no readable writing, a sagging sofa pushed to the side, a tall bay window "
+        "with evening light. Warm, a little forlorn. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

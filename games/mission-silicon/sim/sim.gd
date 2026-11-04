@@ -100,6 +100,16 @@ var _rolled_at: int = -1
 var bug_hits: float = 0.0
 var bug_tries: float = 0.0
 var underpaid: float = 0.0
+## The bookings' store (Episode 5): bookings a diner was told were made but
+## that weren't kept (written over in a spreadsheet, or at a table a rebuild
+## made up). Logins (Episode 6): logins tried and working, accounts taken
+## over, and passwords readable after a breach.
+var lost: float = 0.0
+var login_tries: float = 0.0
+var login_done: float = 0.0
+var takeovers: float = 0.0
+var pw_exposed: float = 0.0
+var _breached: bool = false
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -289,6 +299,54 @@ func _tick() -> Dictionary:
 	for k in bugs:
 		bug_share += bugs[k]
 
+	# Where the bookings are kept (Episode 5). Off unless the episode has
+	# `live.sheet` or `live.wipe`.
+	#
+	# A shared spreadsheet, written by code that reads the sheet to find the
+	# next empty row and whether the table is free, then writes the booking
+	# there. Nothing holds the sheet between the read and the write, and
+	# reading it takes longer the more rows it has, so two bookings inside
+	# that gap both land on the same row and the later one writes over the
+	# earlier. One tab per restaurant spreads the bookings out but doesn't
+	# close the gap. A database keeps every change whole and doesn't let one
+	# write wipe out another.
+	var sheet: Dictionary = live.get("sheet", {})
+	var sheet_on: bool = not sheet.is_empty() and str(cfg.get("store", "sheet")) != "postgres"
+	var sheet_gap := 0.0
+	if sheet_on:
+		sheet_gap = float(sheet["gap"]) + _rows * float(sheet["per_row"])
+	# A scripted deletion of the restaurants from the database (Aleister Jr.,
+	# tidying up test data), from `at`. Forkcast can't find a table anywhere
+	# until they're back. A backup that has been restored before (a restore
+	# drill) brings them back in `restore` minutes. One that never has been
+	# doesn't restore (this one had been copying an empty test database), a
+	# live copy has deleted them too, and with neither they're typed back in
+	# by hand for the rest of the night. Rebuilt by Aleister from memory,
+	# they're back in `rebuild` minutes with a share of tables made up, and
+	# bookings at those are lost.
+	var wipe: Dictionary = live.get("wipe", {})
+	var made_up_tables := 0.0
+	if not wipe.is_empty() and str(cfg.get("store", "")) == "postgres" and tick >= int(wipe["at"]):
+		var since := tick - int(wipe["at"])
+		var why := ""
+		if cfg.get("rebuilt", false):
+			if since < int(wipe["rebuild"]):
+				why = "ai_rebuilt"
+			else:
+				made_up_tables = float(wipe["made_up"])
+		elif cfg.get("backups", false) and cfg.get("restore_tested", false):
+			if since < int(wipe["restore"]):
+				why = "restored"
+		elif cfg.get("live_copy", false):
+			why = "copy_not_backup"
+		elif cfg.get("backups", false):
+			why = "untested_backup"
+		else:
+			why = "no_backup"
+		if why != "":
+			code_down = why
+			built = false
+
 	# Caches.
 	var hits := {"menus": 0.0, "tables": 0.0, "my_bookings": 0.0}
 	var stale_tables := 0.0
@@ -381,13 +439,15 @@ func _tick() -> Dictionary:
 	# booking after booking by counting through the numbers in the links.
 	# Without an ownership check, every number that exists shows someone
 	# else's booking; with one, the app answers "not found". A small load
-	# either way. Off unless the episode has `live.idor`.
+	# either way. Off unless the episode has `live.idor`. Which check guards
+	# the pages is `guard` (Episode 6's restaurant pages have their own), and
+	# pages that only exist with logins `needs` them.
 	var idor: Dictionary = live.get("idor", {})
 	var peek := 0.0
 	var peek_rate := 0.0
-	if not idor.is_empty() and tick >= int(idor["from"]):
+	if not idor.is_empty() and tick >= int(idor["from"]) and (not idor.has("needs") or cfg.get(str(idor["needs"]), false)):
 		peek = float(idor["per_minute"]) / 60.0
-		if not cfg.get("owner_check", false):
+		if not cfg.get(str(idor.get("guard", "owner_check")), false):
 			peek_rate = peek * float(idor["exists"])
 	parts["peek"] = peek * float(w["my_bookings"]["app"])
 
@@ -775,9 +835,60 @@ func _tick() -> Dictionary:
 			gap = float(race["gossip_hop"]) * log(maxf(diners, 2.0)) / log(2.0)
 			forknet_lost = float(race["offline"])
 			book_success *= 1.0 - forknet_lost
+		elif sheet_on:
+			# A spreadsheet has no transaction to hold the table: the gap is
+			# the read and the write (Episode 5).
+			gap = sheet_gap
 		elif not cfg.get("txn", false):
 			gap = float(race["window"]) + (float(pay["latency"]) if deposits_on else 0.0)
 		dbl_rate = hot * hot * gap / float(race["hot_tables"])
+
+	# Bookings written over in the spreadsheet: with successful writes at b a
+	# second over the tabs, another lands inside a booking's gap with chance
+	# 1 - e^(-b * gap / tabs), and the later write wins. And bookings at the
+	# tables a rebuild made up.
+	var over_share := 0.0
+	if sheet_on:
+		var tabs := maxf(1.0, float(cfg.get("sheet_tabs", 1)))
+		over_share = 1.0 - exp(-r["book"] * book_success * sheet_gap / tabs)
+
+	# Logins (Episode 6). A share of diners log in each minute; with no
+	# accounts nobody can, and password rules (a symbol, a capital, a new one
+	# every month) make a share of them give up. From `stuffing.from`, bots
+	# try email and password pairs leaked from other sites, and a share work
+	# because people reuse passwords; a home-made login with no limit on
+	# guesses lets every one through, while a login service limits attempts
+	# and checks for leaked passwords, and stops nearly all. At `breach.at`,
+	# a home-made login that builds its database query from what's typed
+	# (SQL injection) hands over the users table, and the passwords in it are
+	# as readable as they were stored: as typed, all; a fast unsalted hash,
+	# most, from lookup tables; a slow salted hash, none tonight. A login
+	# service keeps the passwords itself. Off unless `live.login`.
+	var lg: Dictionary = live.get("login", {})
+	var stuffed := 0.0
+	var login_fail := 0.0
+	var breach_now := ""
+	if not lg.is_empty():
+		var logins_on: bool = cfg.get("logins", false)
+		var home: bool = str(cfg.get("auth", "home")) == "home"
+		var tries := diners * float(lg["rate"]) / 60.0
+		login_fail = 1.0
+		if logins_on:
+			login_fail = 1.0 - app_ok * (1.0 - (float(lg["rules_give_up"]) if cfg.get("pw_rules", false) else 0.0))
+		login_tries += tries * TICK
+		login_done += tries * TICK * (1.0 - login_fail)
+		var st: Dictionary = lg["stuffing"]
+		if logins_on and built and tick >= int(st["from"]):
+			stuffed = float(st["per_minute"]) / 60.0 * float(st["reused"]) * (1.0 if home else float(st["service_through"]))
+		var br: Dictionary = lg["breach"]
+		if logins_on and home and tick >= int(br["at"]):
+			var store := str(cfg.get("pw_store", "plain"))
+			if not _breached:
+				_breached = true
+				pw_exposed = float(lg["accounts"]) * float(br["cracked"][store])
+			# The bubble stays up for ten minutes.
+			if tick < int(br["at"]) + 10:
+				breach_now = store
 
 	var total := signups
 	var failed := signups * (1.0 - signup_ok)
@@ -800,6 +911,9 @@ func _tick() -> Dictionary:
 
 	var booked_now: float = r["book"] * TICK * book_success
 	booked += booked_now
+	var lost_now := booked_now * minf(1.0, over_share + made_up_tables)
+	lost += lost_now
+	takeovers += stuffed * TICK
 	book_tries += r["book"] * TICK
 	_rows += booked_now
 	searched += r["search"] * TICK * ok["search"]
@@ -898,7 +1012,9 @@ func _tick() -> Dictionary:
 	if bad_rate > 0.0:
 		tags.append(bad_tag)
 		_blame(bad_tag, bad_rate * TICK * 100.0)
-	if dbl_rate > 0.0 or forknet_lost > 0.0:
+	# A database's narrow gap still lets the odd pair through in theory;
+	# `tag_min` (Episode 5) keeps a night that rounds to nobody from naming it.
+	if dbl_rate * TICK > float(race.get("tag_min", 0.0)) or forknet_lost > 0.0:
 		var why := "forknet" if forknet else "double_booking"
 		tags.append(why)
 		_blame(why, dbl_rate * TICK * 100.0 + r["book"] * TICK * forknet_lost * 10.0)
@@ -937,6 +1053,29 @@ func _tick() -> Dictionary:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
 		_blame(why, 1000.0)
+	# The bookings' store and logins (Episodes 5 and 6).
+	if over_share > 0.0 and lost_now > 0.0:
+		tags.append("overwritten")
+		_blame("overwritten", lost_now * 100.0)
+	if made_up_tables > 0.0 and lost_now > 0.0:
+		tags.append("ai_rebuilt")
+		_blame("ai_rebuilt", lost_now * 100.0 + 1000.0)
+	# The odd guess a login service lets through, a hundredth of an account a
+	# minute, isn't named.
+	if stuffed * TICK >= 0.01:
+		tags.append("stuffing")
+		_blame("stuffing", stuffed * TICK * 100.0)
+	if not lg.is_empty() and login_fail > 0.05 and built:
+		var why := "pw_rules" if cfg.get("logins", false) else "no_login"
+		tags.append(why)
+		_blame(why, total * TICK * login_fail * 10.0)
+	if breach_now != "":
+		tags.append("sql_injection")
+		_blame("sql_injection", 1.0e5)
+		if breach_now != "slow":
+			var why := "plain_passwords" if breach_now == "plain" else "fast_hash"
+			tags.append(why)
+			_blame(why, 2.0e5)
 
 	return {
 		"tick": tick, "diners": diners, "page": minf(page, 30.0), "err": err_share, "down": down_now,
@@ -947,6 +1086,7 @@ func _tick() -> Dictionary:
 		"stolen": stolen * 60.0, "peeked": peeked,
 		"made_up": made_up, "fooled": fooled, "unasked": unasked, "agent": agent_on,
 		"bug": bug_share if built else 0.0, "underpaid": underpaid,
+		"lost": lost, "takeovers": takeovers, "pw_exposed": pw_exposed,
 	}
 
 
@@ -1135,6 +1275,12 @@ func _incidents() -> float:
 	total += bad_charges * float(inc.get("bad_charge", 0.0))
 	total += double_bookings * float(inc.get("double_booking", 0.0))
 	total += cancelled * float(inc.get("cancelled", 0.0))
+	# A comped dinner for each lost booking, help for each account taken
+	# over, and a breach notice to everyone when passwords are readable.
+	total += floorf(lost + 0.5) * float(inc.get("lost_booking", 0.0))
+	total += floorf(takeovers + 0.5) * float(inc.get("takeover", 0.0))
+	if pw_exposed >= 0.5:
+		total += float(inc.get("breach", 0.0))
 	return total
 
 
@@ -1183,6 +1329,13 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["postgres"]["monthly"])
 	if cfg.get("form", false):
 		m += float(pieces["form"]["monthly"])
+	# The bookings' store and logins (Episodes 5 and 6).
+	if cfg.get("backups", false):
+		m += float(pieces["backups"]["monthly"])
+	if cfg.get("live_copy", false):
+		m += float(pieces["live_copy"]["monthly"])
+	if cfg.get("logins", false) and str(cfg.get("auth", "home")) == "service":
+		m += float(pieces["auth_service"]["monthly"])
 	return m
 
 
@@ -1215,6 +1368,10 @@ func result() -> Dictionary:
 		"answered": 1.0 if (cfg.get("notebook", false) or cfg.get("investor", false)) else 0.0,
 		"bug_share": bug_hits / bug_tries if bug_tries > 0.0 else 0.0,
 		"underpaid": floorf(underpaid + 0.5),
+		"lost_bookings": floorf(lost + 0.5),
+		"login_success": login_done / login_tries if login_tries > 0.0 else 0.0,
+		"takeovers": floorf(takeovers + 0.5),
+		"pw_exposed": floorf(pw_exposed + 0.5),
 	}
 	var goals := []
 	var passed := true
@@ -1249,6 +1406,8 @@ func result() -> Dictionary:
 			blame["no_answer"] = 1.0e9
 		if g["metric"] == "underpaid" and not cfg.get("fee", false):
 			blame["no_fee"] = 1.0e9
+		if g["metric"] == "login_success" and not cfg.get("logins", false):
+			blame["no_login"] = 1.0e9
 	# A kept hotfix can carry its own finding (the finale's live, unreviewed
 	# fix), named first because it caused what follows.
 	for h in live.get("hotfixes", []):
@@ -1268,6 +1427,7 @@ func result() -> Dictionary:
 		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
 		"stolen_bill": stolen_bill, "stolen_calls": stolen_calls, "peeked": peeked,
 		"made_up": made_up, "hijacked": hijacked, "fooled": fooled, "unasked": unasked, "cancelled": cancelled,
+		"lost": lost, "takeovers": takeovers, "pw_exposed": pw_exposed,
 		"booked": booked, "melts": melts, "underpaid": underpaid, "bug_share": metrics["bug_share"], "signed": signed, "signup_tries": signup_tries, "tags": order, "monthly_extra": monthly_extra(),
 	}
 
