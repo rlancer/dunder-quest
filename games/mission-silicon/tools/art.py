@@ -82,6 +82,10 @@ CAST = {
              "beard, half-closed eyes and a calm, superior, beatific smile, as if forgiving you; an expensive "
              "oatmeal cashmere sweater over a white t-shirt, a thin string of wooden prayer beads at his wrist "
              "raised near his chin.",
+    # The friend who fails upward: big curly hair, a vacant, contented smile, a hoodie.
+    "melon": "A tall, gangly, sweet-natured young man in his twenties with a huge round mop of big curly "
+             "dark-brown hair, sleepy, friendly half-open eyes and a relaxed, vacant, contented smile, as if "
+             "nothing has ever worried him; a baggy faded olive-green hoodie over a white t-shirt.",
 }
 
 STYLE = (
@@ -132,6 +136,13 @@ SCENES = {
         "specials with no readable writing, strings of warm bulbs, red-and-white checked tablecloths on full "
         "tables behind with candles in wine bottles, framed photos on brick walls, a coat rack. Warm, crowded, "
         "slightly chaotic dinner-rush glow. " + STYLE
+    ),
+    "lawfirm": ROOM + (
+        "a corporate law firm's glass-walled conference room high in a San Francisco tower at night: a long "
+        "pale wooden table with neat stacks of thick paper documents and binders, a speakerphone in the middle, "
+        "high-backed black leather chairs, a wall of floor-to-ceiling shelves of identical leather-bound law "
+        "books, a frosted glass wall, the city lights through a tall window, a cold blue overhead light. "
+        "Hushed, expensive and intimidating. " + STYLE
     ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "

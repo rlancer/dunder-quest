@@ -14,7 +14,7 @@ const SPOTS := {
 	"phones": Vector2(4, 92), "cdn": Vector2(62, 36), "lb": Vector2(62, 92), "app": Vector2(120, 92),
 	"cache": Vector2(178, 36), "db": Vector2(178, 92), "model": Vector2(238, 36), "queue": Vector2(120, 156),
 	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
-	"bot": Vector2(4, 156), "pay": Vector2(62, 156),
+	"bot": Vector2(4, 156), "pay": Vector2(62, 156), "repo": Vector2(4, 156), "pkg": Vector2(178, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -30,6 +30,9 @@ const BUBBLES := {
 	"captcha": ["app", "Gave up at CAPTCHA"], "double_charge": ["pay", "Charged twice!"],
 	"timeout_unknown": ["pay", "Timed out. Paid?"], "backup_provider": ["pay", "Charged at both!"],
 	"double_booking": ["db", "Same table twice!"], "forknet": ["phones", "Phones disagree!"],
+	"leaked_key": ["model", "Strangers on old key!"], "key_in_app": ["phones", "Key read from app!"],
+	"fake_package": ["pkg", "Sent our key away!"], "idor": ["db", "Someone else's booking!"],
+	"ai_off": ["model", "AI search off"],
 }
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
@@ -86,6 +89,10 @@ func _present(c: Dictionary) -> Dictionary:
 		out["bot"] = true
 	if c.get("deposits", false):
 		out["pay"] = true
+	if c.get("melon_repo", false):
+		out["repo"] = true
+	if c.get("keysafe", false):
+		out["pkg"] = true
 	return out
 
 
@@ -126,6 +133,8 @@ func _layout() -> void:
 			"model":
 				label = "Model API"
 				sub = "per call"
+				if cfg.has("rotated"):
+					sub = "new key" if cfg["rotated"] else "old key"
 			"queue":
 				label = "Queue"
 				sub = "+ worker"
@@ -144,6 +153,12 @@ func _layout() -> void:
 			"pay":
 				label = "Payments"
 				sub = "deposits"
+			"repo":
+				label = "Melon's"
+				sub = "private" if cfg.get("repo_private", false) else "public repo"
+			"pkg":
+				label = "keysafe"
+				sub = "package"
 		var badges := []
 		if id == "app":
 			if cfg.get("rust", false):
@@ -154,6 +169,8 @@ func _layout() -> void:
 				badges.append("alerts")
 			if cfg.get("captcha", false):
 				badges.append("CAPTCHA")
+			if cfg.get("waf", false):
+				badges.append("WAF")
 		if id == "pay":
 			if cfg.get("backup", false):
 				badges.append("backup")
@@ -163,6 +180,10 @@ func _layout() -> void:
 				badges.append("no retry")
 		if id == "db" and cfg.get("txn", false):
 			badges.append("txn")
+		if id == "db" and cfg.get("owner_check", false):
+			badges.append("owner check")
+		if id == "phones" and str(cfg.get("key_where", "")) == "frontend":
+			badges.append("key in app")
 		if id == "phones" and cfg.get("forknet", false):
 			badges.append("ForkNet")
 		if id == "lb" and cfg.get("limiter", false):
@@ -213,6 +234,8 @@ func _wires() -> Array:
 	out.append(["app", "model", "model"])
 	if has.call("pay"):
 		out.append(["app", "pay", "pay"])
+	if has.call("pkg"):
+		out.append(["app", "pkg", "pkg"])
 	if has.call("queue"):
 		out.append(["app", "queue", "queue"])
 		if has.call("db"):

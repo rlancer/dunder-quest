@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9, 10 and 11 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9, 10, 11 and 12 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -103,8 +103,8 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Race** (built, Episode 11) | Booking the last table | Check-then-book in two steps lets two parties get the same table: with hot-table bookings arriving at h a second over H tables and a gap of w seconds, at h²w/H, so it grows with the square of the traffic and a tenth of the load shows a hundredth of it. Waiting for the deposit inside the gap widens it. A transaction that holds the table closes it. On a decentralised copy across phones the gap is log₂(phones) rounds of gossip, whatever the database does, and phones that drop off lose bookings | `double_booking`, `forknet` |
 | **Analytics on the live database** (built, Episode 9) | Database, replica, warehouse | Dashboard queries are huge scans (screens × tiles / refresh, each a scan of every stored row). On the main database they take capacity from bookings, and a booking waits the database's full latency; on a read replica they swamp the copy instead; on a warehouse, stored by column, each is a small share of the work | `olap_on_oltp`, `replica_slow`, `too_many_tiles` |
 | **Pipeline freshness** (built, Episode 9) | Warehouse | The board's numbers are as old as the last good copy: hourly, nightly or streamed. A scripted copy failure stays broken until a hotfix fixes it, and the hotfix is only offered with alerts | `silent_failure`, `stale_numbers` |
-| **Secret exposure** | Wherever a key lives | A key in the frontend or a public repository is found by a scanning bot at a scripted tick, after which unknown usage runs up the bill | `leaked_key` |
-| **Authorization** | Endpoints | Without an ownership check, a curious diner (or a bot) changing the number in the URL reads others' bookings | `idor` |
+| **Secret exposure** (built, Episode 12) | The model key, wherever it lives | Each place a key is exposed brings its own strangers from the tick it's found, calling the model provider directly (never through our app) on our bill and our rate limit: the old key in the Git history (already found) until it's rotated; whichever key is in the app's code once a scanning bot reads the app; whichever key the server has once a malicious package sends it away. Deleting the file or making the repository private doesn't stop the old key working; only rotating it does. Switching our own search off stops our diners, not the strangers | `leaked_key`, `key_in_app`, `fake_package`, `ai_off` |
+| **Authorization** (built, Episode 12) | Booking requests | From a scripted tick a bot counts through booking numbers; without an ownership check, every number that exists shows someone else's booking (a leak, and a lawyer); with one, "not found" for almost no work | `idor` |
 | **Grounding and tools** | The AI concierge | Without retrieval over real menus, a share of answers are made up; an agent with a powerful tool and no confirmation step can be steered by injected text in a review | `hallucination`, `prompt_injection` |
 
 ### Money
@@ -610,6 +610,103 @@ Cliffhanger: Saturday morning, the kitchen. Gerard: every deposit taken once, ev
 
 Seasons 4 and 5's PiperNet: Richard's vision of a new internet with no servers, running on everyone's phones, demonstrated to friends where it works perfectly, and the engineers' dread of what it does at scale (in the show, nodes dropping off and a takeover once someone controls enough of the network). Here: Ricky up all night, the phones on the table, Danesh won over against his will, Gilroy's flat arithmetic about buses and tunnels, Ulrich claiming a share of an idea that isn't his. ForkCoin is the show's season 5 coin offering, moved forward. The double charges and the last table are ours, built on the show's running idea that the product works in the demo and breaks in the world. If a fan wouldn't recognise Ricky's phones on the table, it's drifted; they would.
 
+## Episode 12 on paper: *The Leak*
+
+Stage 6, Module 11 (security and privacy: secrets stay secret, authorization on every request, dependencies are a risk), with Module 2's Git history and packages underneath it. Borrowed set piece: Hooli's lawsuit claiming it owns Pied Piper because some of it was written on Hooli's time and equipment, and Gilfoyle's casual hacking. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 11 ended with the AI bill at four thousand dollars since midnight (Melon put the model key in a public repository on Tuesday, with a helpful README) and Hubbub's lawyers' forty pages. The starting board is Episode 11's solution with its hotfix cut: cloud, four small app servers with sessions in Redis, the cache, the CDN, the queue, the index, the AI cache, the board's dashboard on the analytics database copying hourly, error alerts, the rate limit at a hundred a minute, and deposits retrying with idempotency keys, with the table held in a transaction. Nothing on it changes, so `changed` is empty and `cases.gd`'s continuity check passes as it stands.
+
+The board gains things that were always true but never drawn: **Melon's repo** (his public copy of Forkcast's code, at the bottom left), a **key in app** badge on the diners (the model key is in the app's own code: Melon gave it the prefix that makes the build put it there, "so it'd just work"), and the Model API's sub-line says which key it's on (old or new). The deposits keep running as Episode 11 left them; with keys and the hold they can't go wrong, so this night leaves payments and the race out of the simulation (no `live.payments` or `live.race`).
+
+### Cold open
+
+Monday, 10am, Hubbub's lawyers' conference room downtown (a new backdrop: a long table of binders, a wall of law books, the city through the glass). Veronica: forty pages, and page one says Forkcast belongs to Hubbub because it was written on a Hubbub laptop. Melon (new face: Wilson "Melon" Mellini, Ricky's oldest friend) explains, sweetly: Hubbub hired him after the keynote, as a Senior Vision Lead who sits on the roof; he wanted to show the roof guys Forkcast, so he put it on his GitHub from his work laptop, with a README so they could try the AI part, with the key in it, so it'd just work. Gilroy: it just worked for everyone, four thousand dollars of everyone. Melon deleted the file on Sunday, though, so that's fixed. Gilroy has been in the law firm's printer since the coffee came (their wifi password is on the whiteboard); it's printing a cat. Ulrich has retained his cousin, who has done a great many parking appeals. Gerard brought the bag, and a spare. Ricky looks for a bin.
+
+Title card: **THE LEAK**.
+
+### Brief
+
+Veronica: depositions the rest of the week, so one day to build; Friday is still sixteen thousand diners. By Friday night nobody else is on our key, nobody reads anyone else's bookings, and everything else works as it did. Aleister: Melon already deleted the key, so the leak's fixed; its plan to make sure it never happens again is called Plug the Leak.
+
+- **Budget**: $960k in the bank (the weekend's bill and the lawyers' retainer), $80k a month, so 11.8 months of runway on the board as it stands. 8 hours to build.
+- **Goal**: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, nobody else on our key (not one stranger's call), and nobody sees anyone else's bookings.
+
+### Aleister's pull request: "Plug the leak"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Hide the key**: out of the app's code, into the server's settings; the app asks our server, our server asks the model | Aleister | 2h | — | Needed: anything in the app goes to every phone, and bots read app files all day. But Aleister thinks it fixes the leak, and it doesn't: the old key is still in every old version of Melon's repository, and in every copy of it, and it still works | Ricky for (every phone downloads the key); Gilroy: it's out of today's code, and Tuesday's code still has it |
+| **Scrub the history**: rewrite every old version to take the key out, and replace Melon's repository with the clean one | Aleister | 6h | — | Rewriting Git history. It doesn't stop anyone already using the key (forks, clones and the bots that copied it keep their copies), and once the key is switched off there's nothing left to hide. It doesn't fit beside the fixes | Danesh for (a clean history); Gilroy: every fork, clone and bot keeps its copy; tidying up after the burglary |
+| **Key-safe package**: install `keysafe-autoguard`, which "encrypts our keys automatically" | Aleister | 0.5h | — | A package that didn't exist until someone registered the name Aleister keeps inventing (a hallucinated dependency, or slopsquatting). Its install script sends the server's settings, keys and all, to its author: whichever key we have, strangers have from 5:30 | Danesh for (nobody writes their own anything); Gilroy: a stranger's code running next to our keys; which stranger? |
+| **Rewrite it all**: Forkcast from scratch, so no line was near Melon's Hubbub laptop | Aleister | 40h | — | The too-big card, and the lawsuit's: a clean-room rewrite can't be done in a day, and the history already says who wrote what | Veronica for (they can't claim a line of it); Gerard: or look at what Melon wrote; it's all in the history |
+| **Go private**: make Melon's repository private, and keep the key we've got | Ulrich (wrong) | 0.5h | — | Making the repository private stops new people finding the key there, and that's all: everyone who copied it on Tuesday still has a key that works. Ulrich's "keep the key" overrides rotating it | Ulrich: at Aviato everything was private and nothing important leaked; Gerard: it would stop anyone new finding it, which he finds very reassuring |
+| **Rotate the key** (from an ask) | Aleister | 0.5h | — | A new key, and the old one switched off at the provider, so every copy of it is dead text. The only fix for a leaked key | Gilroy for (the only fix there is); Danesh: everything using the key needs the new one at once |
+| **Check who owns it** (from an ask) | Aleister | 1h | — | An ownership check on every booking request (authorization): if the booking isn't yours, it doesn't exist | Gilroy for (the number in the link is the only lock, and anyone can count); Gerard's man who went to his neighbour's anniversary dinner |
+
+Ulrich is wrong this time, which leaves him right twice in five, near the season's third. His card is Module 11's misconception "it's a private repo, so the key is safe", and it's a real judgement: Gerard's take is true (private does stop new finders), and only the asks show that the old key is already out.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Where are the secrets stored?** | Aleister: nowhere now, Melon deleted the file. Gilroy: deleting a file just adds one more version; every old version still has the key, so does everyone who copied them, and it's in the app itself, which every phone downloads. Ricky: a key works until you switch it off; make a new one, keep it only on the server, kill the old one | Adds **Rotate the key** (0.5h) |
+| **Can a diner see someone else's booking?** | Gilroy's casual hacking: his booking link ends in 41022; he changes it to 41023 and reads out a party of four in Noe Valley, phone number and "no shellfish". We check you're logged in; we never check it's yours | Adds **Check who owns it** (1h) |
+| **What does this package do?** | Aleister: it encrypts keys, and it's suggested it hundreds of times. Gilroy: it didn't exist until Wednesday; AIs keep suggesting the same made-up names, so people register them and wait; this one's install script sends the server's settings, keys and all, somewhere | Just facts: cut the package |
+| **What will this cost at 10x traffic?** | Veronica: strangers on our key were about $360 an hour on Saturday, more every day, whatever our traffic; leaked bookings mean a lawyer and a letter to every diner, sixty thousand dollars | Just facts |
+| **Make it unhackable.** (decoy) | Aleister, delighted | Adds **Firewall everything** (2h, +$500): a web application firewall. It blocks attacks it recognises, and neither of tonight's looks like one: asking for booking 41023 looks exactly like asking for 41022, and the people on our key never touch our servers |
+| **Make it web-scale.** (decoy) | Aleister: you never forget | Adds **Shard by city** (12h): doesn't fit |
+
+### The dials
+
+None this time: every decision is a card. The lesson is where the key lives and whether it still works, not a setting.
+
+### The live moment: Friday, 5pm to 11pm
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 5:00pm | 0 | 3,000 diners. If the old key still works, strangers are already on it, three hundred calls a minute and growing as it spreads: about $360 an hour on our bill, and their calls count against our rate limit |
+| 5:30pm | 30 | With the package installed, its author starts using whichever key the server has |
+| 6:00 to 7:00pm | 60 to 120 | The rush builds to 16,000 diners, as last Friday |
+| 7:30pm | 150 | **A scanning bot reads every app and repository it can find.** If the key is still in the app's code, it reads it out in seconds, and from here six hundred more calls a minute are strangers'. In every plan it tries the old key from Melon's history. **Hotfix**: Aleister offers to switch AI search off until morning, "to be safe". A stolen key is used straight with the provider, not through our app, so it never stops the strangers; it only stops our diners' searches |
+| 8:20pm | 200 | **Someone counts through booking numbers**, six hundred a minute. Without the ownership check, four in five are real bookings, shown to whoever asked |
+| 10:00 to 11pm | 300 to 360 | Easing off to 3,000 diners. End |
+
+The solution's night: the key lives only on the server, the old one is dead, there's no package, and every booking request checks its owner. The scanning bot tries the old key and is refused; the counting bot gets "not found" forty thousand times for almost no work. The app and the database run as last Friday, the model bill is our own $3.9k, and nobody sees anyone else's booking.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | The old key works all night, the scanning bot reads it out of the app too, and the counting bot reads 76,800 bookings: 319,000 strangers' calls and a lawyer. Fails, 11.11 months |
+| Aleister's PR as proposed | 49 hours: can't merge |
+| Minus the history scrub and the rewrite (the bot's take one) | Fits, and fails: Ulrich's card keeps the old key working, the package sends it away again, and the counting bot reads 76,800 bookings: 389,880 strangers' calls. 11.10 months |
+| The solution without rotating (or with Ulrich's card kept) | The old key works all night: 161,850 strangers' calls, $3.2k: fails, 11.885 |
+| The solution with the key left in the app (cut "Hide the key") | Rotated, and the scanning bot reads the new key out of the app at 7:30: 157,350 calls: fails, 11.886 |
+| The solution plus the package | It sends the new key away at 5:30: 197,700 calls: fails, 11.876 |
+| The solution without the ownership check | 76,800 bookings read, and the lawyer: fails, 11.19 |
+| The solution with the hotfix kept | Searches off from 7:30: 37% answered. Fails (its runway is higher, 11.954, because it stops paying for our own searches) |
+| The solution plus the history scrub, or shards | Can't merge (9.5 or 15.5 hours) |
+| The solution plus the firewall | Passes, at 11.85: misses Lean ($500 a month for nothing tonight) |
+| The solution: hide the key, rotate it, check who owns it, hotfix cut | 11.924 months of runway; par 11.92 |
+
+### Postmortem
+
+New findings: strangers kept using the old key ("a leaked secret: rotate it"); the new key shipped inside the app ("anything in the frontend is public"); the package stole the key ("a hallucinated package: slopsquatting"); a bot read other diners' bookings ("broken access control: an insecure direct object reference"); we switched our own AI search off ("revoke the key, not the feature"). The rate-limit finding now says strangers on our key used up our limit. The generic ones (app servers or database maxed out, overbuilt) carry over. The spreadsheet adds a line: strangers' calls, bookings read.
+
+Marks: Live, Lean (11.92 months or better), Ulrich (cut "Go private").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **A leaked key: rotate it first** (switch it off and make a new one; deleting it from the code isn't enough, and rewriting history may not be worth it, since forks and copies keep the old versions), **Authorization on every request** (being logged in isn't permission to see everything; the server checks each record belongs to whoever is asking) and **Packages your AI made up** (AI tools suggest packages that don't exist, often the same names again and again, and attackers can publish harmful packages under them).
+
+Cliffhanger: the next Monday, the same conference room. Gerard presents exhibit one, the Git history: every line of Forkcast, who wrote it and when; Mr Mellini's contributions in full are a README and the line with the key, both from his Hubbub laptop, both deleted. Hubbub's lawyers asked for a short recess two hours ago. Melon has been promoted, for visibility. Veronica: the big startup conference wants Forkcast on its main stage on Thursday, right after Galen. Ricky: then the concierge has to book a table by itself, live, on stage; Gerard, both bags. (Episode 13: The Conference.)
+
+### Checking it against the show
+
+Season 1's finale and season 2's opening arc: Hooli sues, claiming Pied Piper is its property because Richard worked on it on Hooli's time and on a Hooli machine, depositions and conference rooms follow, and the claim falls apart when it's examined (in the show, in arbitration, on a contract technicality). Here: the law firm's conference room, the forty pages, the claim that Forkcast was written on a Hubbub laptop, and the history showing exactly what was. Melon is Big Head: poached by the giant, paid to sit on its roof, the cause of the trouble through pure good nature, and promoted for it. Gilroy in the firm's printer, and reading out a stranger's booking by changing one number, is Gilfoyle's casual hacking. Ulrich's cousin the parking-appeals lawyer is ours, in Erlich's spirit. If a fan wouldn't recognise the lawsuit, Melon on the roof and Gilroy's hacking, it's drifted; they would.
+
 ## How the loop covers the season
 
 Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
@@ -644,7 +741,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 and 12 to 14 in detail (walk each like Episodes 8 to 11 first).
+- Episodes 1 to 7, 13 and 14 in detail (walk each like Episodes 8 to 12 first).
 - Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.
