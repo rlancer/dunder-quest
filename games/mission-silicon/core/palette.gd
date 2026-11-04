@@ -31,7 +31,11 @@ static var _titles: Font
 
 static func body() -> Font:
 	if _body == null:
-		_body = load("res://assets/fonts/PixelifySans.ttf") as Font
+		# Pixelify Sans's "fi" ligature draws as an "A" ("on Are"), so ligatures are off.
+		var plain := FontVariation.new()
+		plain.base_font = load("res://assets/fonts/PixelifySans.ttf") as Font
+		plain.opentype_features = {TextServerManager.get_primary_interface().name_to_tag("liga"): 0}
+		_body = plain
 	return _body
 
 

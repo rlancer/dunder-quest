@@ -10,7 +10,7 @@ func _ready() -> void:
 	layer = 100
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_cover = Control.new()
-	_cover.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_cover.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_cover.mouse_filter = Control.MOUSE_FILTER_STOP
 	_cover.draw.connect(_draw_cover)
 	_cover.visible = false

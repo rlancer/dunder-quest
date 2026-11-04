@@ -17,6 +17,17 @@ func _run() -> void:
 	for _i in 10:
 		await tree.process_frame
 	print("ok title")
+	var sounds := []
+	for track in Sound.TRACKS:
+		sounds.append("res://assets/audio/music_%s.ogg" % track)
+	for sting in Sound.STINGS:
+		sounds.append("res://assets/audio/sting_%s.ogg" % sting)
+	for path in sounds:
+		if not load(path) is AudioStreamOggVorbis:
+			print("SMOKE result=fail missing ", path)
+			tree.quit(1)
+			return
+	print("ok audio")
 	for ep in Season.episodes():
 		var node := Episode.new()
 		node.episode_id = int(ep["id"])

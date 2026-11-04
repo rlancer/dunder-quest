@@ -56,7 +56,7 @@ var _speed: float = 1.0
 func _ready() -> void:
 	ep = Season.episode(episode_id)
 	plan = Plan.new(ep)
-	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_build()
 	_run.call_deferred()
 
@@ -109,6 +109,7 @@ func _build() -> void:
 	UI.place(_merge, Rect2(377, 2, 100, 30))
 	_merge.pressed.connect(func() -> void:
 		if plan.fits():
+			Sound.sting("merge")
 			merged.emit())
 	_bottom.add_child(_merge)
 
@@ -118,7 +119,7 @@ func _build() -> void:
 	_live_panel.add_child(lp)
 	_meters = UI.place(UI.label("", Palette.LABEL, Palette.SLATE), Rect2(8, 6, 166, 90)) as Label
 	_live_panel.add_child(_meters)
-	_corner_face = UI.place(Portrait.new(), Rect2(8, 110, 40, 40)) as Portrait
+	_corner_face = UI.place(Portrait.new(), Rect2(2, 106, 48, 48)) as Portrait
 	_live_panel.add_child(_corner_face)
 	_corner_text = UI.place(UI.label("", Palette.BODY, Palette.SLATE, true), Rect2(52, 106, 124, 104)) as Label
 	_live_panel.add_child(_corner_text)
@@ -146,7 +147,7 @@ func _build() -> void:
 	add_child(_live_bottom)
 
 	_overlay = Control.new()
-	_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_overlay)
 	backdrop = Backdrop.new()
@@ -160,10 +161,12 @@ func _build() -> void:
 
 func _run() -> void:
 	phase = "cold_open"
+	Sound.music("plan")
 	backdrop.place = "garage"
 	backdrop.visible = true
 	await dialogue.play(ep["cold_open"], ep.get("place", ""))
 	phase = "title"
+	Sound.sting("title")
 	await card.title_card(ep["title"])
 	backdrop.visible = false
 	_refresh()
@@ -198,6 +201,7 @@ func _run() -> void:
 
 func _planning() -> void:
 	phase = "planning"
+	Sound.music("plan")
 	panel.visible = true
 	_bottom.visible = true
 	_live_panel.visible = false
@@ -261,6 +265,7 @@ func _on_staging() -> void:
 
 func _live() -> Dictionary:
 	phase = "live"
+	Sound.music("live")
 	panel.visible = false
 	_bottom.visible = false
 	_live_panel.visible = true
@@ -314,9 +319,14 @@ func _live() -> Dictionary:
 	if early:
 		while not sim.done():
 			sim.step()
+		Sound.stop_music()
+		Sound.sting("fail")
 		await card.black("Forkcast is down.", 90)
 	board.live = false
 	var res := sim.result()
+	if not res["passed"] and not early:
+		Sound.stop_music()
+		Sound.sting("fail")
 	res["merge"] = true
 	return res
 
@@ -355,10 +365,10 @@ func _hotfix(h: Dictionary) -> bool:
 	modal.name = "Hotfix"
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 	_overlay.add_child(modal)
-	var face := UI.place(Portrait.new("aleister"), Rect2(10, 10, 36, 36))
+	var face := UI.place(Portrait.new("aleister"), Rect2(6, 8, 48, 48))
 	modal.add_child(face)
-	modal.add_child(UI.place(UI.label("HOTFIX", Palette.LABEL, Palette.GREEN_DARK), Rect2(54, 8, 196, 14)))
-	modal.add_child(UI.place(UI.label(h["say"], Palette.BODY, Palette.SLATE, true), Rect2(54, 22, 198, 54)))
+	modal.add_child(UI.place(UI.label("HOTFIX", Palette.LABEL, Palette.GREEN_DARK), Rect2(60, 8, 192, 14)))
+	modal.add_child(UI.place(UI.label(h["say"], Palette.BODY, Palette.SLATE, true), Rect2(60, 22, 194, 54)))
 	var keep := UI.button("KEEP", "primary", Vector2(90, 30))
 	keep.name = "HotfixKeep"
 	UI.place(keep, Rect2(60, 82, 90, 30))
@@ -387,6 +397,8 @@ func marks(res: Dictionary) -> Dictionary:
 
 func _postmortem(res: Dictionary) -> bool:
 	phase = "postmortem"
+	Sound.sting("postmortem", true)
+	Sound.music("plan")
 	_live_panel.visible = false
 	_live_bottom.visible = false
 	var sheet := UI.place(UI.panel(Palette.PAPER, Palette.RULE, 1), Rect2(0, 20, 480, 250))
