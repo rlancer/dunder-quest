@@ -144,6 +144,16 @@ SCENES = {
         "books, a frosted glass wall, the city lights through a tall window, a cold blue overhead light. "
         "Hushed, expensive and intimidating. " + STYLE
     ),
+    "conference": ROOM + (
+        "the main stage of a big, loud startup conference in a convention-centre hall in San Francisco: a "
+        "wide stage of grey carpet tiles under bright, harsh white and electric-blue stage lights; a huge wall "
+        "of LED screens behind it glowing with an abstract pattern of magenta and cyan geometric blocks, no "
+        "readable words, letters or logos; a small clear acrylic demo podium with an open laptop and a tangle "
+        "of cables taped to the floor with gaffer tape; to one side a long judges' table with a black "
+        "tablecloth, three empty swivel chairs, paper cups and water bottles; black speaker stacks and a "
+        "lighting truss overhead; rows of cheap folding chairs at the very bottom, a few lanyards left on "
+        "them. Bright, noisy, hurried and a little cheap, nothing like a calm corporate keynote. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

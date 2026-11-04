@@ -187,6 +187,10 @@ func _piece_for(id: String) -> String:
 			return "payments"
 		"pkg":
 			return "package"
+		"agent":
+			return "agent"
+		"index":
+			return "index"
 	return id
 
 

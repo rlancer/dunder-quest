@@ -30,7 +30,9 @@
 			"backup_monthly": 100},
 		"repo": {"label": "Melon's repo", "term": "public Git repository", "plain": "Melon's copy of Forkcast's code on GitHub, open to anyone, with every version of every file he ever pushed."},
 		"package": {"label": "keysafe-autoguard", "term": "npm package", "plain": "A package Aleister suggested: a stranger's code, installed on our server and run with its settings."},
-		"waf": {"label": "Firewall", "term": "web application firewall", "monthly": 500}
+		"waf": {"label": "Firewall", "term": "web application firewall", "monthly": 500},
+		"agent": {"label": "Agent", "term": "AI agent", "plain": "The concierge, now able to act: it asks the model what to do, uses one of our app's tools (search, check a table, book), looks at the result, and asks again until the job's done."},
+		"index": {"label": "Menu index", "term": "vector index (for RAG)", "plain": "Every restaurant's menu and allergy notes, stored as embeddings in our own Postgres, so the concierge can find the right ones and answer from them.", "monthly": 20}
 	},
 	"work": {
 		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},

@@ -15,6 +15,7 @@ const SPOTS := {
 	"cache": Vector2(178, 36), "db": Vector2(178, 92), "model": Vector2(238, 36), "queue": Vector2(120, 156),
 	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
 	"bot": Vector2(4, 156), "pay": Vector2(62, 156), "repo": Vector2(4, 156), "pkg": Vector2(178, 156),
+	"agent": Vector2(4, 156), "index": Vector2(120, 36),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -32,7 +33,9 @@ const BUBBLES := {
 	"double_booking": ["db", "Same table twice!"], "forknet": ["phones", "Phones disagree!"],
 	"leaked_key": ["model", "Strangers on old key!"], "key_in_app": ["phones", "Key read from app!"],
 	"fake_package": ["pkg", "Sent our key away!"], "idor": ["db", "Someone else's booking!"],
-	"ai_off": ["model", "AI search off"],
+	"ai_off": ["model", "AI search off"], "hallucination": ["model", "Made-up menu!"],
+	"prompt_injection": ["agent", "Obeyed a review!"], "no_confirm": ["pay", "Paid, unasked!"],
+	"excess_agency": ["db", "Bookings cancelled!"], "confirm_fatigue": ["agent", "Asked too often"],
 }
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
@@ -93,6 +96,10 @@ func _present(c: Dictionary) -> Dictionary:
 		out["repo"] = true
 	if c.get("keysafe", false):
 		out["pkg"] = true
+	if c.get("agent", false):
+		out["agent"] = true
+	if c.get("rag", false):
+		out["index"] = true
 	return out
 
 
@@ -159,6 +166,12 @@ func _layout() -> void:
 			"pkg":
 				label = "keysafe"
 				sub = "package"
+			"agent":
+				label = "Agents x4" if cfg.get("swarm", false) else "Agent"
+				sub = "all tools" if str(cfg.get("tools", "all")) == "all" else "3 tools"
+			"index":
+				label = "Menus"
+				sub = "index"
 		var badges := []
 		if id == "app":
 			if cfg.get("rust", false):
@@ -178,6 +191,13 @@ func _layout() -> void:
 				badges.append("retry + key" if cfg.get("idem", false) else "retry")
 			else:
 				badges.append("no retry")
+		if id == "agent":
+			if cfg.get("signoff", false):
+				badges.append("asks: all" if str(cfg.get("confirm", "")) == "every" else "asks: pay")
+			if cfg.get("data_marked", false):
+				badges.append("as data")
+			if cfg.get("checker", false):
+				badges.append("checker")
 		if id == "db" and cfg.get("txn", false):
 			badges.append("txn")
 		if id == "db" and cfg.get("owner_check", false):
@@ -223,6 +243,8 @@ func _wires() -> Array:
 	if has.call("cdn"):
 		out.append(["phones", "cdn", "browse"])
 	out.append(["phones", front, "all"])
+	if has.call("agent"):
+		out.append(["phones", "agent", "agent"])
 	if has.call("bot"):
 		out.append(["bot", front, "scrape"])
 	if front == "lb":
@@ -236,6 +258,8 @@ func _wires() -> Array:
 		out.append(["app", "pay", "pay"])
 	if has.call("pkg"):
 		out.append(["app", "pkg", "pkg"])
+	if has.call("index"):
+		out.append(["app", "index", "index"])
 	if has.call("queue"):
 		out.append(["app", "queue", "queue"])
 		if has.call("db"):
@@ -349,10 +373,15 @@ func _draw() -> void:
 			sub = "hits %d%%" % roundi(float(frame.get("hits", {}).get("menus", 0.0)) * 100.0)
 		draw_string(font, r.position + Vector2(3, 22), sub, HORIZONTAL_ALIGNMENT_LEFT, r.size.x - 4, Palette.BODY, Palette.SLATE_MID)
 		var bx := r.position.x
+		var by := r.end.y
 		for badge in b["badges"]:
 			var bw := font.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 4
-			draw_rect(Rect2(Vector2(bx, r.end.y + 1), Vector2(bw, 11)), Palette.GREEN)
-			draw_string(font, Vector2(bx + 2, r.end.y + 10), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
+			# The agent's badges stack under it, clear of the payments box's.
+			if id == "agent" and bx > r.position.x and bx + bw > r.end.x:
+				bx = r.position.x
+				by += 12.0
+			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)
+			draw_string(font, Vector2(bx + 2, by + 10), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
 			bx += bw + 2
 		if live and id in ["app", "db", "model", "replica", "warehouse"]:
 			var u := _util(id)
