@@ -47,6 +47,13 @@ static func titles() -> Font:
 	return _titles
 
 
+## Lets the fonts go, so they don't outlive the resource cache at exit
+## (the Sideways autoload calls it as the tree closes).
+static func release() -> void:
+	_body = null
+	_titles = null
+
+
 ## Money as the game shows it: $1.2M, $14k, $300.
 static func money(v: float) -> String:
 	var a := absf(v)

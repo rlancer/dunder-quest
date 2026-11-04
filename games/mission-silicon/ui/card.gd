@@ -40,7 +40,11 @@ func title_card(text: String) -> void:
 	var top := UI.place(UI.label("MISSION SILICON", Palette.LABEL, Palette.GREEN_DARK), Rect2(0, 100, 480, 14)) as Label
 	top.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_content.add_child(top)
-	var big := UI.place(UI.title(text.to_upper(), 40, Palette.SLATE), Rect2(0, 114, 480, 50)) as Label
+	# A long title (The Board Meeting) shrinks to keep a margin each side.
+	var px := 40
+	while px > 24 and Palette.titles().get_string_size(text.to_upper(), HORIZONTAL_ALIGNMENT_LEFT, -1, px).x > 432:
+		px -= 1
+	var big := UI.place(UI.title(text.to_upper(), px, Palette.SLATE), Rect2(0, 114 + (40 - px) * 0.5, 480, 50)) as Label
 	big.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_content.add_child(big)
 	var bar := UI.place(UI.panel(Palette.GREEN), Rect2(200, 168, 80, 4))
@@ -61,10 +65,15 @@ func goal_card(goals: Array, budget: Dictionary) -> void:
 		var at := Vector2(24 + col * 222, 72.0 + (i % rows) * 20.0) if rows < goals.size() else Vector2(48, 72.0 + i * 20.0)
 		_content.add_child(UI.place(UI.label("• " + goals[i]["label"], Palette.HEAD, Palette.SLATE), Rect2(at, Vector2(220 if rows < goals.size() else 400, 18))))
 	y += rows * 20.0
+	# "8 hours", not "8.0 hours"; a half hour keeps its decimal.
+	var t := float(budget["time"])
+	var hours := str(int(t)) if is_equal_approx(t, roundf(t)) else "%.1f" % t
 	var money := "Runway: %s in the bank, %s a month. Time to build: %s %s." % [
-		Palette.money(budget["bank"]), Palette.money(budget["burn"]), str(budget["time"]),
+		Palette.money(budget["bank"]), Palette.money(budget["burn"]), hours,
 		"hours" if budget.get("time_unit", "h") == "h" else budget["time_unit"]]
-	_content.add_child(UI.place(UI.label(money, Palette.LABEL, Palette.SLATE_MID, true), Rect2(48, y + 8, 390, 30)))
+	# Lined up with the goals above it, in one column or two.
+	var left := 24.0 if rows < goals.size() else 48.0
+	_content.add_child(UI.place(UI.label(money, Palette.LABEL, Palette.SLATE_MID, true), Rect2(left, y + 8, 432.0 - left, 30)))
 	_content.add_child(UI.place(UI.label("tap", Palette.BODY, Palette.SLATE_LIGHT), Rect2(446, 250, 24, 12)))
 	await _wait(0)
 

@@ -405,7 +405,7 @@ Narrative (the trattoria, the fax modem, HubbubBot stopping, ForkNet on five pho
 | ForkNet, Gilroy | Copies disagree until the gossip catches up; two phones can both say yes to the last table | True | EC |
 | ForkCoin | Deposits in our own cryptocurrency | Narrative; too long to fit, never judged on the night | |
 | Deposit IDs | One number per deposit, the same on every ask, so the provider can tell it's already taken that one | True | SE, SI. The key must be the same across retries of one deposit and different between deposits (SE: derived from the booking, or a random UUID kept with it) |
-| Deposit IDs, Ulrich | Aviato's bank never took a payment twice | Narrative | |
+| Deposit IDs, Ulrich | Aerato's bank never took a payment twice | Narrative | |
 | Deposit IDs, Danesh | The provider already gives every charge its own ID | True, and the point: that ID comes back in the reply, which is what a timeout loses. Said in GAME.md and the asks, not on the card, so the judgement stays the player's | |
 | Hold the table | Check and hold in one step, a transaction, before the deposit; release it if the deposit fails | True | PGA, PGL |
 | Hold the table, Ricky | Check, wait a second and a half for the money, then book | True (`payments.latency` 1.5 s) | |

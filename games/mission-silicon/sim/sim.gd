@@ -1502,7 +1502,9 @@ func result() -> Dictionary:
 		passed = passed and good
 		goals.append({"label": g["label"], "metric": g["metric"], "value": v, "ok": good})
 	var blame := damage.duplicate()
-	if model_bill > 10000.0:
+	# Only an episode with a postmortem line for it names the AI bill (the
+	# finale's sixty cities run a five-figure bill on a good night).
+	if model_bill > 10000.0 and ep.get("postmortem", {}).has("ai_bill"):
 		blame["ai_bill"] = model_bill / 10.0
 	if cfg.get("model", "standard") == "big":
 		blame["big_model"] = model_bill / 20.0
@@ -1546,6 +1548,10 @@ func result() -> Dictionary:
 		"made_up": made_up, "hijacked": hijacked, "fooled": fooled, "unasked": unasked, "cancelled": cancelled,
 		"lost": lost, "takeovers": takeovers, "pw_exposed": pw_exposed,
 		"booked": booked, "melts": melts, "underpaid": underpaid, "bug_share": metrics["bug_share"], "signed": signed, "signup_tries": signup_tries, "tags": order, "monthly_extra": monthly_extra(),
+		# The whole-people counts before rounding, so the screen can say
+		# "under 1" instead of 0 for a count that isn't quite nothing.
+		"raw": {"bad_charges": bad_charges, "double_bookings": double_bookings, "key_abuse": stolen_calls,
+			"unasked": unasked, "underpaid": underpaid, "lost_bookings": lost, "takeovers": takeovers, "pw_exposed": pw_exposed},
 	}
 
 

@@ -19,6 +19,10 @@ func _ready() -> void:
 	_check()
 
 
+func _exit_tree() -> void:
+	Palette.release()
+
+
 func upright() -> bool:
 	var s := DisplayServer.window_get_size()
 	return s.y > s.x

@@ -450,12 +450,23 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 
-## Whether the box just right of this one, on the same row, has badges.
-func _neighbour_badged(r: Rect2) -> bool:
+## Whether the box just right of this one, on the same row, has badges on
+## the given badge row (0 is the row just under the boxes). At most, a
+## neighbour's badges wrap at its own box's width.
+func _neighbour_badged(r: Rect2, row: int = 0) -> bool:
+	var font := Palette.body()
 	for other in _boxes.values():
 		var o: Rect2 = other["rect"]
 		if is_equal_approx(o.position.y, r.position.y) and o.position.x > r.position.x and o.position.x - r.end.x < 12.0 and not other["badges"].is_empty():
-			return true
+			var rows := 1
+			var bx := 0.0
+			for badge in other["badges"]:
+				var bw := font.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 4.0
+				if bx > 0.0 and bx + bw > o.size.x:
+					rows += 1
+					bx = 0.0
+				bx += bw + 2.0
+			return row < rows
 	return false
 
 
@@ -673,7 +684,11 @@ func _draw() -> void:
 			# The agent's badges stack under it, clear of the payments box's.
 			# Any box's badges wrap rather than run off the board's edge.
 			# So do a box's whose neighbour on the right has badges of its own.
-			if bx > r.position.x and (((id in ["agent", "phones", "front"] or _neighbour_badged(r)) and bx + bw > r.end.x) or bx + bw > size.x - 2):
+			# A wrapped row may run on past the box when the neighbour's
+			# badges don't reach that row (Launch Party's K8s badge used to
+			# drop to a third row, under the GitHub box).
+			var row := int((by - r.end.y) / 12.0)
+			if bx > r.position.x and (((id in ["agent", "phones", "front"] or _neighbour_badged(r, row)) and bx + bw > r.end.x) or bx + bw > size.x - 2):
 				bx = r.position.x
 				by += 12.0
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)
