@@ -183,6 +183,8 @@ func _piece_for(id: String) -> String:
 			return "dashboard"
 		"bot":
 			return "scraper"
+		"pay":
+			return "payments"
 	return id
 
 

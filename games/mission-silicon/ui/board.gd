@@ -14,7 +14,7 @@ const SPOTS := {
 	"phones": Vector2(4, 92), "cdn": Vector2(62, 36), "lb": Vector2(62, 92), "app": Vector2(120, 92),
 	"cache": Vector2(178, 36), "db": Vector2(178, 92), "model": Vector2(238, 36), "queue": Vector2(120, 156),
 	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
-	"bot": Vector2(4, 156),
+	"bot": Vector2(4, 156), "pay": Vector2(62, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -27,7 +27,9 @@ const BUBBLES := {
 	"too_many_tiles": ["warehouse", "Too many tiles"], "silent_failure": ["warehouse", "Copy job failed"],
 	"stale_numbers": ["dash", "3am numbers"], "scraper": ["lb", "HubbubBot flood"],
 	"limit_too_tight": ["lb", "429s for diners!"], "service_chain": ["app", "Service call failed"],
-	"captcha": ["app", "Gave up at CAPTCHA"],
+	"captcha": ["app", "Gave up at CAPTCHA"], "double_charge": ["pay", "Charged twice!"],
+	"timeout_unknown": ["pay", "Timed out. Paid?"], "backup_provider": ["pay", "Charged at both!"],
+	"double_booking": ["db", "Same table twice!"], "forknet": ["phones", "Phones disagree!"],
 }
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
@@ -82,6 +84,8 @@ func _present(c: Dictionary) -> Dictionary:
 		out["dash"] = true
 	if c.get("scraper", false):
 		out["bot"] = true
+	if c.get("deposits", false):
+		out["pay"] = true
 	return out
 
 
@@ -137,6 +141,9 @@ func _layout() -> void:
 			"bot":
 				label = "HubbubBot"
 				sub = "scraper"
+			"pay":
+				label = "Payments"
+				sub = "deposits"
 		var badges := []
 		if id == "app":
 			if cfg.get("rust", false):
@@ -147,6 +154,17 @@ func _layout() -> void:
 				badges.append("alerts")
 			if cfg.get("captcha", false):
 				badges.append("CAPTCHA")
+		if id == "pay":
+			if cfg.get("backup", false):
+				badges.append("backup")
+			elif str(cfg.get("retries", "on")) == "on":
+				badges.append("retry + key" if cfg.get("idem", false) else "retry")
+			else:
+				badges.append("no retry")
+		if id == "db" and cfg.get("txn", false):
+			badges.append("txn")
+		if id == "phones" and cfg.get("forknet", false):
+			badges.append("ForkNet")
 		if id == "lb" and cfg.get("limiter", false):
 			badges.append("%d/min" % int(cfg.get("rate_limit", 0)))
 		if id == "model":
@@ -193,6 +211,8 @@ func _wires() -> Array:
 	if has.call("db"):
 		out.append(["app", "db", "db"])
 	out.append(["app", "model", "model"])
+	if has.call("pay"):
+		out.append(["app", "pay", "pay"])
 	if has.call("queue"):
 		out.append(["app", "queue", "queue"])
 		if has.call("db"):
@@ -261,6 +281,12 @@ func _draw() -> void:
 	var diners := float(frame.get("diners", 0.0))
 	for w in _wires():
 		var ends := _edge(_boxes[w[0]]["rect"], _boxes[w[1]]["rect"])
+		# The payments wire leaves the app's lower left corner, between the
+		# load balancer's badges and the app's, so it crosses neither.
+		if w[2] == "pay":
+			var a: Rect2 = _boxes[w[0]]["rect"]
+			var p: Rect2 = _boxes[w[1]]["rect"]
+			ends = [Vector2(a.position.x, a.end.y - 4), Vector2(p.end.x - 8, p.position.y)]
 		var color := Palette.SLATE_LIGHT
 		if not live and (_boxes[w[0]]["new"] or _boxes[w[1]]["new"]):
 			_dashed(ends[0], ends[1], Palette.GREEN)

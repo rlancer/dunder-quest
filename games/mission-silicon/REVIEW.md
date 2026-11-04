@@ -1,4 +1,4 @@
-# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*) and 10 (*Hubbub Dine*)
+# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*) and 11 (*Charged Twice*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -351,5 +351,122 @@ Narrative (Galen's keynote, the two hundred and twelve microservices, Mack's dep
 | Rate limiting: capping how many requests one user or bot can make, to protect everyone else | True (GCA) |
 | "Microservices scale better" is a misconception; start with a monolith | True (MF, MSA) |
 | Monoliths vs microservices: one app is easier to build, test and debug; services let large teams move independently at the price of the distributed problems appearing between them | True (MSA) |
+
+No curriculum text changed.
+
+
+# Episode 11 (*Charged Twice*)
+
+The same pass for Episode 11, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new piece in `data/pieces.json`, the new bubbles, badges and box in `ui/board.gd`, the live panel's and the postmortem's new lines, and the behaviours it added to `sim/sim.gd`, against CURRICULUM.md Module 10 (and Module 6's transactions). Same rule: simplify, never falsify. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| SE | [Advanced error handling](https://docs.stripe.com/error-low-level), Stripe: network errors include timeouts; a connection might close before the client receives a response, and you might not know whether the request was executed; retry with the same idempotency key and parameters, which prevents the retry creating a second object; a new key can start a second operation; results of keyed requests are cached and replayed (`Idempotent-Replayed: true`); keys can be derived from a user-attached object to guard against double submissions |
+| SI | [Idempotent requests](https://docs.stripe.com/api/idempotent_requests), Stripe API reference: the client generates the key; Stripe saves the first response for a key and returns it to retries, including errors |
+| PGA | [Data consistency checks at the application level](https://www.postgresql.org/docs/current/applevel-consistency.html), PostgreSQL docs: with concurrent transactions in Read Committed, checks don't work correctly "without some help"; to protect a row against concurrent updates use `SELECT FOR UPDATE` (or an actual update), which blocks other transactions until the holder commits or rolls back |
+| PGL | [Explicit locking](https://www.postgresql.org/docs/current/explicit-locking.html), PostgreSQL docs: `FOR UPDATE` locks the rows; other transactions trying to lock or change them wait until the current transaction ends, then get the updated row |
+| EC | [Eventually consistent](https://www.allthingsdistributed.com/2008/12/eventually_consistent.html), Werner Vogels: copies return the latest value only eventually; the "inconsistency window"; under a network partition, consistency and availability can't both be had (CAP); conflicting writes are possible when write sets don't overlap |
+| GP | [Gossip protocol](https://en.wikipedia.org/wiki/Gossip_protocol), Wikipedia: news spreads to every node in time logarithmic in the network's size |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| A scripted share of payment calls time out; half of those had actually gone through | True (simplified) | SE: a timeout leaves the outcome unknown. The shares (one in a hundred to one in seventeen; half succeeded) are illustrative, scripted per episode, not caused by our load |
+| Retries off: a timeout is reported as failed, so the diners whose charge went through paid for a booking we said failed | True | SE ("you might not know whether Stripe received or executed the request"). Real apps would reconcile afterwards with webhooks; the game charges the refund and apology as an incident cost, which is what reconciling would find |
+| Retries on without a key: the ones that went through are charged twice | True | SE: a new request (a new key, or none) can start a second operation |
+| Retries on with a key: no second charge; the retry gets the first result | True | SE, SI |
+| A retried call fails only if both tries time out (t²) | True (simplified) | Treats the two tries as independent; real faults cluster, which would make a retry less helpful, not unsafe |
+| A backup provider charges again on a timeout, even with keys | True | Keys are kept per provider account (SI: "the server uses [the key] to recognise subsequent retries"); a different company has never seen them |
+| Double bookings at h²w/H: quadratic in the traffic on hot tables | True | For Poisson arrivals at λ = h/H per table and a gap w, a second party arrives inside the gap at rate ≈ λ·w per booking, so h·λ·w = h²w/H for small λw. "Hot" (a quarter of bookings, forty contested tables) is illustrative |
+| The deposit call inside the gap widens it to about a second and a half | True | Check, then wait for an outside call, then write: the gap is the wait. Holding the row first is the curriculum's "taking the deposit and holding the last table must both happen, or neither" |
+| A transaction holding the table's row closes the race | True | PGA, PGL. Strictly it's the row lock (`SELECT ... FOR UPDATE`) or a unique constraint inside the transaction that closes it, not the word "transaction"; the card says "lock the table's row inside a transaction" |
+| ForkNet: the gap is log₂(phones) rounds of gossip (half a second each), seven seconds at sixteen thousand phones, and a transaction on one phone doesn't stop another | True (simplified) | GP (logarithmic spread), EC (the inconsistency window; conflicting writes when write sets don't overlap). Real decentralised designs can add consensus to avoid this, at the cost of availability (EC's CAP point); ForkNet, as Ricky built it in a night, doesn't |
+| ForkNet loses one booking in twenty to phones that drop off | True as illustration | Phones going offline mid-gossip is the point; the share is illustrative |
+| Expected counts are rounded to whole people for the goal | True (simplified) | A third of a double booking means, most likely, nobody: with few trials, rare events often don't happen at all, which is why staging misses the race. Staging at a tenth of the traffic sees a hundredth of the race (quadratic) and a tenth of the double charges (linear), so it catches the charges and misses the race |
+| Episodes 8, 9 and 10 unchanged | Checked | All new behaviours are off unless the episode configures `live.payments` or `live.race`: the solutions are still 14.941, 12.856 and 13.113 |
+
+## Episode 11 text
+
+### Cold open, brief, cliffhanger
+
+Narrative (the trattoria, the fax modem, HubbubBot stopping, ForkNet on five phones, the leaked key and the lawsuit that set up Episode 12). Gilroy's "five phones, one room, one wifi" is the misconception "it worked when I tested it", which the night bears out. The brief's numbers match the data: twenty-dollar deposits are story (the simulation doesn't use the amount), sixteen thousand diners at the peak (`live.diners`).
+
+### Pull request cards and takes
+
+| Card | Claim | Verdict | Change |
+| --- | --- | --- | --- |
+| Take deposits | A deposit through the payment provider for bookings at the forty; on a timeout, ask again | True | |
+| Take deposits, Gilroy | Some calls won't come back; some come back late, which is worse | True | SE: a late or lost reply leaves the outcome unknown |
+| ForkNet | Every phone keeps a copy and gossips each booking to the phones near it | True (as a description of the proposal) | |
+| ForkNet, Ricky | Nothing in the middle means nothing in the middle can go down | Narrative; true as far as it goes, and the night judges what it misses | |
+| ForkNet, Gilroy | Copies disagree until the gossip catches up; two phones can both say yes to the last table | True | EC |
+| ForkCoin | Deposits in our own cryptocurrency | Narrative; too long to fit, never judged on the night | |
+| Deposit IDs | One number per deposit, the same on every ask, so the provider can tell it's already taken that one | True | SE, SI. The key must be the same across retries of one deposit and different between deposits (SE: derived from the booking, or a random UUID kept with it) |
+| Deposit IDs, Ulrich | Aviato's bank never took a payment twice | Narrative | |
+| Deposit IDs, Danesh | The provider already gives every charge its own ID | True, and the point: that ID comes back in the reply, which is what a timeout loses. Said in GAME.md and the asks, not on the card, so the judgement stays the player's | |
+| Hold the table | Check and hold in one step, a transaction, before the deposit; release it if the deposit fails | True | PGA, PGL |
+| Hold the table, Ricky | Check, wait a second and a half for the money, then book | True (`payments.latency` 1.5 s) | |
+| Backup provider, Gilroy | The second provider has never heard of the first one's deposits | True | |
+| Shard by city, Gilroy | The database is fine; the network to everyone else isn't | True: the database stays well under capacity on the solution's night | |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| What if this is sent twice? | True | SE: unknown outcome on a timeout; retrying without the key can charge twice; with it, the first answer comes back |
+| What if the provider is down? | True | Matches `payments.timeouts` (0.01, 0.02, 0.06) and `succeeded` (0.5). "It won't be down, it'll be slow" is the episode's script; the curriculum's partial-failure point holds either way |
+| Can two people book the last table? | True | "Grows with the square of the traffic on the busy tables" is the sim's h²w/H |
+| What will this cost at 10x traffic? | True as illustration | About 90¢ a twenty-dollar deposit is in the range of card fees (a few percent plus a fixed amount); $40 a wrong charge and $150 a comp are illustrative |
+| Make it never fail / Make it web-scale (decoys) | Narrative | Judged by the night |
+
+### Dials, hotfix, live moment
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| On a timeout: give up or try again | True | |
+| Hotfix: stop retrying "so nobody gets charged twice" | True as offered (Aleister's misconception, and the night judges it) | With the key, retries were safe; turning them off makes timeouts unknown-outcome failures |
+| Corner lines (charged twice, charged for nothing, both providers, two parties at table twelve, ForkNet in a tunnel) | True or Narrative | |
+| Banners | True | Match `live.diners` and `payments.timeouts` (slow from 8pm, caught up by 9:20) |
+| Bubbles "Charged twice!", "Timed out. Paid?", "Charged at both!", "Same table twice!", "Phones disagree!"; badges "retry", "retry + key", "no retry", "backup", "txn", "ForkNet"; the Payments box | True | |
+| Live panel: "Charged wrongly N", "Tables booked twice N" (in place of the AI bill); postmortem's "Charged wrongly / Booked twice" line | True | The simulation's running totals, rounded to whole people as the goal is |
+
+### Postmortem findings
+
+| Tag | Verdict | Notes |
+| --- | --- | --- |
+| no_deposits | Narrative | |
+| double_charge, "retries without an idempotency key" | True | SE |
+| timeout_unknown, "a timeout means you don't know" | True | SE; the curriculum's own misconception, "errors mean it didn't happen" |
+| backup_provider, "failover without idempotency" | True | |
+| double_booking, "a race condition; the fix is a transaction" | True | PGA, PGL (the transaction with the row lock, as the card says) |
+| forknet, "eventual consistency: copies agree later, not now" | True | EC, GP |
+| app_overload, db_overload, rate_limited, overbuilt | True | As Episode 10 |
+
+### Codex cards and sources
+
+| Card | Verdict | Change |
+| --- | --- | --- |
+| Retries and idempotency | True | Every part is in SE: a timeout may leave the request executed with the reply lost; a repeat without the key can do it again; the same key on every retry makes the server recognise it and replay the first result. First drafted with the API reference (SI) as its source, which doesn't say a timed-out request may have succeeded; SE does, so the card cites SE |
+| Race conditions and transactions | True | PGA: checks fail under concurrent transactions without help, and `SELECT FOR UPDATE` blocks the others until the holder commits; PGL: they wait until the transaction ends. Drafted as "the second booking waits, then finds it taken"; the second half depends on the booking updating the row, so the card now stops at "has to wait until the first is done" |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| Payments: another company's computers, which take deposits for us; we ask over the network and wait | True |
+
+## CURRICULUM.md, Modules 10 and 6
+
+| Claim | Verdict |
+| --- | --- |
+| A request that times out might have failed, or succeeded with only the reply lost | True (SE) |
+| An idempotency key lets a server recognise "I've already done this one" | True (SE, SI) |
+| Two users book the last table at the same moment and both are told yes; fixes are transactions and locks, or checking-and-reserving in one step | True (PGA, PGL) |
+| Eventual consistency: copies agree soon, not instantly | True (EC) |
+| "If it worked when I tested it, it works" is a misconception; distributed bugs depend on timing and load | True: the race is quadratic in load, so staging at a tenth sees a hundredth |
+| Transactions: taking the deposit and holding the last table must both happen, or neither (Module 6) | True; the episode's card holds the table first and releases it if the deposit fails, which is that guarantee across a database and an outside service (the outside call can't be inside the database's transaction, so it's done as hold, charge, then confirm or release) |
 
 No curriculum text changed.

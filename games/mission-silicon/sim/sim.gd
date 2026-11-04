@@ -58,6 +58,14 @@ var dash_tries: float = 0.0
 var dash_done: float = 0.0
 ## The oldest the board's numbers got while its screen was working, in minutes.
 var max_age: float = 0.0
+## Deposits (Episode 11): the provider's fees, deposits tried and taken,
+## diners charged wrongly (twice, or for a booking that failed), and tables
+## booked twice.
+var pay_bill: float = 0.0
+var dep_tries: float = 0.0
+var dep_done: float = 0.0
+var bad_charges: float = 0.0
+var double_bookings: float = 0.0
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -444,6 +452,72 @@ func _tick() -> Dictionary:
 	var abandon := clampf((maxf(page, book_page) - 2.0) / 4.0, 0.0, 1.0) * 0.6
 	var book_success: float = ok["book"] * (1.0 - stale_fail) * (1.0 - logout_fail) * (1.0 - abandon)
 
+	# Deposits (Episode 11): a share of bookings take a deposit through the
+	# payment provider, one call over the network. A scripted share of those
+	# calls time out, and some of the ones that time out actually went
+	# through: only the reply was lost. Without retries a timeout is reported
+	# as a failure, so some diners are charged for a table they didn't get.
+	# Retrying repeats the call, so the ones that went through are charged
+	# twice, unless every call carries an idempotency key, which lets the
+	# provider recognise the repeat and answer it with the first result. A
+	# backup provider can't recognise another provider's key. Off unless the
+	# episode takes payments.
+	var pay: Dictionary = live.get("payments", {})
+	var deposits_on: bool = cfg.get("deposits", false) and not pay.is_empty()
+	var pay_rate := 0.0
+	var pay_fail := 0.0
+	var bad_rate := 0.0
+	var bad_tag := ""
+	if deposits_on:
+		pay_rate = r["book"] * float(pay["share"])
+		var t := keyed(pay["timeouts"], tick)
+		var went_through := t * float(pay["succeeded"])
+		var backup: bool = cfg.get("backup", false)
+		if backup or str(cfg.get("retries", "on")) == "on":
+			pay_fail = t * t
+			if backup:
+				bad_tag = "backup_provider"
+			elif not cfg.get("idem", false):
+				bad_tag = "double_charge"
+		else:
+			pay_fail = t
+			bad_tag = "timeout_unknown"
+		if bad_tag != "":
+			bad_rate = pay_rate * ok["book"] * went_through
+		book_success *= 1.0 - float(pay["share"]) * pay_fail
+		book_page += float(pay["latency"])
+		pay_bill += pay_rate * ok["book"] * TICK * float(pay["fee"])
+		dep_tries += pay_rate * TICK
+		dep_done += pay_rate * TICK * ok["book"] * (1.0 - pay_fail)
+	elif not pay.is_empty():
+		dep_tries += r["book"] * float(pay["share"]) * TICK
+
+	# The last table (Episode 11). Checking a table is free and then booking
+	# it are two steps; two parties who check the same last table inside the
+	# gap both get it. Per hot table, bookings arrive at rate h / H, and a
+	# second within the gap w of the first doubles it, so double bookings run
+	# at h * (h / H) * w: they grow with the square of the traffic on hot
+	# tables. Waiting for the deposit between the two steps widens the gap.
+	# A transaction that holds the table before the deposit closes it. On
+	# ForkNet every phone keeps its own copy of the tables, and a booking
+	# takes log2(phones) rounds of gossip to reach them all, so the gap is
+	# that long whatever the database does, and a phone that drops off
+	# before passing a booking on loses it. Off unless the episode has a race.
+	var race: Dictionary = live.get("race", {})
+	var dbl_rate := 0.0
+	var forknet: bool = cfg.get("forknet", false) and not race.is_empty()
+	var forknet_lost := 0.0
+	if not race.is_empty():
+		var hot: float = r["book"] * book_success * float(race["hot_share"])
+		var gap := 0.0
+		if forknet:
+			gap = float(race["gossip_hop"]) * log(maxf(diners, 2.0)) / log(2.0)
+			forknet_lost = float(race["offline"])
+			book_success *= 1.0 - forknet_lost
+		elif not cfg.get("txn", false):
+			gap = float(race["window"]) + (float(pay["latency"]) if deposits_on else 0.0)
+		dbl_rate = hot * hot * gap / float(race["hot_tables"])
+
 	var total := signups
 	var failed := signups * (1.0 - signup_ok)
 	for k in KINDS:
@@ -474,6 +548,8 @@ func _tick() -> Dictionary:
 	if cfg.get("cdn", false):
 		cdn_bill += r["browse"] * TICK * float(pieces["cdn"]["per_request"])
 	revenue += booked_now * float(live.get("fee", 0.0))
+	bad_charges += bad_rate * TICK
+	double_bookings += dbl_rate * TICK
 
 	# Blame, for the postmortem and the bubbles.
 	var tags := []
@@ -523,6 +599,13 @@ func _tick() -> Dictionary:
 	if gave_up > 0.0:
 		tags.append("captcha")
 		_blame("captcha", (r["search"] + r["book"]) * TICK * gave_up * 10.0)
+	if bad_rate > 0.0:
+		tags.append(bad_tag)
+		_blame(bad_tag, bad_rate * TICK * 100.0)
+	if dbl_rate > 0.0 or forknet_lost > 0.0:
+		var why := "forknet" if forknet else "double_booking"
+		tags.append(why)
+		_blame(why, dbl_rate * TICK * 100.0 + r["book"] * TICK * forknet_lost * 10.0)
 	if dash_on and age > _age_limit:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
@@ -533,6 +616,7 @@ func _tick() -> Dictionary:
 		"util": util, "tags": tags, "hits": hits, "money": _money_so_far(), "count": count,
 		"backlog": _worker_backlog, "cloud": cloud, "dash": dash_on, "age": age,
 		"scrape_in": scrape_in, "scrape_through": scrape_through,
+		"pay": deposits_on, "bad_charges": bad_charges, "double_bookings": double_bookings,
 	}
 
 
@@ -551,7 +635,19 @@ func _blame(tag: String, amount: float) -> void:
 
 
 func _money_so_far() -> float:
-	return float(ep["budget"]["bank"]) - model_bill - cdn_bill + revenue
+	return float(ep["budget"]["bank"]) - model_bill - cdn_bill - pay_bill - _incidents() + revenue
+
+
+## What the night's incidents cost: a leak's lawyer, a refund and an apology
+## for each wrong charge, a comped dinner for each party turned away.
+func _incidents() -> float:
+	var inc: Dictionary = ep.get("incidents", {})
+	var total := 0.0
+	if leaks > 0.0:
+		total += float(inc.get("cache_leak", 0.0))
+	total += bad_charges * float(inc.get("bad_charge", 0.0))
+	total += double_bookings * float(inc.get("double_booking", 0.0))
+	return total
 
 
 ## What the kept boxes add to the monthly bill.
@@ -584,15 +680,15 @@ static func monthly_of(cfg: Dictionary) -> float:
 			m += float(pieces["stream"]["monthly"])
 	if cfg.get("alerts", false):
 		m += float(pieces["alerts"]["monthly"])
+	if cfg.get("backup", false):
+		m += float(pieces["payments"]["backup_monthly"])
 	return m
 
 
 func result() -> Dictionary:
 	var budget: Dictionary = ep["budget"]
-	var incidents := 0.0
-	if leaks > 0.0:
-		incidents += float(ep.get("incidents", {}).get("cache_leak", 0.0))
-	var bank := float(budget["bank"]) - model_bill - cdn_bill - incidents + revenue
+	var incidents := _incidents()
+	var bank := float(budget["bank"]) - model_bill - cdn_bill - pay_bill - incidents + revenue
 	var burn := float(budget["burn"]) + monthly_extra()
 	var runway := bank / burn
 	var metrics := {
@@ -604,6 +700,10 @@ func result() -> Dictionary:
 		"leaks": leaks,
 		"booking_success": booked / book_tries if book_tries > 0.0 else 1.0,
 		"search_success": searched / search_tries if search_tries > 0.0 else 1.0,
+		"deposit_success": dep_done / dep_tries if dep_tries > 0.0 else 0.0,
+		# People are whole: the flow model's expected count, to the nearest one.
+		"bad_charges": floorf(bad_charges + 0.5),
+		"double_bookings": floorf(double_bookings + 0.5),
 	}
 	var goals := []
 	var passed := true
@@ -625,6 +725,10 @@ func result() -> Dictionary:
 		for g in ep["goal"]:
 			if g["metric"] == "dashboard_success":
 				blame["no_dashboard"] = 1.0e9
+	if not cfg.get("deposits", false):
+		for g in ep["goal"]:
+			if g["metric"] == "deposit_success":
+				blame["no_deposits"] = 1.0e9
 	if passed and runway < float(budget["par"]):
 		blame["overbuilt"] = 1.0
 	var order := blame.keys()
@@ -632,7 +736,7 @@ func result() -> Dictionary:
 	return {
 		"passed": passed, "goals": goals, "metrics": metrics, "runway": runway, "par": float(budget["par"]),
 		"lean": runway >= float(budget["par"]) - 0.000001, "bank": bank, "burn": burn,
-		"model_bill": model_bill, "cdn_bill": cdn_bill, "incidents": incidents, "revenue": revenue,
+		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
 		"booked": booked, "melts": melts, "tags": order, "monthly_extra": monthly_extra(),
 	}
 

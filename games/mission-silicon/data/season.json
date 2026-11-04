@@ -592,6 +592,189 @@
 					{"who": "gerard", "say": "I'll get the bag."}
 				]
 			}
+		},
+		{
+			"id": 11,
+			"title": "Charged Twice",
+			"stage": 6,
+			"modules": [10],
+			"borrowed": "PiperNet, the decentralised internet spread across thousands of phones, that works beautifully in a room and badly at scale",
+			"place": "A trattoria in North Beach, the host stand. Monday, 6pm.",
+			"backdrop": "hoststand",
+			"changed": ["scraper"],
+			"cold_open": [
+				{"who": "veronica", "say": "This is one of the forty. The owner wants to see how deposits work before Friday. Be normal."},
+				{"who": "gilroy", "say": "Their booking system is a beige box under the host stand. It has a fax modem. I respect it."},
+				{"who": "gerard", "say": "Good news first: HubbubBot stopped on Saturday. Hubbub Dine is 'pausing to reimagine'."},
+				{"who": "ricky", "say": "I haven't slept. I built something. Everybody, phones out, please. On the table."},
+				{"who": "ricky", "say": "ForkNet. Every phone keeps its own copy of tonight's tables and passes each booking to the phones nearby. No servers. Nothing in the middle to go down."},
+				{"who": "danesh", "say": "I booked table nine on mine, and it just showed up on Gerard's. Okay. That's actually beautiful."},
+				{"who": "gilroy", "say": "Five phones. One room. One wifi. Friday is sixteen thousand phones on buses and in tunnels."},
+				{"who": "ulrich", "say": "Decentralised. I've been saying that word for years, mostly at parties. I'll take my ten percent in ForkNet."},
+				{"who": "ricky", "say": "It worked every single time. I'm fine. I'm going to be fine."}
+			],
+			"brief": [
+				{"who": "veronica", "say": "Friday the forty go live with deposits. Twenty dollars a head, taken when you book, kept if you don't show."},
+				{"who": "veronica", "say": "A normal busy Friday: sixteen thousand diners at the peak. Nobody pays twice, and nobody gets a table someone else already has."},
+				{"who": "aleister", "say": "I've written a plan! It's called Take Their Money. Working title. Payments can't fail now: I made them retry until they work!"}
+			],
+			"budget": {"bank": 1000000, "burn": 80000, "time": 12, "time_unit": "h", "par": 12.34},
+			"board": {"host": "cloud", "app": {"count": 4, "size": "S", "sessions": "redis"}, "index": true, "cache": true,
+				"cdn": true, "queue": true, "ai_cache": true, "model": "standard", "rust": false, "cluster": false, "shards": false,
+				"rows": {"menus": {"ttl": 3600, "scope": "shared"}, "tables": {"ttl": 30, "scope": "shared"}, "my_bookings": {"ttl": 60, "scope": "per_user"}},
+				"dashboard": true, "tiles": 40, "db_x": 1, "replica": false, "warehouse": true, "alerts": true, "pipeline": "hourly", "pipeline_fixed": true,
+				"scraper": false, "limiter": true, "rate_limit": 100, "captcha": false, "clone": false,
+				"deposits": false, "retries": "on", "idem": false, "txn": false, "forknet": false, "forkcoin": false, "backup": false},
+			"pr": {
+				"title": "Take deposits by Friday",
+				"cards": [
+					{"id": "deposits", "by": "aleister", "label": "Take deposits", "term": "payment provider API", "time": 3,
+						"plain": "Take a deposit through the payment provider whenever someone books one of the forty. If the provider doesn't answer in time, I ask again until it does!",
+						"changes": [{"set": "deposits", "to": true}],
+						"takes": [{"who": "veronica", "say": "Forty restaurants and real money. This is the business now."},
+							{"who": "gilroy", "say": "Every deposit is a call to someone else's computer. Some of those calls won't come back. Some will come back late, which is worse."}]},
+					{"id": "forknet", "by": "ricky", "label": "ForkNet", "term": "decentralised network", "time": 6,
+						"plain": "Run tonight's tables on the diners' phones: every phone keeps a copy and gossips each booking to the phones near it. No servers in the middle.",
+						"changes": [{"set": "forknet", "to": true}],
+						"takes": [{"who": "ricky", "say": "It worked on all five phones, every time. Nothing in the middle means nothing in the middle can go down."},
+							{"who": "gilroy", "say": "Every phone has its own copy, and the copies disagree until the gossip catches up. Two phones, one last table, both say yes."}]},
+					{"id": "forkcoin", "by": "aleister", "label": "ForkCoin", "term": "cryptocurrency", "time": 24,
+						"plain": "Take deposits in our very own cryptocurrency instead of dollars! I've drafted the white paper. It's mostly diagrams.",
+						"changes": [{"set": "forkcoin", "to": true}],
+						"takes": [{"who": "danesh", "say": "If we have a coin, I'm early. I have never once been early."},
+							{"who": "veronica", "say": "The restaurants asked for twenty dollars. Not a coin. Dollars."}]},
+					{"id": "idem", "by": "ulrich", "ulrich_right": true, "label": "Deposit IDs", "term": "idempotency key", "time": 1,
+						"plain": "Give every deposit its own number, and send the same number every time we ask for it, so the provider can tell if it's already taken that one.",
+						"needs": ["deposits"],
+						"changes": [{"set": "idem", "to": true}],
+						"takes": [{"who": "ulrich", "say": "At Aviato every payment had a reference number, and the bank never took one twice. I insisted. I insist on most things."},
+							{"who": "danesh", "say": "The provider already gives every charge its own ID. Why would we need our own number too?"}]},
+					{"id": "txn", "by": "aleister", "from_ask": "lasttable", "label": "Hold the table", "term": "database transaction", "time": 1,
+						"plain": "Check the table is free and hold it in one step, a transaction, before taking the deposit. If the deposit fails, let the table go.",
+						"changes": [{"set": "txn", "to": true}],
+						"takes": [{"who": "ricky", "say": "Right now we check, wait a second and a half for the money, then book. Anyone can slip into that second and a half."},
+							{"who": "gerard", "say": "A company I used to work for booked two weddings into one hall. Both brides came. There was one cake."}]},
+					{"id": "backup", "by": "aleister", "from_ask": "neverfail", "label": "Backup provider", "term": "payment failover", "time": 2,
+						"plain": "If the payment provider doesn't answer in time, take the deposit through a second provider instead. Payments can never fail now!",
+						"needs": ["deposits"],
+						"changes": [{"set": "backup", "to": true}],
+						"takes": [{"who": "aleister", "say": "Two providers! Twice the reliability! I think that's how maths works."},
+							{"who": "gilroy", "say": "The second one has never heard of the first one's deposits. If the first actually took the money, the diner pays both."}]},
+					{"id": "shards", "by": "aleister", "from_ask": "webscale", "label": "Shard by city", "term": "database sharding", "time": 12,
+						"plain": "Split the database into one per city. Web-scale, like the last two times!",
+						"changes": [{"set": "shards", "to": true}],
+						"takes": [{"who": "aleister", "say": "Third time lucky! That's a saying. I looked it up."},
+							{"who": "gilroy", "say": "The database is fine. It's the network between us and everyone else that isn't."}]}
+				]
+			},
+			"asks": [
+				{"id": "twice", "text": "What if this is sent twice?", "decoy": false,
+					"reply": [{"who": "aleister", "say": "Then I send it again! And again. Persistence is my best quality."},
+						{"who": "gilroy", "say": "When a call times out, we don't know if it worked. Some of them did, and only the answer got lost. Retry those and the provider takes the deposit twice."},
+						{"who": "ricky", "say": "Unless every deposit carries its own key, the same one on every retry. Then the provider sees it's done that one already and just sends back the first answer."}]},
+				{"id": "down", "text": "What if the provider is down?", "decoy": false,
+					"reply": [{"who": "gilroy", "say": "It won't be down. It'll be slow. Early on, one call in a hundred doesn't answer in time. In the rush, one in fifty. At the peak, one in seventeen."},
+						{"who": "veronica", "say": "And about half of those went through anyway. If we just tell those people it failed, they've paid for a table we say they haven't got."}]},
+				{"id": "lasttable", "text": "Can two people book the last table?", "decoy": false,
+					"reply": [{"who": "ricky", "say": "We check the table's free, wait for the deposit, then book it. If two parties check inside that gap, both of them get it."},
+						{"who": "gilroy", "say": "On a quiet night, almost never. It grows with the square of the traffic on the busy tables. Friday is not a quiet night."},
+						{"who": "aleister", "say": "I can hold the table first, in one transaction, and then take the money!"}],
+					"adds": ["txn"]},
+				{"id": "cost", "text": "What will this cost at 10x traffic?", "decoy": false,
+					"reply": [{"who": "veronica", "say": "The provider takes about ninety cents a deposit. Every wrong charge is a refund, a support call and an apology: call it forty dollars."},
+						{"who": "veronica", "say": "And a party turned away from a table they booked gets dinner on us. A hundred and fifty dollars, and a review."}]},
+				{"id": "neverfail", "text": "Make it never fail.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Never fail! If the provider doesn't answer, I'll take the deposit through a second one. Belt and braces!"}],
+					"adds": ["backup"]},
+				{"id": "webscale", "text": "Make it web-scale.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Web-scale! Our tradition! I'll shard the database by city!"}],
+					"adds": ["shards"]}
+			],
+			"dials": [
+				{"id": "retries", "box": "pay", "label": "On a timeout", "needs": ["deposits"], "options": ["off", "on"],
+					"names": {"off": "give up", "on": "try again"}, "default": "on"}
+			],
+			"cache_rows": {
+				"menus": {"kind": "browse", "keys": 3000, "changes_per_hour": 0.04},
+				"tables": {"kind": "tables", "keys": 20000, "changes_per_hour": 30},
+				"my_bookings": {"kind": "my_bookings", "keys": 1, "per_user": true}
+			},
+			"users": 75000,
+			"live": {
+				"ticks": 360,
+				"clock": [17, 0],
+				"diners": [[0, 3000], [60, 8000], [120, 16000], [240, 16000], [300, 9000], [360, 3000]],
+				"rates": {"browse": 2.0, "tables": 0.5, "search": 0.3, "my_bookings": 0.1, "book": 0.004},
+				"fee": 1.0,
+				"signups": {"per_diner": 0.0025},
+				"rows": 550000,
+				"analytics_rows": 5000000,
+				"dashboard": {"tiles": 40, "screens": 6, "refresh": 60},
+				"pipeline": {"nightly_at": -840},
+				"payments": {"share": 0.4, "timeouts": [[0, 0.01], [120, 0.02], [175, 0.02], [180, 0.06], [230, 0.06], [260, 0.02], [360, 0.01]],
+					"succeeded": 0.5, "latency": 1.5, "fee": 0.9},
+				"race": {"hot_share": 0.25, "hot_tables": 40, "window": 0.05, "gossip_hop": 0.5, "offline": 0.05},
+				"events": [{"tick": 0, "banner": "Deposits are live at forty restaurants"}, {"tick": 60, "banner": "The dinner rush begins"},
+					{"tick": 120, "banner": "16,000 diners online"}, {"tick": 180, "banner": "The payment provider is slow tonight"},
+					{"tick": 260, "banner": "The provider has caught up"}, {"tick": 300, "banner": "The rush is easing off"}],
+				"hotfixes": [{"id": "no_retry", "tick": 180, "label": "Turn retries off", "needs": ["deposits"],
+					"say": "The payment provider is timing out! Hotfix: stop retrying until it calms down, so nobody gets charged twice?",
+					"changes": [{"set": "retries", "to": "off"}]}],
+				"corner": [
+					{"when": "double_charge", "who": "veronica", "say": "A woman in Noe Valley was charged twice for a table for two. She's posted the screenshot. Twice."},
+					{"when": "timeout_unknown", "who": "gerard", "say": "We told him his deposit failed. His bank says it didn't. He's asking which of us is lying. Neither, technically."},
+					{"when": "backup_provider", "who": "veronica", "say": "He's been charged by both providers. He wants to know if it's a subscription."},
+					{"when": "double_booking", "who": "danesh", "say": "Two parties of six at table twelve. Both have confirmations. Both are holding their phones up."},
+					{"when": "forknet", "who": "gilroy", "say": "Half of ForkNet is in a tunnel under the Bay. The other half thinks table twelve is free."},
+					{"when": "app_overload", "who": "ricky", "say": "The app servers are maxed out. Is that bad? That's bad."},
+					{"when": "db_overload", "who": "gilroy", "say": "The database is maxed out."},
+					{"when": "rate_limited", "who": "veronica", "say": "The model provider is turning our searches away."},
+					{"when": "calm", "who": "chaz", "say": "Real money! Moving! Through the internet! I can feel it from here!"}
+				]
+			},
+			"goal": [
+				{"metric": "down_ticks", "max": 5, "label": "Up all night"},
+				{"metric": "peak_latency", "max": 3.0, "label": "Pages under 3 seconds"},
+				{"metric": "booking_success", "min": 0.95, "label": "19 in 20 bookings work"},
+				{"metric": "deposit_success", "min": 0.95, "label": "Deposits go through"},
+				{"metric": "bad_charges", "max": 0, "label": "Nobody charged wrongly"},
+				{"metric": "double_bookings", "max": 0, "label": "No table booked twice"}
+			],
+			"incidents": {"cache_leak": 50000, "bad_charge": 40, "double_booking": 150},
+			"solution": {
+				"keep": ["deposits", "idem", "txn"],
+				"asks": ["twice", "lasttable"],
+				"dials": {"retries": "on"},
+				"hotfix": {"no_retry": false}
+			},
+			"free": [],
+			"postmortem": {
+				"no_deposits": {"title": "There were no deposits.", "plain": "The forty restaurants signed on one condition, deposits, and we didn't take any. The night was quiet. So were the forty restaurants, afterwards.", "term": "the requirement", "tell_ai": "Take deposits, as simply as it works."},
+				"double_charge": {"title": "Diners were charged twice.", "plain": "Some calls to the payment provider timed out after the deposit had gone through; only the answer was lost. We asked again, and the provider, seeing what looked like a new request, took the deposit again.", "term": "retries without an idempotency key", "tell_ai": "What happens if this request is sent twice? Send an idempotency key."},
+				"timeout_unknown": {"title": "Diners paid for tables we said they didn't get.", "plain": "When the provider didn't answer in time we told the diner the deposit had failed. For about half of them it hadn't: the money went through and only the answer was lost.", "term": "a timeout means you don't know", "tell_ai": "Retry with an idempotency key, so asking again is safe."},
+				"backup_provider": {"title": "Diners were charged by both providers.", "plain": "When the first provider didn't answer in time, we took the deposit through the second. For about half of those, the first had already taken it. Our numbers mean nothing to a different company.", "term": "failover without idempotency", "tell_ai": "What happens if this request is sent twice?"},
+				"double_booking": {"title": "Two parties got the same table.", "plain": "We checked the table was free, waited a second and a half for the deposit, then booked it. On Friday's busiest tables, two parties often checked inside that gap, and both were told yes.", "term": "a race condition; the fix is a transaction", "tell_ai": "Can two people book the last one? Check and hold it in one transaction."},
+				"forknet": {"title": "ForkNet's phones disagreed about the tables.", "plain": "Every phone had its own copy of tonight's tables, and a booking took seconds to gossip across sixteen thousand of them. Two phones in that gap could both sell the last table, and phones that went into a tunnel lost bookings outright.", "term": "eventual consistency: copies agree later, not now", "tell_ai": "Keep one source of truth for anything two people can grab."},
+				"app_overload": {"title": "The app servers were maxed out.", "plain": "More traffic arrived than the app servers could handle, so pages crawled and then failed.", "term": "horizontal scaling: more servers behind a load balancer", "tell_ai": "Where's the bottleneck? Add a server."},
+				"db_overload": {"title": "The database couldn't keep up.", "plain": "More work arrived than one database could do, so requests waited and then failed.", "term": "database bottleneck", "tell_ai": "Where's the bottleneck?"},
+				"rate_limited": {"title": "The model provider turned searches away.", "plain": "Providers cap how many calls you can make a minute. Past the cap, searches failed with error 429.", "term": "rate limiting", "tell_ai": "What will this cost at 10x traffic?"},
+				"overbuilt": {"title": "We paid for machinery we didn't need.", "plain": "Every box costs money every month. The night went fine, but it went fine more expensively than it had to.", "term": "over-engineering", "tell_ai": "Keep this simple until we measure a problem."}
+			},
+			"lessons": [
+				{"term": "Retries and idempotency", "plain": "A request that times out may have worked, with only the answer lost, so asking again can do the thing twice. Send an idempotency key, the same one on every retry, and the server spots the repeat and returns the first result instead of charging again.", "source": "https://docs.stripe.com/error-low-level"},
+				{"term": "Race conditions and transactions", "plain": "If checking the last table and booking it are separate steps, two people booking at once can both be told yes. Lock the table's row inside a transaction while you check and book it, and the second booking has to wait until the first is done.", "source": "https://www.postgresql.org/docs/current/applevel-consistency.html"}
+			],
+			"cliffhanger": {
+				"place": "The kitchen. Saturday morning.",
+				"backdrop": "kitchen",
+				"lines": [
+					{"who": "gerard", "say": "Every deposit taken once. Every table sat once. I've made a spreadsheet of the spreadsheet."},
+					{"who": "veronica", "say": "Then why is our AI bill four thousand dollars since midnight? We were closed."},
+					{"who": "gilroy", "say": "Someone's using our model key. A lot of someones. Melon put it on the internet on Tuesday, in a public repository. With a helpful README."},
+					{"who": "veronica", "say": "And Hubbub's lawyers have sent a letter. It's forty pages. Page one says Forkcast belongs to them."},
+					{"who": "ricky", "say": "I'm going to be sick."}
+				]
+			}
 		}
 	]
 }

@@ -25,7 +25,9 @@
 			"monthly": 300, "capacity": 400, "latency": 0.5, "columnar_share": 0.025},
 		"stream": {"label": "Stream", "term": "streaming pipeline", "monthly": 3000},
 		"alerts": {"label": "Alerts", "term": "monitoring and alerts", "monthly": 30},
-		"scraper": {"label": "HubbubBot", "term": "scraper", "plain": "Hubbub's machines, asking for every restaurant's tables at every time and party size, all night. Nobody else asks for those, so the cache never has them."}
+		"scraper": {"label": "HubbubBot", "term": "scraper", "plain": "Hubbub's machines, asking for every restaurant's tables at every time and party size, all night. Nobody else asks for those, so the cache never has them."},
+		"payments": {"label": "Payments", "term": "payment provider", "plain": "Another company's computers, which take diners' deposits for us. We ask over the network, and wait for the answer.",
+			"backup_monthly": 100}
 	},
 	"work": {
 		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},

@@ -348,6 +348,12 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 	# room for six lines above the cast corner.
 	if f.get("dash", false) and ep["goal"].any(func(g: Dictionary) -> bool: return str(g["metric"]).begins_with("dashboard")):
 		_meters.text +="\nBoard's numbers  %d min old" % roundi(f["age"])
+	# Deposits: the night's wrong charges and double bookings take the AI
+	# bill's place, to keep to six lines.
+	if ep["live"].has("payments"):
+		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nCharged wrongly  %d\nTables booked twice  %d" % [
+			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked),
+			floori(float(f["bad_charges"]) + 0.5), floori(float(f["double_bookings"]) + 0.5)]
 	if f.get("scrape_in", 0.0) > 0.0:
 		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
 
@@ -432,6 +438,8 @@ func _postmortem(res: Dictionary) -> bool:
 	lines.append("Bookings made: %s (%d%%)" % [_thousands(roundi(res["booked"])), roundi(m["booking_success"] * 100.0)])
 	lines.append("Searches answered: %d%%" % roundi(m["search_success"] * 100.0))
 	lines.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
+	if ep["live"].has("payments"):
+		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
 	lines.append("Runway: %.2f months (par %.2f)" % [res["runway"], res["par"]])
 	var y := 38.0
 	for line in lines:
