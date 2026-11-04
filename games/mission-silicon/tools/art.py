@@ -86,6 +86,10 @@ CAST = {
     "melon": "A tall, gangly, sweet-natured young man in his twenties with a huge round mop of big curly "
              "dark-brown hair, sleepy, friendly half-open eyes and a relaxed, vacant, contented smile, as if "
              "nothing has ever worried him; a baggy faded olive-green hoodie over a white t-shirt.",
+    # Ricky's date, a developer: calm, dry, long dark hair, a teal top.
+    "wendy": "A calm, self-assured young woman in her twenties, a software developer, with long straight dark "
+             "hair tucked behind one ear, thick dark eyebrows, one eyebrow raised in dry disbelief and a small "
+             "patient smile; a teal knit sweater over a white collar, small silver earrings.",
 }
 
 STYLE = (
@@ -201,6 +205,22 @@ SCENES = {
         "a folding table of snacks, cups and a punch bowl, a projector beam throwing a bright plain green glow "
         "on the wall above the fireplace, balloons, a disco ball, the bay window dark with the city lights "
         "outside. Loud, warm, a little too much. " + STYLE
+    ),
+    "argument": ROOM + (
+        "the living room of a shabby old Victorian house in San Francisco's Mission District used as a startup "
+        "incubator, at two in the morning in the middle of an argument: two rival desks pushed to opposite ends "
+        "of the room, each with a glowing laptop and a big monitor full of coloured code lines with no readable "
+        "words, a strip of masking tape across the worn rug dividing the room in two, a whiteboard on an easel "
+        "split down the middle by a thick marker line with scribbled boxes on each side and no readable words, "
+        "energy drink cans and cold coffee mugs, a sagging sofa in the middle, a tall bay window dark outside "
+        "with one streetlight. Cold blue screen glow against one warm lamp. Tense and petty. " + STYLE
+    ),
+    "pitch": ROOM + (
+        "a quiet, expensive venture capital partners' meeting room in San Francisco on a bright afternoon: a "
+        "long pale oak table with a few phones lying on it face up, their screens glowing with a simple app of "
+        "green buttons and cards with no readable words, glasses of water and neat notepads, white leather "
+        "chairs, a big wall screen showing a single plain green slide with no words, minimalist abstract "
+        "art, a tall window onto the city and the bay. Calm, sparse, intimidating, money in the air. " + STYLE
     ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "

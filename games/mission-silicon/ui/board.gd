@@ -19,6 +19,8 @@ const SPOTS := {
 	# The front half's small boards: the landing page and what's behind it.
 	"page": Vector2(62, 92), "web": Vector2(120, 92), "signups_db": Vector2(178, 92),
 	"form": Vector2(120, 36), "git": Vector2(62, 156),
+	# The MVP (Episodes 3 and 4): the web app, and Veronica's notebook.
+	"front": Vector2(62, 92), "notebook": Vector2(178, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -46,7 +48,13 @@ const BUBBLES := {
 	"nowhere_to_sign_up": ["page", "Sign-ups go nowhere"], "accounts": ["page", "A password? Bye."],
 	"video": ["page", "Still loading..."], "no_git": ["page", "Can't undo!"], "bad_change": ["page", "Sign-up broken!"],
 	"rollback_skipped": ["page", "Fixing by hand"], "commit_often": ["git", "Site's gone!"], "rolled_back": ["git", "Rolled back"],
+	"no_frontend": ["phones", "No app!"], "no_backend": ["front", "Nothing answers"], "notebook_app": ["notebook", "Laptop closed!"],
+	"type_bugs": ["app", "undefined!"], "unfamiliar": ["app", "Zig, from memory"], "boundary": ["front", "partySize?"],
+	"logic_bugs": ["app", "Wrong night"], "not_mobile": ["front", "Button off-screen"], "price_in_app": ["front", "Fee: $0.00!"],
+	"hidden_price": ["front", "Hidden. Still $0!"],
 }
+## Each language as the box's sub-line (Episode 3).
+const LANG_NAMES := {"ts": "TypeScript", "js": "JavaScript", "rust": "Rust", "zig": "Zig", "python": "Python"}
 ## Specs as the prototype's badge (Episode 1).
 const SPEC_NAMES := {"line": "spec: 1 line", "page": "spec: 1 page", "book": "spec: 50 pages"}
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
@@ -142,6 +150,10 @@ func _present(c: Dictionary) -> Dictionary:
 		out["form"] = true
 	if c.get("git", false):
 		out["git"] = true
+	if c.get("front", false):
+		out["front"] = true
+	if c.get("notebook", false):
+		out["notebook"] = true
 	return out
 
 
@@ -156,11 +168,11 @@ func _layout() -> void:
 		var sub := ""
 		match id:
 			"phones":
-				label = "Visitors" if cfg.has("page") else "Diners"
+				label = "Visitors" if cfg.has("page") and not cfg.has("front") else "Diners"
 				# ForkNet is a sub-line, not a badge, so the diners' badges
 				# (key in app, calls AI) stay in the two rows above the agent.
 				sub = "ForkNet" if cfg.get("forknet", false) else "phones"
-				if cfg.has("page"):
+				if cfg.has("page") and not cfg.has("front"):
 					sub = "browsers"
 			"cdn":
 				label = "CDN"
@@ -169,7 +181,11 @@ func _layout() -> void:
 				label = "Load"
 				sub = "balancer"
 			"app":
-				if cloud:
+				# The MVP's backend (Episodes 3 and 4): its language underneath.
+				if cfg.has("front"):
+					label = "Big server" if cloud else "Aleister"
+					sub = LANG_NAMES.get(str(cfg.get("lang", "")), "") if cfg.get("mvp", false) else "prototype"
+				elif cloud:
 					label = "App x%d" % int(cfg["app"]["count"])
 					sub = "8 services" if cfg.get("cluster", false) else "size %s" % str(cfg["app"]["size"])
 				else:
@@ -251,11 +267,23 @@ func _layout() -> void:
 			"form":
 				label = "Form"
 				sub = "service"
+			"front":
+				label = "Web app"
+				sub = "TypeScript"
+			"notebook":
+				label = "Notebook"
+				sub = "Python"
 			"git":
 				label = "GitHub"
 				sub = "per change" if str(cfg.get("commits", "daily")) == "each" else "daily"
 		var badges := []
 		if id == "app":
+			if cfg.get("polyglot", false):
+				badges.append("5 languages")
+			if cfg.get("investor", false):
+				badges.append("investor page")
+			if cfg.get("fee", false) and str(cfg.get("price_where", "app")) == "server":
+				badges.append("price rule")
 			if cfg.get("spec", false):
 				badges.append(SPEC_NAMES.get(str(cfg.get("detail", "line")), "spec"))
 			if cfg.get("stories", false):
@@ -308,6 +336,15 @@ func _layout() -> void:
 				badges.append("passwords")
 		if id == "phones" and cfg.get("apps", false):
 			badges.append("apps")
+		if id == "front":
+			if str(cfg.get("layout", "")) == "mobile":
+				badges.append("mobile first")
+			if cfg.get("fee", false) and str(cfg.get("price_where", "app")) == "app":
+				badges.append("hidden fee" if cfg.get("price_hidden", false) else "price rule")
+			if cfg.get("voice", false):
+				badges.append("voice")
+		if id == "notebook" and cfg.get("notebook_app", false):
+			badges.append("runs the app")
 		var rect := Rect2(_spot(id), Vector2(W, H))
 		_boxes[id] = {"rect": rect, "label": label, "sub": sub, "new": not before.has(id), "badges": badges}
 		var b := Button.new()
@@ -340,6 +377,29 @@ func _wires() -> Array:
 	# The landing page (Episode 2): visitors ask the page; the page is built
 	# by the backend or comes from a static host, and sign-ups go to the
 	# form service or the backend. The prototype isn't public.
+	# The MVP (Episodes 3 and 4): diners use the web app, which asks the
+	# backend (or Ulrich's notebook); Git keeps the code; the notebook reads
+	# a copy of the bookings. The landing page stays up beside it.
+	if cfg.has("front"):
+		if has.call("page"):
+			out.append(["phones", "page", "all"])
+			if has.call("form"):
+				out.append(["page", "form", "signup"])
+		if has.call("front"):
+			out.append(["phones", "front", "all"])
+			if cfg.get("notebook_app", false) and has.call("notebook"):
+				out.append(["front", "notebook", "all"])
+			elif cfg.get("mvp", false):
+				out.append(["front", "app", "all"])
+		if has.call("app") and has.call("model"):
+			out.append(["app", "model", "model"])
+		if has.call("db"):
+			out.append(["app", "db", "db"])
+		if has.call("git") and has.call("app"):
+			out.append(["git", "app", "history"])
+		if has.call("notebook") and not cfg.get("notebook_app", false):
+			out.append(["app", "notebook", "data"])
+		return out
 	if has.call("page"):
 		out.append(["phones", "page", "all"])
 		if has.call("web"):
@@ -498,7 +558,7 @@ func _draw() -> void:
 			var bw := font.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 4
 			# The agent's badges stack under it, clear of the payments box's.
 			# Any box's badges wrap rather than run off the board's edge.
-			if bx > r.position.x and ((id in ["agent", "phones"] and bx + bw > r.end.x) or bx + bw > size.x - 2):
+			if bx > r.position.x and ((id in ["agent", "phones", "front"] and bx + bw > r.end.x) or bx + bw > size.x - 2):
 				bx = r.position.x
 				by += 12.0
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)
@@ -521,6 +581,7 @@ func _draw() -> void:
 	# Bubbles.
 	if live:
 		var y_used := {}
+		var drawn: Array[Rect2] = []
 		for tag in frame.get("tags", []):
 			if not BUBBLES.has(tag):
 				continue
@@ -537,6 +598,17 @@ func _draw() -> void:
 			var pos := Vector2(clampf(r.get_center().x - tw / 2.0, 2, size.x - tw - 2), r.position.y - 15 - stack * 14)
 			if pos.y < 2:
 				pos.y = r.end.y + 12 + stack * 14
+			# Neighbouring boxes' bubbles can share a row: lift this one clear of any it would cover.
+			for _try in 6:
+				var hit := false
+				for d in drawn:
+					if d.intersects(Rect2(pos, Vector2(tw, 13)).grow(-0.5)):
+						pos.y = d.position.y - 14 if d.position.y - 14 >= 2 else d.end.y + 1
+						hit = true
+						break
+				if not hit:
+					break
+			drawn.append(Rect2(pos, Vector2(tw, 13)))
 			draw_rect(Rect2(pos, Vector2(tw, 13)), Palette.RED)
 			draw_string(font, pos + Vector2(4, 10), text, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
 

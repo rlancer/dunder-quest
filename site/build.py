@@ -2237,7 +2237,7 @@ def curb_page(body: str, prefix: str) -> str:
 MS_ALT = "Mission Silicon: the name in heavy slate type on off-white, beside the game's whiteboard of servers with traffic running through it."
 MS_DESC = ("Mission Silicon, a Dunder Quest game in the making: you're a non-technical founder launching an AI startup, "
            "and your AI coding assistant is very sure of itself. Learn how web apps are built by steering one. "
-           "The first two episodes and the whole second half of the season, nine in all, are playable free in your browser.")
+           "The first four episodes and the whole second half of the season, eleven in all, are playable free in your browser.")
 
 
 def tag_mission_silicon_page(index: Path) -> None:

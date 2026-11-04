@@ -4,7 +4,7 @@
 		{"id": 2, "title": "The Whiteboard", "modules": [1, 2]},
 		{"id": 3, "title": "Tabs and Spaces", "modules": [3]},
 		{"id": 4, "title": "Demo Day", "modules": [4, 5, 13]},
-		{"id": 5, "title": "The Spreadsheet", "short": "Spreadsheet", "modules": [6]},
+		{"id": 5, "title": "The Spreadsheet", "short": "Spread-sheet", "modules": [6]},
 		{"id": 6, "title": "Log In", "modules": [5, 11]},
 		{"id": 7, "title": "Launch Party", "modules": [8, 12]},
 		{"id": 8, "title": "Viral", "modules": [7, 9]},
@@ -38,7 +38,9 @@
 		"galen": {"name": "Galen", "full": "Galen Brightwater", "role": "guru CEO of Hubbub",
 			"look": {"skin": "#ecc8a8", "hair": "#b8b0a8", "style": "neat", "shirt": "#d8d0c0"}},
 		"melon": {"name": "Melon", "full": "Wilson \"Melon\" Mellini", "role": "Ricky's oldest friend, now at Hubbub",
-			"look": {"skin": "#f0c8a8", "hair": "#4a3020", "style": "curly", "shirt": "#7a8a5a"}}
+			"look": {"skin": "#f0c8a8", "hair": "#4a3020", "style": "curly", "shirt": "#7a8a5a"}},
+		"wendy": {"name": "Wendy", "full": "Wendy", "role": "a developer Ricky is seeing",
+			"look": {"skin": "#e8c4a4", "hair": "#2a1c18", "style": "long", "shirt": "#3a8a8a"}}
 	},
 	"episodes": [
 		{
@@ -394,6 +396,320 @@
 					{"who": "danesh", "say": "Then we build the real app. In the language everyone's using now, obviously."},
 					{"who": "gilroy", "say": "In anything else, obviously."},
 					{"who": "ricky", "say": "We haven't even picked a language, and they're already... I'm going to be sick."}
+				]
+			}
+		},
+		{
+			"id": 3,
+			"title": "Tabs and Spaces",
+			"stage": 1,
+			"modules": [3],
+			"borrowed": "The tabs-versus-spaces fight that nearly ends a relationship, and the engineers' running war over whose tools are better",
+			"place": "The living room. Tuesday, 2am.",
+			"backdrop": "argument",
+			"spots": {"phones": [4, 92], "page": [62, 36], "form": [120, 36], "front": [62, 92], "app": [120, 92], "db": [178, 92], "model": [178, 36], "git": [120, 156], "notebook": [178, 156]},
+			"notes": [{"at": [240, 100], "text": "TABS"}, {"at": [240, 118], "text": "SPACES"}, {"at": [236, 40], "text": "Fri: the beta"}],
+			"cold_open": [
+				{"who": "danesh", "say": "Zig. It's fast, it's new, and nobody at Hubbub can read it. That's not a language, that's a moat."},
+				{"who": "gilroy", "say": "Rust. It's fast, it's correct, and it doesn't care how you feel. Like me."},
+				{"who": "danesh", "say": "Nobody has ever finished anything in Rust. They just get very calm about not finishing."},
+				{"who": "wendy", "say": "Hi. I'm Wendy. I'm with Ricky. Is it always two in the morning in this house?"},
+				{"who": "ricky", "say": "Wendy writes beautiful code. Really beautiful. It's just... she indents it with spaces."},
+				{"who": "wendy", "say": "Four spaces. Like a normal person."},
+				{"who": "ricky", "say": "A tab is one key that means one indent. Four spaces is four keys pretending to be one. It's fine. It's totally fine."},
+				{"who": "gilroy", "say": "It isn't fine. Look at his face."},
+				{"who": "wendy", "say": "Ricky. Are you breaking up with me over the space bar?"}
+			],
+			"brief": [
+				{"who": "veronica", "say": "Walter's Demo Day is next Thursday. Before that he wants the real thing, used by real people: two hundred from the waitlist, on Friday night, booking real tables."},
+				{"who": "veronica", "say": "And one question from Walter, for the deck: do people book more when it rains? He asked it, then looked out of the window for nine minutes."},
+				{"who": "ricky", "say": "So the prototype becomes a real backend. Which means we pick a language. Which means they keep doing that."},
+				{"who": "aleister", "say": "I've written the plan! It's called Forkcast MVP. Danesh said Zig first, so it's in Zig. Zig is the future!"}
+			],
+			"budget": {"bank": 185000, "burn": 15000, "time": 12, "time_unit": "h", "par": 12.29},
+			"board": {"host": "garage", "app": {"count": 1, "size": "M", "sessions": "memory"}, "model": "standard",
+				"feed": false, "stories": false, "sold": false, "concierge": true, "spec": true, "detail": "page", "everything": false,
+				"page": true, "static": true, "backend": false, "postgres": false, "form": true, "accounts": false, "apps": false,
+				"git": true, "commits": "each", "video": false, "rollback": true,
+				"mvp": false, "front": false, "lang": "python", "notebook": false, "notebook_app": false, "investor": false, "polyglot": false},
+			"pr": {
+				"title": "Forkcast MVP",
+				"cards": [
+					{"id": "backend", "by": "aleister", "label": "Write the backend", "term": "a backend server", "time": 4,
+						"plain": "The real backend, on Aleister: search, tonight's tables, bookings, and the calls to the AI model. In Zig, because Danesh said so first! Tap Aleister on the board to change the language.",
+						"changes": [{"set": "mvp", "to": true}],
+						"takes": [{"who": "danesh", "say": "In five years everyone will be using Zig. Today almost nobody is, which is the exciting part."},
+							{"who": "gilroy", "say": "Rust. The compiler checks everything before it runs. Aleister says it'll take ten hours. I believe it. That's the problem."}]},
+					{"id": "web", "by": "aleister", "label": "Web app", "term": "a frontend (TypeScript, React)", "time": 3,
+						"plain": "The pages diners use: a search box, the results and a book button, in TypeScript with React. It's what I write best, because it's what I've seen most of!",
+						"changes": [{"set": "front", "to": true}],
+						"takes": [{"who": "danesh", "say": "I've designed it on my big monitor. It looks incredible on my big monitor."},
+							{"who": "ricky", "say": "This half is TypeScript whatever we pick. It turns into JavaScript, and JavaScript is what every browser runs."}]},
+					{"id": "investor", "by": "aleister", "label": "Investor page", "term": "a feature in the app", "time": 7,
+						"plain": "Walter's question, answered by a whole new page in the app, with live charts of bookings and the weather, for every investor he knows!",
+						"changes": [{"set": "investor", "to": true}],
+						"takes": [{"who": "veronica", "say": "I need one answer by Friday. Not a product."},
+							{"who": "gerard", "say": "Or we just look at the bookings next to the weather. I did it by hand once, for a company I used to work for. It took a weekend. I enjoyed it."}]},
+					{"id": "polyglot", "by": "aleister", "label": "A language each", "term": "a polyglot stack", "time": 16,
+						"plain": "Every part in its own best language: search in Python, bookings in Rust, the API in Go, the app in TypeScript, and the glue in Zig!",
+						"changes": [{"set": "polyglot", "to": true}],
+						"takes": [{"who": "ricky", "say": "The right tool for every job. In theory, that's... correct."},
+							{"who": "gilroy", "say": "Five languages, five sets of tools, and five ways to spell 'party size'. For two hundred people."}]},
+					{"id": "notebook", "by": "aleister", "from_ask": "rain", "label": "Notebook", "term": "a marimo notebook (Python)", "time": 1,
+						"plain": "A marimo notebook, in Python, on Veronica's laptop: read last year's bookings from forty restaurants and the weather, draw one chart, answer the question. It's a file in Git like everything else.",
+						"changes": [{"set": "notebook", "to": true}],
+						"takes": [{"who": "veronica", "say": "One chart. Rain on one side, bookings on the other. That's the whole ask."},
+							{"who": "ricky", "say": "Python is where the data tools are. And a notebook is for answering a question, not for running the app."}]},
+					{"id": "nb_all", "by": "ulrich", "ulrich_right": false, "label": "Notebook it", "term": "a notebook as the app", "time": 2,
+						"plain": "Forget the backend. Put everything in Veronica's notebook, the bookings too. It already has the data, and you can watch it working.",
+						"changes": [{"set": "notebook", "to": true}, {"set": "notebook_app", "to": true}],
+						"takes": [{"who": "ulrich", "say": "At Aviato the whole company was one spreadsheet. Very lean. Very agile. Briefly."},
+							{"who": "gilroy", "say": "A notebook is a lab bench. You don't run a restaurant off a lab bench, and this one is Veronica's laptop."}]},
+					{"id": "bigserver", "by": "aleister", "from_ask": "fast", "label": "Biggest server", "term": "a bigger cloud server", "time": 1,
+						"plain": "Rent the biggest cloud server there is, and a managed database beside it, so Forkcast is as fast as it can possibly be!",
+						"changes": [{"set": "host", "to": "cloud"}, {"set": "app.size", "to": "L"}],
+						"takes": [{"who": "aleister", "say": "Fast is good! Faster is better! This is fastest!"},
+							{"who": "gilroy", "say": "Aleister uses about three percent of itself for two hundred people. You'd be renting the other ninety-seven."}]}
+				]
+			},
+			"asks": [
+				{"id": "lang_q", "text": "Which language for the backend?", "decoy": false,
+					"reply": [{"who": "danesh", "say": "Zig. Small, fast, and new enough that nobody can tell us we're doing it wrong."},
+						{"who": "gilroy", "say": "Rust. Fast, strict, and its compiler catches whole kinds of mistakes before anything runs."},
+						{"who": "ricky", "say": "TypeScript. The web app's already TypeScript, so a booking is written down once, for both halves. And it's what Aleister has seen the most of."},
+						{"who": "aleister", "say": "I have seen so much TypeScript! I've seen some Zig. Mostly older versions. It isn't at version one yet, so it keeps changing."}]},
+				{"id": "types", "text": "What do types catch?", "decoy": false,
+					"reply": [{"who": "ricky", "say": "In TypeScript, if the code says booking.partySise, with an s, the checker stops it before it ever runs. In plain JavaScript it runs, and the party size is just... missing."},
+						{"who": "gilroy", "say": "Types catch the misspelt name. They don't catch a booking for the wrong night. Nothing catches that except checking."}]},
+				{"id": "rain", "text": "Can we answer Walter's question?", "decoy": false,
+					"reply": [{"who": "veronica", "say": "Do people book more when it rains? Gerard typed up last year's bookings from forty restaurants. It just needs holding up against the weather."},
+						{"who": "ricky", "say": "That's a notebook job. Code, a chart and notes in one file, run a piece at a time. marimo, in Python, where the data tools are."},
+						{"who": "aleister", "say": "A notebook! I'll add it!"}],
+					"adds": ["notebook"]},
+				{"id": "time_q", "text": "Where does the time go?", "decoy": false,
+					"reply": [{"who": "gilroy", "say": "A search takes about two seconds, and nearly all of it is the AI model thinking. Our own code takes a few milliseconds."},
+						{"who": "danesh", "say": "So Zig makes those milliseconds faster."},
+						{"who": "ricky", "say": "Speeding up the part that isn't slow."}]},
+				{"id": "fast", "text": "Make it as fast as possible.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "As fast as possible! The biggest server money can rent!"}],
+					"adds": ["bigserver"]}
+			],
+			"dials": [
+				{"id": "lang", "box": "app", "label": "Language", "needs": ["backend"], "options": ["zig", "rust", "js", "ts"],
+					"names": {"zig": "Zig", "rust": "Rust", "js": "JavaScript", "ts": "TypeScript"}, "default": "zig", "time": {"zig": 2, "rust": 6}}
+			],
+			"live": {
+				"ticks": 240,
+				"clock": [18, 0],
+				"day": "Fri",
+				"diners": [[0, 20], [20, 200], [200, 200], [240, 80]],
+				"rates": {"browse": 1.0, "search": 0.3, "book": 0.02},
+				"fee": 0.0,
+				"code": {"type": 0.08, "logic": 0.015, "boundary": 0.04, "front": "ts", "closes": 120},
+				"meters": ["diners", "page", "errors", "bookings", "bugs", "ai_bill"],
+				"events": [{"tick": 0, "banner": "The beta opens: two hundred from the waitlist"}, {"tick": 30, "banner": "Friday dinner: everyone's searching"},
+					{"tick": 120, "banner": "8pm: Veronica closes her laptop and goes to dinner"}, {"tick": 200, "banner": "The last tables of the night"}],
+				"corner": [
+					{"when": "type_bugs", "who": "danesh", "say": "A party of six just got a table for 'undefined'. The restaurant has questions."},
+					{"when": "boundary", "who": "gerard", "say": "The web app sends partySize. The backend wants party_size. They've stopped speaking."},
+					{"when": "unfamiliar", "who": "gilroy", "say": "Aleister is writing Zig the way I speak French. Confidently, from a phrasebook, several versions out of date."},
+					{"when": "logic_bugs", "who": "ricky", "say": "Nearly everything works. Every so often a booking's for the wrong night. Types can't see that one."},
+					{"when": "notebook_app", "who": "veronica", "say": "I closed my laptop to go to dinner. Apparently I closed Forkcast."},
+					{"when": "no_backend", "who": "ricky", "say": "The web app is asking for tables and nothing's answering. It's a menu with no kitchen."},
+					{"when": "no_frontend", "who": "danesh", "say": "The backend is perfect. Nobody can see it. There's no app."}
+				]
+			},
+			"goal": [
+				{"metric": "down_ticks", "max": 5, "label": "Up all evening"},
+				{"metric": "booking_success", "min": 0.95, "label": "19 in 20 bookings work"},
+				{"metric": "search_success", "min": 0.95, "label": "19 in 20 searches answered"},
+				{"metric": "answered", "min": 1, "label": "Walter's question answered"}
+			],
+			"solution": {
+				"keep": ["backend", "web", "notebook"],
+				"asks": ["rain"],
+				"dials": {"lang": "ts"},
+				"hotfix": {}
+			},
+			"free": [],
+			"postmortem": {
+				"no_frontend": {"title": "There was no app to use.", "plain": "The backend was ready, but the diners had nothing to open: no page, no search box, no button.", "term": "a backend with no frontend", "tell_ai": "What does the diner actually see?"},
+				"no_backend": {"title": "Nothing answered the app.", "plain": "The web app asked for tables and bookings, and there was no backend to ask. The prototype is still private.", "term": "a frontend with no backend", "tell_ai": "What answers each request?"},
+				"notebook_app": {"title": "Forkcast stopped when Veronica closed her laptop.", "plain": "The bookings ran inside a notebook open on her laptop. A notebook is for working something out a piece at a time, on the computer it's open on. At eight she went to dinner, and Forkcast went with her.", "term": "a notebook used as a backend", "tell_ai": "This is a notebook job; taking bookings is not."},
+				"type_bugs": {"title": "Bookings lost their party size.", "plain": "Aleister misspelt a field name in JavaScript, so the code read a value that wasn't there, and JavaScript carried on without it. TypeScript's checker would have stopped that before anything ran.", "term": "type errors found only when it runs (dynamic typing)", "tell_ai": "Use TypeScript, and fix every type error before it runs."},
+				"unfamiliar": {"title": "Aleister wrote Zig badly.", "plain": "AI models learn a language from examples of it, and there's far less Zig to learn from than TypeScript. Zig's compiler caught the type mistakes; the rest reached the diners.", "term": "a low-resource language, for the AI", "tell_ai": "Use a popular, boring language."},
+				"boundary": {"title": "The app and the backend disagreed about what a booking is.", "plain": "With the backend in one language and the web app in another, a booking was written down twice, and nothing checked one against the other. Where they didn't match, the booking failed.", "term": "a mismatch at the API boundary", "tell_ai": "One language front and back, with the types shared."},
+				"logic_bugs": {"title": "One request in seventy still hit a bug.", "plain": "Types caught every misspelt name before it ran. They can't catch a rule that's wrong, like a booking for the wrong night. Finding those takes tests, and trying it.", "term": "logic errors: types don't catch everything", "tell_ai": "Write a test for that."},
+				"no_answer": {"title": "Nobody answered Walter's question.", "plain": "Do people book more when it rains? It needed last year's bookings held up against the weather, and nothing we built did that.", "term": "an analysis job", "tell_ai": "Answer this in a notebook."},
+				"overbuilt": {"title": "We paid for machinery we didn't need.", "plain": "The biggest server and a database of its own, every month, for two hundred people, when Aleister was using three percent of itself. The night went fine, more expensively than it had to.", "term": "a fast server doesn't make a fast app", "tell_ai": "Where does the time actually go?"}
+			},
+			"lessons": [
+				{"term": "Types", "plain": "A static type checker, like TypeScript's, reads your code and finds some bugs before it runs: a property that doesn't exist, a misspelt name. Plain JavaScript runs it anyway, and a missing property is just undefined.", "source": "https://www.typescriptlang.org/docs/handbook/2/basic-types.html"},
+				{"term": "Pick a language the AI knows", "plain": "AI models learn a language from examples of it. In niche languages, with less code to learn from, they write worse code than in popular ones.", "source": "https://arxiv.org/abs/2501.19085"},
+				{"term": "Notebooks", "plain": "A notebook mixes code, results and notes, run a cell at a time, and is made for working with data. marimo reruns the cells that depend on one you change, and keeps the notebook as a plain Python file.", "source": "https://docs.marimo.io/"}
+			],
+			"cliffhanger": {
+				"place": "The kitchen. Saturday morning.",
+				"lines": [
+					{"who": "veronica", "say": "The chart. When it rains, people book more, mostly for that night, mostly for two. Walter looked at it for a long time and said: 'Thursday.'"},
+					{"who": "gerard", "say": "Demo Day. Every investor Walter knows, in one room, on their phones."},
+					{"who": "wendy", "say": "I'm going to go, Ricky. Before you look at my code again."},
+					{"who": "ricky", "say": "Wendy, it's not the spaces. It's... a bit the spaces."},
+					{"who": "ulrich", "say": "Demo Day! I'll do the pitch. I've pitched forty times and been funded once. Those are great odds."},
+					{"who": "ricky", "say": "No. I'll do it. I'm doing the pitch. I'm going to be sick."}
+				]
+			}
+		},
+		{
+			"id": 4,
+			"title": "Demo Day",
+			"stage": 1,
+			"modules": [4, 5, 13],
+			"borrowed": "The founder throwing up before the pitch, and the investor meeting that goes sideways",
+			"place": "Ravello Capital. Thursday, 6am. The pitch is at two.",
+			"backdrop": "pitch",
+			"spots": {"phones": [4, 92], "page": [62, 36], "form": [120, 36], "front": [62, 92], "app": [120, 92], "db": [178, 92], "model": [178, 36], "git": [120, 156], "notebook": [178, 156]},
+			"cold_open": [
+				{"who": "gerard", "say": "Ricky's in the bathroom. I've brought the bag, a spare bag, a mint, and a printed copy of the pitch in case of fire."},
+				{"who": "ricky", "say": "I'm fine! I'm fine. That was the last one. Probably the last one."},
+				{"who": "ulrich", "say": "Remember: confidence. I'll be at the back, nodding. Nodding is half of a pitch."},
+				{"who": "danesh", "say": "I've made the app look incredible. On my monitor. It's thirty-two inches."},
+				{"who": "gilroy", "say": "Nobody in that room has a thirty-two inch phone."},
+				{"who": "veronica", "say": "Walter's partners, forty investors and Chaz Haverman. Don't look at Chaz. He treats eye contact as a term sheet."}
+			],
+			"brief": [
+				{"who": "veronica", "say": "At two, Ricky pitches. Then everyone in the room tries Forkcast on their phone and books a real table. Walter wants to see it make money: two dollars a booking."},
+				{"who": "veronica", "say": "Four hours of investors trying to break it, and the press after. Aleister has eight hours to get it ready."},
+				{"who": "aleister", "say": "I've written a plan for Demo Day! It's called Demo Ready. It's very ready."}
+			],
+			"budget": {"bank": 180000, "burn": 15000, "time": 8, "time_unit": "h", "par": 12.21},
+			"board": {"host": "garage", "app": {"count": 1, "size": "M", "sessions": "memory"}, "model": "standard",
+				"feed": false, "stories": false, "sold": false, "concierge": true, "spec": true, "detail": "page", "everything": false,
+				"page": true, "static": true, "backend": false, "postgres": false, "form": true, "accounts": false, "apps": false,
+				"git": true, "commits": "each", "video": false, "rollback": true,
+				"mvp": true, "front": true, "lang": "ts", "notebook": true, "notebook_app": false, "investor": false, "polyglot": false,
+				"fee": false, "price_where": "app", "price_hidden": false, "layout": "desktop", "direct_ai": false, "key_where": "server", "voice": false},
+			"pr": {
+				"title": "Demo Ready",
+				"cards": [
+					{"id": "fee", "by": "aleister", "label": "Booking fee", "term": "a price rule, and card payments", "time": 2,
+						"plain": "Two dollars a booking, charged by card through a payment provider, so Walter's partners see Forkcast make money. The app works out the fee and tells our server what to charge. Simple!",
+						"changes": [{"set": "fee", "to": true}],
+						"takes": [{"who": "veronica", "say": "Investors want to see a business. Two dollars a table is a business."},
+							{"who": "gilroy", "say": "The app decides what we charge. The app is on their phone. Think about that for longer than Aleister did."}]},
+					{"id": "direct", "by": "aleister", "label": "Straight to AI", "term": "calling the model from the frontend", "time": 1.5,
+						"plain": "Searches go straight from each diner's phone to the AI model, skipping Aleister. One less hop for the demo! The model key goes in the app, so the phone can use it.",
+						"changes": [{"set": "direct_ai", "to": true}, {"set": "key_where", "to": "frontend"}],
+						"takes": [{"who": "danesh", "say": "One less hop. On stage, every second is a year."},
+							{"who": "gilroy", "say": "And our key on every phone in the room. A room full of people who invest in security companies."}]},
+					{"id": "voice", "by": "aleister", "label": "Voice concierge", "term": "speech recognition", "time": 14,
+						"plain": "Talk to Forkcast! Say the evening you want out loud, and it books it. Investors love talking to things!",
+						"changes": [{"set": "voice", "to": true}],
+						"takes": [{"who": "danesh", "say": "If it doesn't talk, it's just a website."},
+							{"who": "ricky", "say": "Fourteen hours. The pitch is in eight."}]},
+					{"id": "server_price", "by": "aleister", "from_ask": "price_q", "label": "Price on server", "term": "a business rule on the backend", "time": 1,
+						"needs": ["fee"],
+						"plain": "Our server works out the fee itself, from the booking, and ignores whatever the app says it should be.",
+						"changes": [{"set": "price_where", "to": "server"}],
+						"takes": [{"who": "ricky", "say": "The app asks, the server decides. That's what a backend is for."},
+							{"who": "danesh", "say": "So the price in the app is just a label now. Fine. It's a beautiful label."}]},
+					{"id": "hide", "by": "ulrich", "ulrich_right": false, "label": "Hide it", "term": "hiding it in the frontend", "time": 0.5,
+						"needs": ["fee"],
+						"plain": "Don't move anything. Just hide the price box, so nobody sees it. What people can't see, they can't change.",
+						"changes": [{"set": "price_where", "to": "app"}, {"set": "price_hidden", "to": true}],
+						"takes": [{"who": "ulrich", "say": "At Aviato we hid the cancel button. Nobody cancelled. Nobody found anything else, either."},
+							{"who": "gilroy", "say": "Hidden from the screen. Not from the code, which is on their phone, where they can change it."}]},
+					{"id": "big_model", "by": "aleister", "from_ask": "impress", "label": "Biggest AI model", "term": "a larger model", "time": 0.5,
+						"plain": "The biggest model there is, for the demo. Five times the price per answer, five times the impression!",
+						"changes": [{"set": "model", "to": "big"}],
+						"takes": [{"who": "aleister", "say": "Investors can feel a big model. In their hearts."},
+							{"who": "veronica", "say": "The answers were fine on Friday. The bill is the part investors read."}]}
+				]
+			},
+			"asks": [
+				{"id": "price_q", "text": "Who decides the price?", "decoy": false,
+					"reply": [{"who": "aleister", "say": "The app does! It works out two dollars, and tells our server to charge two dollars. Very efficient."},
+						{"who": "gilroy", "say": "The app runs on the diner's phone. Anyone can open their browser's developer tools and change what it sends. Including the two dollars."},
+						{"who": "ricky", "say": "Then the server works out the price itself. The frontend asks; the backend decides."},
+						{"who": "aleister", "say": "The price on the server! I'll add it!"}],
+					"adds": ["server_price"]},
+				{"id": "key_q", "text": "Where's the model key?", "decoy": false,
+					"reply": [{"who": "gilroy", "say": "On Aleister, in its settings. Aleister calls the model, and the app asks Aleister. Unless we keep 'Straight to AI'."},
+						{"who": "gilroy", "say": "Then it's in the app's code, on every phone that opens it. Bots read new apps' code for keys all day. They'll have it by teatime."}]},
+				{"id": "phone_q", "text": "Will it work on a phone?", "decoy": false,
+					"reply": [{"who": "danesh", "say": "It looks incredible. On my monitor. Which is thirty-two inches."},
+						{"who": "veronica", "say": "Everyone at Demo Day will have it on their phones. Walter will. Walter doesn't own a laptop."},
+						{"who": "ricky", "say": "Then mobile first: lay it out for a phone, and let it grow on a big screen. Tap the web app on the board."}]},
+				{"id": "cost_q", "text": "What does each answer cost?", "decoy": false,
+					"reply": [{"who": "veronica", "say": "The model charges by the token, in and out: the instructions, the forty restaurants, the question and the reply. About two cents an answer."},
+						{"who": "gilroy", "say": "Times a room of investors pressing it over and over to see if it breaks."}]},
+				{"id": "impress", "text": "Make it impressive.", "decoy": true,
+					"reply": [{"who": "aleister", "say": "Impressive! The biggest AI model there is!"}],
+					"adds": ["big_model"]}
+			],
+			"dials": [
+				{"id": "layout", "box": "front", "label": "Layout", "options": ["desktop", "mobile"],
+					"names": {"desktop": "desktop", "mobile": "mobile first"}, "default": "desktop", "time": {"mobile": 1.5}}
+			],
+			"live": {
+				"ticks": 240,
+				"clock": [14, 0],
+				"day": "Thu",
+				"diners": [[0, 30], [20, 300], [120, 400], [150, 700], [240, 500]],
+				"rates": {"browse": 1.0, "search": 0.4, "book": 0.02},
+				"fee": 2.0,
+				"mobile": {"phones": 0.9, "desktop_fail": 0.4},
+				"tamper": {"share": [[0, 0], [40, 0], [41, 0.05], [90, 0.25], [240, 0.35]]},
+				"leak": {"price": 0.02, "exposures": {"history": [[0, 0]], "bundle": [[0, 0], [100, 0], [101, 300], [240, 1200]], "package": [[0, 0]]}},
+				"meters": ["diners", "page", "errors", "bookings", "unpaid", "strangers"],
+				"events": [{"tick": 0, "banner": "Demo Day at Ravello Capital"}, {"tick": 20, "banner": "Ricky's pitch: everyone opens Forkcast on their phone"},
+					{"tick": 40, "banner": "Chaz's assistant opens the developer tools"}, {"tick": 90, "banner": "Chaz tells the room something"},
+					{"tick": 150, "banner": "The press arrive"}, {"tick": 220, "banner": "Walter stands up"}],
+				"corner": [
+					{"when": "price_in_app", "who": "chaz", "say": "My guy changed your two dollars to zero in the browser. Took him a minute. Do I get free tables for life now?"},
+					{"when": "hidden_price", "who": "chaz", "say": "You hid the price box! Cute. My guy found it in about the time it took you to hide it."},
+					{"when": "key_in_app", "who": "gilroy", "say": "A bot just read our model key out of the app. Strangers are asking our AI things, on our bill."},
+					{"when": "not_mobile", "who": "veronica", "say": "Walter can't find the book button. It's off the bottom of his phone. He's scrolling sideways, very slowly."}
+				]
+			},
+			"goal": [
+				{"metric": "down_ticks", "max": 5, "label": "Up all afternoon"},
+				{"metric": "booking_success", "min": 0.9, "label": "9 in 10 bookings work"},
+				{"metric": "underpaid", "max": 0, "label": "Every booking pays its $2"},
+				{"metric": "key_abuse", "max": 0, "label": "Nobody else on our key"}
+			],
+			"solution": {
+				"keep": ["fee", "server_price"],
+				"asks": ["price_q"],
+				"dials": {"layout": "mobile"},
+				"hotfix": {}
+			},
+			"free": [],
+			"postmortem": {
+				"no_fee": {"title": "Nobody paid anything.", "plain": "Walter's partners came to see Forkcast make money, and it charged nothing, because there was no fee to pay.", "term": "no business model", "tell_ai": "Charge two dollars a booking, worked out on the server."},
+				"price_in_app": {"title": "Chaz's assistant made his bookings free.", "plain": "The app worked out the fee and told our server what to charge, and the app runs on the diner's phone. He opened the developer tools, changed two dollars to nothing, and our server charged nothing. Then Chaz told the room.", "term": "trusting the client: a business rule in the frontend", "tell_ai": "Validate this on the server. The server decides the price."},
+				"hidden_price": {"title": "Hiding the price box kept nobody out.", "plain": "The box was hidden, but the rule was still in the app's code on every phone, so changing what the phone sent still worked. Hiding a button changes what people see, not what they can do.", "term": "hiding isn't security", "tell_ai": "Who is allowed to change this? Check it on the server."},
+				"key_in_app": {"title": "The model key shipped inside the app.", "plain": "For phones to call the model themselves, the key had to be in the app, and anything in the app is on every phone that opens it. A bot read it out, and strangers used it on our bill.", "term": "anything in the frontend is public", "tell_ai": "Call the model from the backend."},
+				"not_mobile": {"title": "The book button was off the bottom of everyone's phone.", "plain": "The web app was laid out on a big monitor. On a phone, a lot of people never found the button, Walter included.", "term": "not responsive: design mobile first", "tell_ai": "Mobile first."},
+				"big_model": {"title": "The biggest model cost five times as much.", "plain": "The demo didn't need it, and investors read the bill.", "term": "model choice", "tell_ai": "What's the simplest version that works?"},
+				"overbuilt": {"title": "We paid for machinery we didn't need.", "plain": "The demo went fine, but it went fine more expensively than it had to.", "term": "over-engineering", "tell_ai": "Keep this simple until we measure a problem."}
+			},
+			"lessons": [
+				{"term": "Never trust the frontend", "plain": "Checks in the browser are easy to get round, and anyone can change what their browser sends. So the server checks everything it's sent, prices included.", "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation"},
+				{"term": "No keys in the app", "plain": "Anything built into the app ends up in its code, on every visitor's device. Never put an API key there.", "source": "https://vite.dev/guide/env-and-mode"},
+				{"term": "Mobile first", "plain": "Responsive design makes one site work on every screen. Mobile first means laying it out for a phone first, then adding more for wider screens.", "source": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design"}
+			],
+			"cliffhanger": {
+				"place": "Ravello Capital. After the demo.",
+				"backdrop": "pitch",
+				"lines": [
+					{"who": "walter", "say": "..."},
+					{"who": "walter", "say": "Yes."},
+					{"who": "veronica", "say": "That's a yes. That's the most words he's ever used on a yes."},
+					{"who": "chaz", "say": "Chaz Haverman. I put fax machines on the internet. I want in. How many users have you got? Make it more."},
+					{"who": "gerard", "say": "Ulrich has told the whole waitlist we're open. All fifteen thousand. He's keeping their bookings in my spreadsheet."},
+					{"who": "ricky", "say": "A spreadsheet. For fifteen thousand people's bookings. I'm..."},
+					{"who": "gilroy", "say": "He's going to be sick. Somebody give him the bag."}
 				]
 			}
 		},
