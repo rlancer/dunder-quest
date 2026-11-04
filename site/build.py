@@ -7,12 +7,15 @@ the player meets on the trail. The web export of the game goes in `play/`
 beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
 JavaScript game, gets its own page in `flatmates/` and its export in
 `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
-`curb/` and `curb/play/`.
+`curb/` and `curb/play/`. Mission Silicon, the prototype of the
+fourth game, is in `mission-silicon/` and `mission-silicon/play/`; it isn't
+on the splash yet.
 
     python site/build.py build/site
     python site/build.py --play build/site/play/index.html
     python site/build.py --flatmates build/site/flatmates/play/index.html
     python site/build.py --curb build/site/curb/play/index.html
+    python site/build.py --mission-silicon build/site/mission-silicon/play/index.html
 """
 
 from __future__ import annotations
@@ -31,6 +34,7 @@ ROOT = Path(__file__).resolve().parents[1]
 QUEST = ROOT / "games" / "dunder-quest"
 FLATMATES = ROOT / "games" / "flatmates"
 CURB = ROOT / "games" / "curb"
+MISSION = ROOT / "games" / "mission-silicon"
 SITE = Path(__file__).resolve().parent
 REPO = "https://github.com/rlancer/dunder-quest"
 ## Social previews need absolute URLs, so every page points at production,
@@ -2225,7 +2229,140 @@ def curb_page(body: str, prefix: str) -> str:
 """
 
 
+## Mission Silicon's page at /mission-silicon/, the fourth game, in prototype:
+## startup green on off-white, Montserrat ExtraBold headings. The cast and the
+## season come from `mission-silicon/data/season.json`, the data the game
+## plays, and the modules from `mission-silicon/CURRICULUM.md`. Screenshots
+## and the social card are painted by `mission-silicon/tools/site_art.gd`.
+MS_ALT = "Mission Silicon: the name in heavy slate type on off-white, beside the game's whiteboard of servers with traffic running through it."
+MS_DESC = ("Mission Silicon, a Dunder Quest game in the making: you're a non-technical founder launching an AI startup, "
+           "and your AI coding assistant is very sure of itself. Learn how web apps are built by steering one. "
+           "Episode 8 is playable free in your browser.")
+
+
+def tag_mission_silicon_page(index: Path) -> None:
+    """The same tags for Mission Silicon, in mission-silicon/, which Godot
+    exports to mission-silicon/play/index.html."""
+    desc = "Play the Mission Silicon prototype, the Dunder Quest game about building apps with AI, right in your browser."
+    text = index.read_text(encoding="utf-8")
+    if 'property="og:title"' in text:
+        return
+    tags = (f'<meta name="description" content="{esc(desc)}">\n'
+            f'{head_tags("Play Mission Silicon · Dunder Quest", desc, "mission-silicon/play/", "mission-silicon.png", MS_ALT)}\n')
+    index.write_text(text.replace("</head>", tags + "</head>", 1), encoding="utf-8")
+    print(f"tagged {index}")
+
+
+def ms_modules() -> dict[str, str]:
+    """Module number (or "capstone") to its title, from the curriculum's headings."""
+    text = (MISSION / "CURRICULUM.md").read_text(encoding="utf-8")
+    out = {m.group(1): m.group(2).strip() for m in re.finditer(r"^## Module (\d+): (.+)$", text, re.M)}
+    capstone = re.search(r"^## Capstone: (.+)$", text, re.M)
+    if capstone:
+        out["capstone"] = capstone.group(1).strip()
+    return out
+
+
+def build_mission_silicon(prefix: str) -> str:
+    data = json.loads((MISSION / "data" / "season.json").read_text(encoding="utf-8"))
+    img = f"{prefix}static/img/mission-silicon/"
+    built = {ep["id"]: ep for ep in data["episodes"]}
+    modules = ms_modules()
+    cast = "".join(
+        f'<li><b>{esc(p["full"])}</b> <span>{esc(p["role"])}</span></li>'
+        for p in data["cast"].values())
+    season = []
+    for entry in data["outline"]:
+        names = []
+        for m in entry["modules"]:
+            key = str(m)
+            title = modules.get(key, "")
+            label = "The whole picture" if key == "capstone" else f"Module {key}"
+            names.append(f'{label}: {esc(title.split(",")[0].split(":")[0])}' if title else label)
+        playable = entry["id"] in built
+        state = '<a class="ms-tag" href="play/">Play it</a>' if playable else '<span class="ms-tag ms-soon">Coming</span>'
+        season.append(f'<li{" class=ms-live" if playable else ""}><span class="ms-num">{entry["id"]}</span>'
+                      f'<b>{esc(entry["title"])}</b> {state}<small>{"; ".join(names)}</small></li>')
+    steps = [
+        ("planning.png", "Read the AI's plan",
+         "Aleister Jr., your AI teammate, answers every crisis with a pull request. Keep or cut each change, ask it the questions a "
+         "good founder asks (where's the bottleneck? how stale can this be?), and turn the dials. Nothing tells you if a choice is right."),
+        ("trouble.png", "Watch the night play out",
+         "Merge, and thousands of simulated diners pour through what you built. Servers max out, caches go stale, the garage server "
+         "overheats, and the real names for what's going wrong pop up where it happens."),
+        ("postmortem.png", "Find out why",
+         "The postmortem says what broke, in plain words and then the real term, and what to tell your AI next time. Runway is the "
+         "score: outages burn money, and so does building more than you need."),
+    ]
+    step_html = "".join(
+        f'<li><img src="{img}{shot}" alt="" width="720" height="405" loading="lazy"><h3>{esc(h)}</h3><p>{esc(p)}</p></li>'
+        for shot, h, p in steps)
+    body = f"""
+<section class="ms-hero">
+  <p class="ms-kicker">a dunder_quest game · early prototype</p>
+  <h1>Mission Silicon</h1>
+  <p class="ms-lede">You've moved into an incubator house to launch an AI startup, and you can't code. Your AI coding assistant can. It's fast, tireless, and very sure of itself. Learn enough about how apps are built (servers, databases, caches, scaling) to tell it what to build, and when to say no.</p>
+  <p class="ms-actions"><a class="ms-btn" href="play/">Play Episode 8: Viral</a></p>
+  <p class="ms-fine">One episode of fourteen, with placeholder art. Best played on a computer or a phone held sideways.</p>
+  <img class="ms-shot" src="{img}live.png" alt="The game's whiteboard during Friday night: diners flow through a load balancer, two app servers, a Redis cache and Postgres, while an investor texts everyone he knows" width="720" height="405">
+</section>
+<section class="ms-section" id="how">
+  <h2>How it plays</h2>
+  <ol class="ms-steps">{step_html}</ol>
+</section>
+<section class="ms-section" id="house">
+  <h2>The house</h2>
+  <p>Forkcast is an AI dinner concierge: tell it what kind of evening you want, and it finds the restaurant and books the table. You're its founder. These are the people (and the machine) around you.</p>
+  <ul class="ms-cast">{cast}</ul>
+</section>
+<section class="ms-section" id="season">
+  <h2>The season</h2>
+  <p>Fourteen episodes, from a landing page to a company in several cities, and every one teaches a piece of how web apps are built. You never write code: you learn enough to direct an AI that does.</p>
+  <ol class="ms-season">{"".join(season)}</ol>
+</section>
+"""
+    return ms_page(body, prefix)
+
+
+def ms_page(body: str, prefix: str) -> str:
+    title = "Mission Silicon · Dunder Quest"
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="{esc(MS_DESC)}">
+{head_tags(title, MS_DESC, "mission-silicon/", "mission-silicon.png", MS_ALT)}
+<link rel="icon" href="{prefix}static/img/mission-silicon/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{prefix}static/mission-silicon.css">
+</head>
+<body class="ms">
+<a class="skip" href="#main">Skip to content</a>
+<header class="ms-bar">
+  <a class="ms-brand" href="./">Mission Silicon</a>
+  <nav aria-label="Mission Silicon"><a href="#how">How it plays</a><a href="#season">The season</a><a href="{prefix}">All games</a></nav>
+  <a class="ms-btn ms-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+{body}
+</main>
+<footer class="ms-foot">
+  <p>Mission Silicon. One incubator house, one AI teammate, fourteen episodes of how apps get built.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="{prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="{prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="{REPO}/tree/main/games/mission-silicon">Source on GitHub</a></p>
+</footer>
+</body>
+</html>
+"""
+
+
 def main() -> None:
+    if sys.argv[1:2] == ["--mission-silicon"]:
+        tag_mission_silicon_page(Path(sys.argv[2]))
+        return
     if sys.argv[1:2] == ["--play"]:
         tag_play_page(Path(sys.argv[2]))
         return
@@ -2269,6 +2406,7 @@ def main() -> None:
         write(out / "brand" / slug / "index.html", build("../../"))
     write(out / "flatmates" / "index.html", build_flatmates("../"))
     write(out / "curb" / "index.html", build_curb("../"))
+    write(out / "mission-silicon" / "index.html", build_mission_silicon("../"))
     write(out / "404.html", build_404("/"))
     write(out / "_redirects", "".join(
         f"/lessons/{old}/ /lessons/{new}/ 301\n/lessons/{old} /lessons/{new}/ 301\n" for old, new in OLD_SLUGS.items()))
