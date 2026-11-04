@@ -6,7 +6,7 @@ To pick this up in a new session, say:
 
 ## Where it stands
 
-**A playable prototype of Episode 8 (*Viral*)**, as its own Godot project here, with its checks passing in CI (see [README.md](README.md)). It's in the web build, playable at `/mission-silicon/play/` with a page at `/mission-silicon/`, but not on the home page's splash yet. Art is placeholder (cast close-ups and backdrops drawn in code; no music or SFX), and the title cards use Libre Franklin ExtraBold until Montserrat's files are added to `assets/fonts/`. Names, look, orientation and the game design are settled. Four docs:
+**A playable prototype of Episode 8 (*Viral*)**, as its own Godot project here, with its checks passing in CI (see [README.md](README.md)). It's in the web build, playable at `/mission-silicon/play/` with a page at `/mission-silicon/`, but not on the home page's splash yet. Art is placeholder (cast close-ups and backdrops drawn in code; no music or SFX); the title cards are in Montserrat ExtraBold. Names, look, orientation and the game design are settled. Four docs:
 
 - [CURRICULUM.md](CURRICULUM.md): **what** the game teaches. 14 modules and a capstone, for non-technical people building web apps with AI. The standing reference for topics.
 - [SHOW.md](SHOW.md): **how** the homage carries it. Premise, cast, a 14-episode season mapped to modules.
@@ -65,7 +65,7 @@ In order, each as its own PR:
 1. ~~**Write the game design doc**~~: done, [GAME.md](GAME.md).
 2. ~~**Prototype Episode 8**~~: done. The simulation, the data, one scene script, and the checks (`tests/cases.gd`, `coverage.gd`, `smoke.tscn`, `bot.tscn`, all run by `tests/check.sh`). Tuning it against `cases.gd` changed a few numbers in GAME.md's walk-through (two small servers plus a one-server hotfix; par 14.9), and GAME.md now has the results table.
 3. ~~**Wire it into the build**~~: done. `export_presets.cfg`, a block in `scripts/export_web.sh`, `tests/check.sh` in CI, and a page at `/mission-silicon/` (`build_mission_silicon` in `site/build.py`, styled by `site/static/mission-silicon.css`), whose screenshots and social card `tools/site_art.tscn` paints from the bot's shots. Rerun it when the look changes.
-4. **Real assets**: Montserrat ExtraBold in `assets/fonts/`, the cast painted and the backdrops generated like Curb's (`tools/`), and the glitchy electronic music and stings. Then play it on a phone held sideways.
+4. **Real assets**: ~~Montserrat ExtraBold in `assets/fonts/`~~ (done), the cast painted and the backdrops generated like Curb's (`tools/`), and the glitchy electronic music and stings. Then play it on a phone held sideways.
 5. **Technical review of the content**: every claim real, per the curriculum's "nothing untrue" rule. The lesson cards carry a `source` each.
 6. **The next episodes**: walk each on paper in GAME.md like Episode 8 (the season sketch is there), then add it to `data/season.json`. The simulation's behaviours table lists what later episodes will need that isn't built yet (retries, races, analytics on the live database, leaked keys, authorization, the agent).
 

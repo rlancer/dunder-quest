@@ -35,17 +35,11 @@ static func body() -> Font:
 	return _body
 
 
-## Title cards. Montserrat ExtraBold is the decided face; until its files are
-## in assets/fonts, Libre Franklin at the same weight stands in.
+## Title cards: Montserrat ExtraBold, trimmed to Latin to keep the web build
+## small (assets/fonts/Montserrat.ttf, from upstream's static ExtraBold).
 static func titles() -> Font:
 	if _titles == null:
-		var font := FontVariation.new()
-		var path := "res://assets/fonts/Montserrat.ttf"
-		if not ResourceLoader.exists(path):
-			path = "res://assets/fonts/LibreFranklin.ttf"
-		font.base_font = load(path) as Font
-		font.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): 800}
-		_titles = font
+		_titles = load("res://assets/fonts/Montserrat.ttf") as Font
 	return _titles
 
 

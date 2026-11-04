@@ -2,13 +2,13 @@
 
 importer="font_data_dynamic"
 type="FontFile"
-uid="uid://c3d6uaoevqtlp"
-path="res://.godot/imported/LibreFranklin.ttf-c42d3bd993a88d59f26264ecc5efdc91.fontdata"
+uid="uid://lfwemv452r4j"
+path="res://.godot/imported/Montserrat.ttf-16098f5826b5ec76e06698e9a0529a65.fontdata"
 
 [deps]
 
-source_file="res://assets/fonts/LibreFranklin.ttf"
-dest_files=["res://.godot/imported/LibreFranklin.ttf-c42d3bd993a88d59f26264ecc5efdc91.fontdata"]
+source_file="res://assets/fonts/Montserrat.ttf"
+dest_files=["res://.godot/imported/Montserrat.ttf-16098f5826b5ec76e06698e9a0529a65.fontdata"]
 
 [params]
 

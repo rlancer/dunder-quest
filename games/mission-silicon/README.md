@@ -14,7 +14,7 @@ It's its own Godot 4.7 project, beside `../curb/` and the others. `scripts/expor
 - `sim/sim.gd`: the live moment as a deterministic flow model. Each tick is a simulated minute: queueing below capacity and a backlog above it, the garage server overheating, cache hit rates (x / (1 + x), x = rate × TTL / keys) and staleness, shared caches leaking per-user data, logouts from servers that aren't stateless, Postgres's connection limit, the model provider's rate limit, the bill.
 - `scenes/episode.gd`: one script builds any episode from the data. `ui/board.gd` draws the whiteboard and the live traffic, `ui/pr_panel.gd` the pull request, card detail and dials, `ui/dialogue.gd` and `ui/card.gd` the dialogue, title cards, codex and cut to black, `ui/sideways.gd` the "turn your phone sideways" card.
 - Laid out at 480×270 like Curb, taps only, every button at least 30×30 and no text under 9 pixels (about 44 and 13 points on a phone held sideways).
-- Placeholder art: the cast's close-ups and the backdrops are drawn in code (`ui/portrait.gd`, `ui/backdrop.gd`) until they're generated like the other games'. The title cards use Libre Franklin ExtraBold until Montserrat's files are added to `assets/fonts/` (`Palette.titles()` picks Montserrat up when it's there).
+- Placeholder art: the cast's close-ups and the backdrops are drawn in code (`ui/portrait.gd`, `ui/backdrop.gd`) until they're generated like the other games'. The title cards are Montserrat ExtraBold (`assets/fonts/Montserrat.ttf`, OFL), trimmed to Latin characters with fonttools' `pyftsubset` to 31 KB; trim any new copy the same way.
 
 ## Checks
 
