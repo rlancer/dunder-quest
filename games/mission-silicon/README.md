@@ -4,7 +4,7 @@ The fourth Dunder Quest game, being built. It teaches non-technical founders eno
 
 **This is the prototype: Episode 8, *Viral*, playable end to end.** Aleister Jr. answers a celebrity chef's post with a pull request; you keep or cut its changes, ask it questions, set the dials, and merge. Then Friday night runs: diners pour through what you built, the garage server overheats (or doesn't), and Gerard's postmortem says what went wrong, in the real terms. Fail, and it's take two from the same board.
 
-It's its own Godot 4.7 project, beside `../curb/` and the others. It isn't in the web build yet (that's the handoff's next step).
+It's its own Godot 4.7 project, beside `../curb/` and the others. `scripts/export_web.sh` exports it to `/mission-silicon/play/`, beside its page at `/mission-silicon/` (`build_mission_silicon` in `site/build.py`), and CI runs `tests/check.sh` on every push. It isn't on the home page's splash yet.
 
 ## How it's built
 
@@ -26,6 +26,7 @@ godot --headless --path . res://tests/smoke.tscn             # SMOKE result=ok: 
 godot --headless --path . res://tests/bot.tscn               # BOT result=ok: plays every episode through the UI, take one and take two
 godot --path . res://tests/bot.tscn -- shots                 # the same, with screenshots into tests/shots/ (needs a window)
 bash tests/check.sh                                          # all of it
+godot --path . res://tools/site_art.tscn                     # after the shots: the page's screenshots and social card, into site/static/img/
 ```
 
 `cases.gd` runs the simulation headless for every episode: the solution passes and makes par; Aleister's pull request as proposed fails, and so does doing nothing; flipping any one decision fails the night, costs runway or is marked `free`, and every failure's top finding has a postmortem entry; Ulrich's card matters; and a seeded search (every card combination, every pair of dial changes, 3,000 random plans) finds nothing that passes with more runway than the solution. The bot checks the nights it plays on screen match the headless runs exactly.
