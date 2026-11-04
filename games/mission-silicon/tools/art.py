@@ -77,6 +77,11 @@ CAST = {
     "walter": "A thin, very still man in his sixties with short, neat white hair, pale skin, wire-rimmed "
               "glasses and a blank, unreadable expression, mouth a straight line; a plain charcoal sweater "
               "over a grey collared shirt.",
+    # The tech giant's guru CEO: serene, silver-flecked, expensively casual.
+    "galen": "A lean, serene man in his fifties with short, swept-back greying hair and a neat salt-and-pepper "
+             "beard, half-closed eyes and a calm, superior, beatific smile, as if forgiving you; an expensive "
+             "oatmeal cashmere sweater over a white t-shirt, a thin string of wooden prayer beads at his wrist "
+             "raised near his chin.",
 }
 
 STYLE = (
@@ -111,6 +116,14 @@ SCENES = {
         "the Bay Bridge in grey morning light, and a huge wall-mounted screen showing a dashboard of "
         "colourful charts and tiles with no readable numbers or words, a tall potted plant. Cool, expensive "
         "and quiet. " + STYLE
+    ),
+    "keynote": ROOM + (
+        "a tech giant's enormous keynote stage inside its glass-walled Silicon Valley campus hall: a wide, "
+        "glossy black stage with a single minimalist white lectern, a giant curved screen behind it glowing "
+        "with a calm gradient of sunrise orange and violet and an abstract swirl shape, no readable words or "
+        "logos; a low zen rock garden and a bonsai tree at the edge of the stage, a meditation cushion, "
+        "spotlights in a dark ceiling rig, rows of empty audience chairs in the foreground at the very "
+        "bottom. Hushed, expensive, slightly cult-like. " + STYLE
     ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "

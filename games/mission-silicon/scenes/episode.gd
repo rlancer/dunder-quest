@@ -344,8 +344,12 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 	var page: String = "down" if f["down"] else "%.1f s" % f["page"]
 	_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nAI bill  %s" % [
 		_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked), Palette.money(sim.model_bill)]
-	if f.get("dash", false):
-		_meters.text += "\nBoard's numbers  %d min old" % roundi(f["age"])
+	# The board's numbers only when the goal is about them: the meters have
+	# room for six lines above the cast corner.
+	if f.get("dash", false) and ep["goal"].any(func(g: Dictionary) -> bool: return str(g["metric"]).begins_with("dashboard")):
+		_meters.text +="\nBoard's numbers  %d min old" % roundi(f["age"])
+	if f.get("scrape_in", 0.0) > 0.0:
+		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
 
 
 func _thousands(n: int) -> String:

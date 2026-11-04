@@ -14,6 +14,7 @@ const SPOTS := {
 	"phones": Vector2(4, 92), "cdn": Vector2(62, 36), "lb": Vector2(62, 92), "app": Vector2(120, 92),
 	"cache": Vector2(178, 36), "db": Vector2(178, 92), "model": Vector2(238, 36), "queue": Vector2(120, 156),
 	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
+	"bot": Vector2(4, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -24,7 +25,9 @@ const BUBBLES := {
 	"stateless": ["lb", "Logged out?!"], "rate_limited": ["model", "429: rate limited"],
 	"olap_on_oltp": ["db", "Board's dashboard!"], "replica_slow": ["replica", "Timing out"],
 	"too_many_tiles": ["warehouse", "Too many tiles"], "silent_failure": ["warehouse", "Copy job failed"],
-	"stale_numbers": ["dash", "3am numbers"],
+	"stale_numbers": ["dash", "3am numbers"], "scraper": ["lb", "HubbubBot flood"],
+	"limit_too_tight": ["lb", "429s for diners!"], "service_chain": ["app", "Service call failed"],
+	"captcha": ["app", "Gave up at CAPTCHA"],
 }
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
@@ -77,6 +80,8 @@ func _present(c: Dictionary) -> Dictionary:
 		out["replica"] = true
 	if c.get("dashboard", false):
 		out["dash"] = true
+	if c.get("scraper", false):
+		out["bot"] = true
 	return out
 
 
@@ -102,7 +107,7 @@ func _layout() -> void:
 			"app":
 				if cloud:
 					label = "App x%d" % int(cfg["app"]["count"])
-					sub = "size %s" % str(cfg["app"]["size"])
+					sub = "8 services" if cfg.get("cluster", false) else "size %s" % str(cfg["app"]["size"])
 				else:
 					label = "Aleister"
 					sub = "app + db"
@@ -129,6 +134,9 @@ func _layout() -> void:
 			"dash":
 				label = "Board"
 				sub = "%d tiles" % int(cfg.get("tiles", 0))
+			"bot":
+				label = "HubbubBot"
+				sub = "scraper"
 		var badges := []
 		if id == "app":
 			if cfg.get("rust", false):
@@ -137,6 +145,10 @@ func _layout() -> void:
 				badges.append("K8s")
 			if cfg.get("alerts", false):
 				badges.append("alerts")
+			if cfg.get("captcha", false):
+				badges.append("CAPTCHA")
+		if id == "lb" and cfg.get("limiter", false):
+			badges.append("%d/min" % int(cfg.get("rate_limit", 0)))
 		if id == "model":
 			if cfg.get("ai_cache", false):
 				badges.append("cached")
@@ -172,6 +184,8 @@ func _wires() -> Array:
 	if has.call("cdn"):
 		out.append(["phones", "cdn", "browse"])
 	out.append(["phones", front, "all"])
+	if has.call("bot"):
+		out.append(["bot", front, "scrape"])
 	if front == "lb":
 		out.append(["lb", "app", "all"])
 	if has.call("cache"):
@@ -256,6 +270,8 @@ func _draw() -> void:
 			var n := clampi(int(diners / 2000.0) + 1, 1, 12)
 			if w[2] == "model" and cfg.get("ai_cache", false):
 				n = maxi(1, n / 2)
+			if w[2] == "scrape":
+				n = clampi(int(float(frame.get("scrape_in", 0.0)) / 150.0), 0, 12)
 			var err := float(frame.get("err", 0.0))
 			var dot := Palette.RED if err > 0.25 else (Palette.AMBER if err > 0.05 else Palette.GREEN)
 			if frame.get("down", false) and w[0] == "phones":

@@ -57,6 +57,10 @@ func _summary(res: Dictionary) -> String:
 func _check(ep: Dictionary) -> void:
 	var sol := Plan.solution(ep)
 	var best := _play(ep, sol)
+	# A script error in the simulation comes back empty, not as a failure.
+	if not best.has("passed"):
+		_fail(ep, "the simulation didn't run")
+		return
 	print("ep %d solution: %s" % [ep["id"], _summary(best)])
 	print("  model bill %s, revenue %s, monthly +%s" % [Palette.money(best["model_bill"]), Palette.money(best["revenue"]), Palette.money(best["monthly_extra"])])
 	if not best["passed"]:

@@ -1,4 +1,4 @@
-# Technical review: Episodes 8 (*Viral*) and 9 (*The Board Meeting*)
+# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*) and 10 (*Hubbub Dine*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -248,5 +248,108 @@ Narrative (the vote, Mack, the box, Hubbub's questions). The brief's numbers mat
 | OLTP the front desk, OLAP the accountant's office; OLAP on the OLTP database slows the app; warehouses store by column; ETL or ELT; data lakes | True (OLAP, IBM, COL) |
 | Logs, monitoring, alerts: "alerts tell you before customers do" | True (SRE; hedge-worthy, but a goal, not a promise) |
 | Misconceptions: "Deploying is a one-off", "It's live, so it's done" | True |
+
+No curriculum text changed.
+
+# Episode 10 (*Hubbub Dine*)
+
+The same pass for Episode 10, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new piece and work in `data/pieces.json`, the new bubbles and badges in `ui/board.gd`, the live panel's new line, and the behaviours it added to `sim/sim.gd`, against CURRICULUM.md Modules 9 and 10. Same rule: simplify, never falsify. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| GCA | [Rate limiting overview](https://docs.cloud.google.com/armor/docs/rate-limiting-overview), Google Cloud Armor: rate-based rules protect applications from a large volume of requests and stop any one client exhausting resources, so other clients aren't affected; clients keyed by IP (among others); over the limit, deny with `429 Too Many Requests` (recommended); set the threshold around the 99th percentile of real traffic and raise it if legitimate traffic is blocked |
+| 429 | [429 Too Many Requests](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status/429), MDN (as Episode 8) |
+| MSA | [Microservices architecture style](https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/microservices), Azure Architecture Center: services a small team can build and deploy independently; more moving parts than the equivalent monolith; interservice communication; a long chain of service dependencies adds latency; harder to test; a container orchestrator such as Kubernetes runs them |
+| SLO | [Defining reliability targets](https://learn.microsoft.com/en-us/azure/well-architected/reliability/metrics), Azure Well-Architected Framework: a composite SLO is the product of the contributing components' (99.95% × 99.99999% ≈ 99.95%) |
+| MF | [MonolithFirst](https://martinfowler.com/bliki/MonolithFirst.html), Martin Fowler: don't start a new project with microservices; almost all successful microservice stories began as a monolith that got too big |
+| W3C | [Inaccessibility of CAPTCHA](https://www.w3.org/TR/turingtest/), W3C: CAPTCHAs often prevent people with disabilities from completing the task, and can be circumvented by algorithms or crowd-sourced solving |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| A scraper's requests miss the cache | True (simplified) | A scraper walking every restaurant, time and party size asks for keys diners rarely touch. "Never" rather than "rarely" is the simplification; it can only make the scraper look slightly worse |
+| A per-client limit lets each client through up to the limit; the rest are turned away with a 429 | True | GCA, 429. Sixty clients at 1,500 a minute against a limit of L a minute lets 60 × L a minute through |
+| Turning a request away costs a fiftieth of answering it | True as illustration | Rejecting at the front door skips the app's work and the database; the ratio is illustrative |
+| A limit under what a busy diner does (thirty a minute) turns away a share of diners | True | GCA: set the threshold above real traffic's peak, or it blocks legitimate traffic. The share (30% of diner traffic comes from busy moments) is illustrative |
+| More app servers behind the load balancer add capacity in proportion | True | As Episode 8 (AZ). Four servers carry the solution's peak at about 80% |
+| Microservices: each request crosses a number of network calls; each adds latency and work and fails 1 time in 100; success is the product | True (simplified) | SLO: composite availability is the product of its parts; MSA: chains of calls add latency, interservice communication adds work. Real failures are often correlated, and well-built services can degrade gracefully (MSA's "fault isolation"); the game models a straightforward chain with no fallbacks, which is what Ulrich's card describes |
+| A CAPTCHA stops 90% of the scraper and makes 15% of searches and bookings give up | True as illustration | W3C: some real people can't pass them, and bots and paid solvers get through some. The percentages are illustrative |
+| Episodes 8 and 9 unchanged | Checked | All new behaviours are off unless the episode configures `live.scraper`, `live.services` or `live.captcha`: Episode 8's solution is still 14.941, Episode 9's 12.856 |
+
+## Episode 10 text
+
+### Cold open, brief, cliffhanger
+
+Narrative (Galen's keynote, the two hundred and twelve microservices, Mack's departure, Ulrich's tea, the deposits). The brief's numbers match the data: the goal is nineteen bookings in twenty (`goal`).
+
+### Pull request cards and takes
+
+| Card | Claim | Verdict | Change |
+| --- | --- | --- | --- |
+| More servers | More servers behind the load balancer; six is double what we have | True | |
+| More servers, Veronica | Six is double the server bill for an unmeasured night | **Fixed** in draft | Drafted as "double the bill", which is false for the whole bill (3 to 6 × $150 is +$450 on about $81k). Now "double the server bill" |
+| Clone the clone | Copy every announced feature | Narrative; too long to fit, so never judged on the night | |
+| 8 services | Eight services calling each other over the network, on a container cluster | True | MSA |
+| 8 services, Gilroy | Every arrow is a network call, any call can fail, a booking needs eight to work | True | SLO; `services.hops.book` is 8 |
+| 8 services, Ulrich | Hubbub has two hundred and twelve; eight is humble | Narrative; the night judges it | |
+| Rate limit API | Count each client's requests at the front door and turn away the excess with a 429 | True | GCA, 429 |
+| Rate limit API, Danesh | Some diners tap through thirty restaurants a minute | True as illustration (`scraper.diner_peak`) | |
+| Add CAPTCHAs | A puzzle before each search and booking; bots hate it | True (W3C); Veronica's "people hate it too" is True | |
+| Shard by city, Gilroy | The database isn't tonight's problem | True: it stays under a quarter of its capacity on the solution's night | |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Who's calling our API? | True | Sixty machines at 1,500 a minute each, as `live.scraper` |
+| Where's the bottleneck? | True | Episode 9's peak: the app at about 45%, the database at under a tenth. "Three servers carry about thirty thousand, four about forty" holds with HubbubBot rate-limited (three are full at about 30,000, four at about 41,000), and the line hedges "if HubbubBot doesn't eat them first" |
+| What if one service fails? | True | 0.99⁸ = 0.923; one in thirteen is 7.7% (SLO) |
+| What will this cost at 10x traffic? | True | $150 a small server, $4,000 the cluster (`pieces.json`) |
+| Make it bot-proof / Make it web-scale (decoys) | Narrative | Judged by the night: diners give up; overbuilt |
+
+### Dials, hotfix, live moment
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| App servers four to eight; rate limit 10, 100 or 1,000 a minute per client | True | The dial's labels read "10 a minute" and so on |
+| Hotfix: two more app servers when Hubbub Dine falls over, at {monthly} | True | The price is worked out from the board, as Episode 8's |
+| Corner lines (HubbubBot eating the servers, Danesh's 429, a booking lost between services, the fork puzzle) | True or Narrative | |
+| Banners | True | Match `live.diners` and `live.scraper` (the scraper starts at 6pm) |
+| Bubbles: "HubbubBot flood", "429s for diners!", "Service call failed", "Gave up at CAPTCHA"; badges "100/min", "CAPTCHA"; the app box's "8 services" | True | |
+| Live panel: "HubbubBot N/s, M let in" | True | The simulation's arriving and admitted scrape rates |
+
+### Postmortem findings
+
+| Tag | Verdict | Notes |
+| --- | --- | --- |
+| scraper, "no rate limit, or one set too high" | True | Fires both without a limit and at 1,000 a minute; "too much of that got through" is true in both |
+| limit_too_tight | **Fixed** in draft | Drafted as "ten a minute stopped HubbubBot"; ten a minute still lets ten a second through. Now "slowed HubbubBot to a trickle" |
+| service_chain | True | SLO |
+| captcha | True | W3C |
+| app_overload, db_overload, rate_limited, overbuilt | True | As Episode 8 (this episode's app_overload says "Where's the bottleneck? Add a server.", since its servers are already stateless) |
+
+### Codex cards and sources
+
+| Card | Verdict | Change |
+| --- | --- | --- |
+| Rate limiting | True | Every part is in GCA: per-client caps, 429, protecting other clients from one that would exhaust resources, and setting the threshold above real traffic so legitimate users aren't blocked. Not "per IP" in the card, since GCA keys by other things too |
+| Monolith and microservices | True | Every part is in MSA: small teams build and deploy services independently; more moving parts than the equivalent monolith; services communicate over the network; a long chain adds latency; harder to test. Drafted with "start with one app", which is MF's advice, not MSA's; the card now says only "one app is simpler" (MSA), and MF backs the postmortem's "keep this one app until we measure a problem" |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| HubbubBot: asks for every restaurant's tables at every time and party size; nobody else asks for those, so the cache never has them | True (simplified, as above) |
+
+## CURRICULUM.md, Modules 9 and 10
+
+| Claim | Verdict |
+| --- | --- |
+| Rate limiting: capping how many requests one user or bot can make, to protect everyone else | True (GCA) |
+| "Microservices scale better" is a misconception; start with a monolith | True (MF, MSA) |
+| Monoliths vs microservices: one app is easier to build, test and debug; services let large teams move independently at the price of the distributed problems appearing between them | True (MSA) |
 
 No curriculum text changed.

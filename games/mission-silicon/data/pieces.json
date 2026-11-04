@@ -24,7 +24,8 @@
 		"warehouse": {"label": "Analytics", "term": "data warehouse", "plain": "A separate database built for big questions. It stores each column together, so adding up millions of rows reads only what it needs. A copy job fills it.",
 			"monthly": 300, "capacity": 400, "latency": 0.5, "columnar_share": 0.025},
 		"stream": {"label": "Stream", "term": "streaming pipeline", "monthly": 3000},
-		"alerts": {"label": "Alerts", "term": "monitoring and alerts", "monthly": 30}
+		"alerts": {"label": "Alerts", "term": "monitoring and alerts", "monthly": 30},
+		"scraper": {"label": "HubbubBot", "term": "scraper", "plain": "Hubbub's machines, asking for every restaurant's tables at every time and party size, all night. Nobody else asks for those, so the cache never has them."}
 	},
 	"work": {
 		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},
@@ -33,6 +34,7 @@
 		"my_bookings": {"app": 0.3, "db": 0.5},
 		"book": {"app": 5.0, "app_rust": 2.0, "db": 3.0},
 		"signup": {"app": 250.0, "enqueue": 0.2, "db": 1.0},
-		"dashboard": {"db_per_row": 0.0002}
+		"dashboard": {"db_per_row": 0.0002},
+		"scrape": {"app": 1.0, "db": 0.3, "turned_away": 0.02}
 	}
 }

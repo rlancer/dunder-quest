@@ -181,6 +181,8 @@ func _piece_for(id: String) -> String:
 			return "load_balancer"
 		"dash":
 			return "dashboard"
+		"bot":
+			return "scraper"
 	return id
 
 
@@ -215,7 +217,9 @@ func _value_name(d: Dictionary, v: Variant) -> String:
 	if d["id"].ends_with(".ttl"):
 		return TTL_NAMES.get(int(v), str(v))
 	if d.has("names"):
-		return d["names"].get(str(v), str(v))
+		# JSON numbers arrive as floats: 100.0 is named by "100".
+		var key := str(int(v)) if v is float and is_equal_approx(v, roundf(v)) else str(v)
+		return d["names"].get(key, key)
 	if str(v) == "per_user":
 		return "per user"
 	if d["id"] == "app.size":
