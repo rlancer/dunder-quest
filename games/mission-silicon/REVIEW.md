@@ -1,4 +1,4 @@
-# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
+# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -52,7 +52,7 @@ All Narrative (the viral post, the garage, sign-up counts). Nothing technical cl
 | CDN | "Serve photos, scripts and pages from servers near each diner" | **Fixed** | Forkcast's pages hold per-diner data, and the simulation only moves photos and scripts off the app. Now "photos and scripts". Gerard's take was about menus going stale on the CDN; now about photos |
 | Queue sign-ups | Queue "new sign-ups"; Gerard: password hashing is slow on purpose, so queue it | **Fixed** | Hashing is deliberately slow (true), but deferring it to a worker means putting plain-text passwords in a queue, which is a security mistake, and the account wouldn't exist until the worker ran. The slow, deferrable work is the welcome email, an outside call that holds a server (AZ: "tasks like sending emails" are what to offload). Label now "Queue sign-up work"; text, Gerard's take, the corner line and the postmortem finding now about welcome emails. The simulation's numbers are unchanged |
 | Rewrite in Rust | Rust is fast; Gilroy: the app is waiting on the database | True | AZ (bottlenecks); the bottleneck ask shows the database at 100% |
-| Forty servers | Every one talks to the same database | True | PG |
+| 40 servers | Every one talks to the same database | True | PG |
 | Add an index | Index on bookings by restaurant and night, so it doesn't read every booking | True | PGI. Ricky's "like the index in a book" is the docs' own analogy |
 | Cache AI answers | Answer cache plus prompt caching, "the long fixed part of each prompt billed at a fraction" | **Fixed** (tightened) | AP: only an identical prefix is cached. Now "the long fixed start of each prompt" |
 | Shard by city | Split the database by city | True; Aleister's and Gerard's takes Narrative | |
@@ -767,15 +767,15 @@ Narrative (Walter in the house, the TV diagram, the robe, eleven minutes of sile
 | Sixty shards, Gilroy | The database hasn't been the problem since the index; more diners, not more kinds of data | True of this night | It peaks at a little over half its capacity |
 | Live everything, Veronica | The board asked for an hour old | True | Episode 9's goal |
 | Biggest model, Veronica | Five times the price; the menus already make it right | True as illustration | Episode 13 (grounding, not size, fixed the made-up menus) |
-| Agent swarm, Gilroy | Four times the model calls | True as illustration | Episode 13 |
+| Swarm, Gilroy | Four times the model calls | True as illustration | Episode 13 |
 | ForkNet, Gilroy | Sixty cities of phones disagreeing | True | Episode 11 (eventual consistency) |
 | Phones call the AI | Searches are half our servers' work; skip the middle and we need fewer | True of the simulation | Search is 1.5 of about 2.9 units of app work per diner |
 | Phones call the AI, Gilroy | The key goes in the app, and the app goes on every phone | True | Episode 12; curriculum Module 4 ("anything in the frontend is public") |
 | Own model, Veronica | We look the menus up already, and it works | True | RAG |
 | Every region | Three copies, so a region can go down | True as a description; too big to fit | |
 | Every region, Gerard | Three copies that have to agree about every table | True (simplified) | Multi-region writes need replication and agreement (curriculum Module 10, consistency) |
-| Bigger AI limit, Ulrich | Call the provider and have the limit raised | True | AR (limits rise with tiers or on request) |
-| Bigger AI limit, Danesh | A bigger limit is a bigger bill if strangers get the key | True | The limit also caps runaway spend |
+| AI limit x3, Ulrich | Call the provider and have the limit raised | True | AR (limits rise with tiers or on request) |
+| AI limit x3, Danesh | A bigger limit is a bigger bill if strangers get the key | True | The limit also caps runaway spend |
 | More servers, Veronica | Ten is what a nervous person picks; how many does Friday need? | True; seven carry it | |
 | Backup provider, Gilroy | The second provider hasn't heard of the first one's deposits | True | Episode 11 |
 
@@ -824,3 +824,123 @@ Narrative (Walter in the house, the TV diagram, the robe, eleven minutes of sile
 | Every box earns its place by solving a problem Forkcast actually had | True of the season, and checked in the simulation for the finale's night |
 | The honest version: stage 1 is one app, one host, one Postgres and a model call, and that's correct | True; unchanged |
 | The checklist (who, what data, who may see what, failure, simplest version, how will I know, secrets, undo) | True; five of its questions are the finale's asks or its answers |
+
+# Episodes 1 (*Pilot*) and 2 (*The Whiteboard*)
+
+The same pass for the first two episodes, done before they merged: every technical claim a player can see in their entries in `data/season.json`, the new pieces in `data/pieces.json`, the board's new boxes, sub-lines, badges and bubbles, the live panel and the postmortem, and the additions to `sim/sim.gd`, against CURRICULUM.md's Modules 0, 1 and 2. Same rule: **simplify, never falsify**. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| CCBP | [Best practices for Claude Code](https://code.claude.com/docs/en/best-practices), Anthropic: give the agent a way to verify its work (tests, screenshots, expected output); be specific up front, naming who and what and the edge cases; have it interview you and write a spec before it builds; a vague request makes it fill gaps with guesses |
+| MDNSS | [Introduction to the server side](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Server-side/First_steps/Introduction), MDN: browsers send HTTP requests to servers, which send responses; a static site returns the same hard-coded content for a URL, a dynamic site builds responses when asked, usually from a database; storing what users send needs server-side code |
+| GIT | [About Version Control](https://git-scm.com/book/en/v2/Getting-Started-About-Version-Control), Pro Git: version control records changes so you can recall specific versions later, compare changes and revert a file or the whole project to a previous state |
+| KA | Cunningham, Ederer and Ma, [*Killer Acquisitions*](https://doi.org/10.1086/712506), Journal of Political Economy 129(3), 2021: incumbents "may acquire innovative targets solely to discontinue the target's innovation projects and preempt future competition" (abstract read via OpenAlex; the publisher's page refuses automated fetches) |
+| SPEED | [Why does speed matter?](https://web.dev/articles/why-speed-matters), web.dev: the BBC lost an extra 10% of users for every additional second its site took to load |
+| Earlier keys | MDN (caching), AZ, 12F (Episode 8); GitHub's docs (Episode 12); GHCA (Episode 14) |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| Nothing built (`host: none`, or the sale kept) means nobody is served | True | |
+| The share of requests a concierge answers well depends on whether it's checking against a written spec, and how much of one | True as illustration | CCBP: specific instructions and a spec are what close the gap between the request and the build. 30% on one line and 95% on one page are the story's numbers; fifty pages fit as well as one but cost six hours (the shape is diminishing returns, not "longer is worse") |
+| The photo feed answers no request | True | It has nowhere to type one |
+| A dynamic page loads our server for every view; a static page loads none of our servers | True | MDNSS. The static host is charged nothing, as the free tiers of the common static hosts are, at this traffic |
+| A static page with no form service and no backend loses every sign-up | True | MDNSS: storing what a user sends needs server-side code; a form service is someone else's |
+| Password accounts lose three in ten at the step | True as illustration | Each extra step is a place to give up; the share is the story's |
+| A heavy video adds seconds to each page and loses people | True as illustration | SPEED |
+| A bad change, undone by a rollback in two minutes if there's a commit from just before it; by hand in an hour and a half if not; and a rollback to a commit from before the site existed takes the site away | True | GIT: you can only revert to a saved version |
+| A rollback needs Git on the board, and is offered two minutes after the break | True as bookkeeping | |
+| Episodes 8 to 14 unchanged | Checked | Every new behaviour is off unless an episode configures `live.landing`, `live.fit` or a `host` of `none`; their solutions are still 14.941, 12.856, 13.113, 12.343, 11.924, 11.097 and 10.857 |
+
+## Pilot text
+
+### Cold open, brief, flash-forward, cliffhanger
+
+Narrative. Galen's offer and Walter's investment are the pilot's choice; the roof is where Hubbub puts people it pays to do nothing. Walter's "Where's the waitlist?" sets up Episode 2.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Photo feed: built from "something with food and friends", the common thing | True | CCBP: a vague request gets filled in with guesses, often the common case |
+| Photo feed: "every photo kept forever", a hundred dollars a month and growing | True as illustration | Storage is billed by the amount kept |
+| Video stories, Forkcast Everything | Narrative | Too big to fit; the decoy is handing the decision to the AI |
+| Ask Forkcast: a box, a model and a list of restaurants | True (simplified) | Curriculum Module 13 |
+| Spell it out: a spec, every suggestion checked against all of the request | True | CCBP: write a spec; give it something to check its work against |
+| Sell out (to Hubbub); Ricky: why pay for an idea unless you want nobody to build it | True | KA |
+| Postmortem `sold`: "an acquisition to shelve a rival (a 'killer acquisition')" | True | KA. The game doesn't say this is why every acquisition happens, only this one |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| What do you think Forkcast is? | True | CCBP: ask the AI what it understood before it builds |
+| What will Walter's diners ask it? | True | CCBP: name who it's for and what they'll do; the edge cases go in the spec |
+| What will this cost? A couple of cents a question | True as illustration | Model prices per request are in cents at this size; $217 for the night |
+| You decide (decoy) | Narrative | Judged by the night |
+
+### Postmortem findings and codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| wrong_thing, vague, nothing_built, overbuilt | True | CCBP |
+| Card: Say what you want built | True | CCBP: be specific; say who, what and what done looks like; have it interview you until it could write a spec |
+| Card: Check what it built | True | CCBP: "give Claude a way to verify its work"; it stops when the work looks done. "Try it yourself the way a real user would" is the same advice for someone who doesn't write tests |
+
+## The Whiteboard text
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Landing page built fresh for every visitor from the database | True | MDNSS (dynamic) |
+| Backend: builds the same page forty thousand times | True of this plan | |
+| Postgres at $400 a month, for a list of emails | True as illustration | A managed database at a size Aleister picked; small ones cost far less, which is Gilroy's point |
+| Accounts: a password and email check, to wait | True | |
+| Phone apps: the app stores take days to review | True (simplified) | Review times vary; first submissions often take a day or more |
+| Static site: plain files, built once, on a host that copies them to servers near everyone | True | MDNSS; the common static hosts serve through a CDN (Episode 8's CDN) |
+| Form service: someone else's backend for one box | True | MDNSS: the sign-up still needs server-side code, just not ours |
+| Use Git: commits, history on GitHub, go back to any of them | True | GIT |
+| Just undo it (Ulrich, wrong); Gilroy: it remembers what sites are usually like, not ours | True | Curriculum Module 2's misconception: without version control there may be nothing to undo to |
+| Launch video; postmortem "every extra second a page takes to open loses more of the people waiting for it" | Fixed | It said pages over three seconds lose people; the hard cutoff wasn't supported by a source I could read. Now SPEED's shape |
+| Accounts postmortem: "every extra step is a place to give up" | Fixed | It said every extra step loses people, as a rule |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Does this need a backend? Static, plus somewhere to keep the sign-ups | True | Curriculum Module 1's line; MDNSS |
+| How do we undo a bad change? Aleister edits the live site directly | True as the problem | GIT |
+| Draw me how it works: client, request in HTTP, DNS like a phone book, response; dining room, kitchen, reservations book | True (simplified) | MDNSS; the restaurant analogy is the curriculum's |
+| What will Saturday look like? A third of forty thousand, with the party, about fourteen thousand | Fixed | It said a third was fourteen thousand; a third is 13,333 |
+| One small server builds about a hundred pages a second; fourteen thousand people is about a hundred and forty a second | True as illustration | The simulation's numbers: each visitor loads about a page a minute and a half |
+| Make it look impressive (decoy) | Narrative | |
+
+### Dials, hotfix, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Dial: commit once a day or before every change | True as a trade-off | GIT |
+| Hotfix: roll back to the last commit | True | |
+| Postmortem: landing_overload, no_page, no_server, nowhere_to_sign_up, no_git, rollback_skipped, commit_often, rolled_back | True | MDNSS, GIT |
+| Postmortem: bad_change, "an unreviewed change in production" | True | GHCA (Episode 14) |
+| Card: Client and server | True | MDNSS |
+| Card: Static or dynamic | True | MDNSS |
+| Card: Version control | True | GIT. "Commit before each change" is advice, not Git's rule |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| visitors, prototype, feed, landing, backend, signups_db, form, git | True; plain-words descriptions match the cards |
+
+## CURRICULUM.md, Modules 0, 1 and 2
+
+| Claim | Verdict |
+| --- | --- |
+| Most AI failures are the wrong thing built well, from a vague request | True as the curriculum's framing; CCBP |
+| Client and server, request and response, static and dynamic | True; MDNSS |
+| "I'll just ask the AI to undo it" is a misconception without version control | True; GIT |

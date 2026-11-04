@@ -51,6 +51,8 @@ var _banner: Label
 var _overlay: Control
 var _paused: bool = false
 var _speed: float = 1.0
+## The first episode's tutorial lines already said.
+var _taught: Dictionary = {}
 
 
 func _ready() -> void:
@@ -82,6 +84,7 @@ func _build() -> void:
 
 	board = Board.new()
 	board.spots = ep.get("spots", {})
+	board.notes = ep.get("notes", [])
 	UI.place(board, Rect2(0, 20, 300, 216))
 	board.box_pressed.connect(_on_box)
 	add_child(board)
@@ -89,6 +92,7 @@ func _build() -> void:
 	panel = PrPanel.new()
 	UI.place(panel, Rect2(300, 20, 180, 216))
 	panel.changed.connect(_refresh)
+	panel.opened.connect(_teach)
 	add_child(panel)
 
 	_bottom = UI.place(Control.new(), Rect2(0, 236, 480, 34))
@@ -182,7 +186,14 @@ func _run() -> void:
 	while true:
 		takes += 1
 		await _planning()
-		var res := await _live()
+		var res: Dictionary
+		# A plan that ends the story early (the pilot's sale to Hubbub) skips
+		# the live moment for a flash-forward of where it leads.
+		var ff: Dictionary = ep.get("flashforward", {})
+		if not ff.is_empty() and plan.config().get(ff["when"], false):
+			res = await _flashforward(ff)
+		else:
+			res = await _live()
 		last_result = res
 		var again: bool = await _postmortem(res)
 		if not again:
@@ -215,7 +226,31 @@ func _planning() -> void:
 	board.live = false
 	panel.setup(plan)
 	_refresh()
+	if takes == 1:
+		await _teach("planning")
 	await merged
+
+
+## The first episode teaches the loop: a line or two the first time the
+## planning board, a card, the questions and a box come up.
+func _teach(what: String) -> void:
+	var lines: Array = ep.get("tutorial", {}).get(what, [])
+	if lines.is_empty() or _taught.has(what) or phase != "planning" or dialogue.visible:
+		return
+	_taught[what] = true
+	await dialogue.play(lines)
+
+
+func _flashforward(ff: Dictionary) -> Dictionary:
+	phase = "flashforward"
+	Sound.stop_music()
+	Sound.sting("fail")
+	await card.black(str(ff.get("card", "")), 60)
+	backdrop.place = ff.get("backdrop", "kitchen")
+	backdrop.visible = true
+	await dialogue.play(ff["lines"], ff.get("place", ""))
+	backdrop.visible = false
+	return Sim.play(ep, plan)
 
 
 func _refresh() -> void:
@@ -380,6 +415,10 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 			"bookings": "Bookings  %s" % _thousands(roundi(sim.booked)),
 			"ai_bill": "AI bill  %s" % Palette.money(sim.model_bill),
 			"scraper": "HubbubBot  %d/s, %d let in" % [roundi(f.get("scrape_in", 0.0)), roundi(f.get("scrape_through", 0.0))],
+			"fit": "Answers that fit  %d%%" % roundi(100.0 * sim.fit_done / maxf(sim.fit_tries, 0.000001)),
+			"visitors": "Visitors  %s" % _thousands(roundi(f["diners"])),
+			"waitlist": "On the waitlist  %s" % _thousands(roundi(sim.signed)),
+			"signups_ok": "Sign-ups working  %s" % ("no" if f.get("broken", false) else "%d%%" % roundi(100.0 * sim.signed / maxf(sim.signup_tries, 0.000001))),
 		}
 		var out := []
 		for m in ep["live"]["meters"]:
@@ -464,9 +503,16 @@ func _postmortem(res: Dictionary) -> bool:
 		lines.append(("+ " if g["ok"] else "- ") + g["label"])
 	lines.append("")
 	lines.append("Page speed at peak: %.1f s" % m["peak_latency"])
-	lines.append("Bookings made: %s (%d%%)" % [_thousands(roundi(res["booked"])), roundi(m["booking_success"] * 100.0)])
-	lines.append("Searches answered: %d%%" % roundi(m["search_success"] * 100.0))
-	lines.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
+	if ep["live"].has("landing"):
+		lines.append("On the waitlist: %s (%d%% of sign-ups)" % [_thousands(roundi(res["signed"])), roundi(m["signup_success"] * 100.0)])
+		lines.append("Hosting this month: %s" % Palette.money(res["monthly_extra"]))
+	elif ep["live"].has("fit"):
+		lines.append("Answers that fit the request: %d%%" % roundi(m["fit_success"] * 100.0))
+		lines.append("AI bill: %s   Hosting: %s a month" % [Palette.money(res["model_bill"]), Palette.money(res["monthly_extra"])])
+	else:
+		lines.append("Bookings made: %s (%d%%)" % [_thousands(roundi(res["booked"])), roundi(m["booking_success"] * 100.0)])
+		lines.append("Searches answered: %d%%" % roundi(m["search_success"] * 100.0))
+		lines.append("AI bill: %s   Revenue: %s" % [Palette.money(res["model_bill"]), Palette.money(res["revenue"])])
 	if ep["live"].has("payments"):
 		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
 	if ep["live"].has("leak"):

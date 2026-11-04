@@ -77,8 +77,13 @@ func _find(name: String) -> Control:
 	return ep_node.find_child(name, true, false) as Control
 
 
-## A real tap: a press and a release at the control's centre.
+## A real tap: a press and a release at the control's centre, once any
+## dialogue on screen (the first episode's tutorial lines) has moved on.
 func _tap(name: String) -> bool:
+	for _i in CAP:
+		if not ep_node.dialogue.visible:
+			break
+		await get_tree().process_frame
 	var c := _find(name)
 	if c == null or not c.is_visible_in_tree():
 		_fail("no visible %s to tap in %s" % [name, ep_node.phase])
@@ -119,6 +124,14 @@ func _check_node(n: Node, where: String) -> void:
 		var size := (n as Control).get_theme_font_size("font_size")
 		if size < Palette.BODY:
 			_fail("%s: %s text is %dpx" % [where, n.name, size])
+	# A button that clips its text (the PR list's cards) must still fit it.
+	if n is Button and (n as Button).clip_text and (n as Button).text != "":
+		var b := n as Button
+		var font := b.get_theme_font("font")
+		var w := font.get_string_size(b.text, HORIZONTAL_ALIGNMENT_LEFT, -1, b.get_theme_font_size("font_size")).x
+		var room := b.size.x - b.get_theme_stylebox("normal").get_content_margin(SIDE_LEFT) - b.get_theme_stylebox("normal").get_content_margin(SIDE_RIGHT)
+		if w > room + 0.5:
+			_fail("%s: '%s' is clipped (%d px of text in %d)" % [where, b.text, w, room])
 	for c in n.get_children():
 		_check_node(c, where)
 
@@ -126,10 +139,18 @@ func _check_node(n: Node, where: String) -> void:
 ## Watches the live moment through to the postmortem, answering each
 ## hotfix as `answers` says (cut when it doesn't say).
 func _through_live(ep: Dictionary, answers: Dictionary) -> bool:
-	if not await _wait_phase("live"):
-		return false
-	var shot_live := false
+	# A plan can skip the live moment for a flash-forward (the pilot's sale).
 	for _i in CAP:
+		if ep_node.phase in ["live", "flashforward", "postmortem"]:
+			break
+		await get_tree().process_frame
+	var shot_live := false
+	var shot_ff := false
+	for _i in CAP:
+		if ep_node.phase == "flashforward" and not shot_ff and ep_node.dialogue.visible:
+			shot_ff = true
+			await _frames(4)
+			await _shot("flashforward")
 		if ep_node.phase == "hotfix":
 			await _frames(2)
 			_check_layout("hotfix")
@@ -138,7 +159,7 @@ func _through_live(ep: Dictionary, answers: Dictionary) -> bool:
 		if ep_node.phase == "postmortem":
 			await _frames(2)
 			return true
-		if ep_node.phase == "live" and not shot_live and _shots and ep_node.last_tick > 150:
+		if ep_node.phase == "live" and not shot_live and _shots and ep_node.last_tick > int(ep["live"]["ticks"]) * 5 / 12:
 			shot_live = true
 			_check_layout("live")
 			await _shot("live")

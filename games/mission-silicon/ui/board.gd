@@ -16,6 +16,9 @@ const SPOTS := {
 	"warehouse": Vector2(238, 92), "replica": Vector2(178, 156), "dash": Vector2(238, 156),
 	"bot": Vector2(4, 156), "pay": Vector2(62, 156), "repo": Vector2(4, 156), "pkg": Vector2(178, 156),
 	"agent": Vector2(4, 156), "index": Vector2(120, 36),
+	# The front half's small boards: the landing page and what's behind it.
+	"page": Vector2(62, 92), "web": Vector2(120, 92), "signups_db": Vector2(178, 92),
+	"form": Vector2(120, 36), "git": Vector2(62, 156),
 }
 ## Which box each postmortem tag's bubble pins to, and what it says.
 const BUBBLES := {
@@ -37,13 +40,24 @@ const BUBBLES := {
 	"prompt_injection": ["agent", "Obeyed a review!"], "no_confirm": ["pay", "Paid, unasked!"],
 	"excess_agency": ["db", "Bookings cancelled!"], "confirm_fatigue": ["agent", "Asked too often"],
 	"unreviewed": ["app", "Changed live, unreviewed!"],
+	"sold": ["phones", "Sold to Hubbub"], "nothing_built": ["phones", "Nothing here!"],
+	"wrong_thing": ["app", "Nowhere to ask!"], "vague": ["model", "Party of six? Two."],
+	"landing_overload": ["web", "Maxed out"], "no_page": ["phones", "No page!"], "no_server": ["page", "No server!"],
+	"nowhere_to_sign_up": ["page", "Sign-ups go nowhere"], "accounts": ["page", "A password? Bye."],
+	"video": ["page", "Still loading..."], "no_git": ["page", "Can't undo!"], "bad_change": ["page", "Sign-up broken!"],
+	"rollback_skipped": ["page", "Fixing by hand"], "commit_often": ["git", "Site's gone!"], "rolled_back": ["git", "Rolled back"],
 }
+## Specs as the prototype's badge (Episode 1).
+const SPEC_NAMES := {"line": "spec: 1 line", "page": "spec: 1 page", "book": "spec: 50 pages"}
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
 var cfg: Dictionary = {}
 var start_cfg: Dictionary = {}
 ## Per-episode box positions that differ from SPOTS.
 var spots: Dictionary = {}
+## Sticky notes on the whiteboard, per episode ([{"at": [x, y], "text": ...}]),
+## so a small board reads as a whiteboard, not an empty one.
+var notes: Array = []
 var live: bool = false
 var frame: Dictionary = {}
 var _boxes: Dictionary = {}
@@ -82,7 +96,13 @@ func box_rect(id: String) -> Rect2:
 
 
 func _present(c: Dictionary) -> Dictionary:
-	var out := {"phones": true, "app": true, "model": true}
+	var out := {"phones": true}
+	# Nothing built yet (Episode 1's first board): just the diners. A photo
+	# feed asks the model nothing.
+	if c.get("host", "") != "none":
+		out["app"] = true
+		if c.get("concierge", true):
+			out["model"] = true
 	var cloud: bool = c.get("host", "") == "cloud"
 	if c.get("cdn", false):
 		out["cdn"] = true
@@ -112,6 +132,16 @@ func _present(c: Dictionary) -> Dictionary:
 		out["agent"] = true
 	if c.get("rag", false):
 		out["index"] = true
+	if c.get("page", false):
+		out["page"] = true
+	if c.get("backend", false):
+		out["web"] = true
+	if c.get("postgres", false):
+		out["signups_db"] = true
+	if c.get("form", false):
+		out["form"] = true
+	if c.get("git", false):
+		out["git"] = true
 	return out
 
 
@@ -126,10 +156,12 @@ func _layout() -> void:
 		var sub := ""
 		match id:
 			"phones":
-				label = "Diners"
+				label = "Visitors" if cfg.has("page") else "Diners"
 				# ForkNet is a sub-line, not a badge, so the diners' badges
 				# (key in app, calls AI) stay in the two rows above the agent.
 				sub = "ForkNet" if cfg.get("forknet", false) else "phones"
+				if cfg.has("page"):
+					sub = "browsers"
 			"cdn":
 				label = "CDN"
 				sub = "photos"
@@ -143,6 +175,16 @@ func _layout() -> void:
 				else:
 					label = "Aleister"
 					sub = "app + db"
+					# The front half's prototype, on the garage server.
+					if cfg.has("concierge"):
+						if cfg.has("page"):
+							sub = "prototype"
+						elif cfg.get("feed", false) and cfg.get("concierge", false):
+							sub = "feed + AI"
+						elif cfg.get("feed", false):
+							sub = "photo feed"
+						else:
+							sub = "concierge"
 			"cache":
 				label = "Redis"
 				sub = "cache"
@@ -192,8 +234,34 @@ func _layout() -> void:
 			"index":
 				label = "Menus"
 				sub = "index"
+			"page":
+				label = "Landing"
+				if cfg.get("static", false):
+					sub = "static"
+				elif cfg.get("backend", false):
+					sub = "per visit"
+				else:
+					sub = "no server"
+			"web":
+				label = "Backend"
+				sub = "server"
+			"signups_db":
+				label = "Postgres"
+				sub = "waitlist"
+			"form":
+				label = "Form"
+				sub = "service"
+			"git":
+				label = "GitHub"
+				sub = "per change" if str(cfg.get("commits", "daily")) == "each" else "daily"
 		var badges := []
 		if id == "app":
+			if cfg.get("spec", false):
+				badges.append(SPEC_NAMES.get(str(cfg.get("detail", "line")), "spec"))
+			if cfg.get("stories", false):
+				badges.append("stories")
+			if cfg.get("everything", false):
+				badges.append("everything")
 			if cfg.get("rust", false):
 				badges.append("Rust")
 			if cfg.get("cluster", false):
@@ -231,6 +299,15 @@ func _layout() -> void:
 		if id == "model":
 			if cfg.get("ai_cache", false):
 				badges.append("cached")
+		if id == "phones" and cfg.get("sold", false):
+			badges.append("sold")
+		if id == "page":
+			if cfg.get("video", false):
+				badges.append("video")
+			if cfg.get("accounts", false):
+				badges.append("passwords")
+		if id == "phones" and cfg.get("apps", false):
+			badges.append("apps")
 		var rect := Rect2(_spot(id), Vector2(W, H))
 		_boxes[id] = {"rect": rect, "label": label, "sub": sub, "new": not before.has(id), "badges": badges}
 		var b := Button.new()
@@ -260,7 +337,24 @@ func _wires() -> Array:
 	var front := "lb" if has.call("lb") else "app"
 	if has.call("cdn"):
 		out.append(["phones", "cdn", "browse"])
-	out.append(["phones", front, "all"])
+	# The landing page (Episode 2): visitors ask the page; the page is built
+	# by the backend or comes from a static host, and sign-ups go to the
+	# form service or the backend. The prototype isn't public.
+	if has.call("page"):
+		out.append(["phones", "page", "all"])
+		if has.call("web"):
+			out.append(["page", "web", "all"])
+			if has.call("signups_db"):
+				out.append(["web", "signups_db", "db"])
+		if has.call("form"):
+			out.append(["page", "form", "signup"])
+		if has.call("git"):
+			out.append(["git", "page", "history"])
+		if has.call("app") and has.call("model"):
+			out.append(["app", "model", "model"])
+		return out
+	if has.call(front):
+		out.append(["phones", front, "all"])
 	if has.call("agent"):
 		out.append(["phones", "agent", "agent"])
 	if has.call("bot"):
@@ -271,7 +365,8 @@ func _wires() -> Array:
 		out.append(["app", "cache", "cache"])
 	if has.call("db"):
 		out.append(["app", "db", "db"])
-	out.append(["app", "model", "model"])
+	if has.call("app") and has.call("model"):
+		out.append(["app", "model", "model"])
 	if has.call("pay"):
 		out.append(["app", "pay", "pay"])
 	if has.call("pkg"):
@@ -319,7 +414,7 @@ func _util(id: String) -> float:
 			return u.get("db", 0.0)
 		"model":
 			return u.get("model", 0.0)
-		"replica", "warehouse":
+		"replica", "warehouse", "web", "signups_db":
 			return u.get(id, 0.0)
 	return 0.0
 
@@ -340,6 +435,13 @@ func _draw() -> void:
 		draw_line(Vector2(x, 0), Vector2(x, size.y), Color(Palette.RULE, 0.5))
 	for y in range(0, int(size.y), 20):
 		draw_line(Vector2(0, y), Vector2(size.x, y), Color(Palette.RULE, 0.5))
+	# Sticky notes, under everything else.
+	for n in notes:
+		var at := Vector2(float(n["at"][0]), float(n["at"][1]))
+		var tw := font.get_string_size(n["text"], HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 8
+		draw_rect(Rect2(at + Vector2(1, 1), Vector2(tw, 14)), Color(Palette.SLATE, 0.15))
+		draw_rect(Rect2(at, Vector2(tw, 14)), Color("#fbefb4"))
+		draw_string(font, at + Vector2(4, 11), n["text"], HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.SLATE_MID)
 	if _boxes.is_empty():
 		return
 	# Wires, and the traffic on them.
@@ -402,7 +504,7 @@ func _draw() -> void:
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)
 			draw_string(font, Vector2(bx + 2, by + 10), badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY, Palette.WHITE)
 			bx += bw + 2
-		if live and id in ["app", "db", "model", "replica", "warehouse"]:
+		if live and id in ["app", "db", "model", "replica", "warehouse", "web", "signups_db"]:
 			var u := _util(id)
 			draw_rect(Rect2(r.position + Vector2(2, r.size.y - 6), Vector2(r.size.x - 4, 4)), Palette.RULE)
 			draw_rect(Rect2(r.position + Vector2(2, r.size.y - 6), Vector2((r.size.x - 4) * clampf(u, 0.0, 1.0), 4)), _heat_color(u))
@@ -425,6 +527,8 @@ func _draw() -> void:
 			var spot: String = BUBBLES[tag][0]
 			if not _boxes.has(spot):
 				spot = "app"
+			if not _boxes.has(spot):
+				continue
 			var text: String = BUBBLES[tag][1]
 			var r: Rect2 = _boxes[spot]["rect"]
 			var tw := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 8

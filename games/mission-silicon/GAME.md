@@ -199,7 +199,7 @@ Planning:
 |                      |      \                 |  Add a cache         2h  KEEP  |
 |                  [ Redis ]  [ Model API ]     |  CDN for photos      1h  KEEP  |
 |                  [ Queue ]->[ Worker ]        |  Rewrite in Rust     8h  CUT   |
-|                                               |  [U] Forty servers   1h  CUT   |
+|                                               |  [U] 40 servers      1h  CUT   |
 +-----------------------------------------------+--------------------------------+
 | [ The PR ] [ Ask Aleister ]                     [ Staging ] [    MERGE    ]  |  34
 +--------------------------------------------------------------------------------+
@@ -227,6 +227,211 @@ And across the game:
 - **Determinism**: the same plan gives the identical night twice.
 - **Layout**: every tappable control is at least 30×30 and no text is under 9 pixels, on every screen the bot visits.
 - **The bot** (`tests/bot.tscn`) plays every episode through the real UI, first with Aleister's PR as proposed (and watches it fail into the postmortem), then the solution.
+
+## Episode 1 on paper: *Pilot*
+
+Stage 0, Module 0 (building with AI: you decide what gets built and check that it was; most AI failures are the wrong thing built well, from a vague request). Borrowed set piece: the pilot's choice, where the tech giant's CEO offers to buy the idea outright on day one while the strange VC offers a small investment to build it yourself, and the founder turns the money down. The lines are in `data/season.json`.
+
+It's the first episode, so it's small and it teaches the loop itself: a short PR, four questions, one dial, a two-hour live moment for two hundred people, no hotfix, and a few lines from Ricky the first time the planning board, a card, the questions and a box come up (`tutorial` in the data).
+
+### Continuity
+
+Nothing comes before it. Forkcast is an idea and a vague sentence: the starting board is the diners and nothing else (`"host": "none"`), drawn with three sticky notes on the whiteboard (`notes`: "FORKCAST = ???", "Thu: Walter's test", and the request in quotes) so it reads as a whiteboard, not an empty screen.
+
+### Cold open
+
+Monday, 8am, move-in day at the incubator house (a new backdrop: the living room with a suitcase, moving boxes, a robe on the sofa and Aleister Jr.'s green smiley on an old monitor). Ulrich takes his ten percent ("there's no paperwork; there's some paperwork"). Melon, Ricky's friend, lives by the boiler and is building an app that tells you when your plant's thirsty (Big Head lived in the Hacker Hostel). Gilroy introduces Aleister Jr., built on his garage server. Last night you told it "build Forkcast, something with food and friends, an app, you know", and it has: a social network for photos of food ("fork, plus broadcast"). Danesh hates how good the heart animation is. Ricky: is that what you meant? At all? Ulrich mentioned your idea at a party, to Galen Brightwater, who's outside.
+
+Title card: **PILOT**.
+
+### Brief
+
+Galen offers four million dollars for Forkcast, today, and a role at Hubbub. His assistant, Gerard, has printed the offer on recycled paper and on regular paper. Walter, after a silence: two hundred thousand for five percent; build it yourself; on Thursday his test diners try it. Veronica: Walter's money is yours if his test panel, two hundred people each typing the evening they want in their own words, gets what it asks for.
+
+- **Budget**: $200k (Walter's cheque), $15k a month (the house, Ricky, food), so 13.3 months of runway. 8 hours of Aleister's time to Thursday.
+- **Goal**: up for the whole test (no more than 5 minutes down), and nine in ten of the test panel's requests get a place that fits every part of what they asked.
+
+### Aleister's pull request: "Forkcast, as you asked"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Photo feed**: the social network Aleister built overnight | Aleister | 6h | +$100 | The wrong thing, built well. Diners post and like photos; nobody can type a request, so it answers none of Walter's panel | Danesh for (the heart animation alone is a funding round); Ricky: where would they even type? |
+| **Video stories** | Aleister | 10h | — | The too-big card: a feature from the big apps that nobody asked for, longer than the time we have | Danesh for (without stories we look like a bank); Gilroy: ten hours so a video of soup can disappear |
+| **Sell out** (to Hubbub) | Ulrich (wrong) | 0.5h | — | Galen's four million. Hubbub doesn't want the idea, it wants nobody to build it: Forkcast goes in a drawer and the night is a flash-forward | Ulrich: ten percent of it is his, which is beside the point; Ricky: why pay four million for an idea unless you want nobody to build it? |
+| **Ask Forkcast** (from an ask) | Aleister | 3h | — | The concierge: a box where a diner types the evening they want, the model suggests a place. The product | Ricky: that's what you meant; Gilroy: three hours, it spent twelve on the heart |
+| **Spell it out** (from an ask) | Aleister | 1h | — | A spec: what a request is, and checking every suggestion against all of it. Needed, with a bad default: Aleister has written one line | Veronica: the panel will type "quiet for six on Friday, one vegetarian, near the Mission"; Ricky: one line is how we got a photo app |
+| **Forkcast Everything** (from a decoy) | Aleister | 20h | — | Scope creep: photos, stories, chat, maps, pasta dating, and the concierge somewhere in there | Aleister: you said I know best; Gilroy: it knows a lot, it doesn't know what you want |
+
+Ulrich is wrong, as Erlich was when he pushed Richard toward Hooli's money (he owned ten percent of it). It's a real judgement for a first-time player: four million dollars is a lot, and only Ricky's take hints at why Hubbub would pay it.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **What do you think Forkcast is?** | Aleister: a social network for food photos, it's what everyone builds. Ricky: that's not what you said at the door; a diner says what evening they want and Forkcast finds the place | Adds **Ask Forkcast** (3h) |
+| **What will Walter's diners ask it?** | Veronica: "somewhere quiet for six on Friday, one vegetarian, near the Mission". Gilroy: the concierge only looks at the kind of food and guesses the rest. Ricky: write down what a request is, one page, not fifty | Adds **Spell it out** (1h) |
+| **What will this cost?** | Veronica: a couple of cents a question, a few hundred dollars on Thursday; the feed keeps every photo forever. Gilroy: Aleister runs in his garage, for free | Just facts |
+| **You decide. You know best.** (decoy) | Aleister, delighted: it knows everything that's common | Adds **Forkcast Everything** (20h) |
+
+Asking is the episode's whole lesson: the first two questions are the curriculum's "decide what" (say who it's for and what they'll do), and the decoy is handing the decision to the AI.
+
+### The dials
+
+- **Spec** (on the prototype's box, with "Spell it out"): one line (Aleister's default), one page, or fifty pages (Ricky's, if nobody stops him: six more hours).
+
+### The live moment: Thursday, 4pm to 6pm, Walter's test
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 4:00pm | 0 | Walter types "somewhere quiet for six on Friday" |
+| 4:10pm | 10 | Ravello's test panel is in: 200 diners, each asking for an evening in their own words, about one request every two minutes |
+| 5:00pm | 60 | Halfway. On the photo feed, every request goes nowhere. On the concierge with a one-line spec, it sends a party of six to a sushi bar with four stools |
+| 5:50pm | 110 | Walter writes something down |
+
+If the sale is kept, the live moment doesn't run: cut to black, then the flash-forward (`flashforward` in the data). Hubbub's roof, a year later (a new backdrop): Gerard welcomes you to the roof, Forkcast is in a very good drawer; Galen says family doesn't have to do anything; Melon, also on the roof, says nobody's said what to look at yet; Ulrich's ten percent bought a boat that has never seen water. Then the postmortem and take two.
+
+The solution's night: the concierge on Aleister, checking every suggestion against a one-page spec. Nineteen answers in twenty fit; the model bill is $217 and the garage barely notices.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | Nothing built: a blank page for the whole test. Fails both goals |
+| Aleister's PR as proposed | 16.5 hours: can't merge |
+| Minus the feed and the stories (the bot's take one) | Only Ulrich's sale is left: the flash-forward to Hubbub's roof, then take two |
+| The photo feed alone | It works perfectly and answers nobody: 0% fit. Fails, 13.25 months |
+| The concierge without the spec, or with a one-line spec | 30% of answers fit: fails |
+| The feed and the concierge, or the spec at fifty pages | 9 or 10 hours: can't merge |
+| The solution: ask both questions, the concierge, the spec at one page, the feed and Ulrich's sale cut | 13.319 months of runway; par 13.31 |
+
+### Postmortem
+
+New findings: we sold Forkcast on day one ("an acquisition to shelve a rival"); we built nothing; Aleister built a photo app ("the wrong thing, built well: a vague request"); the concierge ignored half of every request ("unstated requirements: write a spec"). The spreadsheet shows the share of answers that fit and the hosting bill instead of bookings.
+
+Marks: Live, Lean (13.31 months or better), Ulrich (cut the sale).
+
+### Lesson cards and cliffhanger
+
+Two codex cards: **Say what you want built** (an AI can't see what's in your head; say who it's for, what they'll do and what done looks like, or have it ask until it could write the spec) and **Check what it built** (an AI stops when the work looks done; give it a check that passes or fails, or try it as a real user would, first).
+
+Cliffhanger: Friday morning, the kitchen. Walter's cheque, and his one question on the way out: "Where's the waitlist?" Gerard arrives with his own mug: he's left Hubbub, having seen what Galen wanted to do with Forkcast. Ulrich will throw a party on Saturday; he knows four hundred people, personally. Ricky: then we need a page for them to sign up on, by Saturday; he's going to be sick (the running gag starts here). (Episode 2: The Whiteboard.)
+
+### Checking it against the show
+
+The pilot: Richard's side project turns out to be worth something, Gavin Belson offers him millions on the spot, Peter Gregory offers a small investment for a stake if he builds it himself, Erlich pushes for the big cheque because he owns ten percent, and Richard, after throwing up, takes the small one. Jared, Gavin's assistant, leaves Hooli to join him. Here: Galen's four million, Walter's two hundred thousand for five percent, Ulrich's ten percent, Gerard as Galen's assistant who leaves Hubbub in the cliffhanger, Melon living in the house, and Big Head's later fate (paid to do nothing on the roof) as the price of the wrong answer. Aleister building a food-photo app from a vague sentence is ours, built on the curriculum's Module 0. If a fan wouldn't recognise the two offers and the roof, it's drifted; they would.
+
+## Episode 2 on paper: *The Whiteboard*
+
+Stage 0, Modules 1 (the shape of a web app: client and server, request and response, static and dynamic) and 2 (code and its tools: version control, and "I'll just ask the AI to undo it"). Borrowed set piece: the house's late-night whiteboard sessions, and the founder who can't explain the product in one sentence. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 1 ended with Walter asking where the waitlist is and Ulrich promising a party. The starting board is Episode 1's solution: the concierge prototype on Aleister in the garage, with its one-page spec, and the model. Nothing on it changes (no `changed`). The prototype stays private (only Walter's testers can reach it), so it sits at the bottom of the board, labelled "Walter's prototype", with no wire from the visitors; tonight's night is the landing page.
+
+### Cold open
+
+Friday, 11pm, the living room's whiteboard (a new backdrop). Ricky draws the internet for you: a phone, a server; the phone asks, that's a request; the server answers, that's a response. Gilroy: you've drawn the internet as a dog and a bin. The bin is the server. Gerard has tried to write one sentence about Forkcast for the page; it's five pages. Ulrich's attempts: "Uber for dinner" (Danesh: Uber already does dinner), "Hubbub, but good", "the Aviato of food".
+
+Title card: **THE WHITEBOARD**.
+
+### Brief
+
+Veronica: Walter wants to see that people want Forkcast: a landing page and a waitlist by Saturday night. Ulrich: Saturday is his party, four hundred guests, and at nine he sends the Aviato newsletter to forty thousand subscribers. Aleister: its plan is Forkcast Platform, a backend, a database, accounts and apps.
+
+- **Budget**: $190k in the bank, $15k a month, so 12.7 months of runway. 10 hours to build.
+- **Goal**: up all party, pages under 3 seconds, nine sign-ups in ten work.
+
+### Aleister's pull request: "Forkcast Platform"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Landing page**: what Forkcast is, a photo, a sign-up box | Aleister | 2h | — | Needed. Aleister means it to be built by our backend for every visit, from the database | Gerard: the one sentence goes at the top, when we have one; Danesh: a photo the size of a car |
+| **Backend server** | Aleister | 3h | +$150 | Our own server, building the same page for every visitor and sending its photo. At nine, fourteen thousand visitors are more than one small server can build | Ricky for (it's how real apps work); Gilroy: the same page forty thousand times |
+| **Postgres** | Aleister | 2h | +$400 | A database for a list of email addresses, and for the page's words | Ricky: data lives in a database; Gilroy: four hundred a month to remember a list |
+| **Waitlist accounts** | Aleister | 3h | — | A password and an email check to join a waitlist: three in ten give up | Danesh: users mean valuation; Gerard's company that made you log in to unsubscribe |
+| **Phone apps** | Aleister | 24h | — | The too-big card: apps for a waitlist, and the app stores take days to review | Danesh: home-screen real estate; Ricky: the party's tomorrow |
+| **Static site** (from an ask) | Aleister | 1h | — | The page built once as plain files on a static host, copied to servers near everyone | Ricky: it's the same page for everyone; Danesh: and Ulrich can't change a word |
+| **Form service** (from an ask) | Aleister | 0.5h | +$20 | Someone else's backend for one box: it keeps the sign-ups | Gilroy: let them babysit it; Gerard: we can download the list whenever Walter asks |
+| **Use Git** (from an ask) | Aleister | 0.5h | — | Version control, with a bad default: Aleister commits once a day, at midnight | Ricky for; Gilroy: if it breaks at nine, we go back to midnight; what was here at midnight? |
+| **Just undo it** | Ulrich (wrong) | 0h | — | Skip Git: if something breaks, ask the robot to put it back. It overrides "Use Git" | Ulrich: at Aviato they never saved anything and never lost anything, that he knows of; Gilroy: it remembers what sites are usually like, not ours |
+| **Launch video** (from a decoy) | Aleister | 1h | — | Sixty megabytes of Ulrich in slow motion before the sign-up box: pages over three seconds on a phone | Danesh: video feels expensive; Gilroy: on a phone, at a party |
+
+Ulrich is wrong again, two in two, which leaves him right four times in nine. His card is Module 2's misconception "I'll just ask the AI to undo it" (without version control there may be nothing to undo to), and the night proves it: Ulrich himself makes the bad change.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Does this need a backend?** | Ricky: no; every visitor gets the same page, a static site; the one thing that isn't the same for everyone is the sign-up, and something has to keep it. Gilroy: a form service | Adds **Static site** (1h) and **Form service** (0.5h) |
+| **How do we undo a bad change?** | Aleister edits the live site directly, it's instant. Gilroy: and there's no copy of how it was. Ricky: Git, roll back to the last commit | Adds **Use Git** (0.5h) |
+| **Draw me how it works.** | Ricky: client, request in HTTP, DNS like a phone book, response; frontend, backend, database as dining room, kitchen, reservations book. Gilroy: a static page skips the kitchen | Just facts |
+| **What will Saturday look like?** | Veronica: the newsletter at nine, fourteen thousand on the page at once for half an hour. Gilroy: one small server builds about a hundred pages a second, photo and all; that's a hundred and forty | Just facts |
+| **Make it look impressive.** (decoy) | Aleister, delighted | Adds **Launch video** (1h) |
+
+The first ask is the curriculum's Module 1 line, "This is a static site; no backend needed yet."
+
+### The dials
+
+- **Commit** (on the GitHub box, with "Use Git"): once a day (Aleister's default) or before every change.
+
+### The live moment: Saturday, 6pm to midnight, Ulrich's party
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 6:00pm | 0 | The doors open: a hundred visitors on the page |
+| 8:00pm | 120 | Two hundred guests, every phone out: 2,000 on the page |
+| 9:00pm | 180 | **Ulrich's speech, and the newsletter**: 14,000 on the page by 9:10. One small server building every page maxes out: pages at 21 seconds |
+| 9:30pm | 210 | **Ulrich has Aleister change the headline, live.** The change breaks the sign-up box |
+| 9:32pm | 212 | **Hotfix** (only with Git): roll back to the last commit? With a commit from before the change, the box works again in two minutes. With one a day, the last commit is from before the site existed: the site is gone until Aleister rebuilds it |
+| 9:30 to 11pm | 210 to 300 | Without Git, or with the rollback cut, Aleister rebuilds the box by hand, from what it thinks pages are usually like: an hour and a half |
+| Midnight | 360 | 600 on the page. End |
+
+The solution's night: the page comes from a static host, so nothing of ours builds it and it opens in a fifth of a second all night; every sign-up goes to the form service; the headline breaks the box for four minutes, two of them the rollback. 15,761 people join the waitlist, 96% of those who tried.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | No page: fails everything |
+| Aleister's PR as proposed | 34 hours: can't merge |
+| Minus the apps (the bot's take one) | Fits, and fails: one small server builds every page (21.6 seconds at nine), three in ten give up at the password, and nobody can undo Ulrich's change. 24% of sign-ups, 12.22 months |
+| The backend and Postgres, with Git and the rollback | Still one small server at nine: 69% of sign-ups, pages at 21.6 seconds. Fails, 12.22 |
+| Static and the form, without Git (or with Ulrich's card kept, or the rollback cut) | Broken for an hour and a half: 50% of sign-ups. Fails, 12.65 |
+| Committing once a day | The rollback takes the site back to before it existed: down 88 minutes. Fails |
+| Static without the form | The box sends sign-ups nowhere: 0%. Fails |
+| Accounts kept | 67% of sign-ups: fails |
+| The launch video | Pages at 3.2 seconds, 79% of sign-ups: fails |
+| Static, the form, Git, plus the backend, or the backend and Postgres | Passes, at 12.52 or 12.32: misses Lean |
+| Static with the backend and Postgres taking the sign-ups instead of the form | Passes, at 12.22: misses Lean |
+| The solution: static site, form service, Git committing every change, rollback kept | 12.649 months of runway; par 12.64 |
+
+### Postmortem
+
+New findings: one small server built every page ("a dynamic page that could have been static"); no page; nothing served the page; the sign-up box sent emails nowhere ("a static page still needs a backend for its form"); people gave up at the password ("friction"); the page took seconds to open ("page weight"); nobody could undo Ulrich's change ("no version control"); we had Git and didn't roll back; we rolled back to before the site existed ("a rollback only goes back to a commit"); Ulrich changed the live page ("an unreviewed change in production", foreshadowing the finale); and, in the solution's own postmortem, the four-minute rollback. The spreadsheet shows the waitlist and the hosting bill.
+
+Marks: Live, Lean (12.64 months or better), Ulrich (cut "Just undo it").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Client and server** (a browser sends a request over HTTP, a server sends back a response), **Static or dynamic** (the same files every time, or pages built when asked, usually from a database; keeping a sign-up takes code on a server and somewhere to store it) and **Version control** (Git records each commit so you can go back; it can only go back to what you saved, so commit before each change).
+
+Cliffhanger: the living room after the party, still in the small hours (a new backdrop, the fairy lights still up). Gerard has copied 15,761 sign-ups into a spreadsheet, by hand, to feel close to them (Episode 5's spreadsheet, planted). Walter wants something people can actually use; he said "demo", then nothing for a long time. Danesh: then we build the real app in the language everyone's using now. Gilroy: in anything else. Ricky: we haven't picked a language and they're already... he's going to be sick. (Episode 3: Tabs and Spaces.)
+
+### Checking it against the show
+
+Season 1's early episodes: Richard at the whiteboard, unable to say what Pied Piper is in a sentence while Peter Gregory waits for a business plan; Erlich's grand, useless naming and branding pitches; the house's late-night sessions and the engineers' running insults. Here: Ricky's dog-and-bin internet, Gerard's five-page sentence (Jared's earnest thoroughness), Ulrich's "Uber for dinner" and "the Aviato of food", Walter wanting proof before he speaks again. Ulrich's party is ours, in Erlich's spirit, and his live headline change is the first of the season's unreviewed changes. If a fan wouldn't recognise the whiteboard and the one-sentence failure, it's drifted; they would.
+
+## From Episode 2's board to Episode 8's
+
+Episodes 3 to 7 aren't built yet; this is the path the first two leave for them, so the continuity check can hold from 1 to 14.
+
+- **Episode 2 ends with**: the concierge prototype on Aleister (garage), with a one-page spec, private; a static landing page on a static host; the form service keeping the waitlist; Git, committing every change. Its board's keys are Episode 1's (`host`, `app`, `model`, `feed`, `stories`, `sold`, `concierge`, `spec`, `detail`, `everything`) plus `page`, `static`, `backend`, `postgres`, `form`, `accounts`, `apps`, `git`, `commits`, `video` and `rollback`.
+- **Episode 3, *Tabs and Spaces***: the MVP's backend gets written. Each box's language is new (a `lang` per box). Where the MVP runs can stay on Aleister for now.
+- **Episode 4, *Demo Day***: the MVP is public for the first time: the model key and the price rule belong on the backend, not in the app (`key_where` exists from Episode 12; a client-side price rule is new). The prototype's `concierge` and `spec` carry into the MVP.
+- **Episode 5, *The Spreadsheet***: Ulrich's spreadsheet (and Gerard's copy of the waitlist) give way to Postgres. That's where the board first has a database of its own (the main simulation's `db`, which needs `host` to be `cloud`, or a new host type).
+- **Episode 6, *Log In***: accounts and the ownership check. Mind Episode 12, whose starting board has no ownership check (`owner_check: false`) and whose lesson is IDOR: either Episode 6's check covers restaurants seeing only their own bookings (and Episode 12's hole is a new booking link), or Episode 12 says in `changed` why it's gone.
+- **Episode 7, *Launch Party***: off Melon's laptop onto a platform host with managed Postgres, deployed by CI with tests and staging (Episode 8's continuity note). Episode 2's rollback (`live.bad_change`, `rollback`, `git`, `commits`) is the start of its scripted bad deploy.
+- **Episode 8's cold open** then moves everything to Aleister. `cases.gd` compares every key of Episode 7's ending board with Episode 8's starting board, so Episode 8 will need `"changed"` listing `host` and every front-half key its board doesn't carry (the landing page, the form, Git and the rest), or those keys added to its board. Either way, add them in Episode 7's PR and say why in its cold open.
 
 ## Episode 8 on paper: *Viral*
 
@@ -263,7 +468,7 @@ Diners' phones → **Aleister** (garage server, running the app and Postgres tog
 | **CDN for photos** | Aleister | 1h | +$50 | Photos and scripts served from the edge, not the app (the pages themselves still come from the app: they hold per-diner data) | Danesh for; Gerard asks what happens when a restaurant changes its photos (it's fine: they can be an hour old) |
 | **Queue sign-up work**: welcome emails and other chores | Aleister | 3h | +$50 | The 8pm sign-up burst no longer hits the app head-on (sending each welcome email is a slow outside call that would hold a server; the password is still hashed in the request, since a queue must never hold plain-text passwords) | Gerard for, earnestly; Danesh: nobody needs their welcome email this second |
 | **Rewrite booking in Rust** | Aleister | 8h | -$100 | Faster code where the time isn't spent: the app is waiting on the database. Keeping it leaves no time for the fixes the asks turn up | Danesh for (it's what serious people use); Gilroy: you'd be rewriting the part that's waiting |
-| **Forty servers** | Ulrich (wrong) | 1h | +$6,000 | 40 servers × 10 connections = 400, against Postgres's 100: most of them get "too many connections". And sessions are still in memory | Ulrich: Hubbub has forty thousand; Ricky can't get a word in |
+| **40 servers** | Ulrich (wrong) | 1h | +$6,000 | 40 servers × 10 connections = 400, against Postgres's 100: most of them get "too many connections". And sessions are still in memory | Ulrich: Hubbub has forty thousand; Ricky can't get a word in |
 
 Ulrich's line is the Module 9 misconception: more servers means faster.
 
@@ -844,12 +1049,12 @@ The season's tempting cards, back as one plan, with two new ones.
 | **Sixty shards**: one database per city | Aleister | 12h | +$800 | Aleister's running gag, finally almost plausible. The database peaks at a little over half its capacity; sixty cities is more diners, not more kinds of data | Aleister (a family recipe); Gilroy (the database hasn't been the problem since the index) |
 | **Live everything**: stream every booking into the analytics database | Aleister | 10h | +$3,000 | Episode 9's decoy: the board asked for an hour old | Danesh for; Veronica: $3,000 a month for numbers nobody reads faster |
 | **Biggest model** | Aleister | 1h | 5× a call | Episodes 8 and 13: the menus already make the answers right | Ricky (fewer mistakes?); Veronica (five times the price, for what?) |
-| **Agent swarm**: four agents per booking | Danesh | 3h | — | Episode 13: four times the agent's model calls, past even a raised limit | Danesh (Hubbub Concierge has six); Gilroy (our limit hasn't heard of the swarm) |
-| **ForkNet, everywhere** | Ricky | 6h | — | Episode 11: copies on phones disagree about the last table, phones in tunnels lose bookings, at sixty cities' scale | Ricky (it never got a fair chance); Gilroy (it got one) |
+| **Swarm**: four agents per booking | Danesh | 3h | — | Episode 13: four times the agent's model calls, past even a raised limit | Danesh (Hubbub Concierge has six); Gilroy (our limit hasn't heard of the swarm) |
+| **ForkNet** (everywhere) | Ricky | 6h | — | Episode 11: copies on phones disagree about the last table, phones in tunnels lose bookings, at sixty cities' scale | Ricky (it never got a fair chance); Gilroy (it got one) |
 | **Phones call the AI**: every phone asks the model directly, key in the app | Aleister | 2h | — | New, and genuinely tempting: searches are half the app servers' work, so it needs fewer servers. But the key ships in the app, and Episode 12's scanning bot reads it out at 5:30 | Danesh for (fewer servers); Gilroy (we did this; it cost $4,000 and a lawsuit) |
 | **Own model** | Aleister | 30h | — | Too big; retrieval already does it | Ricky; Veronica |
 | **Every region**: three copies of Forkcast around the world | Aleister | 40h | — | The capstone diagram's grandest box. Too big for the time, and nothing tonight needs it | Aleister (Virginia); Gerard (two offices that disagreed about lunch) |
-| **Bigger AI limit**: Ulrich calls the model provider and has the limit tripled | Ulrich (right) | 0.5h | — | Needed: at the peak, sixty cities ask the model about twice as often a minute as our limit allows. Providers raise limits as accounts grow, or on request | Ulrich: when he hit a ceiling at Aviato, he called the man who owned the ceiling; Danesh: a bigger limit is a bigger bill if strangers ever get the key again (true) |
+| **AI limit x3**: Ulrich calls the model provider and has the limit tripled | Ulrich (right) | 0.5h | — | Needed: at the peak, sixty cities ask the model about twice as often a minute as our limit allows. Providers raise limits as accounts grow, or on request | Ulrich: when he hit a ceiling at Aviato, he called the man who owned the ceiling; Danesh: a bigger limit is a bigger bill if strangers ever get the key again (true) |
 | **More servers** (from Walter's question) | Aleister | 0.5h | +$150 a server | Needed, with a bad default: more of the same small servers, set to ten "to be safe". Seven carry the peak | Ricky (almost disappointing); Veronica (ten is what a nervous person picks) |
 | **Backup provider** (from a decoy) | Aleister | 2h | +$100 | Episode 11 again: the second provider charges diners the first already charged | Aleister; Gilroy |
 
@@ -898,7 +1103,7 @@ These are the results from `tests/cases.gd`:
 | Minus the big cards (the bot's take one: biggest model, agent swarm, ForkNet, phones call the AI, Ulrich's limit) | Fits, and fails: ForkNet seats tables several times over, the key ships in the app and the bot reads it out, and still no more servers. 5.15 months |
 | Infinite servers kept | One booking in thirteen fails between services and twelve servers run out of connections: fails, 10.17 |
 | Phones call the AI | Fewer servers needed, and 247,000 strangers' calls on the key from 5:30: fails |
-| Agent swarm | Past even the tripled limit: 77% of searches answered, fails |
+| Swarm | Past even the tripled limit: 77% of searches answered, fails |
 | ForkNet | 1,800 tables booked twice: fails, 7.52 |
 | Backup provider | 245 diners charged by both providers: fails |
 | Ulrich's limit cut | Rate limited from the rush: 68% of searches answered, fails |
@@ -951,7 +1156,7 @@ The series finale: Pied Piper's network, improved by its own AI, becomes too pow
 
 ## How the loop covers the season
 
-Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
+Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1, 2 and 8 to 14 are walked on paper above and built; the rest are a first sketch, to be walked the same way before each is built:
 
 | # | Episode | The PR's trap | What the live moment tests |
 | --- | --- | --- | --- |
@@ -983,7 +1188,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 in detail (walk each like Episodes 8 to 14 first).
-- Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
+- Episodes 3 to 7 in detail (walk each like Episodes 1, 2 and 8 to 14 first; the path from Episode 2's board to Episode 8's is above).
+- Whether there's a hub between episodes (the house). For now the title screen is a season screen: fourteen tiles, each built one with its best runway and marks.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.
