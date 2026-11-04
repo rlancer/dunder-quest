@@ -40,7 +40,18 @@
 		"package": {"label": "keysafe-autoguard", "term": "npm package", "plain": "A package Aleister suggested: a stranger's code, installed on our server and run with its settings."},
 		"waf": {"label": "Firewall", "term": "web application firewall", "monthly": 500},
 		"agent": {"label": "Agent", "term": "AI agent", "plain": "The concierge, now able to act: it asks the model what to do, uses one of our app's tools (search, check a table, book), looks at the result, and asks again until the job's done."},
+		"front": {"label": "Web app", "term": "frontend (TypeScript, React)", "plain": "The pages diners use in their browser: the search box, the results, the book button. It runs on each diner's own phone or laptop, and asks our backend for everything else."},
+		"mvp": {"label": "Aleister", "term": "backend server", "plain": "Forkcast's backend, running on Aleister in the garage: it answers the web app's requests, asks the AI model and keeps the bookings. Its language is the one the AI writes it in."},
+		"notebook": {"label": "Notebook", "term": "marimo notebook (Python)", "plain": "Code, its results and notes in one document, run a piece at a time on Veronica's laptop. Change one cell and the cells that depend on it run again."},
 		"index": {"label": "Menu index", "term": "vector index (for RAG)", "plain": "Every restaurant's menu and allergy notes, stored as embeddings in our own Postgres, so the concierge can find the right ones and answer from them.", "monthly": 20}
+	},
+	"_languages": "typed: a static type checker reads the code before it runs. familiar: how many times more mistakes the AI makes than in the languages it has seen most of. work_x: server work for the same requests.",
+	"languages": {
+		"ts": {"label": "TypeScript", "typed": true, "familiar": 1.0, "work_x": 1.0},
+		"js": {"label": "JavaScript", "typed": false, "familiar": 1.0, "work_x": 1.0},
+		"python": {"label": "Python", "typed": false, "familiar": 1.0, "work_x": 1.5},
+		"rust": {"label": "Rust", "typed": true, "familiar": 1.5, "work_x": 0.4},
+		"zig": {"label": "Zig", "typed": true, "familiar": 5.0, "work_x": 0.4}
 	},
 	"work": {
 		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},

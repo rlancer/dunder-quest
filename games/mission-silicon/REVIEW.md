@@ -1,4 +1,4 @@
-# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
+# Technical review: Episodes 1 (*Pilot*), 2 (*The Whiteboard*), 3 (*Tabs and Spaces*), 4 (*Demo Day*), 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*), 13 (*The Conference*) and 14 (*Finale*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -944,3 +944,143 @@ Narrative. Galen's offer and Walter's investment are the pilot's choice; the roo
 | Most AI failures are the wrong thing built well, from a vague request | True as the curriculum's framing; CCBP |
 | Client and server, request and response, static and dynamic | True; MDNSS |
 | "I'll just ask the AI to undo it" is a misconception without version control | True; GIT |
+
+# Episodes 3 (*Tabs and Spaces*) and 4 (*Demo Day*)
+
+The same pass for Episodes 3 and 4, done before they merged: every technical claim a player can see in their entries in `data/season.json`, the new pieces and the language table in `data/pieces.json`, the board's new boxes, sub-lines, badges and bubbles, the live panel and the postmortem, and the additions to `sim/sim.gd`, against CURRICULUM.md's Modules 3, 4, 5 and 13. Same rule: **simplify, never falsify**. The language lesson was written to the stricter rule in the handoff: no language is called simply better, and types are never said to prevent all bugs. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| TSB | [The Basics](https://www.typescriptlang.org/docs/handbook/2/basic-types.html), TypeScript Handbook: a static type checker finds bugs "before our code runs"; `user.location` on an object without it is an error ("Property 'location' does not exist"); typos are among the bugs it catches; plain JavaScript returns `undefined` for a missing property instead of throwing ("non-exception failures"); "TypeScript catches a lot of legitimate bugs" (a lot, not all) |
+| LRL | Giagnorio, Martin-Lopez and Bavota, [*Enhancing Code Generation for Low-Resource Languages: No Silver Bullet*](https://arxiv.org/abs/2501.19085), ICPC 2025: LLMs learn languages from their training data; for niche languages with scarce training data, "poorer code generation performance as compared to high-resource languages" |
+| MAR | [marimo docs](https://docs.marimo.io/): run a cell and marimo reactively runs all dependent cells; notebooks are stored as pure Python `.py` files; executable as a script, deployable as an app; designed for data |
+| ZIG | [Zig downloads](https://ziglang.org/download/): the latest release is 0.17.1, before version 1.0 |
+| MDNF | [Client-side form validation](https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Forms/Form_validation), MDN: client-side validation "is too easy to bypass"; always validate on the server, including security checks; "Never trust data passed to your server from the client"; a malicious user "can still alter the network request" |
+| VT | As Episode 12: Vite, variables bundled into client-side code "should not contain sensitive information such as API keys" |
+| RWD | [Responsive design](https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/CSS_layout/Responsive_Design), MDN: make pages render well on all screen sizes; a single-column layout for phones first, then wider layouts, is "mobile first" design |
+| Earlier keys | AR (rate limits, Episode 8), AP (tokens and prompt caching, Episode 8), OS and GH (Episode 12) |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| The AI makes some logic mistakes in every language; they reach the night whatever the language, and types don't stop them | True | TSB says a lot of bugs, not all; a wrong rule (the wrong night) type-checks fine. 1.5% of requests is illustrative |
+| More mistakes in a language the AI has seen little of (Zig five times as many, Rust one and a half) | True (simplified) | LRL: worse code generation where training data is scarce. The multipliers are the story's. Rust is far more common than Zig but less common than TypeScript in public code, so a small factor; the game never says the AI writes Rust badly, only that it's slower to get through its compiler |
+| Type-shaped mistakes (a misspelt field) reach the night in a dynamic language and are stopped before running by a static type checker | True | TSB (`location`, typos, JavaScript's silent `undefined`). Python raises an error at run time instead of carrying on; the game's notebook-as-app counts both as a failed request. Python's optional type hints with a checker would catch them too; the game doesn't offer that option and doesn't claim otherwise |
+| A backend in a different language from the TypeScript web app adds mistakes at the boundary; one TypeScript codebase can share one definition of a booking | True (simplified) | Two hand-written definitions of the same request can drift, and no compiler checks one against the other; shared types (or a schema with generated code) are the usual fix. The 4% is the story's |
+| Rust and Zig do the same work with less of the server, and it makes no difference at two hundred diners | True | Curriculum Module 3's misconception, "fast languages make fast apps"; the model's two seconds dominate a search (Episode 8's model latency) |
+| Rust takes six more hours, Zig two | True as illustration | Curriculum Module 3: quick to write against quick to run, and Rust's steeper learning curve; the hours are the story's |
+| A notebook running the app stops when the laptop it's open on closes | True of this plan | A notebook open on a laptop runs on that laptop. marimo notebooks can also be deployed as apps (MAR); the card is a notebook on Veronica's laptop, and the finding says "on the computer it's open on" rather than claiming notebooks can't serve |
+| Walter's question answered by the notebook in an hour, or the investor page in seven | True as illustration | MAR (designed for data) |
+| A fee worked out in the app is whatever the phone sends; edits from a scripted tick, spreading through the room | True | MDNF. The shares (a twentieth to a third) are the story's |
+| Hiding the price box changes nothing | True | MDNF: the request can be altered whatever the page shows; curriculum Module 4's misconception |
+| A fee worked out on the server ignores edits | True | MDNF |
+| A desktop layout loses four in ten bookings from phones | True as illustration | RWD. The share is the story's |
+| The key in the app is read by a scanning bot and used on our bill | True | As Episode 12 (VT); only the app's code is exposed here, no history and no package |
+| Episodes 1, 2 and 8 to 14 unchanged | Checked | Every new behaviour is off unless an episode configures `live.code`, `live.tamper` or `live.mobile`. Not calling the model when nothing is built now applies to every episode, not just those with `live.fit`; only Episode 1 has a night with nothing built. The garage's overload findings now leave out requests lost to bugs, which only Episode 3 has. Runways to nine places: 13.318880000, 12.649255493, 14.940986471, 12.855844240, 13.113089652, 12.342914808, 11.924450744, 11.096754439 and 10.857063317, before and after |
+
+## Tabs and Spaces text
+
+### Cold open, brief, cliffhanger
+
+Narrative. Danesh's and Gilroy's pitches for Zig and Rust are opinions, and the episode judges them. Tabs against spaces is a style preference with no right answer, which is the joke. "When it rains, people book more" is the story's chart, not a claim about restaurants.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Write the backend: search, tables, bookings, the model calls | True | Curriculum Module 5 |
+| Gilroy: Rust's compiler checks everything before it runs | Narrative | "Everything" is too strong as a fact, so it stays Gilroy's boast, and the game's own line (his answer to the language ask) says "whole kinds of mistakes", which is true |
+| Web app: TypeScript with React, what the AI writes best because it's seen most of it | True | LRL (the other way round); curriculum Module 4: React is what AI tools build with by default |
+| Ricky: TypeScript turns into JavaScript, which every browser runs | True | Curriculum Module 3 (the first draft said the browser runs this half; browsers run the JavaScript it becomes) |
+| Investor page, A language each | Narrative | Too long to fit |
+| Notebook: marimo, Python, a file in Git | True | MAR (plain `.py` files) |
+| Ricky: Python is where the data tools are; a notebook is for a question, not for running the app | True | Curriculum Module 3 |
+| Notebook it (Ulrich, wrong); Gilroy: a lab bench, and this one is Veronica's laptop | True of this plan | See the shapes table |
+| Biggest server; Gilroy: Aleister uses about three percent of itself | True | The simulation's garage runs at about 3% in the solution |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Which language? Ricky: a booking written down once for both halves; what Aleister has seen most | True | Curriculum Module 3's rules of thumb (one language front and back; popular, boring tools); LRL |
+| Aleister: Zig isn't at version one yet, so it keeps changing | True | ZIG (0.17.1). Releases before 1.0 make breaking changes; the line doesn't quantify them |
+| What do types catch? `booking.partySise` stopped before it runs; plain JavaScript runs it and the party size is missing | True | TSB |
+| Gilroy: types don't catch a booking for the wrong night | True | A logic error type-checks |
+| Can we answer Walter's question? A notebook job | True | Curriculum Module 3 |
+| Where does the time go? Two seconds, nearly all of it the model; our code takes milliseconds | True as illustration | The model's latency is Episode 8's; a model call taking seconds and app code milliseconds is the usual shape |
+
+### Dials, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Dial: Zig, Rust, JavaScript, TypeScript, with build hours | True as illustration | See the shapes table |
+| Postmortem: no_frontend, no_backend | True | Curriculum Module 1 |
+| Postmortem: notebook_app, "a notebook used as a backend" | True of this plan | Worded about this notebook on this laptop |
+| Postmortem: type_bugs, "type errors found only when it runs" | True | TSB |
+| Postmortem: unfamiliar, "far less Zig to learn from than TypeScript"; Zig's compiler caught the type mistakes | True | LRL; Zig is statically typed |
+| Postmortem: boundary | True (simplified) | See the shapes table |
+| Postmortem: logic_bugs, "types don't catch everything"; finding them takes tests | True | TSB says a lot; curriculum Module 12 |
+| Postmortem: overbuilt, "a fast server doesn't make a fast app" | True of this night | Curriculum Module 3's misconception |
+| Card: Types | True | TSB, each clause |
+| Card: Pick a language the AI knows | True | LRL |
+| Card: Notebooks | True | MAR, each clause |
+
+## Demo Day text
+
+### Cold open, brief, cliffhanger
+
+Narrative. The bags, Chaz and his fax machines, Walter's yes. Gerard's spreadsheet sets up Episode 5.
+
+### Pull request cards and takes
+
+| Claim | Verdict | Notes |
+| --- | --- | --- |
+| Booking fee: charged by card through a payment provider; the app works out the fee and tells the server what to charge | True as the problem | Curriculum Module 5 (third-party services); MDNF |
+| Straight to AI: one less hop, and the key goes in the app so the phone can use it | True | A browser calling a provider directly needs a credential in the browser; VT |
+| Voice concierge | Narrative | Too long to fit |
+| Price on server: the server works out the fee from the booking and ignores what the app says | True | MDNF; curriculum Module 5, "the backend is where the rules live" |
+| Hide it (Ulrich, wrong); Gilroy: hidden from the screen, not from the code on their phone | True | MDNF; curriculum Module 4's misconception |
+| Biggest AI model: five times the price per answer | True as illustration | As Episode 8 |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Who decides the price? Anyone can open the developer tools and change what it sends | True | MDNF ("alter the network request"); every desktop browser has developer tools |
+| Where's the model key? Bots read new apps' code for keys all day | True (simplified) | As Episode 12's key_in_app row |
+| Will it work on a phone? Mobile first | True | RWD |
+| What does each answer cost? Tokens in and out; about two cents | True as illustration | AP: models bill per token; the price is the game's |
+
+### Dials, live moment, postmortem, codex cards
+
+| Item | Verdict | Notes |
+| --- | --- | --- |
+| Dial: desktop or mobile first | True as a trade-off | RWD |
+| Postmortem: no_fee | Narrative | |
+| Postmortem: price_in_app, "trusting the client" | True | MDNF |
+| Postmortem: hidden_price, "hiding isn't security"; hiding a button changes what people see, not what they can do | True | MDNF |
+| Postmortem: key_in_app | True | VT; as Episode 12 |
+| Postmortem: not_mobile | True | RWD |
+| Card: Never trust the frontend | True | MDNF: easy to bypass, the request can be altered, validate on the server. "Prices included" applies the rule to Forkcast |
+| Card: No keys in the app | True | VT: bundled into client-side code; never API keys |
+| Card: Mobile first | True | RWD, both definitions |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| front, mvp, notebook | True; the notebook's "change one cell and the cells that depend on it run again" is MAR |
+| languages (typed, familiar, work_x) | True as illustration: TypeScript, Rust and Zig are statically typed, JavaScript and Python dynamically; the factors are the story's |
+
+## CURRICULUM.md, Modules 3, 4, 5 and 13
+
+| Claim | Verdict |
+| --- | --- |
+| Static types catch a lot of AI mistakes automatically | True; TSB ("a lot") |
+| AI assistants are better in popular languages because they've seen more of them | True; LRL |
+| marimo: reactive, plain Python files, can become an app | True; MAR |
+| Hiding a button keeps people out (misconception) | True as a misconception; MDNF |
+| The backend calls the model, never the frontend, so the key stays secret | True; VT |

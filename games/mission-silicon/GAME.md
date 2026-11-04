@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it, then the front half's Episodes 1 to 4. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -111,6 +111,9 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **A higher rate limit** (built, the Finale) | The model provider | A card can multiply the provider's per-minute cap (`limit_x`): providers raise limits as an account grows, or on request | `rate_limited` (when it's missing) |
 | **Phones call the model** (built, the Finale) | Searches | With `direct_ai`, searches skip our app (no app work for them), and the key has to be in the app, so Episode 12's scanning bot finds it | `key_in_app` |
 | **A live, unreviewed fix** (built, the Finale) | Any part of the board | A hotfix can carry its own postmortem tag, named first when it's kept (`tag`); the finale's deletes the hold on the table and the ownership check. A hotfix's needs can also be boxes already on the board, not only cards | `unreviewed` |
+| **The code** (built, Episode 3) | The backend, in the language its dial sets | The AI makes logic mistakes in any language, more in one it has seen little of (Zig five times as many, Rust one and a half). In a dynamic language (JavaScript, or Python in a notebook) type-shaped mistakes, a misspelt field or a word where a number goes, reach the night; a static type checker stops them before anything runs. A backend in another language from the web app adds mistakes at the boundary, where a booking is defined twice. A request that hits one fails. A faster language does the same work with less of the server. Nothing serves diners without a backend and a web app, or a notebook running the app, which stops when its laptop closes | `type_bugs`, `unfamiliar`, `boundary`, `logic_bugs`, `notebook_app`, `no_backend`, `no_frontend` |
+| **The price in the app** (built, Episode 4) | The booking fee | Worked out in the app, the fee is whatever the phone sends, and from a scripted tick a share of bookings come in with it edited to nothing; hiding the price box changes nothing. Worked out on the server, edits are ignored | `price_in_app`, `hidden_price`, `no_fee` |
+| **Mobile first** (built, Episode 4) | The web app | Laid out for a desktop, the book button is off a phone's screen for a share of the diners on phones, who give up | `not_mobile` |
 | **The season in one night** (the Finale) | Everything | Every behaviour above on at once, each configured by its own keys of `live`, as its episode had it. No new code was needed to combine them | |
 
 ### Money
@@ -421,16 +424,204 @@ Cliffhanger: the living room after the party, still in the small hours (a new ba
 
 Season 1's early episodes: Richard at the whiteboard, unable to say what Pied Piper is in a sentence while Peter Gregory waits for a business plan; Erlich's grand, useless naming and branding pitches; the house's late-night sessions and the engineers' running insults. Here: Ricky's dog-and-bin internet, Gerard's five-page sentence (Jared's earnest thoroughness), Ulrich's "Uber for dinner" and "the Aviato of food", Walter wanting proof before he speaks again. Ulrich's party is ours, in Erlich's spirit, and his live headline change is the first of the season's unreviewed changes. If a fan wouldn't recognise the whiteboard and the one-sentence failure, it's drifted; they would.
 
-## From Episode 2's board to Episode 8's
+## Episode 3 on paper: *Tabs and Spaces*
 
-Episodes 3 to 7 aren't built yet; this is the path the first two leave for them, so the continuity check can hold from 1 to 14.
+Stage 1, Module 3 (the language map: quick to write against quick to run, types checked early or late, how much of a language the AI has seen, notebooks). Borrowed set piece: the tabs-versus-spaces fight that nearly ends the founder's relationship, and the engineers' running war over whose tools are better. The lines are in `data/season.json`.
 
-- **Episode 2 ends with**: the concierge prototype on Aleister (garage), with a one-page spec, private; a static landing page on a static host; the form service keeping the waitlist; Git, committing every change. Its board's keys are Episode 1's (`host`, `app`, `model`, `feed`, `stories`, `sold`, `concierge`, `spec`, `detail`, `everything`) plus `page`, `static`, `backend`, `postgres`, `form`, `accounts`, `apps`, `git`, `commits`, `video` and `rollback`.
-- **Episode 3, *Tabs and Spaces***: the MVP's backend gets written. Each box's language is new (a `lang` per box). Where the MVP runs can stay on Aleister for now.
-- **Episode 4, *Demo Day***: the MVP is public for the first time: the model key and the price rule belong on the backend, not in the app (`key_where` exists from Episode 12; a client-side price rule is new). The prototype's `concierge` and `spec` carry into the MVP.
-- **Episode 5, *The Spreadsheet***: Ulrich's spreadsheet (and Gerard's copy of the waitlist) give way to Postgres. That's where the board first has a database of its own (the main simulation's `db`, which needs `host` to be `cloud`, or a new host type).
+### Continuity
+
+The starting board is Episode 2's solution with its hotfix kept: the private prototype on Aleister with its one-page spec, the static landing page, the form service, and Git committing every change (`rollback` is true, since the rollback ran). Nothing changes (no `changed`). New keys, all off: `mvp` (the backend is written), `front` (the web app), `lang` (the backend's language; the prototype was a quick Python script, so it starts as `python`), `notebook`, `notebook_app`, `investor` and `polyglot`. The board moves to its own `spots`: the landing page and the form along the top, the diners, the web app and Aleister across the middle, the model top right, GitHub under Aleister and the notebook beside it. Two sticky notes, TABS and SPACES, sit on the right.
+
+### Cold open
+
+Tuesday, 2am, the living room mid-argument (a new backdrop: two desks at opposite ends of the room, a line of tape down the rug, the whiteboard split in two). Danesh wants Zig (fast, new, and nobody at Hubbub can read it); Gilroy wants Rust (fast, correct, doesn't care how you feel). Ricky has brought a date, Wendy, a developer (a new face). Her code is beautiful; she indents it with spaces. Ricky explains, at length, why a tab is better. Wendy: is he breaking up with her over the space bar?
+
+Title card: **TABS AND SPACES**.
+
+### Brief
+
+Veronica: Walter's Demo Day is next Thursday; before that he wants the real thing used by real people, two hundred from the waitlist booking real tables on Friday night. And Walter's question for the deck: do people book more when it rains? Ricky: so the prototype becomes a real backend, which means picking a language. Aleister has written Forkcast MVP, in Zig, because Danesh said Zig first.
+
+- **Budget**: $185k in the bank, $15k a month, so 12.3 months of runway. 12 hours to build.
+- **Goal**: up all evening, nineteen bookings in twenty work, nineteen searches in twenty are answered, and Walter's question answered.
+
+### Aleister's pull request: "Forkcast MVP"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Write the backend** on Aleister: search, tables, bookings, the model calls | Aleister | 4h | — | Needed, with a bad default: the language dial on Aleister's box is set to Zig | Danesh for Zig (in five years everyone will use it); Gilroy for Rust (the compiler checks everything, and it'll take ten hours) |
+| **Web app**: search box, results, book button, in TypeScript with React | Aleister | 3h | — | Needed. What the AI writes best, because it's what it has seen most of | Danesh designed it on his big monitor (planting Episode 4); Ricky: it turns into JavaScript, which every browser runs |
+| **Investor page**: Walter's question as a page of live charts in the app | Aleister | 7h | — | Answers the question, too slowly: with the backend and the web app it's 14 hours | Veronica: one answer by Friday, not a product; Gerard did it by hand once, in a weekend |
+| **A language each**: search in Python, bookings in Rust, the API in Go, the app in TypeScript, glue in Zig | Aleister | 16h | — | The too-big card: a polyglot stack for two hundred people | Ricky: the right tool for every job, in theory; Gilroy: five ways to spell "party size" |
+| **Notebook it** | Ulrich (wrong) | 2h | — | Skip the backend and run everything, bookings too, in Veronica's notebook. It overrides the backend. At 8pm she closes her laptop to go to dinner | Ulrich: at Aviato the whole company was one spreadsheet; Gilroy: you don't run a restaurant off a lab bench |
+| **Notebook** (from an ask): a marimo notebook in Python, on Veronica's laptop | Aleister | 1h | — | The right tool for Walter's question: last year's bookings against the weather, one chart | Veronica: one chart; Ricky: Python is where the data tools are, and a notebook is for a question, not for running the app |
+| **Biggest server** (from a decoy) | Aleister | 1h | +$1,000 | A large cloud server and a managed database, for an app using three percent of Aleister | Aleister: this is fastest; Gilroy: you'd be renting the other ninety-seven percent |
+
+Ulrich is wrong, which leaves him right four times in ten. His card is Module 3's notebook line made literal: "do people book more on rainy days?" is a notebook job; taking bookings is not.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Which language for the backend?** | Danesh: Zig. Gilroy: Rust, whose compiler catches whole kinds of mistakes before anything runs. Ricky: TypeScript; the web app is already TypeScript, so a booking is written down once for both halves, and it's what Aleister has seen the most of. Aleister: it has seen some Zig, mostly older versions; Zig isn't at version one yet | Just facts (the dial is the decision) |
+| **What do types catch?** | Ricky: TypeScript stops `booking.partySise` before it runs; plain JavaScript runs it and the party size is missing. Gilroy: types catch the misspelt name, not a booking for the wrong night | Just facts |
+| **Can we answer Walter's question?** | Veronica: Gerard typed up last year's bookings from forty restaurants. Ricky: a notebook job; marimo, in Python | Adds **Notebook** (1h) |
+| **Where does the time go?** | Gilroy: a search takes about two seconds, nearly all of it the model; our code takes milliseconds. Danesh: so Zig makes those faster. Ricky: speeding up the part that isn't slow | Just facts (Module 3's "fast languages make fast apps") |
+| **Make it as fast as possible.** (decoy) | Aleister, delighted | Adds **Biggest server** (1h) |
+
+### The dials
+
+- **Language** (on Aleister's box, with "Write the backend"): Zig (Aleister's default, two more hours: it fights a compiler it has seen little of), Rust (six more hours: the strictest compiler, the slowest to get through), JavaScript, or TypeScript.
+
+### The live moment: Friday, 6pm to 10pm, the beta
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 6:00pm | 0 | The beta opens: two hundred from the waitlist |
+| 6:30pm | 30 | Friday dinner: everyone's searching |
+| 8:00pm | 120 | Veronica closes her laptop and goes to dinner (if Forkcast runs in her notebook, it stops) |
+| 9:20pm | 200 | The last tables of the night |
+
+The new behaviour is `live.code` (see the simulation's table). The AI makes logic mistakes in any language (1.5% of requests in the solution), five times as many in Zig and half as many again in Rust; in JavaScript (and Python, the notebook's language) type-shaped mistakes, a misspelt field or a word where a number goes, reach the night (8%), where a static checker would have stopped them before anything ran; and a backend in any language but the web app's TypeScript adds 4% at the boundary, where two definitions of a booking disagree. Rust and Zig do the same work with less of the server, which changes nothing at two hundred diners: Aleister runs at three percent.
+
+The solution's night: TypeScript front and back on Aleister, the notebook answering Walter's question. 862 bookings, 98.5% of bookings and searches work, and one request in seventy still hits a logic bug, which the postmortem names: types don't catch everything. The model bill is $263.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | No app, no backend, no answer. Fails everything |
+| Aleister's PR as proposed | 34 hours: can't merge |
+| Minus the investor page and the five languages (the bot's take one) | Ulrich's notebook runs the app until Veronica closes her laptop at 8pm: down for two hours, 44% of bookings, and 13.5% of requests hit a bug before that. Fails, 12.31 months |
+| Zig, with the notebook | The AI's Zig: 11.5% of requests hit a bug, 88.5% of bookings. Fails, 12.30 |
+| JavaScript, with the notebook | Misspelt fields reach the diners: 13.5% hit a bug, 86.5% of bookings. Fails, 12.30 |
+| Rust, with or without the notebook | 13 or 14 hours: can't merge |
+| TypeScript without the notebook | Walter's question unanswered: fails |
+| TypeScript with the investor page | 14 hours: can't merge |
+| The biggest server | Passes, at 11.53: misses Lean |
+| The solution: ask about Walter's question, the backend in TypeScript, the web app and the notebook, Ulrich's card cut | 12.299 months of runway; par 12.29 |
+
+### Postmortem
+
+New findings: there was no app to use ("a backend with no frontend"); nothing answered the app ("a frontend with no backend"); Forkcast stopped when Veronica closed her laptop ("a notebook used as a backend"); bookings lost their party size ("type errors found only when it runs"); Aleister wrote Zig badly ("a low-resource language, for the AI"); the app and the backend disagreed about what a booking is ("a mismatch at the API boundary"); one request in seventy still hit a bug ("logic errors: types don't catch everything", in the solution's own postmortem too); nobody answered Walter's question ("an analysis job"); the biggest server ("a fast server doesn't make a fast app"). The spreadsheet adds the share of requests that hit a bug.
+
+Marks: Live, Lean (12.29 months or better), Ulrich (cut "Notebook it").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Types** (a static type checker finds some bugs before the code runs, a property that doesn't exist or a misspelt name; plain JavaScript runs it anyway), **Pick a language the AI knows** (models learn a language from examples; in niche languages they write worse code) and **Notebooks** (code, results and notes, run a cell at a time, made for data; marimo reruns what depends on a change and is a plain Python file).
+
+Cliffhanger: Saturday morning, the kitchen. Veronica has the chart: when it rains, people book more, mostly for that night, mostly for two; Walter looked at it a long time and said "Thursday". Gerard: Demo Day, every investor Walter knows, on their phones. Wendy leaves before Ricky looks at her code again ("it's not the spaces; it's a bit the spaces"). Ulrich offers to pitch; Ricky will do it, and he's going to be sick. (Episode 4: Demo Day.)
+
+### Checking it against the show
+
+Season 3's tabs-versus-spaces episode: Richard falls for a developer, finds out she indents with spaces, and can't let it go until it ends them; Gilfoyle and Dinesh's endless contempt for each other's tools. Here: Wendy and the space bar, Danesh's Zig against Gilroy's Rust at 2am with tape down the rug, Ricky explaining tabs at length. Walter staring out of the window for nine minutes is Peter Gregory. If a fan wouldn't recognise the space bar breakup, it's drifted; they would.
+
+## Episode 4 on paper: *Demo Day*
+
+Stage 1, Modules 4 (the frontend: it runs on the user's device, mobile first, and "hiding a button keeps people out" as the misconception), 5 (the backend is where the rules live) and 13's first model call (call the model from the backend, so the key stays secret). Borrowed set piece: the founder throwing up before the pitch, and the investor meeting that goes sideways. The lines are in `data/season.json`.
+
+### Continuity
+
+The starting board is Episode 3's solution: the backend in TypeScript on Aleister, the web app, the notebook, the landing page, the form service, Git. Nothing changes. New keys: `fee` (off), `price_where` (`app`, Aleister's habit), `price_hidden`, `layout` (`desktop`: Danesh built the web app on his thirty-two inch monitor, as Episode 3 planted), `direct_ai` and `key_where` (`server`: in Episode 3 Aleister called the model; both keys exist from the Finale and Episode 12) and `voice`. Same `spots` as Episode 3.
+
+### Cold open
+
+Thursday, 6am, Ravello Capital's partners' room (a new backdrop: a long oak table, phones lying on it, a green slide on the wall screen). The pitch is at two. Gerard has brought the bag, a spare bag, a mint and a printed copy of the pitch in case of fire. Ricky, from the bathroom: that was the last one, probably. Ulrich will nod at the back; nodding is half of a pitch. Danesh made the app look incredible on his monitor; Gilroy: nobody in that room has a thirty-two inch phone. Veronica: Walter's partners, forty investors and Chaz Haverman; don't look at Chaz, he treats eye contact as a term sheet.
+
+Title card: **DEMO DAY**.
+
+### Brief
+
+Veronica: at two Ricky pitches, then everyone in the room tries Forkcast on their phone and books a real table. Walter wants to see it make money: two dollars a booking. Four hours of investors trying to break it, the press after, and eight hours to get ready. Aleister's plan is Demo Ready.
+
+- **Budget**: $180k in the bank, $15k a month, so 12.0 months of runway (the fee earns some back). 8 hours to build.
+- **Goal**: up all afternoon, nine bookings in ten work, every booking pays its $2, nobody else on our key.
+
+### Aleister's pull request: "Demo Ready"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Booking fee**: $2 a booking, by card through a payment provider | Aleister | 2h | — | Needed, with a bad default: the app works out the fee and tells the server what to charge | Veronica: two dollars a table is a business; Gilroy: the app decides what we charge, and the app is on their phone |
+| **Straight to AI**: searches go from the phone to the model, the key in the app | Aleister | 1.5h | — | One less hop, and the model key on every phone in the room | Danesh: on stage every second is a year; Gilroy: a room full of people who invest in security companies |
+| **Voice concierge** | Aleister | 14h | — | The too-big card | Danesh: if it doesn't talk it's a website; Ricky: the pitch is in eight hours |
+| **Price on server** (from an ask) | Aleister | 1h | — | The server works out the fee from the booking and ignores what the app says | Ricky: the app asks, the server decides; Danesh: so the price in the app is just a label |
+| **Hide it** | Ulrich (wrong) | 0.5h | — | Hide the price box and leave the rule in the app. It overrides "Price on server" | Ulrich: at Aviato they hid the cancel button; Gilroy: hidden from the screen, not from the code on their phone |
+| **Biggest AI model** (from a decoy) | Aleister | 0.5h | — | Five times the price per answer, for answers that were fine | Aleister: investors can feel a big model; Veronica: the bill is the part investors read |
+
+Ulrich is wrong again, which leaves him right four times in eleven, a little over a third. His card is Module 4's misconception "hiding a button keeps people out", and it overrides the fix the way his "Just undo it" overrode Git in Episode 2.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Who decides the price?** | Aleister: the app does, very efficiently. Gilroy: the app runs on the diner's phone; anyone can open the developer tools and change what it sends. Ricky: the frontend asks, the backend decides | Adds **Price on server** (1h) |
+| **Where's the model key?** | Gilroy: on Aleister; the app asks Aleister, Aleister calls the model. Unless "Straight to AI" is kept: then it's in the app's code on every phone, and bots read new apps' code for keys all day | Just facts (cutting the card is the decision) |
+| **Will it work on a phone?** | Danesh: on his monitor. Veronica: everyone at Demo Day will be on their phones; Walter doesn't own a laptop. Ricky: mobile first | Just facts (the dial) |
+| **What does each answer cost?** | Veronica: tokens in and out, the instructions, the forty restaurants, the question and the reply; about two cents. Gilroy: times a room pressing it to see if it breaks | Just facts (Module 13's tokens and cost) |
+| **Make it impressive.** (decoy) | Aleister, delighted | Adds **Biggest AI model** (0.5h) |
+
+### The dials
+
+- **Layout** (on the web app's box): desktop (Aleister's default, as Danesh designed it) or mobile first (an hour and a half).
+
+### The live moment: Thursday, 2pm to 6pm, Ravello's Demo Day
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 2:00pm | 0 | Demo Day at Ravello Capital |
+| 2:20pm | 20 | Ricky's pitch: three hundred people open Forkcast on their phones. Nine in ten are on a phone; laid out for a desktop, the book button is off the bottom of the screen for four in ten of them |
+| 2:40pm | 40 | Chaz's assistant opens the developer tools and edits the fee to nothing. With the price worked out in the app, one booking in twenty is free at once, a quarter by 3:30, after Chaz tells the room, and a third by the end |
+| 3:41pm | 101 | With the key in the app, a scanning bot reads it out: strangers on our model key, 300 calls a minute rising to 1,200 |
+| 4:30pm | 150 | The press arrive: seven hundred on Forkcast |
+| 5:40pm | 220 | Walter stands up |
+
+The new behaviours are `live.tamper` and `live.mobile`; the key reuses Episode 12's `live.leak` (only the app's code is exposed: no history, no package).
+
+The solution's night: the fee on the server, mobile first, the model called from Aleister. 2,171 bookings, every one paying $2 ($4.3k), a model bill of $869, and the edited fees ignored.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | No fee, and the button off the bottom of the screen: 64% of bookings, all of them free. Fails, 11.93 months |
+| Aleister's PR as proposed | 18 hours: can't merge |
+| Minus the voice concierge (the bot's take one) | The price hidden and still edited (350 free bookings), the key read out of the app (103,800 strangers' calls, $2.1k), the button off-screen (64% of bookings). Fails, 11.93 |
+| The fee alone, desktop | 350 free bookings and 64% of bookings: fails, 12.07 |
+| The fee, mobile first | 547 free bookings: fails, 12.14 |
+| The fee on the server, desktop | 64% of bookings: fails, 12.11 |
+| The solution plus "Straight to AI" | The key read out of the app: fails, 12.08 |
+| The solution plus Ulrich's card | The price hidden and still edited: 547 free bookings. Fails, 12.14 |
+| The biggest model | Passes, at 11.98: misses Lean |
+| The solution: ask who decides the price, the fee with the price on the server, mobile first, "Straight to AI", the voice and Ulrich's card cut | 12.215 months of runway; par 12.21 |
+
+### Postmortem
+
+New findings: nobody paid anything ("no business model"); Chaz's assistant made his bookings free ("trusting the client: a business rule in the frontend"); hiding the price box kept nobody out ("hiding isn't security"); the model key shipped inside the app ("anything in the frontend is public", as in Episode 12); the book button was off the bottom of everyone's phone ("not responsive: design mobile first"); the biggest model ("model choice"). The spreadsheet adds the bookings that paid no fee and the strangers' calls on our key.
+
+Marks: Live, Lean (12.21 months or better), Ulrich (cut "Hide it").
+
+### Lesson cards and cliffhanger
+
+Three codex cards: **Never trust the frontend** (checks in the browser are easy to get round and anyone can change what their browser sends, so the server checks everything, prices included), **No keys in the app** (anything built into the app ends up in its code on every visitor's device) and **Mobile first** (responsive design; lay it out for a phone first).
+
+Cliffhanger: Ravello, after the demo. Walter, after a silence: "Yes." Veronica: the most words he's ever used on a yes. Chaz Haverman, who put fax machines on the internet, wants in: how many users, make it more. Gerard: Ulrich has told the whole waitlist, fifteen thousand, that Forkcast is open, and he's keeping their bookings in Gerard's spreadsheet. Ricky is going to be sick; Gilroy passes the bag. (Episode 5: The Spreadsheet.)
+
+### Checking it against the show
+
+The pilot and season 1: Richard throwing up before every big moment, and the pitch meetings that go sideways (the VCs who poke holes, the room that won't take him seriously), then Russ Hanneman, the billionaire who put radio on the internet, arriving loud and wanting in. Here: Gerard's bags, Ulrich's nodding, Chaz's fax machines, his assistant breaking the demo in front of the room, and Walter's one-word yes. If a fan wouldn't recognise the bag and the loud investor, it's drifted; they would.
+
+## From Episode 4's board to Episode 8's
+
+Episodes 5 to 7 aren't built yet; this is the path the first four leave for them, so the continuity check can hold from 1 to 14.
+
+- **Episode 2 ended with**: the concierge prototype on Aleister (garage), with a one-page spec, private; a static landing page on a static host; the form service keeping the waitlist; Git, committing every change. Its board's keys are Episode 1's (`host`, `app`, `model`, `feed`, `stories`, `sold`, `concierge`, `spec`, `detail`, `everything`) plus `page`, `static`, `backend`, `postgres`, `form`, `accounts`, `apps`, `git`, `commits`, `video` and `rollback`.
+- **Episode 3, *Tabs and Spaces*** (built): the MVP's backend is written in TypeScript on Aleister (`mvp`, `lang`), with a TypeScript web app (`front`) and Veronica's notebook (`notebook`). The prototype's `concierge` and `spec` carry into it. It still runs on Aleister.
+- **Episode 4, *Demo Day*** (built): the MVP's first public afternoon. It ends with a $2 booking fee worked out on the server (`fee`, `price_where: server`), the web app laid out mobile first (`layout`), and the model key on the server with Aleister calling the model (`key_where: server`, `direct_ai: false`). So **Episode 4 ends with** every key above plus `mvp`, `front`, `lang`, `notebook`, `notebook_app`, `investor`, `polyglot`, `fee`, `price_where`, `price_hidden`, `layout`, `direct_ai`, `key_where` and `voice`.
+- **Episode 5, *The Spreadsheet***: Episode 4's cliffhanger has Ulrich open Forkcast to the whole waitlist and keep the bookings in Gerard's spreadsheet. Ulrich's spreadsheet (and Gerard's copy of the waitlist) give way to Postgres. That's where the board first has a database of its own (the main simulation's `db`, which needs `host` to be `cloud`, or a new host type).
 - **Episode 6, *Log In***: accounts and the ownership check. Mind Episode 12, whose starting board has no ownership check (`owner_check: false`) and whose lesson is IDOR: either Episode 6's check covers restaurants seeing only their own bookings (and Episode 12's hole is a new booking link), or Episode 12 says in `changed` why it's gone.
 - **Episode 7, *Launch Party***: off Melon's laptop onto a platform host with managed Postgres, deployed by CI with tests and staging (Episode 8's continuity note). Episode 2's rollback (`live.bad_change`, `rollback`, `git`, `commits`) is the start of its scripted bad deploy.
+- **Episode 12** starts with the model key back in the app's code (`key_where: frontend`), which Episode 4 took out. Nothing checks it (Episode 11's board has no `key_where`), but the story should say how it got back: the obvious place is Episode 7's deploy from Melon's laptop, whose copy of the app has the key in it "so it just works" (Melon's README in Episode 12 is the same habit). Say so in Episode 7's postmortem or Episode 12's cold open.
 - **Episode 8's cold open** then moves everything to Aleister. `cases.gd` compares every key of Episode 7's ending board with Episode 8's starting board, so Episode 8 will need `"changed"` listing `host` and every front-half key its board doesn't carry (the landing page, the form, Git and the rest), or those keys added to its board. Either way, add them in Episode 7's PR and say why in its cold open.
 
 ## Episode 8 on paper: *Viral*
@@ -1156,7 +1347,7 @@ The series finale: Pied Piper's network, improved by its own AI, becomes too pow
 
 ## How the loop covers the season
 
-Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1, 2 and 8 to 14 are walked on paper above and built; the rest are a first sketch, to be walked the same way before each is built:
+Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. Episodes 1 to 4 and 8 to 14 are walked on paper above and built; the rest are a first sketch, to be walked the same way before each is built:
 
 | # | Episode | The PR's trap | What the live moment tests |
 | --- | --- | --- | --- |
@@ -1188,7 +1379,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 3 to 7 in detail (walk each like Episodes 1, 2 and 8 to 14 first; the path from Episode 2's board to Episode 8's is above).
+- Episodes 5 to 7 in detail (walk each like the built ones first; the path from Episode 4's board to Episode 8's is above).
 - Whether there's a hub between episodes (the house). For now the title screen is a season screen: fourteen tiles, each built one with its best runway and marks.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.

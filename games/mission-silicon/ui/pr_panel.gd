@@ -177,11 +177,13 @@ func _piece_for(id: String) -> String:
 	match id:
 		"app":
 			var cfg := plan.config()
+			if cfg.get("mvp", false):
+				return "mvp"
 			if cfg["host"] == "cloud":
 				return "app_server"
 			return "prototype" if cfg.has("concierge") else "garage_server"
 		"phones":
-			return "visitors" if plan.config().has("page") else "phones"
+			return "visitors" if plan.config().has("page") and not plan.config().has("front") else "phones"
 		"page":
 			return "landing"
 		"web":

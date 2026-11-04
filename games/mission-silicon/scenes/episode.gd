@@ -419,6 +419,9 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 			"visitors": "Visitors  %s" % _thousands(roundi(f["diners"])),
 			"waitlist": "On the waitlist  %s" % _thousands(roundi(sim.signed)),
 			"signups_ok": "Sign-ups working  %s" % ("no" if f.get("broken", false) else "%d%%" % roundi(100.0 * sim.signed / maxf(sim.signup_tries, 0.000001))),
+			"bugs": "Hitting a bug  %s" % ("-" if f["down"] else "%d%%" % roundi(100.0 * float(f.get("bug", 0.0)))),
+			"unpaid": "Paid no fee  %s" % _thousands(roundi(f.get("underpaid", 0.0))),
+			"strangers": "Strangers' calls  %s/min" % _thousands(roundi(f.get("stolen", 0.0))),
 		}
 		var out := []
 		for m in ep["live"]["meters"]:
@@ -516,7 +519,14 @@ func _postmortem(res: Dictionary) -> bool:
 	if ep["live"].has("payments"):
 		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
 	if ep["live"].has("leak"):
-		lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
+		if ep["live"].has("idor"):
+			lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
+		else:
+			lines.append("Strangers' calls on our key: %s" % _thousands(roundi(res["stolen_calls"])))
+	if ep["live"].has("code"):
+		lines.append("Requests that hit a bug: %.1f%%" % (m["bug_share"] * 100.0))
+	if ep["live"].has("tamper"):
+		lines.append("Bookings that paid no fee: %s" % _thousands(roundi(m["underpaid"])))
 	if ep["live"].has("injection"):
 		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
 	# The spreadsheet has room for about fifteen lines above the marks. An

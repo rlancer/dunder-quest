@@ -95,6 +95,11 @@ var signed: float = 0.0
 var _web := {"backlog": 0.0}
 var _signups_db := {"backlog": 0.0}
 var _rolled_at: int = -1
+## The code (Episode 3): requests that hit a mistake in it, of those that
+## reached it. The fee (Episode 4): bookings that paid no fee.
+var bug_hits: float = 0.0
+var bug_tries: float = 0.0
+var underpaid: float = 0.0
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -247,6 +252,43 @@ func _tick() -> Dictionary:
 	# sold to Hubbub, which keeps it in a drawer. Either way nothing answers.
 	var built: bool = str(cfg["host"]) != "none" and not cfg.get("sold", false)
 
+	# The code itself (Episode 3): the backend written by the AI in one
+	# language, the web app in TypeScript. Nothing serves diners without both
+	# halves, or a notebook pressed into running the app, which stops when
+	# the laptop it's open on closes. The AI makes a small share of logic
+	# mistakes in any language, more in a language it has seen little of; a
+	# share of mistakes are type-shaped (a misspelt field, a word where a
+	# number goes), which a static type checker catches before anything runs
+	# and a dynamic language finds only when it runs; and two languages mean
+	# two definitions of a booking that nothing checks against each other.
+	# A request that hits a mistake fails. Off unless the episode has
+	# `live.code`.
+	var code: Dictionary = live.get("code", {})
+	var code_down := ""
+	var bugs := {}
+	var work_x := 1.0
+	if not code.is_empty():
+		var nb_app: bool = cfg.get("notebook_app", false)
+		if not cfg.get("front", false):
+			code_down = "no_frontend"
+		elif not (cfg.get("mvp", false) or nb_app):
+			code_down = "no_backend"
+		elif nb_app and tick >= int(code["closes"]):
+			code_down = "notebook_app"
+		if code_down != "":
+			built = false
+		var lang := "python" if nb_app else str(cfg.get("lang", "ts"))
+		var spec: Dictionary = Season.pieces()["languages"][lang]
+		work_x = float(spec["work_x"])
+		var type_share := 0.0 if spec["typed"] else float(code["type"])
+		bugs["logic_bugs"] = float(code["logic"])
+		bugs["type_bugs"] = type_share
+		bugs["unfamiliar"] = (float(spec["familiar"]) - 1.0) * (float(code["logic"]) + type_share)
+		bugs["boundary"] = 0.0 if lang == str(code["front"]) else float(code["boundary"])
+	var bug_share := 0.0
+	for k in bugs:
+		bug_share += bugs[k]
+
 	# Caches.
 	var hits := {"menus": 0.0, "tables": 0.0, "my_bookings": 0.0}
 	var stale_tables := 0.0
@@ -369,6 +411,8 @@ func _tick() -> Dictionary:
 	var app_load := 0.0
 	for k in parts:
 		app_load += parts[k]
+	# A faster language does the same requests with less of the server.
+	app_load *= work_x
 
 	# The worker drains queued sign-ups at its own pace.
 	var signup_db_rate := signups
@@ -517,8 +561,8 @@ func _tick() -> Dictionary:
 			fit_share = float(fit[str(cfg.get("detail", "none"))] if cfg.get("spec", false) else fit["none"])
 		else:
 			calls = 0.0
-		if not built:
-			calls = 0.0
+	if not built:
+		calls = 0.0
 	# Switched off by a hotfix (Episode 12): no searches, no calls of ours.
 	var ai_off: bool = cfg.get("ai_off", false)
 	if ai_off:
@@ -584,12 +628,35 @@ func _tick() -> Dictionary:
 	if ai_off:
 		ok["search"] = 0.0
 	ok["book"] *= 1.0 - gave_up
+	ok["search"] *= 1.0 - bug_share
+	ok["book"] *= 1.0 - bug_share
 	var signup_ok := app_ok if queue else app_ok * db_ok
 	var logout := (1.0 - 1.0 / count) if (cloud and count > 1 and sessions == "memory") else 0.0
 	var stale_fail: float = hits["tables"] * stale_tables * 0.5
 	var logout_fail := logout * 0.6
 	var abandon := clampf((maxf(page, book_page) - 2.0) / 4.0, 0.0, 1.0) * 0.6
 	var book_success: float = ok["book"] * (1.0 - stale_fail) * (1.0 - logout_fail) * (1.0 - abandon)
+
+	# The web app on a phone (Episode 4). Laid out for a desktop screen, the
+	# book button sits off a phone's screen for a share of diners, who give
+	# up. Laid out mobile first, it fits. Off unless the episode has
+	# `live.mobile`.
+	var mob: Dictionary = live.get("mobile", {})
+	var phone_fail := 0.0
+	if not mob.is_empty() and built and str(cfg.get("layout", "mobile")) == "desktop":
+		phone_fail = float(mob["phones"]) * float(mob["desktop_fail"])
+		book_success *= 1.0 - phone_fail
+
+	# The booking fee (Episode 4). Worked out in the app, it's whatever the
+	# phone sends, and anyone can change what their phone sends: from a
+	# scripted tick a share of bookings come in with the fee edited to
+	# nothing. Hiding the price box changes nothing, since the rule is still
+	# in the app. Worked out on the server, an edited fee is ignored. Off
+	# unless the episode has `live.tamper`.
+	var tp: Dictionary = live.get("tamper", {})
+	var tampered := 0.0
+	if not tp.is_empty() and cfg.get("fee", false) and str(cfg.get("price_where", "app")) == "app":
+		tampered = keyed(tp["share"], tick)
 
 	# Grounding (Episode 13). Without the real menus in front of it, a share
 	# of the model's answers about dishes and allergies are made up, and
@@ -750,20 +817,42 @@ func _tick() -> Dictionary:
 	model_bill += calls * (1.0 - rate_err) * TICK * price
 	if cfg.get("cdn", false):
 		cdn_bill += r["browse"] * TICK * float(pieces["cdn"]["per_request"])
-	revenue += booked_now * float(live.get("fee", 0.0))
+	var fee_rate := float(live.get("fee", 0.0))
+	if not tp.is_empty():
+		# No fee card, no fee: every booking is free.
+		var paying := (1.0 - tampered) if cfg.get("fee", false) else 0.0
+		underpaid += booked_now * (1.0 - paying)
+		fee_rate *= paying
+	revenue += booked_now * fee_rate
 	bad_charges += bad_rate * TICK
 	double_bookings += dbl_rate * TICK
 
 	# Blame, for the postmortem and the bubbles.
 	var tags := []
 	var lost := failed * TICK + (total * TICK * 0.2 if page > 3.0 else 0.0)
+	if built and bug_share > 0.0:
+		bug_tries += (r["search"] + r["book"]) * TICK
+		bug_hits += (r["search"] + r["book"]) * TICK * bug_share
+		for why in bugs:
+			if bugs[why] > 0.0:
+				tags.append(why)
+				_blame(why, (r["search"] + r["book"]) * TICK * bugs[why] * 10.0)
+	if phone_fail > 0.0:
+		tags.append("not_mobile")
+		_blame("not_mobile", r["book"] * TICK * phone_fail * 100.0)
+	if tampered > 0.0:
+		var why := "hidden_price" if cfg.get("price_hidden", false) else "price_in_app"
+		tags.append(why)
+		_blame(why, r["book"] * TICK * tampered * 1000.0)
 	if not built:
-		var why := "sold" if cfg.get("sold", false) else "nothing_built"
+		var why := code_down if code_down != "" else ("sold" if cfg.get("sold", false) else "nothing_built")
 		tags.append(why)
 		_blame(why, total * TICK * 1000.0)
 	elif not cloud and (_garage["down"] > 0 or down_now):
 		tags.append("garage_melt")
-	elif lost > 0.0:
+	# Requests lost to bugs in the code (Episode 3) are the bugs' findings,
+	# not the boxes'.
+	elif lost > 0.0 and (bug_share == 0.0 or lost - (r["search"] + r["book"]) * TICK * bug_share > 1.0):
 		if cloud and util.get("app", 0.0) > 0.9:
 			tags.append(_biggest(parts, {"assets": "no_cdn", "signup": "no_queue", "scrape": "scraper", "services": "service_chain"}, "app_overload"))
 		if cloud and util.get("db", 0.0) > 0.9:
@@ -857,6 +946,7 @@ func _tick() -> Dictionary:
 		"pay": deposits_on, "bad_charges": bad_charges, "double_bookings": double_bookings,
 		"stolen": stolen * 60.0, "peeked": peeked,
 		"made_up": made_up, "fooled": fooled, "unasked": unasked, "agent": agent_on,
+		"bug": bug_share if built else 0.0, "underpaid": underpaid,
 	}
 
 
@@ -1121,6 +1211,10 @@ func result() -> Dictionary:
 		"unasked": floorf(unasked + 0.5),
 		"fit_success": fit_done / fit_tries if fit_tries > 0.0 else 0.0,
 		"signup_success": signed / signup_tries if signup_tries > 0.0 else 0.0,
+		# Veronica's question (Episode 3): answered by something built to answer it.
+		"answered": 1.0 if (cfg.get("notebook", false) or cfg.get("investor", false)) else 0.0,
+		"bug_share": bug_hits / bug_tries if bug_tries > 0.0 else 0.0,
+		"underpaid": floorf(underpaid + 0.5),
 	}
 	var goals := []
 	var passed := true
@@ -1150,6 +1244,11 @@ func result() -> Dictionary:
 		for g in ep["goal"]:
 			if g["metric"] == "agent_success":
 				blame["no_agent"] = 1.0e9
+	for g in ep["goal"]:
+		if g["metric"] == "answered" and metrics["answered"] < 1.0:
+			blame["no_answer"] = 1.0e9
+		if g["metric"] == "underpaid" and not cfg.get("fee", false):
+			blame["no_fee"] = 1.0e9
 	# A kept hotfix can carry its own finding (the finale's live, unreviewed
 	# fix), named first because it caused what follows.
 	for h in live.get("hotfixes", []):
@@ -1169,7 +1268,7 @@ func result() -> Dictionary:
 		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
 		"stolen_bill": stolen_bill, "stolen_calls": stolen_calls, "peeked": peeked,
 		"made_up": made_up, "hijacked": hijacked, "fooled": fooled, "unasked": unasked, "cancelled": cancelled,
-		"booked": booked, "melts": melts, "signed": signed, "signup_tries": signup_tries, "tags": order, "monthly_extra": monthly_extra(),
+		"booked": booked, "melts": melts, "underpaid": underpaid, "bug_share": metrics["bug_share"], "signed": signed, "signup_tries": signup_tries, "tags": order, "monthly_extra": monthly_extra(),
 	}
 
 
