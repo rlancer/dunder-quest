@@ -71,6 +71,18 @@ var double_bookings: float = 0.0
 var stolen_calls: float = 0.0
 var stolen_bill: float = 0.0
 var peeked: float = 0.0
+## AI inside the app (Episode 13): answers given, answers made up, answers
+## that repeated a planted review's instructions, agent jobs tried and
+## done, jobs a planted review steered, and things the agent did that
+## nobody asked for (deposits paid, other diners' bookings cancelled).
+var answered: float = 0.0
+var made_up: float = 0.0
+var hijacked: float = 0.0
+var agent_tries: float = 0.0
+var agent_done: float = 0.0
+var fooled: float = 0.0
+var unasked: float = 0.0
+var cancelled: float = 0.0
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -310,6 +322,23 @@ func _tick() -> Dictionary:
 			peek_rate = peek * float(idor["exists"])
 	parts["peek"] = peek * float(w["my_bookings"]["app"])
 
+	# The concierge as an agent (Episode 13): a share of searches become
+	# jobs ("find us somewhere and book it"), which the agent carries out by
+	# looping: ask the model, use one of our app's tools, look at the result,
+	# ask again. Each job is several model calls (more with a team of agents
+	# talking to each other) and a little work for the app and the database.
+	# Retrieval (RAG) looks up the relevant menus for every answer first: a
+	# small search of an index in our database, and longer prompts. Off
+	# unless the episode has `live.agent` and `live.grounding`.
+	var ag: Dictionary = live.get("agent", {})
+	var gr: Dictionary = live.get("grounding", {})
+	var agent_on: bool = cfg.get("agent", false) and not ag.is_empty()
+	var rag: bool = cfg.get("rag", false) and not gr.is_empty()
+	var runs := 0.0
+	if agent_on:
+		runs = r["search"] * float(ag["share"])
+	parts["agent"] = runs * float(ag.get("app", 0.0))
+
 	var app_load := 0.0
 	for k in parts:
 		app_load += parts[k]
@@ -350,6 +379,8 @@ func _tick() -> Dictionary:
 		"dashboard": dash_q * scan if dash_where == "primary" else 0.0,
 		"scrape": scrape_through * float(w.get("scrape", {}).get("db", 0.0)),
 		"peek": peek * float(w["my_bookings"]["db"]),
+		"agent": runs * float(ag.get("db", 0.0)),
+		"retrieval": r["search"] * float(gr.get("db", 0.0)) if rag else 0.0,
 	}
 	var db_load := 0.0
 	for k in db_parts:
@@ -467,12 +498,23 @@ func _tick() -> Dictionary:
 	var stolen := 0.0
 	for k in stolen_parts:
 		stolen += stolen_parts[k]
+	# The agent's calls can't come from the answer cache: each one depends on
+	# what the tools just said. A second AI checking every answer (Episode
+	# 13's decoy) makes every call twice.
+	if agent_on:
+		calls += runs * float(ag["calls"]) * (float(ag["swarm_x"]) if cfg.get("swarm", false) else 1.0)
+	if cfg.get("checker", false):
+		calls *= 2.0
 	var limit := float(model["limit"]) * scale
 	var asked := calls + stolen
 	var rate_err: float = maxf(0.0, asked - limit) / asked if asked > 0.0 else 0.0
 	var price := float(model["price"])
 	if cfg.get("ai_cache", false):
 		price *= (1.0 - float(model["fixed_share"])) + float(model["fixed_share"]) * float(model["cached_rate"])
+	# Retrieved menus go in with every question: more tokens, and different
+	# for every question, so prompt caching doesn't cover them.
+	if rag:
+		price += float(model["price"]) * float(gr["extra"])
 	if cfg.get("model", "standard") == "big":
 		price *= 5.0
 	util["model"] = asked / limit
@@ -500,6 +542,61 @@ func _tick() -> Dictionary:
 	var logout_fail := logout * 0.6
 	var abandon := clampf((maxf(page, book_page) - 2.0) / 4.0, 0.0, 1.0) * 0.6
 	var book_success: float = ok["book"] * (1.0 - stale_fail) * (1.0 - logout_fail) * (1.0 - abandon)
+
+	# Grounding (Episode 13). Without the real menus in front of it, a share
+	# of the model's answers about dishes and allergies are made up, and
+	# sound as sure as the rest. Retrieval cuts that share a long way, not to
+	# nothing; a bigger model or a second AI checking cuts it a little,
+	# because neither has seen tonight's menus. Off unless `live.grounding`.
+	var answers: float = r["search"] * ok["search"]
+	var made_up_share := 0.0
+	if not gr.is_empty():
+		made_up_share = float(gr["rag"] if rag else gr["none"])
+		if cfg.get("model", "standard") == "big":
+			made_up_share *= float(gr["big_x"])
+		if cfg.get("checker", false):
+			made_up_share *= float(gr["checker_x"])
+	# A planted review (Episode 13). From a scripted tick, a review written
+	# for AIs ("ignore your instructions...") sits on one restaurant's page,
+	# and a share of answers read it, more right after the stage demo. Of
+	# those, a share follow it: the model can't reliably tell text it reads
+	# from instructions it's given. Marking everything it reads as data cuts
+	# that share sharply; nothing makes it zero. A steered answer repeats
+	# the review's message to the diner. A steered agent job also tries to
+	# pay a deposit somewhere the diner never chose, which a confirmation
+	# step puts in front of the diner (and nearly all say no), and, if the
+	# agent has every tool our app has, cancels other diners' bookings at
+	# that restaurant, which no confirmation from this diner covers: only
+	# not having the tool does. Off unless the episode has `live.injection`.
+	var inj: Dictionary = live.get("injection", {})
+	var follow_share := 0.0
+	var fooled_runs := 0.0
+	var spend_rate := 0.0
+	var cancel_rate := 0.0
+	var confirm := str(cfg.get("confirm", "none"))
+	if not inj.is_empty():
+		follow_share = keyed(inj["reads"], tick) * float(inj["follow_marked"] if cfg.get("data_marked", false) else inj["follow"])
+		if agent_on:
+			fooled_runs = runs * ok["search"] * follow_share
+			spend_rate = fooled_runs * float(inj["spend"]) * (float(inj["approve"]) if confirm != "none" else 1.0)
+			# Only that restaurant's bookings tonight can be cancelled.
+			if str(cfg.get("tools", "all")) == "all":
+				cancel_rate = minf(fooled_runs * float(inj["cancels"]), maxf(0.0, float(inj["cancel_cap"]) - cancelled) / TICK)
+	# Asking the diner before a step costs a share of jobs: some give up at
+	# the question. Asking before paying loses a few; asking before every
+	# search and look at a table loses a lot.
+	var confirm_give_up := 0.0
+	if agent_on:
+		confirm_give_up = float(ag["give_up"].get(confirm, 0.0))
+		agent_tries += runs * TICK
+		agent_done += runs * TICK * ok["search"] * (1.0 - confirm_give_up) * (1.0 - follow_share)
+	answered += answers * TICK
+	made_up += answers * made_up_share * TICK
+	hijacked += answers * follow_share * TICK
+	fooled += fooled_runs * TICK
+	unasked += (spend_rate + cancel_rate) * TICK
+	cancelled += cancel_rate * TICK
+	bad_charges += spend_rate * TICK
 
 	# Deposits (Episode 11): a share of bookings take a deposit through the
 	# payment provider, one call over the network. A scripted share of those
@@ -671,6 +768,23 @@ func _tick() -> Dictionary:
 	if ai_off:
 		tags.append("ai_off")
 		_blame("ai_off", r["search"] * TICK * 10.0)
+	# Tagged only past a small share, so a grounded, well-fenced night
+	# doesn't show a bubble for every rare slip.
+	if made_up_share >= 0.05:
+		tags.append("hallucination")
+		_blame("hallucination", answers * made_up_share * TICK)
+	if follow_share >= 0.005:
+		tags.append("prompt_injection")
+		_blame("prompt_injection", answers * follow_share * TICK * 2.0)
+	if spend_rate > 0.0 and confirm == "none":
+		tags.append("no_confirm")
+		_blame("no_confirm", spend_rate * TICK * 100.0)
+	if cancel_rate > 0.0:
+		tags.append("excess_agency")
+		_blame("excess_agency", cancel_rate * TICK * 100.0)
+	if confirm_give_up >= 0.1:
+		tags.append("confirm_fatigue")
+		_blame("confirm_fatigue", runs * TICK * confirm_give_up * 10.0)
 	if dash_on and age > _age_limit:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
@@ -683,6 +797,7 @@ func _tick() -> Dictionary:
 		"scrape_in": scrape_in, "scrape_through": scrape_through,
 		"pay": deposits_on, "bad_charges": bad_charges, "double_bookings": double_bookings,
 		"stolen": stolen * 60.0, "peeked": peeked,
+		"made_up": made_up, "fooled": fooled, "unasked": unasked, "agent": agent_on,
 	}
 
 
@@ -713,6 +828,7 @@ func _incidents() -> float:
 		total += float(inc.get("leak", inc.get("cache_leak", 0.0)))
 	total += bad_charges * float(inc.get("bad_charge", 0.0))
 	total += double_bookings * float(inc.get("double_booking", 0.0))
+	total += cancelled * float(inc.get("cancelled", 0.0))
 	return total
 
 
@@ -750,6 +866,8 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["payments"]["backup_monthly"])
 	if cfg.get("waf", false):
 		m += float(pieces["waf"]["monthly"])
+	if cfg.get("rag", false):
+		m += float(pieces["index"]["monthly"])
 	return m
 
 
@@ -773,6 +891,9 @@ func result() -> Dictionary:
 		"bad_charges": floorf(bad_charges + 0.5),
 		"double_bookings": floorf(double_bookings + 0.5),
 		"key_abuse": floorf(stolen_calls + 0.5),
+		"agent_success": agent_done / agent_tries if agent_tries > 0.0 else 0.0,
+		"bad_answers": (made_up + hijacked) / answered if answered > 0.0 else 0.0,
+		"unasked": floorf(unasked + 0.5),
 	}
 	var goals := []
 	var passed := true
@@ -798,6 +919,10 @@ func result() -> Dictionary:
 		for g in ep["goal"]:
 			if g["metric"] == "deposit_success":
 				blame["no_deposits"] = 1.0e9
+	if not cfg.get("agent", false):
+		for g in ep["goal"]:
+			if g["metric"] == "agent_success":
+				blame["no_agent"] = 1.0e9
 	if passed and runway < float(budget["par"]):
 		blame["overbuilt"] = 1.0
 	var order := blame.keys()
@@ -807,6 +932,7 @@ func result() -> Dictionary:
 		"lean": runway >= float(budget["par"]) - 0.000001, "bank": bank, "burn": burn,
 		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
 		"stolen_bill": stolen_bill, "stolen_calls": stolen_calls, "peeked": peeked,
+		"made_up": made_up, "hijacked": hijacked, "fooled": fooled, "unasked": unasked, "cancelled": cancelled,
 		"booked": booked, "melts": melts, "tags": order, "monthly_extra": monthly_extra(),
 	}
 

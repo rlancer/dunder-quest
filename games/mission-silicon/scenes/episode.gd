@@ -338,7 +338,7 @@ func _live() -> Dictionary:
 func _show_frame(f: Dictionary, sim: Sim) -> void:
 	var minutes := int(ep["live"]["clock"][0]) * 60 + int(ep["live"]["clock"][1]) + int(f["tick"])
 	var h := (minutes / 60) % 24
-	_top_right.text = "Fri %d:%02d%s" % [((h + 11) % 12) + 1, minutes % 60, "pm" if h >= 12 else "am"]
+	_top_right.text = "%s %d:%02d%s" % [ep["live"].get("day", "Fri"), ((h + 11) % 12) + 1, minutes % 60, "pm" if h >= 12 else "am"]
 	_top_right.add_theme_color_override("font_color", Palette.WHITE)
 	_top_left.text = "Bank %s" % Palette.money(f["money"])
 	var page: String = "down" if f["down"] else "%.1f s" % f["page"]
@@ -360,6 +360,13 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nAI bill  %s\nStrangers' calls  %s/min\nBookings read  %s" % [
 			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), Palette.money(sim.model_bill),
 			_thousands(roundi(f["stolen"])), _thousands(roundi(f["peeked"]))]
+	# AI inside the app: made-up answers, answers and jobs the planted
+	# review steered, and what the agent did unasked take the last three
+	# lines, to keep to six.
+	if ep["live"].has("injection"):
+		_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nMade-up answers  %s\nJobs fooled by review  %s\nDone without asking  %s" % [
+			_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), _thousands(roundi(f["made_up"])),
+			_thousands(roundi(f["fooled"])), _thousands(floori(float(f["unasked"]) + 0.5))]
 	if f.get("scrape_in", 0.0) > 0.0:
 		_meters.text += "\nHubbubBot  %d/s, %d let in" % [roundi(f["scrape_in"]), roundi(f["scrape_through"])]
 
@@ -448,6 +455,8 @@ func _postmortem(res: Dictionary) -> bool:
 		lines.append("Charged wrongly: %d   Booked twice: %d" % [roundi(m["bad_charges"]), roundi(m["double_bookings"])])
 	if ep["live"].has("leak"):
 		lines.append("Strangers' calls: %s   Bookings read: %s" % [_thousands(roundi(res["stolen_calls"])), _thousands(roundi(res["peeked"]))])
+	if ep["live"].has("injection"):
+		lines.append("Made up: %s  Fooled: %s  Unasked: %d" % [_thousands(roundi(res["made_up"])), _thousands(roundi(res["fooled"])), roundi(m["unasked"])])
 	lines.append("Runway: %.2f months (par %.2f)" % [res["runway"], res["par"]])
 	var y := 38.0
 	for line in lines:

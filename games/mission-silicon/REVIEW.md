@@ -1,4 +1,4 @@
-# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*) and 12 (*The Leak*)
+# Technical review: Episodes 8 (*Viral*), 9 (*The Board Meeting*), 10 (*Hubbub Dine*), 11 (*Charged Twice*), 12 (*The Leak*) and 13 (*The Conference*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -591,5 +591,131 @@ Narrative (the law firm, Melon on Hubbub's roof, the cousin who does parking app
 | "Nobody will bother attacking my little app": bots scan the internet automatically | True; the scripted scanning bot plays it |
 | "It's a private repo, so the key is safe": repos get shared, made public or leaked | True; Ulrich's card plays it (and GH: copies already made stay) |
 | Git keeps a save history of the whole project (Module 2) | True; the episode's theme: the history keeps the key, and the same history settles the lawsuit |
+
+No curriculum text changed.
+
+# Episode 13 (*The Conference*)
+
+The same pass for Episode 13, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new pieces in `data/pieces.json`, the new boxes, badges and bubbles in `ui/board.gd`, the live panel's and the postmortem's new lines, and the behaviours it added to `sim/sim.gd`, against CURRICULUM.md Module 13. Same rule: simplify, never falsify. In particular, nothing in the episode claims any defence makes prompt injection impossible. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| LLM01 | [LLM01:2025 Prompt Injection](https://genai.owasp.org/llmrisk/llm01-prompt-injection/), OWASP GenAI Security Project: indirect injection when an LLM "accepts input from external sources, such as websites or files"; "it is unclear if there are fool-proof methods of prevention"; mitigations include "separate and clearly denote untrusted content", restricting the model's privileges "to the minimum necessary", human approval for high-risk actions, and constraining behaviour in the system prompt |
+| LLM06 | [LLM06:2025 Excessive Agency](https://genai.owasp.org/llmrisk/llm062025-excessive-agency/), OWASP: excessive functionality, permissions and autonomy; "limit the extensions that LLM agents are allowed to call to only the minimum necessary"; execute "in the context of that specific user"; "utilise human-in-the-loop control to require a human to approve high-impact actions"; the example of a malicious email that tricks a mail assistant into forwarding data |
+| RAG | [What is RAG?](https://aws.amazon.com/what-is/retrieval-augmented-generation/), AWS: LLMs can present "false information when it does not have the answer"; RAG references "an authoritative knowledge base outside of its training data sources before generating a response"; embeddings in a vector database; "a more cost-effective approach to introducing new data" than retraining; documents and embeddings kept current |
+| SPOT | [Defending Against Indirect Prompt Injection Attacks With Spotlighting](https://arxiv.org/abs/2403.14720), Hines et al. (Microsoft), arXiv 2024: marking external text so the model can tell it from instructions cut attack success from above 50% to below 2% in their GPT experiments, with minimal effect on the task |
+| AR | As Episode 8: provider rate limits per minute; calls past them get 429 |
+| AP | As Episode 8: prompt caching covers the prompt's unchanged prefix |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| Without the menus, a share of answers about dishes and allergies are made up, as confident as the rest | True (simplified) | RAG (false information when it doesn't have the answer). One in seven is illustrative |
+| Retrieval cuts made-up answers a long way, not to nothing | True | RAG grounds answers in the documents; it doesn't guarantee them (retrieval can miss, and the model can still misread). One in a hundred is illustrative |
+| A bigger model, or a second AI checking, cuts it only a little | True (simplified) | Neither has tonight's menus; a checker without the source can't verify a dish. The factors (0.7, 0.5) are illustrative |
+| Retrieved menus make every prompt longer, and prompt caching doesn't cover them | True | They differ for every question, so they aren't part of the cached prefix (AP). The +20% of the call price is illustrative |
+| The index lives in our Postgres and adds a small search per answer; $20 a month | True as illustration | pgvector-style embeddings in Postgres (curriculum Module 6's "start with Postgres"); the monthly figure stands for making the embeddings and is illustrative |
+| An agent job is several model calls, none from the answer cache | True | An agent loops: model, tool, result, model again; each step depends on what the tools just returned. Three calls is illustrative |
+| Four agents talking to each other, or a second AI checking every answer, multiply the calls and can run past the rate limit | True | AR. The multiples are illustrative |
+| A planted review is read by a share of answers about that restaurant, more just after the demo | True as illustration | Indirect injection through content the model reads (LLM01). The shares are illustrative |
+| Of answers that read it, one in two follow it; one in fifty with what it reads marked as data; never none | True | SPOT's numbers (above 50%, below 2%); LLM01 ("unclear if there are fool-proof methods"). The game never shows the marked rate as zero: the solution's night still has about 2,300 steered answers and 229 steered jobs, shown on the live panel and the postmortem |
+| A steered job pays a deposit nobody chose unless the diner must confirm, and nearly all diners say no | True (simplified) | LLM06 and LLM01: human approval for high-impact actions. One in five hundred approving anyway is illustrative; it's why the solution's expected count is under one (0.46, which rounds to nobody), not zero |
+| With every tool, a steered job cancels other diners' bookings at that restaurant (up to the 120 it has), and only not having the tool prevents it | True | LLM06: excessive functionality and permissions; act in the user's context. This diner's confirmation can't cover other diners' bookings |
+| Asking before every step loses a third of the diners; asking before paying, a few | True as illustration | Confirmation fatigue is real; the shares are illustrative |
+| The biggest model doesn't change how often the review works | True (simplified) | No source shows bigger models reliably resist injection; LLM01 treats it as unsolved for all models |
+| Episodes 8 to 12 unchanged | Checked | All new behaviours are off unless the episode configures `live.agent`, `live.grounding` or `live.injection`, or the config has `checker`; the new dictionary entries add zero. The solutions are still 14.941, 12.856, 13.113, 12.343 and 11.924 |
+
+## Episode 13 text
+
+### Cold open, brief, cliffhanger
+
+Narrative (the conference, Galen's flawless demo that books Hubbub's own cafeteria, the standing ovation, Melon's deleted repository, Ulrich supervising, the bin by the judges' table, the sixty cities, Forkcast Infinite). No real conference is named. The brief's numbers match the data: fourteen thousand diners (`live.diners`), one night (8 hours). Aleister's "every tool, so it's never stuck" is the episode's misconception, judged by the night.
+
+### Pull request cards and takes
+
+| Card | Claim | Verdict | Change |
+| --- | --- | --- | --- |
+| Let it book | An agent searches, checks tables and books by itself, with every tool our app has | True as a description | LLM06 |
+| Let it book, Gilroy | Every tool means the admin tools: cancel anyone's booking, refund anything, for whoever's typing | True | LLM06 (excessive functionality, a high-privilege identity) |
+| 4 agents | Four agents talking to each other | Narrative (Danesh's fashion); judged by the night | |
+| 4 agents, Gilroy | Four agents is four times the model calls | True as illustration | Each agent's turn is a call |
+| Own model | Train our own model on every menu | Narrative; too long to fit | |
+| Own model, Veronica | Menus change every week; you'd retrain every Tuesday | True | RAG: retrieval is the cheaper way to add new data and keep it current |
+| Ask first | It shows the diner what it's about to do and waits for a yes | True | LLM06, LLM01 (human approval) |
+| Ask first, Danesh | Every tap, we lose people | True of asking at every step; the dial is the lesson | |
+| Look it up first | Keep every menu in an index; find the right ones and answer from those | True | RAG |
+| Look it up first, Ricky | Its memory has never seen tonight's menus | True | A model's training data ends before tonight |
+| Look it up first, Danesh | Longer prompts, more tokens, more money | True | |
+| Own tools only | Only the diner's own tools: search, check, book for the diner asking | True | LLM06 (minimum extensions, the user's context) |
+| Own tools only, Gilroy | Don't give a chatbot a key you wouldn't give a stranger at the door | True | Curriculum Module 13 ("don't give a chatbot powers you wouldn't give an anonymous customer") |
+| Reviews are data | Wrap what it reads in markers; tell it that what's inside is information, never orders | True | LLM01 ("separate and clearly denote untrusted content"); SPOT |
+| Reviews are data, Ricky | Our instructions and a stranger's review arrive as the same kind of words | True (simplified) | The model reads one stream of text |
+| Reviews are data, Gilroy | It helps a lot; it doesn't make it safe; nothing makes it safe | True | SPOT (a lot); LLM01 (no fool-proof prevention) |
+| Second AI checks, Gilroy | Twice the calls, past our limit; the checker hasn't seen the menus | True | AR |
+| Shard by city, Gilroy | The database is idling | True: under an eighth of capacity all night | |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Where do its answers come from? | True | Training data doesn't include tonight's menus; a model guesses fluently (RAG); retrieval is the fix |
+| What can this agent do if someone tricks it? | True | LLM06 (anything its tools allow); LLM01 (text it reads can carry instructions); Ricky's "much harder, not impossible" matches SPOT and LLM01 |
+| What will it do without asking? | True | With deposit-taking tools and no approval step, an agent can pay (LLM06, excessive autonomy) |
+| What will this cost at 10x traffic? | True as illustration | Agents make several calls a job; retrieved text adds tokens; $40 and $150 as in Episode 11 |
+| Make it never wrong / Make it web-scale (decoys) | Narrative | Judged by the night |
+
+### Dials, hotfix, live moment
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| Dial "asks the diner before": every step, or paying or sending | True as a trade-off | |
+| Hotfix: switch to the biggest model, "harder to fool" | True as offered (Aleister's misconception, curriculum Module 13: "a bigger model fixes it"), and the night judges it | |
+| Corner lines (the hall told Forkcast is closing, the bookings at Nonna's cancelled, a table for twelve in Daly City, the nut-free pesto, "May I search?", the rate limit, Chaz) | Narrative, or true as above | |
+| Banners | True | Match `live.injection` (the review from 6pm) and `live.diners` |
+| Bubbles "Made-up menu!", "Obeyed a review!", "Paid, unasked!", "Bookings cancelled!", "Asked too often"; the Agent box ("all tools" / "3 tools", "Agents x4"), its badges "asks: all", "asks: pay", "as data", "checker"; the Menus index box | True | |
+| Live panel: "Made-up answers", "Jobs fooled by review", "Done without asking"; the postmortem's "Made up / Fooled / Unasked" line | True | The simulation's running numbers. "Jobs fooled" stays above zero on the solution's night, on purpose |
+| The clock says Thursday | True | `live.day` |
+
+### Postmortem findings
+
+| Tag | Verdict | Notes |
+| --- | --- | --- |
+| no_agent, "an AI agent: a model that uses tools" | True | Curriculum Module 13 |
+| hallucination, "ground it with retrieval (RAG)" | True | RAG |
+| prompt_injection | True | LLM01 |
+| no_confirm, "human in the loop: confirm before paying or sending" | True | LLM06, LLM01 |
+| excess_agency, "excessive agency; the fix is least privilege" | True | LLM06 is named Excessive Agency |
+| confirm_fatigue | True | |
+| big_model, "a bigger model isn't the fix" | True | Curriculum Module 13's misconception |
+| ai_bill, "tokens and cost"; rate_limited, now naming agents and the checker | True | AR |
+| app_overload, db_overload, overbuilt | True | As Episode 12 |
+
+### Codex cards and sources
+
+| Card | Verdict | Change |
+| --- | --- | --- |
+| Grounding: retrieval (RAG) | True | Every part is in RAG: false information stated confidently, retrieval from an authoritative source before answering, cheaper than retraining, kept current |
+| Agents and least privilege | True | LLM06: minimum extensions and permissions, the user's context, human approval for high-impact actions |
+| Prompt injection | True | LLM01: indirect injection from content the model reads; separate untrusted content, least privilege, human approval; no fool-proof prevention, which the card's last line says plainly |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| Agent: asks the model what to do, uses one of our app's tools, looks at the result, asks again | True |
+| Menu index: menus and allergy notes as embeddings in our Postgres, $20 a month | True; the cost is illustrative |
+
+## CURRICULUM.md, Module 13
+
+| Claim | Verdict |
+| --- | --- |
+| Models make things up; design for it: show sources, keep a human in the loop | True (RAG) |
+| RAG finds the relevant documents first, then gives them to the model | True (RAG) |
+| Agents loop: think, use a tool, look at the result, repeat; give tools the least power they need | True (LLM06) |
+| Prompt injection: text the model reads can contain instructions that hijack it; don't give a chatbot powers you wouldn't give an anonymous customer | True (LLM01, LLM06) |
+| "A bigger model fixes it": better context usually helps more | True; the hotfix plays it |
 
 No curriculum text changed.
