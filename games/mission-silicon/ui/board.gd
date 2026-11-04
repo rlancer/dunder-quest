@@ -36,11 +36,14 @@ const BUBBLES := {
 	"ai_off": ["model", "AI search off"], "hallucination": ["model", "Made-up menu!"],
 	"prompt_injection": ["agent", "Obeyed a review!"], "no_confirm": ["pay", "Paid, unasked!"],
 	"excess_agency": ["db", "Bookings cancelled!"], "confirm_fatigue": ["agent", "Asked too often"],
+	"unreviewed": ["app", "Changed live, unreviewed!"],
 }
 const PIPELINE_NAMES := {"hourly": "hourly", "nightly": "nightly", "stream": "streamed"}
 
 var cfg: Dictionary = {}
 var start_cfg: Dictionary = {}
+## Per-episode box positions that differ from SPOTS.
+var spots: Dictionary = {}
 var live: bool = false
 var frame: Dictionary = {}
 var _boxes: Dictionary = {}
@@ -63,6 +66,15 @@ func set_frame(f: Dictionary, now: Dictionary) -> void:
 		cfg = now
 		_layout()
 	queue_redraw()
+
+
+## Where a box sits: SPOTS, unless the episode moves it (`spots` in its
+## data, as [x, y]). The finale, with HubbubBot back beside the agent,
+## moves the bot to the free top-left corner; every other episode is as it was.
+func _spot(id: String) -> Vector2:
+	if spots.has(id):
+		return Vector2(float(spots[id][0]), float(spots[id][1]))
+	return SPOTS[id]
 
 
 func box_rect(id: String) -> Rect2:
@@ -115,7 +127,9 @@ func _layout() -> void:
 		match id:
 			"phones":
 				label = "Diners"
-				sub = "phones"
+				# ForkNet is a sub-line, not a badge, so the diners' badges
+				# (key in app, calls AI) stay in the two rows above the agent.
+				sub = "ForkNet" if cfg.get("forknet", false) else "phones"
 			"cdn":
 				label = "CDN"
 				sub = "photos"
@@ -133,15 +147,21 @@ func _layout() -> void:
 				label = "Redis"
 				sub = "cache"
 			"db":
-				label = "Postgres x3" if cfg.get("shards", false) else "Postgres"
+				label = "Postgres"
 				sub = "indexed" if cfg.get("index", false) else "database"
 				if int(cfg.get("db_x", 1)) > 1:
 					sub = "%dx size" % int(cfg["db_x"])
+				if cfg.get("shards", false):
+					sub = "sharded"
 			"model":
-				label = "Model API"
+				# The biggest model is in the label: a second badge under the
+				# top row would run into the row below.
+				label = "Big model" if cfg.get("model", "standard") == "big" else "Model API"
 				sub = "per call"
 				if cfg.has("rotated"):
 					sub = "new key" if cfg["rotated"] else "old key"
+				if int(cfg.get("limit_x", 1)) > 1:
+					sub = "%dx limit" % int(cfg["limit_x"])
 			"queue":
 				label = "Queue"
 				sub = "+ worker"
@@ -204,16 +224,14 @@ func _layout() -> void:
 			badges.append("owner check")
 		if id == "phones" and str(cfg.get("key_where", "")) == "frontend":
 			badges.append("key in app")
-		if id == "phones" and cfg.get("forknet", false):
-			badges.append("ForkNet")
+		if id == "phones" and cfg.get("direct_ai", false):
+			badges.append("calls AI")
 		if id == "lb" and cfg.get("limiter", false):
 			badges.append("%d/min" % int(cfg.get("rate_limit", 0)))
 		if id == "model":
 			if cfg.get("ai_cache", false):
 				badges.append("cached")
-			if cfg.get("model", "standard") == "big":
-				badges.append("biggest")
-		var rect := Rect2(SPOTS[id], Vector2(W, H))
+		var rect := Rect2(_spot(id), Vector2(W, H))
 		_boxes[id] = {"rect": rect, "label": label, "sub": sub, "new": not before.has(id), "badges": badges}
 		var b := Button.new()
 		b.name = "Box_" + id
@@ -377,7 +395,8 @@ func _draw() -> void:
 		for badge in b["badges"]:
 			var bw := font.get_string_size(badge, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.BODY).x + 4
 			# The agent's badges stack under it, clear of the payments box's.
-			if id == "agent" and bx > r.position.x and bx + bw > r.end.x:
+			# Any box's badges wrap rather than run off the board's edge.
+			if bx > r.position.x and ((id in ["agent", "phones"] and bx + bw > r.end.x) or bx + bw > size.x - 2):
 				bx = r.position.x
 				by += 12.0
 			draw_rect(Rect2(Vector2(bx, by + 1), Vector2(bw, 11)), Palette.GREEN)

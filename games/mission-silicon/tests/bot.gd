@@ -157,6 +157,9 @@ func _play(ep: Dictionary) -> void:
 		await _wait_phase("title")
 		await _frames(6)
 		await _shot("title_card")
+		await _wait_phase("goal")
+		await _frames(10)
+		await _shot("goal")
 	if not await _wait_phase("planning"):
 		return
 	await _frames(2)
@@ -259,6 +262,9 @@ func _play(ep: Dictionary) -> void:
 		await _wait_phase("lessons")
 		await _frames(6)
 		await _shot("lesson")
+		await _wait_phase("cliffhanger")
+		await _frames(30)
+		await _shot("cliffhanger")
 	if not await _wait_phase("done"):
 		return
 	print("ep %d done in %d takes" % [ep["id"], ep_node.takes])

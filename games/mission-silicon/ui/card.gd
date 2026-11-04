@@ -54,9 +54,13 @@ func goal_card(goals: Array, budget: Dictionary) -> void:
 	var head := UI.place(UI.title("TONIGHT", 20, Palette.GREEN_DARK), Rect2(40, 34, 400, 28))
 	_content.add_child(head)
 	var y := 72.0
-	for g in goals:
-		_content.add_child(UI.place(UI.label("• " + g["label"], Palette.HEAD, Palette.SLATE), Rect2(48, y, 400, 18)))
-		y += 20.0
+	# More than seven goals (the finale's eleven) go in two columns.
+	var rows := goals.size() if goals.size() <= 7 else ceili(goals.size() / 2.0)
+	for i in goals.size():
+		var col := 0 if i < rows else 1
+		var at := Vector2(24 + col * 222, 72.0 + (i % rows) * 20.0) if rows < goals.size() else Vector2(48, 72.0 + i * 20.0)
+		_content.add_child(UI.place(UI.label("• " + goals[i]["label"], Palette.HEAD, Palette.SLATE), Rect2(at, Vector2(220 if rows < goals.size() else 400, 18))))
+	y += rows * 20.0
 	var money := "Runway: %s in the bank, %s a month. Time to build: %s %s." % [
 		Palette.money(budget["bank"]), Palette.money(budget["burn"]), str(budget["time"]),
 		"hours" if budget.get("time_unit", "h") == "h" else budget["time_unit"]]

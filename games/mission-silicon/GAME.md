@@ -1,6 +1,6 @@
 # Game design: Mission Silicon
 
-The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9, 10, 11, 12 and 13 after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
+The design doc for the fourth game, written from [CURRICULUM.md](CURRICULUM.md) (what it teaches) and [SHOW.md](SHOW.md) (how the homage carries it). It settles the core loop, the simulation, the episode data, the phone screen and the checks, then walks Episode 8 (*Viral*) through end to end on paper, and Episodes 9 to 13 and the Finale (14) after it. The numbers here are first-pass values for the prototype to tune; the shapes (what makes what slower, costlier or wrong) are meant to be final.
 
 ## The loop in one paragraph
 
@@ -108,6 +108,10 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Grounding** (built, Episode 13) | The AI concierge, the menu index | Without retrieval over the real menus, a share of answers about dishes and allergies are made up (one in seven), as confident as the rest; retrieval cuts that to about one in a hundred, never to none, for longer prompts (uncached) and a small search of the index. A bigger model or a second AI checking cuts it only a little, since neither has seen the menus | `hallucination` |
 | **Agents and tools** (built, Episode 13) | The agent | A share of searches become jobs the agent carries out in a loop, several model calls each, none from the answer cache (more with agents talking to each other, or a second AI checking every answer, which can run past the provider's rate limit). Asking the diner before a step loses a share of jobs: a few before paying, a third before every step | `confirm_fatigue`, `rate_limited` |
 | **Prompt injection** (built, Episode 13) | Text the model reads | From a scripted tick a planted review sits on one restaurant's page; a share of answers read it, and of those, one in two follow it, or one in fifty with what it reads marked as data (never none). A steered answer repeats the review's message; a steered job pays a deposit nobody chose unless the diner has to confirm (nearly all say no), and with every tool our app has it also cancels other diners' bookings at that restaurant, which only not having the tool prevents | `prompt_injection`, `no_confirm`, `excess_agency` |
+| **A higher rate limit** (built, the Finale) | The model provider | A card can multiply the provider's per-minute cap (`limit_x`): providers raise limits as an account grows, or on request | `rate_limited` (when it's missing) |
+| **Phones call the model** (built, the Finale) | Searches | With `direct_ai`, searches skip our app (no app work for them), and the key has to be in the app, so Episode 12's scanning bot finds it | `key_in_app` |
+| **A live, unreviewed fix** (built, the Finale) | Any part of the board | A hotfix can carry its own postmortem tag, named first when it's kept (`tag`); the finale's deletes the hold on the table and the ownership check. A hotfix's needs can also be boxes already on the board, not only cards | `unreviewed` |
+| **The season in one night** (the Finale) | Everything | Every behaviour above on at once, each configured by its own keys of `live`, as its episode had it. No new code was needed to combine them | |
 
 ### Money
 
@@ -805,6 +809,146 @@ Cliffhanger: Friday morning, the kitchen. Veronica: the stream was the most watc
 
 Season 1's finale: TechCrunch Disrupt, where Hooli presents Nucleus first, a copy of Pied Piper's product, to a standing ovation, and the team, beaten, stays up all night in the hotel and comes back with something better on stage the next day. Here: the conference's main stage, Galen's Hubbub Concierge going first and flawlessly (booking Hubbub's own cafeteria), the team's overnight build in eight hours, Ulrich supervising the all-nighter the way Erlich claims credit for everyone else's work, Ricky scouting the bin before the big moment. The planted review is ours, built on the show's running joke that the rival plays dirty and the demo is where it all goes wrong in public. If a fan wouldn't recognise Hubbub demoing first, the standing ovation and the all-nighter, it's drifted; they would.
 
+## Episode 14 on paper: *Finale*
+
+The capstone: every module at once, and the curriculum's "every box earns its place". Borrowed set piece: the series finale, where the founder's AI turns out too powerful to release, the team decides to sabotage their own launch, and a documentary picks the cast up years later. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 13 ended with Ravello wanting Forkcast in sixty cities by spring, and Aleister's Forkcast Infinite, "every box I know, all at once". The starting board is Episode 13's solution with its hotfix cut: everything from Episodes 8 to 12, plus the agent with the diner's own tools, asking before it pays or sends, answering from the real menus, with what it reads marked as data. Two things change (`"changed": ["scraper", "pipeline_fixed"]`): HubbubBot is back on the board (Gerard says why in the cold open: Hubbub Dine has "reimagined" itself into the same sixty cities), and `pipeline_fixed`, which records the night Episode 9's copy job was rerun, starts false again, because tonight's copy job breaks afresh.
+
+The board is full, so the finale moves one box through its data (`"spots": {"bot": [4, 36]}`): HubbubBot goes to the free top-left corner, since the agent now has its old place. Every other episode's layout is unchanged.
+
+The night replays the season. Every behaviour Episodes 8 to 13 built is switched on at once, each as its own episode configured it: the chef's post and its sign-up burst (8), the board's dashboard and the 8pm copy job (9), HubbubBot and the service chain (10), deposits, timeouts and the race (11), the leaked key, the scanning bot and the counting bot (12), the agent, grounding and the planted review (13). They combine without new code because each reads its own keys of `live`; three small additions let the finale say what it needs (below).
+
+### Cold open
+
+Wednesday, 9pm, the house's living room (a new backdrop: a sagging sofa, laptops and pizza boxes, a big TV glowing with an absurd diagram of hundreds of boxes). Walter has come to the house for the first time. Aleister presents Forkcast Infinite on the TV: Kubernetes, sixty shards, a swarm of agents, "me, but more", and the best part, it will run Forkcast itself, fixing things live, no pull requests. Danesh hates that it's gorgeous; Gilroy: every bad idea since the garage, in one diagram, very sure of all of them; Ricky: it's too good at this, nobody can check what it does at that speed. Gerard: HubbubBot is back. Walter says nothing for a long time (Gerard timed the last one: eleven minutes). Ricky is going to be sick.
+
+Title card: **FINALE**.
+
+### Brief
+
+Veronica: Ravello funds sixty cities on one condition: Friday night all sixty go live at once, and Walter watches. Walter: spring was too far away; he prefers days. Veronica: everything that went wrong this season will try again on a bigger night, and nothing we fixed is allowed to break. Aleister: Forkcast Infinite needs 114.5 hours; we have sixteen.
+
+- **Budget**: $880k in the bank, $80k a month, so 10.8 months of runway on the board as it stands. 16 hours to build.
+- **Goal**, eleven conditions, the season's together: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, the board's numbers under an hour old, nobody charged wrongly, no table booked twice, nobody else on our key, nobody sees anyone else's bookings, forty-nine answers in fifty true, nothing done without asking.
+
+### Aleister's pull request: "Forkcast Infinite"
+
+The season's tempting cards, back as one plan, with two new ones.
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Infinite servers**: microservices on a cluster that grows by itself, twelve servers to start | Aleister | 10h | +$5,200 | Episode 10's service chain (a booking crosses eight calls; about one in thirteen fails) and Episode 8's connection limit (twelve servers want 120 connections; Postgres allows 100) | Danesh for (nobody thinks about servers again); Gilroy against (eight calls, any can fail; 120 connections, we have 100) |
+| **Sixty shards**: one database per city | Aleister | 12h | +$800 | Aleister's running gag, finally almost plausible. The database peaks at a little over half its capacity; sixty cities is more diners, not more kinds of data | Aleister (a family recipe); Gilroy (the database hasn't been the problem since the index) |
+| **Live everything**: stream every booking into the analytics database | Aleister | 10h | +$3,000 | Episode 9's decoy: the board asked for an hour old | Danesh for; Veronica: $3,000 a month for numbers nobody reads faster |
+| **Biggest model** | Aleister | 1h | 5× a call | Episodes 8 and 13: the menus already make the answers right | Ricky (fewer mistakes?); Veronica (five times the price, for what?) |
+| **Agent swarm**: four agents per booking | Danesh | 3h | — | Episode 13: four times the agent's model calls, past even a raised limit | Danesh (Hubbub Concierge has six); Gilroy (our limit hasn't heard of the swarm) |
+| **ForkNet, everywhere** | Ricky | 6h | — | Episode 11: copies on phones disagree about the last table, phones in tunnels lose bookings, at sixty cities' scale | Ricky (it never got a fair chance); Gilroy (it got one) |
+| **Phones call the AI**: every phone asks the model directly, key in the app | Aleister | 2h | — | New, and genuinely tempting: searches are half the app servers' work, so it needs fewer servers. But the key ships in the app, and Episode 12's scanning bot reads it out at 5:30 | Danesh for (fewer servers); Gilroy (we did this; it cost $4,000 and a lawsuit) |
+| **Own model** | Aleister | 30h | — | Too big; retrieval already does it | Ricky; Veronica |
+| **Every region**: three copies of Forkcast around the world | Aleister | 40h | — | The capstone diagram's grandest box. Too big for the time, and nothing tonight needs it | Aleister (Virginia); Gerard (two offices that disagreed about lunch) |
+| **Bigger AI limit**: Ulrich calls the model provider and has the limit tripled | Ulrich (right) | 0.5h | — | Needed: at the peak, sixty cities ask the model about twice as often a minute as our limit allows. Providers raise limits as accounts grow, or on request | Ulrich: when he hit a ceiling at Aviato, he called the man who owned the ceiling; Danesh: a bigger limit is a bigger bill if strangers ever get the key again (true) |
+| **More servers** (from Walter's question) | Aleister | 0.5h | +$150 a server | Needed, with a bad default: more of the same small servers, set to ten "to be safe". Seven carry the peak | Ricky (almost disappointing); Veronica (ten is what a nervous person picks) |
+| **Backup provider** (from a decoy) | Aleister | 2h | +$100 | Episode 11 again: the second provider charges diners the first already charged | Aleister; Gilroy |
+
+Ulrich is right this time, his fourth in seven, which leaves the built episodes a little above a third, with Episodes 1 to 7 to come (a third of fourteen is four or five). It's a real judgement: his line is pure Ulrich (he knows a guy), Danesh's objection is true, the episode's whole message is cutting things, and only "What will this cost at 10x traffic?" says the limit binds. He's also right in a way that suits the finale: the simplest fix for the model is a phone call, not a box.
+
+**Walter's question matters.** Aleister's only answer to more traffic is Infinite servers (Kubernetes). Plain servers arrive only when the player asks "What's the simplest version that works?": without asking it, no plan passes.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **What's the simplest version that works?** (Walter's) | Walter, after a silence: which of these boxes has a diner asked for? Gerard: every box on our board is there because something went wrong without it; none of Aleister's are. Ricky: the simplest version is the one we've got; sixty cities is just more diners | Adds **More servers** (0.5h, default ten) |
+| **Where's the bottleneck?** | Aleister: last Friday each small server was at a third, the database at an eighth. Ricky: one small server carries about ten thousand diners flat out; Friday peaks at sixty-four thousand with HubbubBot knocking: six is flat out, seven has a little room. Gilroy: the database will sit at a little over half | Just facts: seven servers |
+| **What will this cost at 10x traffic?** | Veronica: at the peak we'd ask the model about twice as often as our limit; every call past it fails. Forkcast Infinite adds about $9,000 a month before anyone books a table | Just facts: points at Ulrich's card |
+| **How do we undo a bad change?** (checklist 8) | Ricky: every change is a pull request someone reads before we merge, and a bad one is rolled back. Gilroy: Aleister fixing things live skips all of that. Aleister once fixed a slow test by deleting the test | Just facts: points at the hotfix |
+| **Where are the secrets?** (checklist 7) | Gilroy: the key is on our server only, and it's the new one. Danesh: phones calling the AI would put it back in the app | Just facts: points at "Phones call the AI" |
+| **Make it never fail.** (decoy) | Aleister, delighted | Adds **Backup provider** (2h) |
+| **Make it web-scale.** (decoy) | Aleister: already in! Sixty shards! You finally said it with me | Nothing to add: the running gag's payoff |
+
+### The dials
+
+- **App servers** (with "More servers"): five to ten; Aleister's default ten.
+
+### The live moment: Friday, 5pm to 11pm, the season in one night
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 5:00pm | 0 | Sixty cities go live: 12,000 diners. Someone tries the old key from Melon's history (Episode 12); it's dead |
+| 5:30pm | 30 | A scanning bot reads every app. If phones call the AI, it reads our key out of the app |
+| 6:00pm | 60 | **HubbubBot is back** (Episode 10), sixty machines at 1,500 a minute; the rate limit lets each through a hundred a minute |
+| 6:30pm | 90 | **A review in Austin is talking to AIs** (Episode 13): a share of answers read it; marked as data, one in fifty of those follow it |
+| 7:00pm | 120 | 36,000 diners. **The payment provider is slow** (Episode 11), one call in seventeen timing out for fifty minutes; deposits retry with their IDs, tables are held in a transaction |
+| 8:00pm | 180 | **The chef posts again, to sixty cities** (Episode 8): 64,000 diners by 8:15, and thirty thousand sign-ups in twenty minutes, into the queue. **The copy job breaks** (Episode 9, on the é in San José); with alerts, the hotfix reruns it |
+| 8:05pm | 185 | **Hotfix: "Let me fix it myself, live, no pull request."** Aleister has found the two slowest steps in booking and will delete them. They are holding the table and checking who owns a booking. It's the too-powerful AI of the show's finale, and Son of Anton's habit of fixing bugs by deleting code |
+| 8:20pm | 200 | **Someone counts through booking numbers** (Episode 12) |
+| 10:00 to 11pm | 300 to 360 | Easing off to 10,000. End |
+
+The solution's night: seven small app servers peak at nine tenths of their capacity at 8:15, the database at a little over half, the analytics database at a quarter, the model provider at two thirds of its tripled limit. HubbubBot is turned away at the door, the review still steers some answers (reviews as data cut it, never to none) but no deposits or cancellations, the slow provider's repeats are recognised, nobody is charged twice or seated twice, the old key and the counting bot get nothing. The AI bill is $23k for a night across sixty cities, against $52k in booking fees.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | Four servers can't carry sixty cities and the model's limit turns searches away: down for 92 minutes, two in five searches fail, and nobody watches the copy job. Fails, 10.80 |
+| Aleister's PR as proposed | 114.5 hours: can't merge |
+| Minus the big cards (the bot's take one: biggest model, agent swarm, ForkNet, phones call the AI, Ulrich's limit) | Fits, and fails: ForkNet seats tables several times over, the key ships in the app and the bot reads it out, and still no more servers. 5.15 months |
+| Infinite servers kept | One booking in thirteen fails between services and twelve servers run out of connections: fails, 10.17 |
+| Phones call the AI | Fewer servers needed, and 247,000 strangers' calls on the key from 5:30: fails |
+| Agent swarm | Past even the tripled limit: 77% of searches answered, fails |
+| ForkNet | 1,800 tables booked twice: fails, 7.52 |
+| Backup provider | 245 diners charged by both providers: fails |
+| Ulrich's limit cut | Rate limited from the rush: 68% of searches answered, fails |
+| More servers cut, or five or six servers | Maxed out at the spike: fails |
+| The hotfix rerun cut | The board's numbers stop at seven: fails |
+| The autofix hotfix kept | 256 tables booked twice and 76,800 bookings read after Aleister deletes the hold and the ownership check: fails, 9.66 |
+| Sixty shards, Live everything, Biggest model, or eight to ten servers | Passes, at 10.75, 10.47, 9.75 or 10.84 to 10.80: misses Lean |
+| The solution: Ulrich's limit, More servers at seven, rerun kept, autofix cut | 10.857 months of runway; par 10.85 |
+
+**Every box earns its place.** The capstone check in `cases.gd` takes each box the season put on the board away from the solution's board, one at a time, and replays the night. Every one fails it, and each failure is a finding Gerard can read out:
+
+| Taken away | What the replay does |
+| --- | --- |
+| CDN | The app drowns in photos: down 261 minutes |
+| Redis cache | Menus swamp the database, and sessions fall back to server memory |
+| Sessions in Redis | Logged out on seven servers: 48% of bookings |
+| Queue | The 8pm sign-ups swamp the app |
+| Index | Full table scans: 3% of bookings |
+| AI answer cache | Past the model's limit even tripled: 83% of searches |
+| Analytics database | The board's tiles land on the bookings database: 9% of bookings |
+| Error alerts | The copy job stays broken: numbers 239 minutes old |
+| Rate limit | HubbubBot swamps the app and the database |
+| Deposit IDs | 245 diners charged twice |
+| Hold the table | 362 tables booked twice |
+| Rotated key | Strangers on the old key all night |
+| Key on the server | The scanning bot reads it from the app |
+| Ownership check | 76,800 bookings read |
+| Menu lookup (RAG) | 15% of answers made up |
+| Reviews are data | The review steers jobs: 11 deposits nobody asked for |
+| Own tools only | All 120 bookings at the restaurant cancelled |
+| Ask first | 220 deposits nobody asked for |
+
+So the simplest version that works is the whole capstone diagram the season built, plus three more of the same servers and a phone call: every box on the board earns its place against the night, and none of Aleister's new ones do.
+
+### Postmortem
+
+New finding: Aleister fixed it live, and deleted the safety checks ("unreviewed changes in production"; a hotfix can now carry its own tag). Every earlier finding the replay can raise is listed again in the finale's data, in its words, so whichever box is missing, Gerard can say so. The solution's postmortem has no findings. The spreadsheet keeps the eleven goals, the bill and the runway (the other lines don't fit beside eleven goals).
+
+Marks: Live, Lean (10.85 months or better), Ulrich (keep his bigger limit).
+
+### Lesson cards and the end of the season
+
+Two codex cards: **Every box earns its place** (don't build a part until you need it; a part built early costs the building, delays what's needed now and adds complexity you carry; ship the simplest version that works) and **Review what your AI ships** (AI-written code can look right and be wrong; have it propose each change on its own branch as a pull request, a person reviews and tests it before it's merged, and it doesn't change the live app by itself).
+
+The cliffhanger slot is the season's end: a documentary flash-forward, "Ten years later", in an interview chair (a new backdrop), each speaker with a lower third (`as` on a dialogue line). Gerard had the graph of the night framed: the most beautiful nothing. Veronica: Forkcast never became the biggest anything; it's profitable in sixty-two cities, which Walter says is rarer. Walter, after a silence: yes. Gilroy and Danesh run a security firm as equal partners (the business cards are measured). Galen leads a retreat where leaders sit with their failures, booked through Forkcast. Melon is CEO of Hubbub; nobody's said what to look at yet. Ulrich, by phone from a boat, designed it coming. Ricky teaches founders who can't code, says "every box earns its place" twice a lecture, and hasn't been sick in nine years. Aleister Jr., still in the garage, only suggests things now, and people read them first. Then: "I've written a plan." Cut to black: **End of season.**
+
+### Checking it against the show
+
+The series finale: Pied Piper's network, improved by its own AI, becomes too powerful to release, and the team chooses to make their launch fail rather than let it out; a documentary ten years later finds them scattered into new lives, the founder teaching, the rival engineers running a security business together, the loud owner unreachable abroad, the hapless friend running something enormous. Here: Forkcast Infinite and Aleister's offer to run Forkcast itself are the AI too powerful to release, and the player's cuts are the team sabotaging the launch of it, choosing the boring version instead; the flash-forward copies the documentary format and its fates, with original lines. Walter's silence and odd fixation on days are Peter Gregory's. Son of Anton deleting code to fix bugs is the autofix hotfix. If a fan wouldn't recognise the documentary and the deliberate failure, it's drifted; they would.
+
 ## How the loop covers the season
 
 Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
@@ -839,7 +983,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 and 14 in detail (walk each like Episodes 8 to 13 first).
+- Episodes 1 to 7 in detail (walk each like Episodes 8 to 14 first).
 - Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.

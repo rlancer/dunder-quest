@@ -154,6 +154,22 @@ SCENES = {
         "lighting truss overhead; rows of cheap folding chairs at the very bottom, a few lanyards left on "
         "them. Bright, noisy, hurried and a little cheap, nothing like a calm corporate keynote. " + STYLE
     ),
+    "livingroom": ROOM + (
+        "the living room of a shabby old Victorian house in San Francisco's Mission District that is used as a "
+        "startup incubator, late at night: a sagging brown leather sofa and mismatched armchairs facing a big "
+        "wall-mounted TV that shows an enormous, absurdly complicated diagram of hundreds of tiny boxes and "
+        "arrows glowing green, with no readable words; a coffee table buried in laptops, energy drink cans, pizza "
+        "boxes and a tangle of cables; a tall bay window with the dark street and one streetlight outside; a "
+        "worn rug, a fireplace with a mantel of odd trophies, a whiteboard leaning on the wall covered in boxes "
+        "and arrows. Dim warm lamplight against the cold green glow of the screen. " + STYLE
+    ),
+    "interview": ROOM + (
+        "a documentary interview set, years later, in a calm, tidy, sunlit room: a single empty modern armchair "
+        "in the centre angled slightly toward the viewer, a softbox light on a stand to one side and a small "
+        "camera on a tripod at the edge, a tall leafy plant, a low shelf with a few books and one framed photo "
+        "of a shabby Victorian house, a softly blurred window with afternoon light behind. Quiet, warm, "
+        "reflective, the look of a documentary where people look back on a company. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "
