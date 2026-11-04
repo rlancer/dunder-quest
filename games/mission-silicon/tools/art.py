@@ -70,6 +70,13 @@ CAST = {
     "aleister": "Not a person: an old chunky beige computer monitor seen from the front, its black screen "
                 "showing a simple bright green pixel face (two square eyes and a wide, eager smile), a "
                 "short stand at the bottom. Looks eager and overconfident.",
+    # The adult CEO: silver hair, a tan, a salesman's grin, a suit.
+    "mack": "A tanned, confident man in his late fifties with neat, short silver hair, a firm jaw and a broad, "
+            "polished salesman's grin; a navy suit jacket over a white shirt with a dark blue tie.",
+    # The quiet investor: pale, still, unreadable.
+    "walter": "A thin, very still man in his sixties with short, neat white hair, pale skin, wire-rimmed "
+              "glasses and a blank, unreadable expression, mouth a straight line; a plain charcoal sweater "
+              "over a grey collared shirt.",
 }
 
 STYLE = (
@@ -97,6 +104,13 @@ SCENES = {
         "morning sun and colourful Victorian houses across the street, a big wooden table with laptops, "
         "cereal boxes, coffee mugs and a stack of pizza boxes, a coffee maker, a fridge covered in sticky "
         "notes with no readable writing, worn wooden floorboards. Warm, bright and calm. " + STYLE
+    ),
+    "boardroom": ROOM + (
+        "a sleek venture capital boardroom on a high floor in San Francisco's SoMa district: a long glossy "
+        "dark wood table with leather chairs and glasses of water, floor-to-ceiling windows with the city and "
+        "the Bay Bridge in grey morning light, and a huge wall-mounted screen showing a dashboard of "
+        "colourful charts and tiles with no readable numbers or words, a tall potted plant. Cool, expensive "
+        "and quiet. " + STYLE
     ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "

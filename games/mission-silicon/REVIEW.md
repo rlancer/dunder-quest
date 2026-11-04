@@ -1,4 +1,4 @@
-# Technical review: Episode 8 (*Viral*)
+# Technical review: Episodes 8 (*Viral*) and 9 (*The Board Meeting*)
 
 Handoff step 5. Every technical claim a player can see in Episode 8 (`data/season.json`, `data/pieces.json`, the board's bubbles and the screens' fixed text), plus the CURRICULUM.md modules it covers (7, Caching; 9, Scaling), checked against the curriculum's rule: **simplify, never falsify**. The simulation's numbers are illustrative; only their shapes have to be real. Reviewed November 2026.
 
@@ -138,3 +138,115 @@ No number changed, so the results table in GAME.md stands (solution 14.94 months
 
 - GAME.md says "the codex says once" that numbers are illustrative; the game doesn't yet show that line anywhere. Worth adding when the codex screen exists.
 - GAME.md's decoy row says the biggest model has "twice the wait"; the simulation doesn't model model latency. Design-doc only.
+
+---
+
+# Episode 9 (*The Board Meeting*)
+
+The same pass for Episode 9, done before it merged: every technical claim a player can see in its entry in `data/season.json`, the new pieces in `data/pieces.json`, the new bubbles in `ui/board.gd`, and the behaviours it added to `sim/sim.gd`, against CURRICULUM.md Modules 6 (the OLAP side) and 8. Same rule: simplify, never falsify. Reviewed November 2026.
+
+## Sources
+
+| Key | Source |
+| --- | --- |
+| OLAP | [What's the difference between OLAP and OLTP?](https://aws.amazon.com/compare/the-difference-between-olap-and-oltp/), AWS: OLTP stores and updates transactional data in high volumes, in milliseconds; OLAP is for complex analysis and reporting; OLAP data lives in a data warehouse or lake, updated by periodically processing data in large batches |
+| IBM | [OLAP vs. OLTP](https://www.ibm.com/think/topics/olap-vs-oltp), IBM: OLTP is many simple transactions; OLAP is complex analysis, typically from a data warehouse that OLTP systems feed |
+| COL | [Columnar storage](https://docs.aws.amazon.com/redshift/latest/dg/c_columnar_storage_disk_mem_mgmnt.html), Amazon Redshift docs: row storage is optimal for OLTP; warehouse queries read a few columns of very many rows, so a column store reads a fraction of the data (5 of 100 columns is about 5%), less again with per-column compression |
+| RR | [Read replicas](https://aws.amazon.com/rds/features/read-replicas/), Amazon RDS: route read queries to a replica to reduce load on the source; replicas are updated by asynchronous replication on every change |
+| SRE | [Monitoring distributed systems](https://sre.google/sre-book/monitoring-distributed-systems/), Google SRE book: monitoring and alerting let a system tell you when it's broken; an alert is a notification meant for a human; error rate is one of the golden signals |
+
+## The simulation's new shapes
+
+| Shape | Verdict | Notes |
+| --- | --- | --- |
+| Dashboard load = screens × tiles / refresh, each a scan of every stored row | True | A dashboard runs each tile's query at each refresh, per viewer unless results are shared. Result caches would cut this; the card says each screen asks again, and the model matches the system it describes |
+| On the main database, the scans take capacity from bookings | True | The curriculum's Module 6 example; OLTP and OLAP compete for the same CPU and disk, which is why they're kept apart (IBM, OLAP) |
+| A booking waits the database's full latency (new `book_page`) | True | A booking writes; no cache stands in front of a write. Applied as the worse of page and booking time, so it can only make Episode 8's failing plans fail harder; Episode 8's solution is unchanged (14.941) |
+| Read replica: the primary's capacity, takes the dashboard, leaves bookings alone | True | RR. Replica lag isn't modelled; the replica fails here on throughput, which is true at this load |
+| The warehouse does a fortieth of a row store's work per tile | True as illustration | COL: 5 of 100 columns is about 5% of the data, before compression; 2.5% is within that range |
+| Vertical scaling: eight times the capacity for eight times the price | True as illustration | Cloud database sizes roughly double CPU and price per step; $400 to $3,200 is three steps |
+| Freshness = minutes since the last good copy: hourly, nightly at 3am, or streamed | True | OLAP (periodic batches). The copy's own read load on the primary (an hour's new rows) is small and not modelled |
+| A failed copy job stays failed until fixed and rerun | True | A batch job that breaks on bad input fails every run until the input or the job is fixed |
+| The fix is only offered with alerts | True (simplified) | SRE: alerting is how a system tells a human it's broken. Someone might notice anyway; the game simplifies to "nobody did in time", and the finding claims only that nobody fixed it |
+
+## Episode 9 text
+
+### Cold open, brief, cliffhanger
+
+Narrative (the vote, Mack, the box, Hubbub's questions). The brief's numbers match the data: fifteen thousand diners at the peak (`live.diners`).
+
+### Pull request cards and takes
+
+| Card | Claim | Verdict | Change |
+| --- | --- | --- | --- |
+| Board dashboard | Forty tiles on the boardroom screen and the board's laptops, straight from the database, every minute | True: `live.dashboard` is 40 tiles, 6 screens, 60 s | |
+| Board dashboard, Gerard | Every tile is a question, every screen, every minute | True | |
+| Biggest database | Eight times the power for eight times the price | True as illustration | |
+| Biggest database, Veronica | $3,200 a month | True | 8 × $400 in `pieces.json` |
+| Read replica | A live copy for the dashboard, so its questions don't slow bookings | True | RR |
+| Read replica, Gilroy | Same kind of database, same slow answers | True | COL: the replica is a row store, built for OLTP |
+| The Forkcast Box | Sell restaurants a server for the back office | True as a description (on-premises hardware, Module 8); takes Narrative | |
+| Analytics database | Copy hourly into a separate database built for big questions | True | OLAP, COL |
+| Analytics database, Ulrich | "You don't do the accounts at the front desk" | True | The curriculum's front desk and accountant's office |
+| Error alerts | Track errors in the app and every scheduled job, message us when one fails | True | SRE |
+| Error alerts, Danesh | Alerts are for people who write bugs | Narrative | The night punishes cutting alerts |
+| Real-time stream | Every booking streamed as it happens, on a managed event-streaming cluster | True | A real pattern (change data capture into a streaming platform); the price is illustrative |
+| Two hundred tiles | Five times the questions | True | |
+
+### Asks
+
+| Ask | Verdict | Notes |
+| --- | --- | --- |
+| Is this OLTP or OLAP work? | True | OLAP, IBM. "240 a minute" is 40 tiles × 6 screens, every minute |
+| How fresh do the numbers need to be? | Narrative | Walter's answer, not a rule |
+| How will we know if it breaks? | True | SRE; Gerard's payroll story is Narrative |
+| What will this cost at 10x traffic? | True | The bigger database's price doesn't depend on traffic, nor does the dashboard's question count; each question grows with rows, as the line says |
+| Make it real-time / Make it huge (decoys) | Narrative | Judged by the night: overbuilt, and too many tiles |
+
+### Dials, hotfix, live moment
+
+| Item | Verdict | Change |
+| --- | --- | --- |
+| Copy every hour or night | True | |
+| Hotfix: the 8pm copy failed on a noodle emoji in a restaurant's name | True | Unexpected characters breaking a batch job is a classic failure |
+| Corner lines (bookings waiting behind the screen, the replica's "Loading", nine bookings on 3am numbers, the screen stuck at seven) | True or Narrative | A 3am copy holds almost none of Friday evening's bookings |
+| Banners | True | Match `live.diners` and the 8pm copy |
+| Bubbles: "Board's dashboard!", "Timing out", "Too many tiles", "Copy job failed", "3am numbers" | True | "Too many tiles", not "200 tiles!", since it fires for any tile count the warehouse can't answer |
+| Live panel: "Board's numbers N min old" | True | The simulation's age |
+
+### Postmortem findings
+
+| Tag | Verdict | Notes |
+| --- | --- | --- |
+| no_dashboard | True | |
+| olap_on_oltp | True | OLAP, IBM, the curriculum |
+| replica_slow, "a read replica is still an OLTP database" | True (simplified) | A replica is a copy of the same row-store database (COL); analytics on a replica works at small scale, which the finding doesn't deny |
+| too_many_tiles | True | |
+| silent_failure | True | Says "nobody fixed it and ran it again", true both without alerts and with the hotfix cut (not "nobody knew", which is false in the second) |
+| stale_numbers, "at 3am" | True | `pipeline.nightly_at` is 840 minutes before 5pm |
+| db_overload, app_overload, rate_limited, overbuilt | True | As Episode 8 |
+
+### Codex cards and sources
+
+| Card | Verdict | Change |
+| --- | --- | --- |
+| OLTP and OLAP | **Fixed** in draft | Drafted as "filled by a regular copy job called a pipeline"; the source supports periodic batches but never says "pipeline". Now "kept up to date by copying new data across in regular batches". Every part is in OLAP |
+| Monitoring and alerts | True | SRE. "Ideally before your customers" is hedged |
+
+### `data/pieces.json`
+
+| Piece | Verdict |
+| --- | --- |
+| Board: each tile a question, asked at every refresh | True |
+| Replica: a read-only copy that follows every change | True (RR) |
+| Analytics: stores each column together, reads only what it needs, filled by a copy job | True (COL) |
+
+## CURRICULUM.md, Modules 6 and 8
+
+| Claim | Verdict |
+| --- | --- |
+| OLTP the front desk, OLAP the accountant's office; OLAP on the OLTP database slows the app; warehouses store by column; ETL or ELT; data lakes | True (OLAP, IBM, COL) |
+| Logs, monitoring, alerts: "alerts tell you before customers do" | True (SRE; hedge-worthy, but a goal, not a promise) |
+| Misconceptions: "Deploying is a one-off", "It's live, so it's done" | True |
+
+No curriculum text changed.

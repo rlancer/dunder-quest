@@ -68,9 +68,13 @@ func _build() -> void:
 	var top := UI.place(UI.panel(Palette.SLATE), Rect2(0, 0, 480, 20))
 	top.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(top)
-	_top_title = UI.place(UI.title(ep["title"].to_upper(), Palette.HEAD, Palette.GREEN), Rect2(6, 2, 80, 16)) as Label
+	var short: String = ep.get("short", ep["title"].to_upper())
+	_top_title = UI.place(UI.title(short, Palette.HEAD, Palette.GREEN), Rect2(6, 2, 80, 16)) as Label
 	add_child(_top_title)
-	_top_left = UI.place(UI.label("", Palette.LABEL, Palette.WHITE), Rect2(90, 3, 200, 14)) as Label
+	# The runway sits just after the episode's name, however long it is.
+	var after := 6.0 + ceilf(_top_title.get_theme_font("font").get_string_size(short, HORIZONTAL_ALIGNMENT_LEFT, -1, Palette.HEAD).x)
+	_top_title.size.x = after - 6.0
+	_top_left = UI.place(UI.label("", Palette.LABEL, Palette.WHITE), Rect2(after + 10.0, 3, 290.0 - after - 10.0, 14)) as Label
 	add_child(_top_left)
 	_top_right = UI.place(UI.label("", Palette.LABEL, Palette.WHITE), Rect2(290, 3, 184, 14)) as Label
 	_top_right.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
@@ -162,7 +166,7 @@ func _build() -> void:
 func _run() -> void:
 	phase = "cold_open"
 	Sound.music("plan")
-	backdrop.place = "garage"
+	backdrop.place = ep.get("backdrop", "garage")
 	backdrop.visible = true
 	await dialogue.play(ep["cold_open"], ep.get("place", ""))
 	phase = "title"
@@ -187,7 +191,7 @@ func _run() -> void:
 		await card.lesson_card(lesson)
 	phase = "cliffhanger"
 	var cliff: Dictionary = ep["cliffhanger"]
-	backdrop.place = "kitchen"
+	backdrop.place = cliff.get("backdrop", "kitchen")
 	backdrop.visible = true
 	await dialogue.play(cliff["lines"], cliff.get("place", ""))
 	await card.black("", 60)
@@ -340,6 +344,8 @@ func _show_frame(f: Dictionary, sim: Sim) -> void:
 	var page: String = "down" if f["down"] else "%.1f s" % f["page"]
 	_meters.text = "Diners online  %s\nPage speed  %s\nErrors  %d%%\nBookings  %d\nAI bill  %s" % [
 		_thousands(roundi(f["diners"])), page, roundi(f["err"] * 100.0), roundi(sim.booked), Palette.money(sim.model_bill)]
+	if f.get("dash", false):
+		_meters.text += "\nBoard's numbers  %d min old" % roundi(f["age"])
 
 
 func _thousands(n: int) -> String:

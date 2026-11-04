@@ -2,7 +2,7 @@
 
 The fourth Dunder Quest game, being built. It teaches non-technical founders enough about how web apps are built to direct an AI that builds them. The design is in [GAME.md](GAME.md), the curriculum in [CURRICULUM.md](CURRICULUM.md), the homage in [SHOW.md](SHOW.md), and where it stands in [HANDOFF.md](HANDOFF.md).
 
-**This is the prototype: Episode 8, *Viral*, playable end to end.** Aleister Jr. answers a celebrity chef's post with a pull request; you keep or cut its changes, ask it questions, set the dials, and merge. Then Friday night runs: diners pour through what you built, the garage server overheats (or doesn't), and Gerard's postmortem says what went wrong, in the real terms. Fail, and it's take two from the same board.
+**This is the prototype: Episodes 8, *Viral*, and 9, *The Board Meeting*, playable end to end.** Aleister Jr. answers a celebrity chef's post with a pull request; you keep or cut its changes, ask it questions, set the dials, and merge. Then Friday night runs: diners pour through what you built, the garage server overheats (or doesn't), and Gerard's postmortem says what went wrong, in the real terms. Fail, and it's take two from the same board. In Episode 9 the board installs an adult CEO who wants a dashboard on every screen and a box to sell, and Friday's bookings have to survive the board watching the numbers live.
 
 It's its own Godot 4.7 project, beside `../curb/` and the others. `scripts/export_web.sh` exports it to `/mission-silicon/play/`, beside its page at `/mission-silicon/` (`build_mission_silicon` in `site/build.py`), and CI runs `tests/check.sh` on every push. It isn't on the home page's splash yet.
 

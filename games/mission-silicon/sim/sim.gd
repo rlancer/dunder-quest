@@ -31,6 +31,12 @@ var frames: Array = []
 var _app := {"backlog": 0.0}
 var _db := {"backlog": 0.0}
 var _garage := {"backlog": 0.0, "heat": 0, "down": 0}
+var _replica := {"backlog": 0.0}
+var _warehouse := {"backlog": 0.0}
+## The tick of the last good copy into the analytics database.
+var _last_load: float = 0.0
+## How old the board's numbers may get before the goal fails, in minutes.
+var _age_limit: float = INF
 var _worker_backlog: float = 0.0
 var _rows: float = 0.0
 var _hotfixed: Dictionary = {}
@@ -38,6 +44,7 @@ var _hotfixed: Dictionary = {}
 # Totals over the night.
 var down_ticks: int = 0
 var peak_latency: float = 0.0
+var peak_book_latency: float = 0.0
 var leaks: float = 0.0
 var booked: float = 0.0
 var book_tries: float = 0.0
@@ -47,6 +54,10 @@ var model_bill: float = 0.0
 var cdn_bill: float = 0.0
 var revenue: float = 0.0
 var melts: int = 0
+var dash_tries: float = 0.0
+var dash_done: float = 0.0
+## The oldest the board's numbers got while its screen was working, in minutes.
+var max_age: float = 0.0
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -62,6 +73,10 @@ func _init(episode: Dictionary, p: Plan, staging_scale: float = 1.0) -> void:
 	ticks = int(live["ticks"])
 	cfg = plan.config()
 	_rows = float(live.get("rows", 0))
+	_last_load = float(live.get("pipeline", {}).get("nightly_at", 0))
+	for g in ep["goal"]:
+		if g["metric"] == "dashboard_age":
+			_age_limit = float(g["max"])
 
 
 func done() -> bool:
@@ -232,6 +247,21 @@ func _tick() -> Dictionary:
 		_worker_backlog -= done_now
 		signup_db_rate = done_now / TICK
 
+	# The board's dashboard: every screen asks every tile's question at each
+	# refresh. On a row store each question scans everything; a column store
+	# does a small share of that work.
+	var dash_on: bool = cfg.get("dashboard", false)
+	var dash_spec: Dictionary = live.get("dashboard", {})
+	var dash_q := 0.0
+	var dash_where := "primary"
+	if dash_on:
+		dash_q = float(cfg.get("tiles", dash_spec.get("tiles", 0))) * float(dash_spec.get("screens", 1)) / float(dash_spec.get("refresh", 60))
+		if cfg.get("warehouse", false):
+			dash_where = "warehouse"
+		elif cfg.get("replica", false):
+			dash_where = "replica"
+	var scan := float(live.get("analytics_rows", 0)) * float(w.get("dashboard", {}).get("db_per_row", 0.0))
+
 	# Work on the database.
 	var tables_db := float(w["tables"]["db_indexed"]) if cfg.get("index", false) else _rows * float(w["tables"]["db_per_row"])
 	var db_parts := {
@@ -241,6 +271,7 @@ func _tick() -> Dictionary:
 		"my_bookings": r["my_bookings"] * float(w["my_bookings"]["db"]) * (1.0 - hits["my_bookings"]),
 		"book": r["book"] * float(w["book"]["db"]),
 		"signup": signup_db_rate * float(w["signup"]["db"]),
+		"dashboard": dash_q * scan if dash_where == "primary" else 0.0,
 	}
 	var db_load := 0.0
 	for k in db_parts:
@@ -253,6 +284,8 @@ func _tick() -> Dictionary:
 	var conn_err := 0.0
 	var util := {}
 	var down_now := false
+	var dash_ok := 0.0
+	var book_latency := 0.0
 	if not cloud:
 		var g: Dictionary = pieces["garage_server"]
 		var heat: Dictionary = g["overheat"]
@@ -274,23 +307,59 @@ func _tick() -> Dictionary:
 				melts += 1
 		app_ok = 1.0 - res["drop"]
 		latency = res["latency"]
+		book_latency = latency
+		dash_ok = app_ok
 		util["garage"] = res["u"]
 	else:
 		var app_piece: Dictionary = pieces["app_server"]
 		var size: Dictionary = app_piece["sizes"][str(app_cfg["size"])]
 		var app_res := _box(_app, app_load, float(size["capacity"]) * count, float(app_piece["latency"]))
 		var pg: Dictionary = pieces["postgres"]
-		var db_cap := float(pg["capacity"]) * (float(pieces["shards"]["capacity_x"]) if cfg.get("shards", false) else 1.0)
+		var db_cap := float(pg["capacity"]) * (float(pieces["shards"]["capacity_x"]) if cfg.get("shards", false) else 1.0) * float(cfg.get("db_x", 1))
 		var db_res := _box(_db, db_load, db_cap, float(pg["latency"]))
 		var conns := count * int(app_piece["pool"])
 		conn_err = maxf(0.0, float(conns - int(pg["max_connections"]))) / float(conns)
 		app_ok = 1.0 - app_res["drop"]
 		db_ok = (1.0 - db_res["drop"]) * (1.0 - conn_err)
 		latency = app_res["latency"] + db_res["latency"] * (1.0 - hits["menus"])
+		# A booking always writes to the database, so it waits its full latency.
+		book_latency = app_res["latency"] + db_res["latency"]
 		util["app"] = app_res["u"]
 		util["db"] = db_res["u"]
+		match dash_where:
+			"primary":
+				dash_ok = db_ok
+			"replica":
+				var rep_res := _box(_replica, dash_q * scan, float(pg["capacity"]), float(pg["latency"]))
+				dash_ok = 1.0 - rep_res["drop"]
+				util["replica"] = rep_res["u"]
+			"warehouse":
+				var wh: Dictionary = pieces["warehouse"]
+				var wh_res := _box(_warehouse, dash_q * scan * float(wh["columnar_share"]), float(wh["capacity"]), float(wh["latency"]))
+				dash_ok = 1.0 - wh_res["drop"]
+				util["warehouse"] = wh_res["u"]
 	var net: Dictionary = Season.pieces()["network"]
 	var page := float(net["base"]) + (0.0 if cfg.get("cdn", false) else float(net["no_cdn"])) + latency
+	var book_page := float(net["base"]) + book_latency
+
+	# How old the board's numbers are. From the analytics database, as old as
+	# its last good copy (hourly, nightly or streamed), and a copy job that
+	# breaks stays broken until someone fixes it. Straight from a database,
+	# as old as the last refresh.
+	var age := 0.0
+	var pipeline_broken := false
+	if dash_on:
+		if dash_where == "warehouse":
+			var pipe: Dictionary = live.get("pipeline", {})
+			var fails_at := int(pipe.get("fails_at", -1))
+			pipeline_broken = fails_at >= 0 and tick >= fails_at and not cfg.get("pipeline_fixed", false)
+			var mode := str(cfg.get("pipeline", "hourly"))
+			var due := mode == "stream" or (mode == "hourly" and tick % 60 == 0)
+			if due and not pipeline_broken:
+				_last_load = tick
+			age = float(tick) - _last_load
+		else:
+			age = float(dash_spec.get("refresh", 60)) / 60.0
 
 	# The model provider.
 	var calls: float = r["search"] * (1.0 - ai_hit)
@@ -315,7 +384,7 @@ func _tick() -> Dictionary:
 	var logout := (1.0 - 1.0 / count) if (cloud and count > 1 and sessions == "memory") else 0.0
 	var stale_fail: float = hits["tables"] * stale_tables * 0.5
 	var logout_fail := logout * 0.6
-	var abandon := clampf((page - 2.0) / 4.0, 0.0, 1.0) * 0.6
+	var abandon := clampf((maxf(page, book_page) - 2.0) / 4.0, 0.0, 1.0) * 0.6
 	var book_success: float = ok["book"] * (1.0 - stale_fail) * (1.0 - logout_fail) * (1.0 - abandon)
 
 	var total := signups
@@ -330,6 +399,12 @@ func _tick() -> Dictionary:
 		down_ticks += 1
 	elif ok["browse"] > 0.5:
 		peak_latency = maxf(peak_latency, page)
+		peak_book_latency = maxf(peak_book_latency, book_page)
+	if dash_on:
+		dash_tries += dash_q * TICK
+		dash_done += dash_q * TICK * dash_ok
+		if dash_ok > 0.5:
+			max_age = maxf(max_age, age)
 
 	var booked_now: float = r["book"] * TICK * book_success
 	booked += booked_now
@@ -352,7 +427,7 @@ func _tick() -> Dictionary:
 		if cloud and util.get("app", 0.0) > 0.9:
 			tags.append(_biggest(parts, {"assets": "no_cdn", "signup": "no_queue"}, "app_overload"))
 		if cloud and util.get("db", 0.0) > 0.9:
-			tags.append(_biggest(db_parts, {"tables": "full_scan", "menus": "no_cache"}, "db_overload"))
+			tags.append(_biggest(db_parts, {"tables": "full_scan", "menus": "no_cache", "dashboard": "olap_on_oltp"}, "db_overload"))
 		if not cloud:
 			var both := parts.duplicate()
 			for k in db_parts:
@@ -375,11 +450,19 @@ func _tick() -> Dictionary:
 	if rate_err > 0.01:
 		tags.append("rate_limited")
 		_blame("rate_limited", r["search"] * TICK * rate_err)
+	if dash_on and dash_ok < 0.99 and dash_where != "primary":
+		var why := "replica_slow" if dash_where == "replica" else "too_many_tiles"
+		tags.append(why)
+		_blame(why, dash_q * TICK * (1.0 - dash_ok) * 100.0)
+	if dash_on and age > _age_limit:
+		var why := "silent_failure" if pipeline_broken else "stale_numbers"
+		tags.append(why)
+		_blame(why, 1000.0)
 
 	return {
 		"tick": tick, "diners": diners, "page": minf(page, 30.0), "err": err_share, "down": down_now,
 		"util": util, "tags": tags, "hits": hits, "money": _money_so_far(), "count": count,
-		"backlog": _worker_backlog, "cloud": cloud,
+		"backlog": _worker_backlog, "cloud": cloud, "dash": dash_on, "age": age,
 	}
 
 
@@ -411,7 +494,10 @@ static func monthly_of(cfg: Dictionary) -> float:
 	var m := 0.0
 	if cfg["host"] == "cloud":
 		var size: Dictionary = pieces["app_server"]["sizes"][str(cfg["app"]["size"])]
-		m += float(size["monthly"]) * int(cfg["app"]["count"]) + float(pieces["postgres"]["monthly"])
+		var pg_monthly := float(pieces["postgres"]["monthly"])
+		m += float(size["monthly"]) * int(cfg["app"]["count"]) + pg_monthly * float(cfg.get("db_x", 1))
+		if cfg.get("replica", false):
+			m += pg_monthly
 	if cfg.get("cache", false):
 		m += float(pieces["redis"]["monthly"])
 	if cfg.get("cdn", false):
@@ -422,6 +508,12 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["cluster"]["monthly"])
 	if cfg.get("shards", false):
 		m += float(pieces["shards"]["monthly"])
+	if cfg.get("warehouse", false):
+		m += float(pieces["warehouse"]["monthly"])
+		if cfg.get("pipeline", "") == "stream":
+			m += float(pieces["stream"]["monthly"])
+	if cfg.get("alerts", false):
+		m += float(pieces["alerts"]["monthly"])
 	return m
 
 
@@ -436,6 +528,9 @@ func result() -> Dictionary:
 	var metrics := {
 		"down_ticks": down_ticks,
 		"peak_latency": peak_latency,
+		"peak_book_latency": peak_book_latency,
+		"dashboard_success": dash_done / dash_tries if dash_tries > 0.0 else 0.0,
+		"dashboard_age": max_age,
 		"leaks": leaks,
 		"booking_success": booked / book_tries if book_tries > 0.0 else 1.0,
 		"search_success": searched / search_tries if search_tries > 0.0 else 1.0,
@@ -456,6 +551,10 @@ func result() -> Dictionary:
 		blame["ai_bill"] = model_bill / 10.0
 	if cfg.get("model", "standard") == "big":
 		blame["big_model"] = model_bill / 20.0
+	if not cfg.get("dashboard", false):
+		for g in ep["goal"]:
+			if g["metric"] == "dashboard_success":
+				blame["no_dashboard"] = 1.0e9
 	if passed and runway < float(budget["par"]):
 		blame["overbuilt"] = 1.0
 	var order := blame.keys()

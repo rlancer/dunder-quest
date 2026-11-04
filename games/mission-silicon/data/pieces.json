@@ -18,7 +18,13 @@
 		"model_api": {"label": "Model API", "term": "AI model API", "plain": "The AI model Forkcast asks, paid by the token.",
 			"price": 0.02, "fixed_share": 0.8, "cached_rate": 0.1, "latency": 2.0, "limit": 80, "answer_keys": 300000, "answer_ttl": 3600},
 		"cluster": {"label": "Kubernetes", "term": "container cluster", "monthly": 4000},
-		"shards": {"label": "Shards", "term": "sharded database", "monthly": 800, "capacity_x": 3}
+		"shards": {"label": "Shards", "term": "sharded database", "monthly": 800, "capacity_x": 3},
+		"dashboard": {"label": "Board", "term": "dashboard", "plain": "The board's screen of numbers. Each tile is a question, asked again at every refresh."},
+		"replica": {"label": "Replica", "term": "read replica", "plain": "A read-only copy of the database that follows every change, for reads that would get in the way."},
+		"warehouse": {"label": "Analytics", "term": "data warehouse", "plain": "A separate database built for big questions. It stores each column together, so adding up millions of rows reads only what it needs. A copy job fills it.",
+			"monthly": 300, "capacity": 400, "latency": 0.5, "columnar_share": 0.025},
+		"stream": {"label": "Stream", "term": "streaming pipeline", "monthly": 3000},
+		"alerts": {"label": "Alerts", "term": "monitoring and alerts", "monthly": 30}
 	},
 	"work": {
 		"browse": {"app": 0.5, "assets": 4.0, "db": 1.5},
@@ -26,6 +32,7 @@
 		"search": {"app": 5.0, "db": 0.5},
 		"my_bookings": {"app": 0.3, "db": 0.5},
 		"book": {"app": 5.0, "app_rust": 2.0, "db": 3.0},
-		"signup": {"app": 250.0, "enqueue": 0.2, "db": 1.0}
+		"signup": {"app": 250.0, "enqueue": 0.2, "db": 1.0},
+		"dashboard": {"db_per_row": 0.0002}
 	}
 }

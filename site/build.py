@@ -2237,7 +2237,7 @@ def curb_page(body: str, prefix: str) -> str:
 MS_ALT = "Mission Silicon: the name in heavy slate type on off-white, beside the game's whiteboard of servers with traffic running through it."
 MS_DESC = ("Mission Silicon, a Dunder Quest game in the making: you're a non-technical founder launching an AI startup, "
            "and your AI coding assistant is very sure of itself. Learn how web apps are built by steering one. "
-           "Episode 8 is playable free in your browser.")
+           "Episodes 8 and 9 are playable free in your browser.")
 
 
 def tag_mission_silicon_page(index: Path) -> None:
@@ -2302,8 +2302,8 @@ def build_mission_silicon(prefix: str) -> str:
   <p class="ms-kicker">a dunder_quest game · early prototype</p>
   <h1>Mission Silicon</h1>
   <p class="ms-lede">You've moved into an incubator house to launch an AI startup, and you can't code. Your AI coding assistant can. It's fast, tireless, and very sure of itself. Learn enough about how apps are built (servers, databases, caches, scaling) to tell it what to build, and when to say no.</p>
-  <p class="ms-actions"><a class="ms-btn" href="play/">Play Episode 8: Viral</a></p>
-  <p class="ms-fine">One episode of fourteen, with placeholder art. Best played on a computer or a phone held sideways.</p>
+  <p class="ms-actions"><a class="ms-btn" href="play/">Play Episodes 8 and 9</a></p>
+  <p class="ms-fine">Two episodes of fourteen so far. Best played on a computer or a phone held sideways.</p>
   <img class="ms-shot" src="{img}live.png" alt="The game's whiteboard during Friday night: diners flow through a load balancer, two app servers, a Redis cache and Postgres, while an investor texts everyone he knows" width="720" height="405">
 </section>
 <section class="ms-section" id="how">

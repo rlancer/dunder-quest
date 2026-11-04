@@ -99,7 +99,8 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | **Network faults** | Outside services, scripted per episode | A share of calls time out; of those, a share actually succeeded and only the reply was lost | `timeout_unknown` |
 | **Retries** | Calls to outside services | Off: timeouts are failures. On: a retry repeats the call, so the ones that had succeeded happen twice. On with an idempotency key: repeats are recognised and ignored | `double_charge` |
 | **Race** | Booking the last table | Check-then-book in two steps lets two parties get the same table, at a rate that grows with the square of booking traffic on hot tables. A transaction closes the gap | `double_booking` |
-| **Analytics on the live database** | Database | Dashboard queries are huge scans; run on the main database they take capacity from bookings | `olap_on_oltp` |
+| **Analytics on the live database** (built, Episode 9) | Database, replica, warehouse | Dashboard queries are huge scans (screens × tiles / refresh, each a scan of every stored row). On the main database they take capacity from bookings, and a booking waits the database's full latency; on a read replica they swamp the copy instead; on a warehouse, stored by column, each is a small share of the work | `olap_on_oltp`, `replica_slow`, `too_many_tiles` |
+| **Pipeline freshness** (built, Episode 9) | Warehouse | The board's numbers are as old as the last good copy: hourly, nightly or streamed. A scripted copy failure stays broken until a hotfix fixes it, and the hotfix is only offered with alerts | `silent_failure`, `stale_numbers` |
 | **Secret exposure** | Wherever a key lives | A key in the frontend or a public repository is found by a scanning bot at a scripted tick, after which unknown usage runs up the bill | `leaked_key` |
 | **Authorization** | Endpoints | Without an ownership check, a curious diner (or a bot) changing the number in the URL reads others' bookings | `idor` |
 | **Grounding and tools** | The AI concierge | Without retrieval over real menus, a share of answers are made up; an agent with a powerful tool and no confirmation step can be steered by injected text in a review | `hallucination`, `prompt_injection` |
@@ -322,6 +323,100 @@ Cliffhanger: Sunday morning, the house asleep. Chaz bursts in having seen the nu
 
 The garage server overheating while the audience explodes, the team crowded around it, the sysadmin's grim custodianship of his machine, the founder throwing up, the loud owner taking credit with the press, the loud investor arriving with a bigger number: all from the show's episode, rearranged, with original lines. If a fan wouldn't recognise it, it's drifted.
 
+## Episode 9 on paper: *The Board Meeting*
+
+Stage 5, Modules 6 (the OLAP side: warehouses and pipelines) and 8 (hosting and operating it: on-premises against the cloud, monitoring and alerts). Borrowed set piece: the founder pushed out as CEO by his own board, and the adult CEO they bring in, who wants to stop building the platform and sell a box. The lines are in `data/season.json`.
+
+### Continuity
+
+Episode 8 ended with Chaz demanding a screen of every user, updating every hour, in the boardroom by Monday. The starting board is Episode 8's solution with its hotfix: cloud, three small app servers with sessions in Redis, the cache (menus an hour, tables 30 seconds, my bookings per user), the CDN, the queue, the index and the AI cache. `cases.gd` now checks that (continuity, check 6). No cold-open change is needed.
+
+### Cold open
+
+Monday, 9am, Ravello Capital's boardroom (a new backdrop). Chaz wants his screen. Walter, after a long silence: the board has voted; Forkcast needs an experienced CEO. Veronica introduces Mack Barlow, who has run four companies (one was a boat). Ulrich voted yes twice, once as a board member and once, heavily, as your mentor. You're Head of Product now; you keep the robot. Mack's vision: a dashboard on every screen, live, and a box. People can hold a box.
+
+Title card: **THE BOARD MEETING** (the top bar says BOARD MEETING, the episode's `short` name).
+
+### Brief
+
+Mack: the board comes back Friday night to watch the dinner rush on the big screen, with box prospects. Veronica: a normal busy Friday, fifteen thousand diners at the peak, and the bookings have to keep working while the board watches.
+
+- **Budget**: $1.1M in the bank, $85k a month (Mack isn't cheap), so 12.8 months of runway with the board as it stands. 20 hours to build.
+- **Goal**: up all night, bookings under 3 seconds, nine bookings in ten succeed, the board's screen works (19 tile refreshes in 20 answered), and its numbers are never more than an hour old (Chaz's "every hour").
+
+### Aleister's pull request: "Dashboards for everyone"
+
+| Card | By | Time | Monthly | What it really does | The takes |
+| --- | --- | --- | --- | --- | --- |
+| **Board dashboard**: forty live tiles on six screens, straight from the database, every minute | Aleister | 3h | — | Needed: the goal is the board's screen. But every tile is a scan of everything Forkcast has stored, and six screens ask forty of them every minute: 240 huge questions a minute on the database taking the bookings | Chaz for (can it be forty-one?); Gerard: every tile is a question, every screen, every minute |
+| **Biggest database**: Postgres at eight times the size | Aleister | 1h | +$2,800 | Vertical scaling. It works: the dashboard's load fits. And it costs eight times as much, every month, for a screen | Danesh for; Veronica: it'd work, and it's $3,200 a month forever |
+| **Read replica**: a live copy just for the dashboard | Aleister | 2h | +$400 | Keeps the dashboard off the bookings (true), but it's the same kind of database: the scans swamp it and the board's screen times out | Ricky for (that part's real); Gilroy: same huge questions, same slow answers, now in a second place |
+| **The Forkcast Box**: a server in every restaurant's back office | Mack | 40h | — | On-premises hardware: two hundred servers to install, power, patch and fix in restaurant basements. Can't be built in 20 hours, and the product isn't a box | Mack: you can hold a box; Ricky: two hundred servers in two hundred basements, with our hands |
+| **Analytics database**: copy the bookings hourly to a database built for big questions, and point the dashboard there | Ulrich (right) | 4h | +$300 | A data warehouse and an hourly batch pipeline. It stores by column, so a tile reads a sliver of the data a row store would, on a machine that isn't taking bookings. Hourly copies meet "an hour old" | Ulrich: you don't do the accounts at the front desk; Gilroy: he's right, write down the date |
+
+Ulrich's card is right this time (his first in the prototype; across the season he should be right about a third of the time), for a borrowed reason: it's the curriculum's own front desk and accountant's office. Mack's box is Module 8's on-premises trap, and the episode's Kubernetes: too big to fit.
+
+### The asks
+
+| Ask | Answer | Effect |
+| --- | --- | --- |
+| **Is this OLTP or OLAP work?** | Ricky: the app's tiny jobs are OLTP, the front desk; every tile is a huge question across everything, OLAP, the accountant's office. Gilroy: 240 of those a minute, on the database that takes the bookings | Just facts: the tiles belong somewhere else |
+| **How fresh do the numbers need to be?** | Walter, after a silence: the board meets four times a year. Veronica: Chaz asked for hourly; an hour old is plenty | Just facts: hourly copies are enough, nightly aren't |
+| **How will we know if it breaks?** | Aleister: someone will mention it? Gerard: at a previous company they found the payroll job had stopped when the pay stopped | Adds **Error alerts** (1h, +$30): error tracking on the app and every scheduled job |
+| **What will this cost at 10x the traffic?** | Veronica: the biggest database costs eight times as much whatever the traffic, forever; the dashboard asks the same questions at any traffic | Just facts |
+| **Make it real-time.** (decoy) | Aleister, delighted | Adds **Real-time stream** (10h, +$3,000, needs the analytics database): every booking streamed in as it happens |
+| **Make it huge.** (decoy) | Aleister: Chaz's favourite word | Adds **Two hundred tiles**: five times the questions |
+
+### The dials
+
+- **Analytics database: copy every** hour (the card's default) or night.
+
+That's the only dial. Refresh rate and screens are fixed by the dashboard card; the lesson is where the questions go, not how often they're asked.
+
+### The live moment: Friday, 5pm to 11pm
+
+| Clock | Tick | What happens |
+| --- | --- | --- |
+| 5:00pm | 0 | 2,000 diners. The board is watching the big screen. With the dashboard on the live database, bookings already wait behind its scans |
+| 6:30 to 7:30pm | 90 to 150 | The rush builds to 15,000 diners. On the replica, the board's screen says "Loading" all night. With two hundred tiles, the analytics database turns tiles away |
+| 8:00pm | 180 | **The 8pm copy job fails**: a restaurant put a noodle emoji in its name. With alerts, Aleister offers the **hotfix**: handle it and rerun. Without alerts, nobody knows, and the board's numbers stop at 7pm. Chaz asks whether they broke time |
+| 9:00 to 11:00pm | 240 to 360 | Easing off to 2,000. With nightly copies, the screen has shown 3am's numbers all evening |
+
+The solution's night: the app and the database carry Friday at under half capacity, as in Episode 8; the dashboard's 240 tile questions a minute go to the analytics database, where reading by column makes them a fortieth of the work, at about a quarter of its capacity; the hourly copy keeps the numbers under an hour old, and when it breaks at 8pm the alert brings the hotfix.
+
+These are the results from `tests/cases.gd`:
+
+| Plan | Result |
+| --- | --- |
+| Do nothing | Bookings are fine; there's no dashboard: fails "the board's screen works" |
+| Aleister's PR as proposed | 50 hours: can't merge |
+| Minus the box (the bot's take one) | Fits, and fails: the analytics database takes the tiles, but nobody's watching the copy job, so the numbers stop at 7pm (and it pays for the biggest database and a replica it doesn't need: 12.40 months) |
+| Dashboard on the live database (cut the analytics database) | Bookings at 20 seconds, one in ten works, and a quarter of the tiles answer: fails three goals |
+| On the replica | Bookings fine; the replica drowns and the screen times out: fails |
+| The biggest database instead of the analytics database | Passes, at 12.45 months: misses Lean by $2,800 a month |
+| The solution: dashboard, analytics database copying hourly, error alerts, hotfix kept | 12.856 months of runway; par 12.85 |
+| The solution plus the replica | Passes, at 12.80: misses Lean |
+| The solution plus the real-time stream | Passes, at 12.42: misses Lean |
+| The solution without alerts, or with the hotfix cut | The copy job stays broken: numbers 239 minutes old, fails |
+| Copying nightly | Numbers from 3am all night: fails |
+| Two hundred tiles | The analytics database answers 80% of them: fails "the board's screen works" |
+
+### Postmortem
+
+New findings: no dashboard; OLAP work on the OLTP database ("The board's dashboard slowed down the bookings"); the replica that couldn't answer; two hundred tiles; the copy job that broke and stayed broken; the board watching last night's numbers. The generic ones (database or app servers maxed out, rate limits, overbuilt) carry over from Episode 8.
+
+Marks: Live, Lean (12.85 months or better), Ulrich (keep the analytics database).
+
+### Lesson cards and cliffhanger
+
+Two codex cards: **OLTP and OLAP** (the front desk and the accountant's office; big questions go to a data warehouse kept up to date in regular batches) and **Monitoring and alerts** (once it's live you can't watch every screen and job; alerts tell you before customers, or the board, do).
+
+Cliffhanger: Saturday morning, the kitchen. Mack: Hubbub called, they loved the dashboard, and asked a lot of questions about how Forkcast works; he answered all of them, in detail, with slides. Gilroy: you what. Ricky is going to be sick. (Episode 10: Hubbub Dine.)
+
+### Checking it against the show
+
+The show's season 2 to 3 turn: the board removes the founder as CEO, an affable, grey-haired veteran salesman takes over, keeps the founder on in a lesser title, and steers the company toward selling a physical box instead of the platform; the engineers are appalled and the founder is sidelined in his own company. Here: Walter's silence and the vote, Ulrich voting against you and claiming a heavy heart, Mack keeping you on as Head of Product, the box, Gilroy's flat "A box." The board watching numbers on a big screen nods to the show's obsession with vanity metrics in front of investors. Mack leaking the product to Hubbub is ours, not the show's, and sets up the next episode's clone (the show's Nucleus). If a fan wouldn't recognise the board scene and the box, it's drifted; they would.
+
 ## How the loop covers the season
 
 Every episode uses the same loop; what changes is which pieces, asks, behaviours and goals it switches on. A first sketch, to be walked on paper like Episode 8 before each is built:
@@ -356,7 +451,7 @@ Following Curb's (step 2 of the handoff):
 ## Still open
 
 - The show-style score with a homage name, or just the marks.
-- Episodes 1 to 7 and 9 to 14 in detail (walk each like Episode 8 first).
+- Episodes 1 to 7 and 10 to 14 in detail (walk each like Episodes 8 and 9 first).
 - Whether there's a hub between episodes (the house) or just a season screen of episode thumbnails, as on a streaming service.
 - The title sequence's company list (from the handoff).
 - Music cues: the sting, the planning loop, the live-moment track that intensifies with load.
