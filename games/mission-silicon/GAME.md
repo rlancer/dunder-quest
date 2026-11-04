@@ -87,7 +87,7 @@ Each is a few lines of code, a real effect, and a postmortem tag.
 | --- | --- | --- | --- |
 | **Overheat** | The garage server | Above 80% for 20 ticks it shuts down for 30, failing everything routed through it | `garage_melt` |
 | **Scan cost grows** | Database, per unindexed query | Work per request grows with rows in the table, which grow with bookings during the night | `full_scan` |
-| **Cache** | Redis, CDN, model-answer cache | Per data row: a TTL and a scope (shared, per user, off). For a row with request rate λ over K distinct keys and TTL T, the hit rate is x / (1 + x), with x = λT / K (the exact result for a TTL cache with random arrivals). Hits skip everything behind the cache | |
+| **Cache** | Redis, CDN, model-answer cache | Per data row: a TTL and a scope (shared, per user, off). For a row with request rate λ over K distinct keys and TTL T, the hit rate is x / (1 + x), with x = λT / K (the exact result for a TTL cache with random arrivals and evenly popular keys; real traffic is skewed toward a few popular keys, which only raises the hit rate). Hits skip everything behind the cache | |
 | **Staleness** | Cache rows of data that changes | If each key changes at rate μ, the share of hits that are out of date is 1 − (1 − e^(−μT)) / (μT). A stale "free" table that's actually taken gives the diner "sorry, just taken" at booking time | `stale_tables` |
 | **Shared per-user data** | A cache row of per-user data with shared scope | Every hit shows one diner another's data. Fails the goal outright | `cache_leak` |
 | **Sessions** | App servers | Sessions in server memory with more than one server behind the load balancer: each request lands on a server that doesn't know the diner with probability 1 − 1/N, logging them out | `stateless` |
@@ -251,8 +251,8 @@ Diners' phones → **Aleister** (garage server, running the app and Postgres tog
 | **Move to the cloud**: one app server (M) and managed Postgres | Aleister | 4h | +$700 | Off the garage, room to grow, sessions movable to Redis | Gilroy against (pride, and the bill); Ricky for (the garage is on fire) |
 | **Kubernetes**: twelve microservices on a cluster | Aleister | 40h | +$4,000 | Can't be done in 18 hours, and wouldn't help: one team, one app | Ricky for (it's how Hubbub does it); Gilroy against (twelve things to break instead of one) |
 | **Add a cache** (Redis): one hour for everything | Aleister | 2h | +$100 | Takes load off the database, but its defaults are wrong: tonight's tables go stale, and "My bookings" is shared | Danesh for (speed); Gilroy: a cache is a machine for telling people things that used to be true |
-| **CDN for photos and pages** | Aleister | 1h | +$50 | Photos, scripts and pages served from the edge, not the app | Danesh for; Gerard asks what happens when a menu changes (it's fine: an hour's TTL on menus) |
-| **Queue sign-ups and welcome emails** | Aleister | 3h | +$50 | The 8pm sign-up burst no longer hits the app head-on (password hashing is deliberately slow, and the email is a slow outside call) | Gerard for, earnestly; Danesh: nobody needs their welcome email this second |
+| **CDN for photos** | Aleister | 1h | +$50 | Photos and scripts served from the edge, not the app (the pages themselves still come from the app: they hold per-diner data) | Danesh for; Gerard asks what happens when a restaurant changes its photos (it's fine: they can be an hour old) |
+| **Queue sign-up work**: welcome emails and other chores | Aleister | 3h | +$50 | The 8pm sign-up burst no longer hits the app head-on (sending each welcome email is a slow outside call that would hold a server; the password is still hashed in the request, since a queue must never hold plain-text passwords) | Gerard for, earnestly; Danesh: nobody needs their welcome email this second |
 | **Rewrite booking in Rust** | Aleister | 8h | -$100 | Faster code where the time isn't spent: the app is waiting on the database. Keeping it leaves no time for the fixes the asks turn up | Danesh for (it's what serious people use); Gilroy: you'd be rewriting the part that's waiting |
 | **Forty servers** | Ulrich (wrong) | 1h | +$6,000 | 40 servers × 10 connections = 400, against Postgres's 100: most of them get "too many connections". And sessions are still in memory | Ulrich: Hubbub has forty thousand; Ricky can't get a word in |
 
@@ -281,8 +281,8 @@ Ulrich's line is the Module 9 misconception: more servers means faster.
 | 5:00pm | 0 | 500 diners, quiet. Gilroy's fan if the garage is still in use |
 | 6:30pm | 90 | Dinner rush: 3,000 diners. On the garage, Aleister overheats around here and goes down for half an hour, then again |
 | 7:30pm | 150 | 12,000 diners. Without the index, the database creeps toward 100% as bookings pile up, then times out. Without the CDN, the app drowns in photos |
-| 8:00pm | 180 | **The chef posts again.** 24,000 diners, and a third of the night's 50,000 sign-ups in half an hour. Without the queue, sign-ups swamp the app. Without the AI cache, searches pass the provider's limit and fail with 429s, and the bill races |
-| 8:00pm | 180 | **Hotfix**, the moment the post lands. Aleister: "Traffic just doubled! Add another app server? It's $300 a month." It helps only if sessions are in Redis (otherwise diners start getting logged out) and only if the database isn't the real bottleneck |
+| 8:00pm | 180 | **The chef posts again.** 24,000 diners, and fifteen thousand of the night's 50,000 sign-ups in twenty minutes. Without the queue, sign-ups swamp the app. Without the AI cache, searches pass the provider's limit and fail with 429s, and the bill races |
+| 8:00pm | 180 | **Hotfix**, the moment the post lands. Aleister: "Traffic just doubled! Add another app server? It's $150 a month." (the price of one more server at the size chosen) It helps only if sessions are in Redis (otherwise diners start getting logged out) and only if the database isn't the real bottleneck |
 | 9:00 to 10:30pm | 240 to 330 | Plateau, then falling off. Stale tables show up as "sorry, just taken" at booking time, more with a longer TTL. A shared "My bookings" row leaks from the first hit |
 | 11:00pm | 360 | 1,500 diners. End |
 

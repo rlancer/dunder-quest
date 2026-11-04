@@ -297,8 +297,8 @@ Concepts:
   - **Database cache**: the database keeps hot data in memory itself.
 - **Hit and miss.** A hit finds the answer in the cache; a miss has to fetch it. The **hit rate** is what makes a cache worth it.
 - **Stale data and invalidation.** A copy can go out of date: the cache says the 8pm table is free after someone has booked it. Fixes: a **TTL** (time to live: forget after 60 seconds), or clearing the cached copy whenever the real data changes. Deciding when a copy is too old to trust is famously one of the hard problems in computing.
-- **What's safe to cache.** A restaurant's photos and menu: yes, for hours. Tonight's free tables: for seconds, maybe. A user's bookings or account page: never in a shared cache, or one user sees another's.
-- **Caching AI calls.** Model calls are slow and paid per use (Module 13), so an AI startup caches hard: the same question needn't pay for the same answer twice, and model providers also offer **prompt caching**, a cheaper rate for a long prompt that's sent again unchanged. It's the first fix when the AI bill explodes (Forkcast stage 4).
+- **What's safe to cache.** A restaurant's photos and menu: yes, for hours. Tonight's free tables: for seconds, maybe. A user's bookings or account page: cached per user or not at all, never as one shared copy, or one user sees another's.
+- **Caching AI calls.** Model calls are slow and paid per use (Module 13), so an AI startup caches hard: the same question needn't pay for the same answer twice, and model providers also offer **prompt caching**, a cheaper rate for the long start of a prompt when it's sent again unchanged. It's the first fix when the AI bill explodes (Forkcast stage 4).
 
 Misconceptions:
 - "Caching is free speed." It's speed paid for with the risk of wrong answers.
@@ -349,7 +349,7 @@ Concepts:
   - **Sharding**: splitting data across several databases (each city's bookings on its own). Powerful, complex, a last resort.
   - **Connection pooling**: databases can only hold so many conversations at once; a pool shares them.
 - **CDNs and caches** take load off everything behind them (Module 7).
-- **Queues smooth spikes.** When the launch post goes viral, accept sign-ups into a queue instantly and process them steadily, instead of falling over (Module 5).
+- **Queues smooth spikes.** When the launch post goes viral, accept each sign-up quickly and put its slow follow-up work (the welcome email, setting things up) on a queue that's worked through steadily, instead of falling over (Module 5).
 - **Autoscaling.** Adding and removing servers automatically with demand (serverless does this for you).
 - **Rate limiting.** Capping how many requests one user or bot can make, to protect everyone else.
 

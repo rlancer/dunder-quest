@@ -287,7 +287,7 @@ func _live() -> Dictionary:
 		var due := sim.hotfix_due()
 		if not due.is_empty():
 			pending_hotfix = due["id"]
-			plan.hotfix[due["id"]] = await _hotfix(due)
+			plan.hotfix[due["id"]] = await _hotfix(due, sim.cfg)
 			pending_hotfix = ""
 			phase = "live"
 		var f := sim.step()
@@ -359,8 +359,13 @@ func _corner(tag: String) -> void:
 			return
 
 
-func _hotfix(h: Dictionary) -> bool:
+func _hotfix(h: Dictionary, cfg: Dictionary) -> bool:
 	phase = "hotfix"
+	# "{monthly}" in the line is what keeping the hotfix adds to the bill.
+	var after := cfg.duplicate(true)
+	for change in h.get("changes", []):
+		Plan.apply_change(after, change)
+	var say := str(h["say"]).replace("{monthly}", Palette.money(Sim.monthly_of(after) - Sim.monthly_of(cfg)))
 	var modal := UI.place(UI.panel(Palette.WHITE, Palette.GREEN, 2), Rect2(40, 60, 260, 120))
 	modal.name = "Hotfix"
 	_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -368,7 +373,7 @@ func _hotfix(h: Dictionary) -> bool:
 	var face := UI.place(Portrait.new("aleister"), Rect2(6, 8, 48, 48))
 	modal.add_child(face)
 	modal.add_child(UI.place(UI.label("HOTFIX", Palette.LABEL, Palette.GREEN_DARK), Rect2(60, 8, 192, 14)))
-	modal.add_child(UI.place(UI.label(h["say"], Palette.BODY, Palette.SLATE, true), Rect2(60, 22, 194, 54)))
+	modal.add_child(UI.place(UI.label(say, Palette.BODY, Palette.SLATE, true), Rect2(60, 22, 194, 54)))
 	var keep := UI.button("KEEP", "primary", Vector2(90, 30))
 	keep.name = "HotfixKeep"
 	UI.place(keep, Rect2(60, 82, 90, 30))
