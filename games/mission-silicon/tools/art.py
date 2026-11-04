@@ -170,6 +170,38 @@ SCENES = {
         "of a shabby Victorian house, a softly blurred window with afternoon light behind. Quiet, warm, "
         "reflective, the look of a documentary where people look back on a company. " + STYLE
     ),
+    "movein": ROOM + (
+        "the living room of a shabby old Victorian house in San Francisco's Mission District on move-in day, "
+        "a bright Monday morning: a battered suitcase and a stack of cardboard moving boxes by the door, a "
+        "sagging brown leather sofa with a bathrobe thrown over its arm, a coffee table with an old beige "
+        "computer monitor showing a simple green pixel smiley face, a blank whiteboard on an easel, a tall bay "
+        "window full of morning sun and colourful Victorian houses across the street, a worn rug, a fireplace "
+        "with a mantel of odd trophies. Hopeful, scruffy and sunny. " + STYLE
+    ),
+    "roof": ROOM + (
+        "the flat roof terrace of a gleaming tech giant's glass office building in Silicon Valley on a sunny "
+        "afternoon: a row of identical expensive white lounge chairs facing nowhere in particular, small side "
+        "tables with untouched fruit-infused water and a bowl of oranges, potted olive trees and neat artificial "
+        "grass, a glass safety railing, a big blue sky, the campus's other glass buildings and a car park "
+        "stretching away below. Pleasant, pointless and eerily calm, like a place where people are paid to wait. "
+        + STYLE
+    ),
+    "whiteboard": ROOM + (
+        "the living room of a shabby old Victorian house in San Francisco's Mission District used as a startup "
+        "incubator, very late at night: in the centre a big whiteboard on an easel covered in a crude marker "
+        "drawing of a phone, arrows and a box, with no readable words or letters; marker pens and an open "
+        "laptop on a coffee table with takeaway noodle cartons and mugs; a sagging sofa; a tall bay window, "
+        "dark outside with one streetlight; a floor lamp throwing a warm pool of light, everything else in "
+        "blue shadow. Tired, scrappy, two-in-the-morning energy. " + STYLE
+    ),
+    "party": ROOM + (
+        "a house party in the big living room of a shabby old Victorian house in San Francisco's Mission District "
+        "used as a startup incubator, on a Saturday night, with the guests just out of frame: strings of fairy "
+        "lights and colourful paper lanterns across the ceiling, a makeshift DJ table with a laptop and speakers, "
+        "a folding table of snacks, cups and a punch bowl, a projector beam throwing a bright plain green glow "
+        "on the wall above the fireplace, balloons, a disco ball, the bay window dark with the city lights "
+        "outside. Loud, warm, a little too much. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

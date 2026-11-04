@@ -83,6 +83,18 @@ var agent_done: float = 0.0
 var fooled: float = 0.0
 var unasked: float = 0.0
 var cancelled: float = 0.0
+## Whether what was built is what was asked for (Episode 1): searches
+## tried, and searches answered with a place that fits every part of the
+## request.
+var fit_tries: float = 0.0
+var fit_done: float = 0.0
+## The landing page (Episode 2): sign-ups tried and kept, the backend's
+## server and database if there are any, and the tick a rollback started.
+var signup_tries: float = 0.0
+var signed: float = 0.0
+var _web := {"backlog": 0.0}
+var _signups_db := {"backlog": 0.0}
+var _rolled_at: int = -1
 ## Postmortem tag -> damage (lost or spoiled requests, roughly).
 var damage: Dictionary = {}
 
@@ -216,6 +228,9 @@ func _row(name: String) -> Dictionary:
 
 
 func _tick() -> Dictionary:
+	# A landing page and its waitlist (Episode 2) is its own small night.
+	if live.has("landing"):
+		return _tick_landing()
 	var diners := diners_at(tick) * scale
 	var r := {}
 	for k in KINDS:
@@ -228,6 +243,9 @@ func _tick() -> Dictionary:
 	var sessions := str(app_cfg.get("sessions", "memory"))
 	if not cache_on:
 		sessions = "memory"
+	# Episode 1: nothing may have been built yet, or Forkcast may have been
+	# sold to Hubbub, which keeps it in a drawer. Either way nothing answers.
+	var built: bool = str(cfg["host"]) != "none" and not cfg.get("sold", false)
 
 	# Caches.
 	var hits := {"menus": 0.0, "tables": 0.0, "my_bookings": 0.0}
@@ -404,7 +422,12 @@ func _tick() -> Dictionary:
 	var down_now := false
 	var dash_ok := 0.0
 	var book_latency := 0.0
-	if not cloud:
+	if not built:
+		app_ok = 0.0
+		dash_ok = 0.0
+		down_now = true
+		util["garage"] = 0.0
+	elif not cloud:
 		var g: Dictionary = pieces["garage_server"]
 		var heat: Dictionary = g["overheat"]
 		var res: Dictionary
@@ -481,6 +504,21 @@ func _tick() -> Dictionary:
 
 	# The model provider.
 	var calls: float = r["search"] * (1.0 - ai_hit)
+	# Whether what was built is what was asked for (Episode 1). A photo feed
+	# has nowhere to type a request, so it asks the model nothing; a
+	# concierge answers, but only as well as it was told what a request is:
+	# from a vague one-liner it fills the gaps with what's common (a popular
+	# place for two), and a share of answers fit every part of the request
+	# (party size, night, area, needs). Off unless the episode has `live.fit`.
+	var fit: Dictionary = live.get("fit", {})
+	var fit_share := 0.0
+	if not fit.is_empty():
+		if cfg.get("concierge", false):
+			fit_share = float(fit[str(cfg.get("detail", "none"))] if cfg.get("spec", false) else fit["none"])
+		else:
+			calls = 0.0
+		if not built:
+			calls = 0.0
 	# Switched off by a hotfix (Episode 12): no searches, no calls of ours.
 	var ai_off: bool = cfg.get("ai_off", false)
 	if ai_off:
@@ -699,6 +737,9 @@ func _tick() -> Dictionary:
 	_rows += booked_now
 	searched += r["search"] * TICK * ok["search"]
 	search_tries += r["search"] * TICK
+	if not fit.is_empty():
+		fit_tries += r["search"] * TICK
+		fit_done += r["search"] * TICK * ok["search"] * fit_share
 	leaks += (leak_rate + peek_rate) * TICK
 	peeked += peek_rate * TICK
 	if stolen > 0.0:
@@ -716,7 +757,11 @@ func _tick() -> Dictionary:
 	# Blame, for the postmortem and the bubbles.
 	var tags := []
 	var lost := failed * TICK + (total * TICK * 0.2 if page > 3.0 else 0.0)
-	if not cloud and (_garage["down"] > 0 or down_now):
+	if not built:
+		var why := "sold" if cfg.get("sold", false) else "nothing_built"
+		tags.append(why)
+		_blame(why, total * TICK * 1000.0)
+	elif not cloud and (_garage["down"] > 0 or down_now):
 		tags.append("garage_melt")
 	elif lost > 0.0:
 		if cloud and util.get("app", 0.0) > 0.9:
@@ -795,6 +840,10 @@ func _tick() -> Dictionary:
 	if confirm_give_up >= 0.1:
 		tags.append("confirm_fatigue")
 		_blame("confirm_fatigue", runs * TICK * confirm_give_up * 10.0)
+	if built and not fit.is_empty() and fit_share < 0.9:
+		var why := "vague" if cfg.get("concierge", false) else "wrong_thing"
+		tags.append(why)
+		_blame(why, r["search"] * TICK * (1.0 - fit_share) * 10.0)
 	if dash_on and age > _age_limit:
 		var why := "silent_failure" if pipeline_broken else "stale_numbers"
 		tags.append(why)
@@ -808,6 +857,163 @@ func _tick() -> Dictionary:
 		"pay": deposits_on, "bad_charges": bad_charges, "double_bookings": double_bookings,
 		"stolen": stolen * 60.0, "peeked": peeked,
 		"made_up": made_up, "fooled": fooled, "unasked": unasked, "agent": agent_on,
+	}
+
+
+## A landing page and its waitlist (Episode 2), a night of its own: the
+## diners' app isn't public yet, so the only traffic is visitors loading
+## the page and joining the waitlist. Off unless the episode has
+## `live.landing`.
+##
+## A static page is the same files for everyone, so a static host copies
+## them to servers near every visitor and no server of ours builds it. A
+## dynamic page is built by our backend for every visit, reading its words
+## from the database and sending its photo itself, so one small server
+## queues like any other box. A sign-up has to be kept somewhere: a form
+## service (someone else's backend), or our backend and its database. A
+## static page alone has nowhere to send it.
+##
+## A bad change (`live.bad_change`) goes live at a scripted tick and breaks
+## the sign-up box. With Git, a rollback to the last commit fixes it in
+## minutes, if there's a commit from just before the change; one commit a
+## day goes back to before the page existed, so the site is gone until
+## Aleister rebuilds it by hand. Without Git (or with the rollback cut),
+## Aleister rebuilds it by hand, from what it remembers.
+func _tick_landing() -> Dictionary:
+	var ld: Dictionary = live["landing"]
+	var visitors := keyed(ld["visitors"], tick) * scale
+	var views := visitors * float(ld["views"]) / 60.0
+	var signups := visitors * float(ld["signups"]) / 60.0
+	var page_on: bool = cfg.get("page", false)
+	var static_site: bool = cfg.get("static", false)
+	var backend: bool = cfg.get("backend", false)
+	var pg: bool = cfg.get("postgres", false)
+	var form: bool = cfg.get("form", false)
+	var net: Dictionary = Season.pieces()["network"]
+
+	# The bad change, and how long it stays broken.
+	var bc: Dictionary = live.get("bad_change", {})
+	var broken := false
+	var gone := false
+	var bc_tag := ""
+	if not bc.is_empty() and tick >= int(bc["at"]):
+		if cfg.get("rollback", false) and _rolled_at < 0:
+			_rolled_at = tick
+		var fixed_at := int(bc["at"]) + int(bc["by_hand"])
+		var each: bool = str(cfg.get("commits", "daily")) == "each"
+		if _rolled_at >= 0 and each:
+			fixed_at = mini(fixed_at, _rolled_at + int(bc["rollback"]))
+		elif _rolled_at >= 0:
+			gone = tick < fixed_at
+		broken = tick < fixed_at
+		if broken:
+			if _rolled_at >= 0:
+				bc_tag = "rolled_back" if each else "commit_often"
+			elif not cfg.get("git", false):
+				bc_tag = "no_git"
+			else:
+				# Until the rollback is offered, it's just the change that broke;
+				# after that, a skipped rollback.
+				var offered := 0
+				for h in live.get("hotfixes", []):
+					if h.get("changes", [{}])[0].get("set", "") == "rollback":
+						offered = int(h["tick"])
+				bc_tag = "bad_change" if tick <= offered else "rollback_skipped"
+
+	# Where the page comes from.
+	var dynamic := page_on and not static_site and backend and not gone
+	var web_load := 0.0
+	var db_load := 0.0
+	if dynamic:
+		web_load += views * (float(ld["page_app"]) + float(ld["assets"]))
+		if pg:
+			db_load += views * float(ld["page_db"])
+	var to_backend := not form and backend and pg
+	if to_backend:
+		web_load += signups * float(ld["signup_app"])
+		db_load += signups * float(ld["signup_db"])
+	var util := {}
+	var web_ok := 1.0
+	var web_lat := 0.0
+	var db_ok := 1.0
+	var db_lat := 0.0
+	if backend:
+		var app_piece: Dictionary = pieces["app_server"]
+		var res := _box(_web, web_load, float(app_piece["sizes"]["S"]["capacity"]), float(app_piece["latency"]))
+		web_ok = 1.0 - res["drop"]
+		web_lat = res["latency"]
+		util["web"] = res["u"]
+	if pg:
+		var pgp: Dictionary = pieces["postgres"]
+		var res := _box(_signups_db, db_load, float(pgp["capacity"]), float(pgp["latency"]))
+		db_ok = 1.0 - res["drop"]
+		db_lat = res["latency"]
+		util["signups_db"] = res["u"]
+
+	var page_ok := 0.0
+	var page := 0.0
+	if page_on and not gone:
+		if static_site:
+			page_ok = 1.0
+			page = float(net["base"])
+			cdn_bill += views * TICK * float(pieces["cdn"]["per_request"])
+		elif dynamic:
+			page_ok = web_ok * (db_ok if pg else 1.0)
+			page = float(net["base"]) + float(net["no_cdn"]) + web_lat + (db_lat if pg else 0.0)
+	var video: bool = cfg.get("video", false)
+	if video and page_ok > 0.0:
+		page += float(ld["video_latency"])
+		cdn_bill += views * TICK * float(ld["video_price"])
+
+	# Where a sign-up goes.
+	var dest_ok := 0.0
+	if form:
+		dest_ok = 1.0
+	elif to_backend:
+		dest_ok = web_ok * db_ok
+	var works := page_ok * dest_ok * (0.0 if broken else 1.0)
+	var give_up := float(ld["accounts_give_up"]) if cfg.get("accounts", false) else 0.0
+	var abandon := clampf((page - 2.0) / 4.0, 0.0, 1.0) * 0.6
+	var signup_ok := works * (1.0 - give_up) * (1.0 - abandon)
+
+	var total := views + signups
+	var failed := views * (1.0 - page_ok) + signups * (1.0 - works)
+	var err_share := failed / total if total > 0.0 else 0.0
+	var down_now := err_share > DOWN_SHARE
+	if down_now:
+		down_ticks += 1
+	elif page_ok > 0.5:
+		peak_latency = maxf(peak_latency, page)
+	signup_tries += signups * TICK
+	signed += signups * TICK * signup_ok
+
+	var tags := []
+	if not page_on:
+		tags.append("no_page")
+		_blame("no_page", total * TICK * 1000.0)
+	elif not static_site and not backend:
+		tags.append("no_server")
+		_blame("no_server", total * TICK * 1000.0)
+	elif dynamic and util.get("web", 0.0) > 0.9 and (page > 3.0 or web_ok < 1.0):
+		tags.append("landing_overload")
+		_blame("landing_overload", views * TICK * (1.0 - web_ok) + total * TICK * 0.2)
+	if page_on and not form and not to_backend:
+		tags.append("nowhere_to_sign_up")
+		_blame("nowhere_to_sign_up", signups * TICK * 100.0)
+	if give_up > 0.0:
+		tags.append("accounts")
+		_blame("accounts", signups * TICK * give_up * 10.0)
+	if video and page_ok > 0.0:
+		tags.append("video")
+		_blame("video", views * TICK * 0.2)
+	if bc_tag != "":
+		tags.append(bc_tag)
+		_blame(bc_tag, (total * TICK * 100.0) if gone else (signups * TICK * (1.0 if bc_tag in ["rolled_back", "bad_change"] else 100.0)))
+
+	return {
+		"tick": tick, "diners": visitors, "page": minf(page, 30.0), "err": err_share, "down": down_now,
+		"util": util, "tags": tags, "hits": {}, "money": _money_so_far(), "count": 1,
+		"backlog": 0.0, "cloud": true, "signed": signed, "broken": broken,
 	}
 
 
@@ -878,6 +1084,15 @@ static func monthly_of(cfg: Dictionary) -> float:
 		m += float(pieces["waf"]["monthly"])
 	if cfg.get("rag", false):
 		m += float(pieces["index"]["monthly"])
+	# The front half's small boards (Episodes 1 and 2).
+	if cfg.get("feed", false):
+		m += float(pieces["feed"]["monthly"])
+	if cfg.get("backend", false):
+		m += float(pieces["app_server"]["sizes"]["S"]["monthly"])
+	if cfg.get("postgres", false):
+		m += float(pieces["postgres"]["monthly"])
+	if cfg.get("form", false):
+		m += float(pieces["form"]["monthly"])
 	return m
 
 
@@ -904,6 +1119,8 @@ func result() -> Dictionary:
 		"agent_success": agent_done / agent_tries if agent_tries > 0.0 else 0.0,
 		"bad_answers": (made_up + hijacked) / answered if answered > 0.0 else 0.0,
 		"unasked": floorf(unasked + 0.5),
+		"fit_success": fit_done / fit_tries if fit_tries > 0.0 else 0.0,
+		"signup_success": signed / signup_tries if signup_tries > 0.0 else 0.0,
 	}
 	var goals := []
 	var passed := true
@@ -938,6 +1155,10 @@ func result() -> Dictionary:
 	for h in live.get("hotfixes", []):
 		if h.has("tag") and _hotfixed.has(h["id"]) and plan.hotfix.get(h["id"], false):
 			blame[h["tag"]] = 1.0e8
+	# The minutes before a rollback belong to the rollback's finding.
+	if blame.has("rolled_back") and blame.has("bad_change"):
+		blame["rolled_back"] += blame["bad_change"]
+		blame.erase("bad_change")
 	if passed and runway < float(budget["par"]):
 		blame["overbuilt"] = 1.0
 	var order := blame.keys()
@@ -948,7 +1169,7 @@ func result() -> Dictionary:
 		"model_bill": model_bill, "cdn_bill": cdn_bill, "pay_bill": pay_bill, "incidents": incidents, "revenue": revenue,
 		"stolen_bill": stolen_bill, "stolen_calls": stolen_calls, "peeked": peeked,
 		"made_up": made_up, "hijacked": hijacked, "fooled": fooled, "unasked": unasked, "cancelled": cancelled,
-		"booked": booked, "melts": melts, "tags": order, "monthly_extra": monthly_extra(),
+		"booked": booked, "melts": melts, "signed": signed, "signup_tries": signup_tries, "tags": order, "monthly_extra": monthly_extra(),
 	}
 
 

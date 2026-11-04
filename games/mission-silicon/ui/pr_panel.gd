@@ -8,6 +8,9 @@ extends Control
 
 signal changed
 signal ask_pressed(id: String)
+## A card, the questions or a box was opened (the first episode's
+## tutorial says a line the first time each is).
+signal opened(what: String)
 
 const TTL_NAMES := {0: "off", 10: "10 sec", 30: "30 sec", 60: "1 min", 600: "10 min", 3600: "1 hour"}
 
@@ -83,6 +86,7 @@ func show_list() -> void:
 func show_asks() -> void:
 	mode = "asks"
 	_start("Ask Aleister", true)
+	opened.emit("asks")
 	for a in ep.get("asks", []):
 		var b := UI.button(a["text"], "cut" if plan.asked.has(a["id"]) else "normal", Vector2(size.x - 14, Palette.TAP))
 		b.name = "Ask_" + a["id"]
@@ -113,6 +117,7 @@ func _keep_button(id: String, min_size: Vector2) -> Button:
 
 func show_card(id: String) -> void:
 	mode = "card"
+	opened.emit("card")
 	var c := plan.card(id)
 	_start(c["label"], true)
 	_body.add_child(UI.label(c["term"], Palette.BODY, Palette.GREEN_DARK))
@@ -146,6 +151,7 @@ func show_card(id: String) -> void:
 
 func show_box(id: String) -> void:
 	mode = "box"
+	opened.emit("box")
 	var piece_id := _piece_for(id)
 	var piece: Dictionary = Season.pieces()["pieces"].get(piece_id, {})
 	_start(piece.get("label", id), true)
@@ -170,7 +176,16 @@ func show_box(id: String) -> void:
 func _piece_for(id: String) -> String:
 	match id:
 		"app":
-			return "app_server" if plan.config()["host"] == "cloud" else "garage_server"
+			var cfg := plan.config()
+			if cfg["host"] == "cloud":
+				return "app_server"
+			return "prototype" if cfg.has("concierge") else "garage_server"
+		"phones":
+			return "visitors" if plan.config().has("page") else "phones"
+		"page":
+			return "landing"
+		"web":
+			return "backend"
 		"db":
 			return "postgres"
 		"cache":
