@@ -840,7 +840,7 @@
 				{"metric": "down_ticks", "max": 20, "label": "Down no more than 20 minutes"},
 				{"metric": "booking_success", "min": 0.9, "label": "9 in 10 bookings work"},
 				{"metric": "lost_bookings", "max": 0, "label": "Every booking kept"},
-				{"metric": "double_bookings", "max": 0, "label": "No table booked twice"}
+				{"metric": "double_bookings", "max": 0, "label": "Under 1 table booked twice"}
 			],
 			"incidents": {"lost_booking": 40, "double_booking": 40},
 			"solution": {
@@ -998,7 +998,7 @@
 				{"metric": "down_ticks", "max": 5, "label": "Up all evening"},
 				{"metric": "login_success", "min": 0.9, "label": "9 in 10 can log in"},
 				{"metric": "leaks", "max": 0, "label": "Each restaurant sees its own"},
-				{"metric": "takeovers", "max": 0, "label": "No accounts taken over"},
+				{"metric": "takeovers", "max": 0, "label": "Under 1 account taken over"},
 				{"metric": "pw_exposed", "max": 0, "label": "No passwords readable"}
 			],
 			"incidents": {"leak": 20000, "takeover": 30, "breach": 25000},
@@ -2588,7 +2588,7 @@
 				{"metric": "booking_success", "min": 0.95, "label": "19 in 20 bookings work"},
 				{"metric": "search_success", "min": 0.95, "label": "19 in 20 searches answered"},
 				{"metric": "dashboard_age", "max": 60, "label": "Board's numbers under an hour old"},
-				{"metric": "bad_charges", "max": 0, "label": "Nobody charged wrongly"},
+				{"metric": "bad_charges", "max": 0, "label": "Under 1 diner charged wrongly"},
 				{"metric": "double_bookings", "max": 0, "label": "No table booked twice"},
 				{"metric": "key_abuse", "max": 0, "label": "Nobody else on our key"},
 				{"metric": "leaks", "max": 0, "label": "Nobody sees others' bookings"},

@@ -634,7 +634,7 @@ Title card: **THE SPREADSHEET**.
 Veronica: on Friday the whole waitlist can book, two thousand at a time at the peak, and Walter's money isn't for buying strangers dinner. Aleister kept the spreadsheet because Ulrich asked, and made it better: Spreadsheet Scale.
 
 - **Budget**: $400k in the bank (Walter's yes), $30k a month, so 13.3 months of runway (the fee earns some back). 6 hours to build.
-- **Goal**: down no more than 20 minutes, nine bookings in ten work, every booking kept, no table booked twice.
+- **Goal**: down no more than 20 minutes, nine bookings in ten work, every booking kept, under one table booked twice.
 
 ### Aleister's pull request: "Spreadsheet Scale"
 
@@ -727,7 +727,7 @@ Title card: **LOG IN**.
 Veronica: diners get accounts on Friday to see their bookings, and the forty restaurants log in to see theirs; Gerard's focus group tries it first. Aleister has written the login itself.
 
 - **Budget**: $410k in the bank, $30k a month, so 13.7 months of runway. 6 hours to build.
-- **Goal**: up all evening, nine in ten can log in, each restaurant sees only its own bookings, no accounts taken over, no passwords anyone could read.
+- **Goal**: up all evening, nine in ten can log in, each restaurant sees only its own bookings, under one account taken over, no passwords anyone could read.
 
 ### Aleister's pull request: "Accounts"
 
@@ -1521,7 +1521,7 @@ Title card: **FINALE**.
 Veronica: Ravello funds sixty cities on one condition: Friday night all sixty go live at once, and Walter watches. Walter: spring was too far away; he prefers days. Veronica: everything that went wrong this season will try again on a bigger night, and nothing we fixed is allowed to break. Aleister: Forkcast Infinite needs 114.5 hours; we have sixteen.
 
 - **Budget**: $880k in the bank, $80k a month, so 10.8 months of runway on the board as it stands. 16 hours to build.
-- **Goal**, eleven conditions, the season's together: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, the board's numbers under an hour old, nobody charged wrongly, no table booked twice, nobody else on our key, nobody sees anyone else's bookings, forty-nine answers in fifty true, under one job done without asking.
+- **Goal**, eleven conditions, the season's together: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, the board's numbers under an hour old, under one diner charged wrongly, no table booked twice, nobody else on our key, nobody sees anyone else's bookings, forty-nine answers in fifty true, under one job done without asking.
 
 ### Aleister's pull request: "Forkcast Infinite"
 
