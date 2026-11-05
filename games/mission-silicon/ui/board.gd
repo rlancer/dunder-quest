@@ -749,8 +749,9 @@ func _bubble_spot(r: Rect2, tw: float, drawn: Array[Rect2]) -> Vector2:
 
 
 func _bubble_clear(rect: Rect2, drawn: Array[Rect2], of_boxes: bool) -> bool:
+	# Bubbles keep a pixel apart, so two never read as one.
 	for d in drawn:
-		if d.intersects(rect):
+		if d.grow(1.0).intersects(rect):
 			return false
 	if not of_boxes:
 		return true
@@ -768,10 +769,13 @@ func _find_bubble_spot(r: Rect2, tw: float, drawn: Array[Rect2]) -> Vector2:
 	for b in _badge_rects:
 		if b.position.x < r.end.x and b.end.x > r.position.x and b.position.y >= r.end.y and b.position.y < r.end.y + 30.0:
 			under = maxf(under, b.end.y + 1.0)
+	# Rows above and under, nearest first, in 2 px steps, so a bubble
+	# blocked by another can tuck in just past it instead of a whole row
+	# further out (Demo Day's "Key read from app!" under the diners).
 	var rows := []
-	for k in 4:
-		rows.append(r.position.y - 14.0 - k * 14.0)
-		rows.append(under + k * 14.0)
+	for k in 28:
+		rows.append(r.position.y - 14.0 - k * 2.0)
+		rows.append(under + k * 2.0)
 	var cx := r.get_center().x - tw / 2.0
 	var xs := [cx, r.position.x, r.end.x - tw, cx - tw / 2.0 - 4.0, cx + tw / 2.0 + 4.0]
 	var fallback := Vector2(-1, -1)

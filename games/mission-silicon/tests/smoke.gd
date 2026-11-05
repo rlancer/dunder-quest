@@ -1,6 +1,6 @@
 extends Node
 
-## Loads the title and every built episode for a few frames and quits.
+## Loads the title (skipping its flyover) and every built episode for a few frames and quits.
 ## godot --headless --path . res://tests/smoke.tscn   ->  SMOKE result=ok
 
 
@@ -16,6 +16,19 @@ func _run() -> void:
 	tree.change_scene_to_file("res://ui/boot.tscn")
 	for _i in 10:
 		await tree.process_frame
+	# The title flyover plays over the season screen first; skipped, it goes.
+	var fly := tree.current_scene.find_child("Flyover", true, false) as Flyover
+	if fly == null:
+		print("SMOKE result=fail no title flyover")
+		tree.quit(1)
+		return
+	fly.skip()
+	for _i in 60:
+		await tree.process_frame
+	if is_instance_valid(fly):
+		print("SMOKE result=fail the title flyover didn't skip")
+		tree.quit(1)
+		return
 	print("ok title")
 	var sounds := []
 	for track in Sound.TRACKS:

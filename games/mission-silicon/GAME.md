@@ -634,7 +634,7 @@ Title card: **THE SPREADSHEET**.
 Veronica: on Friday the whole waitlist can book, two thousand at a time at the peak, and Walter's money isn't for buying strangers dinner. Aleister kept the spreadsheet because Ulrich asked, and made it better: Spreadsheet Scale.
 
 - **Budget**: $400k in the bank (Walter's yes), $30k a month, so 13.3 months of runway (the fee earns some back). 6 hours to build.
-- **Goal**: never down 20 minutes, nine bookings in ten work, every booking kept, no table booked twice.
+- **Goal**: down no more than 20 minutes, nine bookings in ten work, every booking kept, no table booked twice.
 
 ### Aleister's pull request: "Spreadsheet Scale"
 
@@ -1421,7 +1421,7 @@ Title card: **THE CONFERENCE**.
 Veronica: on at six tomorrow; Ricky asks the concierge for a table, live, and it books one by itself; then everyone watching the stream tries it, fourteen thousand diners by seven. One night to build; it has to book, tell the truth about the menus, and never do anything a diner didn't ask for. Aleister: its plan is called Full Autonomy, and it gave the concierge every tool we have, so it's never stuck.
 
 - **Budget**: $900k in the bank (the lawyers, and the conference), $80k a month, so 11.0 months of runway on the board as it stands. 8 hours to build, overnight.
-- **Goal**: up all night, pages under 3 seconds, nineteen bookings in twenty work, nine concierge jobs in ten done, forty-nine answers in fifty true (neither made up nor repeating a planted message), and nothing done without asking (no deposit a diner didn't approve, no booking of anyone's cancelled by the concierge).
+- **Goal**: up all night, pages under 3 seconds, nineteen bookings in twenty work, nine concierge jobs in ten done, forty-nine answers in fifty true (neither made up nor repeating a planted message), and under one job done without asking (no deposit a diner didn't approve, no booking of anyone's cancelled by the concierge).
 
 ### Aleister's pull request: "Full autonomy"
 
@@ -1521,7 +1521,7 @@ Title card: **FINALE**.
 Veronica: Ravello funds sixty cities on one condition: Friday night all sixty go live at once, and Walter watches. Walter: spring was too far away; he prefers days. Veronica: everything that went wrong this season will try again on a bigger night, and nothing we fixed is allowed to break. Aleister: Forkcast Infinite needs 114.5 hours; we have sixteen.
 
 - **Budget**: $880k in the bank, $80k a month, so 10.8 months of runway on the board as it stands. 16 hours to build.
-- **Goal**, eleven conditions, the season's together: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, the board's numbers under an hour old, nobody charged wrongly, no table booked twice, nobody else on our key, nobody sees anyone else's bookings, forty-nine answers in fifty true, nothing done without asking.
+- **Goal**, eleven conditions, the season's together: up all night, pages under 3 seconds, nineteen bookings in twenty work, nineteen searches in twenty answered, the board's numbers under an hour old, nobody charged wrongly, no table booked twice, nobody else on our key, nobody sees anyone else's bookings, forty-nine answers in fifty true, under one job done without asking.
 
 ### Aleister's pull request: "Forkcast Infinite"
 

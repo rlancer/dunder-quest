@@ -23,6 +23,7 @@ It's its own Godot 4.7 project, beside `../curb/` and the others. `scripts/expor
 
 ```sh
 python tools/art.py                                          # the close-ups and backdrops that are missing (OpenRouter key in the repo's .env)
+python tools/flyover.py                                      # the title flyover's parallax layers that are missing
 python tools/music.py                                        # the music and stings that are missing
 godot --headless --path . --import
 godot --headless --path . --script res://tests/coverage.gd   # COVERAGE result=ok: every curriculum module has an episode
@@ -30,6 +31,7 @@ godot --headless --path . --script res://tests/cases.gd      # CASES result=ok: 
 godot --headless --path . res://tests/smoke.tscn             # SMOKE result=ok: everything loads, every music track and sting included
 godot --headless --path . res://tests/bot.tscn               # BOT result=ok: plays every episode through the UI, take one and take two
 godot --path . res://tests/bot.tscn -- shots                 # the same, with screenshots into tests/shots/ (needs a window)
+godot --path . res://tests/bot.tscn -- shots phone=844x390   # at a phone held sideways, also checking sizes on its screen
 bash tests/check.sh                                          # all of it
 godot --path . res://tools/site_art.tscn                     # after the shots: the page's screenshots and social card, into site/static/img/
 ```

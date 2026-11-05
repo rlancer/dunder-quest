@@ -5,7 +5,8 @@ extends Control
 ## page. A built episode is a tile to tap, with its best runway and its
 ## three marks (Live, Lean, Ulrich) once it's been played; one still to come
 ## is a quiet tile with its title. Every episode starts from its own board,
-## so any built one can be played first.
+## so any built one can be played first. The first time a session, the
+## title flyover (ui/flyover.gd) plays over it.
 
 const EPISODE := preload("res://scenes/episode.gd")
 const COLS := 7
@@ -31,13 +32,15 @@ func _ready() -> void:
 	var line := UI.place(UI.panel(Palette.GREEN), Rect2(200, 52, 80, 3))
 	line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(line)
-	var sub := UI.place(UI.label("A Dunder Quest game. You can't code. Your AI can, a bit too confidently.", Palette.BODY, Palette.SLATE_MID), Rect2(0, 58, 480, 12)) as Label
+	var sub := UI.label("A Dunder Quest game. You can't code. Your AI can, a bit too confidently.", Palette.BODY, Palette.SLATE_MID)
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	# A new label's first minimum width is measured at the default font
-	# size (555 px for this line), which stretched it past the screen and
-	# pushed the centred text right. Clipping drops that minimum; the line
-	# fits with room to spare.
+	# A new label's minimum width is measured at the default font size
+	# (555 px for this line), and placing it first stretched it past the
+	# screen, pushing the centred text right. Clipping drops that minimum,
+	# so it has to be set before the label is sized; the line fits with
+	# room to spare.
 	sub.clip_text = true
+	UI.place(sub, Rect2(0, 58, 480, 12))
 	add_child(sub)
 
 	var outline: Array = Season.data().get("outline", [])
@@ -58,6 +61,9 @@ func _ready() -> void:
 	var foot := UI.place(UI.label(have + "  Marks: Live, Lean, Ulrich.",Palette.BODY, Palette.SLATE_MID), Rect2(0, y0 + 2 * TILE.y + GAP + 4, 480, 12)) as Label
 	foot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(foot)
+	# The San Francisco flyover, over all this, the first time a session.
+	if not Flyover.seen:
+		add_child(Flyover.new())
 
 
 ## A built episode: its number, its title, and once played, its best runway
@@ -75,15 +81,15 @@ func _tile(ep: Dictionary, at: Vector2) -> Button:
 	_fill(b, id, ep.get("tile", ep["title"]), Palette.GREEN_DARK, Palette.SLATE)
 	var best: Dictionary = Progress.best.get(str(id), {})
 	if best.is_empty():
-		b.add_child(UI.place(UI.label("new", Palette.BODY, Palette.GREEN_DARK), Rect2(4, 47, 52, 11)))
+		b.add_child(UI.place(UI.label("new", Palette.BODY, Palette.GREEN_DARK), Rect2(4, 49, 52, 11)))
 	else:
-		b.add_child(UI.place(UI.label("%.1f mo" % best["runway"], Palette.BODY, Palette.SLATE), Rect2(4, 47, 52, 11)))
+		b.add_child(UI.place(UI.label("%.1f mo" % best["runway"], Palette.BODY, Palette.SLATE), Rect2(4, 49, 52, 11)))
 		var mx := 4.0
 		for m in ["live", "lean", "ulrich"]:
 			var dot := ColorRect.new()
 			dot.color = Palette.GREEN if best.get(m, false) else Palette.RULE
 			dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			UI.place(dot, Rect2(mx, 61, 14, 6))
+			UI.place(dot, Rect2(mx, 63, 14, 6))
 			b.add_child(dot)
 			mx += 17.0
 	return b
@@ -100,7 +106,7 @@ func _soon(entry: Dictionary, at: Vector2) -> Control:
 
 func _fill(c: Control, id: int, title: String, number_color: Color, title_color: Color) -> void:
 	c.add_child(UI.place(UI.title(str(id), 16, number_color), Rect2(4, 1, 52, 20)))
-	var t := UI.place(UI.label(title, Palette.BODY, title_color, true), Rect2(4, 21, 54, 26)) as Label
+	var t := UI.place(UI.label(title, Palette.BODY, title_color, true), Rect2(4, 19, 54, 26)) as Label
 	t.clip_text = false
 	c.add_child(t)
 
