@@ -408,7 +408,7 @@
 			"place": "The living room. Tuesday, 2am.",
 			"backdrop": "argument",
 			"spots": {"phones": [4, 92], "page": [62, 36], "form": [120, 36], "front": [62, 92], "app": [120, 92], "db": [178, 92], "model": [178, 36], "git": [120, 156], "notebook": [178, 156]},
-			"notes": [{"at": [240, 100], "text": "TABS"}, {"at": [240, 118], "text": "SPACES"}, {"at": [236, 40], "text": "Fri: the beta"}],
+			"notes": [{"at": [240, 100], "text": "TABS"}, {"at": [240, 118], "text": "SPACES"}, {"at": [224, 16], "text": "Fri: the beta"}],
 			"cold_open": [
 				{"who": "danesh", "say": "Zig. It's fast, it's new, and nobody at Hubbub can read it. That's not a language, that's a moat."},
 				{"who": "gilroy", "say": "Rust. It's fast, it's correct, and it doesn't care how you feel. Like me."},
@@ -837,7 +837,7 @@
 				]
 			},
 			"goal": [
-				{"metric": "down_ticks", "max": 20, "label": "Never down 20 minutes"},
+				{"metric": "down_ticks", "max": 20, "label": "Down no more than 20 minutes"},
 				{"metric": "booking_success", "min": 0.9, "label": "9 in 10 bookings work"},
 				{"metric": "lost_bookings", "max": 0, "label": "Every booking kept"},
 				{"metric": "double_bookings", "max": 0, "label": "No table booked twice"}
@@ -2339,7 +2339,7 @@
 				{"metric": "booking_success", "min": 0.95, "label": "19 in 20 bookings work"},
 				{"metric": "agent_success", "min": 0.9, "label": "9 in 10 concierge jobs done"},
 				{"metric": "bad_answers", "max": 0.02, "label": "49 in 50 answers true"},
-				{"metric": "unasked", "max": 0, "label": "Nothing done without asking"}
+				{"metric": "unasked", "max": 0, "label": "Under 1 job done without asking"}
 			],
 			"incidents": {"bad_charge": 40, "cancelled": 150},
 			"solution": {
@@ -2593,7 +2593,7 @@
 				{"metric": "key_abuse", "max": 0, "label": "Nobody else on our key"},
 				{"metric": "leaks", "max": 0, "label": "Nobody sees others' bookings"},
 				{"metric": "bad_answers", "max": 0.02, "label": "49 in 50 answers true"},
-				{"metric": "unasked", "max": 0, "label": "Nothing done without asking"}
+				{"metric": "unasked", "max": 0, "label": "Under 1 job done without asking"}
 			],
 			"incidents": {"leak": 60000, "bad_charge": 40, "double_booking": 150, "cancelled": 150},
 			"solution": {

@@ -11,18 +11,33 @@ extends Node
 ##
 ## godot --headless --path . res://tests/bot.tscn               ->  BOT result=ok
 ## godot --path . res://tests/bot.tscn -- shots                  (screenshots into tests/shots/)
+## godot --path . res://tests/bot.tscn -- shots phone=844x390    (at a phone held sideways,
+##                                                                into tests/shots/phone_844x390/)
+##
+## At a phone size the window is that many pixels, with the project's own
+## stretch settings, and every tap target and text size is also checked
+## after scaling (30x30 and 9 px on the phone's screen). It starts with the
+## phone held upright (390x844) to check the "turn your phone sideways" card.
 
 const CAP := 60 * 120
 
 var _fails: PackedStringArray = []
 var _shots: bool = false
 var _shot_n: int = 0
+var _dir: String = "res://tests/shots"
+## The window at a phone size (zero: the project's own window).
+var _phone: Vector2i = Vector2i.ZERO
 var ep_node: Episode
 
 
 func _ready() -> void:
 	Progress.persist = false
 	_shots = OS.get_cmdline_user_args().has("shots")
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("phone="):
+			var wh := arg.trim_prefix("phone=").split("x")
+			_phone = Vector2i(int(wh[0]), int(wh[1]))
+			_dir = "res://tests/shots/phone_%dx%d" % [_phone.x, _phone.y]
 	_run.call_deferred()
 
 
@@ -35,9 +50,14 @@ func _run() -> void:
 	Episode.test_ticks_per_frame = 4 if _shots else 30
 	Episode.test_stay = true
 	if _shots:
-		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://tests/shots"))
+		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_dir))
+		if _phone != Vector2i.ZERO:
+			await _upright()
+			get_window().size = _phone
+			await _frames(10)
 		tree.change_scene_to_file("res://ui/boot.tscn")
 		await _frames(10)
+		await _flyover()
 		await _shot("title")
 	for ep in Season.episodes():
 		await _play(ep)
@@ -55,13 +75,51 @@ func _frames(n: int) -> void:
 		await get_tree().process_frame
 
 
-func _shot(name: String) -> void:
+func _shot(name: String, numbered: bool = true) -> void:
 	if not _shots:
 		return
 	await RenderingServer.frame_post_draw
-	_shot_n += 1
 	var img := get_viewport().get_texture().get_image()
-	img.save_png("res://tests/shots/%02d_%s.png" % [_shot_n, name])
+	if not numbered:
+		img.save_png("%s/00_%s.png" % [_dir, name])
+		return
+	_shot_n += 1
+	img.save_png("%s/%02d_%s.png" % [_dir, _shot_n, name])
+
+
+## The phone held upright: the "turn your phone sideways" card must cover
+## the screen, its text readable.
+func _upright() -> void:
+	get_window().size = Vector2i(390, 844)
+	await _frames(10)
+	if not Sideways.upright() or not Sideways.covered():
+		_fail("upright, the sideways card isn't showing")
+	await _shot("upright_390x844", false)
+
+
+## The title flyover plays first, once a session: one shot partway through,
+## then a tap skips it to the season screen.
+func _flyover() -> void:
+	var fly := get_tree().current_scene.find_child("Flyover", true, false) as Control
+	if fly == null:
+		_fail("no title flyover before the season screen")
+		return
+	await get_tree().create_timer(7.0).timeout
+	await _shot("flyover", false)
+	var at := get_viewport().get_visible_rect().get_center()
+	for pressed in [true, false]:
+		var ev := InputEventMouseButton.new()
+		ev.button_index = MOUSE_BUTTON_LEFT
+		ev.pressed = pressed
+		ev.position = at
+		ev.global_position = at
+		get_viewport().push_input(ev, true)
+		await get_tree().process_frame
+	# A tap that only unlocked the browser's sound doesn't skip; there's no
+	# such lock off the web.
+	await get_tree().create_timer(1.0).timeout
+	if is_instance_valid(fly) and fly.is_inside_tree():
+		_fail("a tap didn't skip the title flyover")
 
 
 func _wait_phase(want: String) -> bool:
@@ -116,6 +174,8 @@ func _check_layout(where: String) -> void:
 func _check_node(n: Node, where: String) -> void:
 	if n is CanvasItem and not (n as CanvasItem).is_visible_in_tree():
 		return
+	if _phone != Vector2i.ZERO and (n is Button or n is Label):
+		_check_on_phone(n as Control, where)
 	if n is Button and n.get_parent() != null:
 		var r := (n as Button).get_global_rect()
 		if r.size.x < Palette.TAP - 0.5 or r.size.y < Palette.TAP - 0.5:
@@ -134,6 +194,18 @@ func _check_node(n: Node, where: String) -> void:
 			_fail("%s: '%s' is clipped (%d px of text in %d)" % [where, b.text, w, room])
 	for c in n.get_children():
 		_check_node(c, where)
+
+
+## At a phone size: the same control as the phone's screen shows it, after
+## the stretch (min of width / 480 and height / 270, the "keep" aspect).
+func _check_on_phone(c: Control, where: String) -> void:
+	var s := minf(_phone.x / 480.0, _phone.y / 270.0)
+	if c is Button:
+		var r := c.get_global_rect()
+		if r.size.x * s < 30.0 - 0.5 or r.size.y * s < 30.0 - 0.5:
+			_fail("%s at %dx%d: %s is %dx%d on screen, under a tap target" % [where, _phone.x, _phone.y, c.name, r.size.x * s, r.size.y * s])
+	if c.get_theme_font_size("font_size") * s < 9.0:
+		_fail("%s at %dx%d: %s text is %.1f px on screen" % [where, _phone.x, _phone.y, c.name, c.get_theme_font_size("font_size") * s])
 
 
 ## Watches the live moment through to the postmortem, answering each
