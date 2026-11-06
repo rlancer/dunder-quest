@@ -333,14 +333,20 @@ td.when { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--
 
   <section aria-labelledby="cov">
     <h2 id="cov">What Level One covers</h2>
-    <p class="intro">Level One becomes the season's map: a first pass through the modules every later episode goes deeper on. Later episodes keep their lessons; they start from a map the player already has.</p>
+    <p class="intro">Level One becomes the season's map: a first pass through the modules every later episode goes deeper on. Each later episode in the draft season below starts from that map and goes deeper.</p>
     <div class="tbl-wrap"><table id="covtable"><thead><tr><th>Module</th><th>Frames</th><th>What the player takes away</th><th>Goes deeper in</th></tr></thead><tbody></tbody></table></div>
   </section>
 
   <section aria-labelledby="dec">
-    <h2 id="dec">Decisions for Rob</h2>
-    <p class="intro">Each changes something already decided in GAME.md or the season, so they need a yes before the build.</p>
+    <h2 id="dec">Decided</h2>
+    <p class="intro">From Rob's answers, November 2026. Where he had no preference, the recommendation stands.</p>
     <div class="qs" id="questions"></div>
+  </section>
+
+  <section aria-labelledby="season">
+    <h2 id="season">The season, reworked (draft)</h2>
+    <p class="intro">Every episode is redesigned the way Level One is: a problem from the show, two or three real decisions an AI builder faces, each laid out against the episode's requirements, the AI's plan to read, a live moment that shows each decision playing out, and a decision record. Thirteen episodes instead of fourteen; every curriculum module stays covered. A draft for review: each episode gets its own storyboard before it's built.</p>
+    <div class="tbl-wrap"><table id="seasontable"><thead><tr><th>#</th><th>Episode</th><th>The decisions</th><th>Modules</th><th>The live moment shows</th></tr></thead><tbody></tbody></table></div>
   </section>
 </div>
 
@@ -386,20 +392,36 @@ const COVERAGE = [
   ["0 · Building with AI", "9, 11", "Read the AI's plan box by box, catch what it got wrong, and write down why each decision was made", "Every episode"],
   ["1 · The shape of a web app", "2, 3", "Frontend, backend, database and API, and one request followed end to end", "2"],
   ["3 · The language map", "4", "Swift and Kotlin for phones, JavaScript and TypeScript for the web, and why AIs default to React", "3"],
-  ["4 · The frontend", "4, 5, 9", "Web app, installable web app, native and cross-platform, with what each costs; mobile first", "4"],
-  ["5 · The backend", "7, 8", "Rules live on the server; build the backend or rent it", "4, 6"],
-  ["6 · Data", "7", "The database is where things are kept for good", "5, 9"],
-  ["8 · Hosting", "9", "A serverless host runs the backend when requests arrive", "7, 8"],
-  ["11 · Security", "6, 7, 9", "Anything sent to the phone is public: keys and rules stay on the server", "6, 12"],
+  ["4 · The frontend", "4, 5, 9", "Web app, installable web app, native and cross-platform, with what each costs; mobile first", "3"],
+  ["5 · The backend", "7, 8", "Rules live on the server; build the backend or rent it", "5"],
+  ["6 · Data", "7", "The database is where things are kept for good", "4, 8"],
+  ["8 · Hosting", "9", "A serverless host runs the backend when requests arrive", "2, 6"],
+  ["11 · Security", "6, 7, 9", "Anything sent to the phone is public: keys and rules stay on the server", "5, 11"],
+  ["13 · AI inside your app", "2, 3", "The model is another company's API, called from our server and paid per call", "12"],
 ];
 
 const QUESTIONS = [
-  ["Level One becomes the season's map?", "It overlaps Episode 2 (what a page is), Episode 4 (the key in the app, the price on the server) and touches Episodes 5 to 7. Those episodes would open on a callback and go deeper, not teach from zero.", "<b>Recommend yes.</b> Episode 4 then starts with \"remember NEXT_PUBLIC?\" and spends its time on the tampered fee and the mobile layout."],
-  ["Can Level One show each option against the requirements as it's picked?", "GAME.md says nothing is marked right or wrong when chosen. These boards show consequences (laptops can't open it; the fix waits for review), not ticks for the player.", "<b>Recommend yes.</b> Thursday still decides the episode, and every option keeps an honest line on when it's the right one."],
-  ["Real product names in the game?", "Next.js, React, Vercel, Supabase, Firebase, React Native, Flutter, Swift, Kotlin. The curriculum uses them and the AI will say them to the player.", "<b>Recommend yes</b>, as the real-term line under each plain description, never as a recommendation to buy one."],
-  ["The platform choice is scored?", "Web and installable web pass Thursday; native and cross-platform can't fit eight hours or reach laptops. The lesson has to be \"wrong for Thursday\", not \"wrong\".", "<b>Recommend yes</b>, with frame 4 saying plainly when native is the right call (a phone-first product, heavy use of the camera or background location)."],
-  ["What about the garage server in Episodes 3 to 6?", "The season has Aleister writing the backend on Gilroy's garage server until Episode 7. Renting the backend in Level One changes the starting point.", "<b>Recommend:</b> Episode 3's cold open has Gilroy move it onto Aleister overnight \"to save forty dollars a month\". It's in character, and Episode 8's meltdown pays it off."],
-  ["Twelve minutes, over the six to ten target?", "Frames 3 and 9 are the longest. Either could move to the codex if play-tests run long on a phone.", "<b>Recommend</b> building it and timing three play-throughs before cutting."],
+  ["Rework the whole season, teaching first", "Every existing episode is up for redesign and nothing has to be kept, so the earlier questions about overlap with Episodes 2 and 4, and the garage server's continuity, no longer apply.", "<b>Decided.</b> Level One is the template; the draft season below follows it. Fun, but the point is that players learn."],
+  ["Show each option against the requirements as it's picked", "The boards show consequences (laptops can't open it; the fix waits for review), not ticks for the player. The live moment still decides the episode.", "<b>Decided: all season.</b> This replaces GAME.md's rule that nothing is shown until the live moment."],
+  ["Real product names", "Next.js, React, Vercel, Supabase, Firebase, React Native, Flutter, Swift, Kotlin, Postgres. The AI will say them to the player.", "<b>Decided: yes</b>, as the real-term line under each plain description, never as advice to buy one."],
+  ["Score the decisions, with \"right for\"", "A choice that fails the episode (native apps for Thursday) leads to take two, and its screen says plainly when it would be the right call.", "<b>Decided.</b> Every option in every episode keeps an honest line on when it's right."],
+  ["Length", "Level One runs about twelve minutes, over the old six to ten target.", "<b>Decided:</b> build it, time three play-throughs on a phone, then cut. Frames 3 and 9 are the first candidates."],
+];
+
+const SEASON = [
+  ["1", "Pilot", "Where it runs (web, installable, native, cross-platform) · what goes on the phone, the server or the database · build or rent the backend · read the AI's plan", "0, 1, 4, 5, 11, 13", "Every device on Thursday; a fix in 3 minutes on the web, tomorrow through app review"],
+  ["2", "The Whiteboard", "Static page or an app behind it? · where to host it, and a domain · how to undo a change: Git, branches, pull requests", "1, 2, 8", "Ulrich's party: 40,000 visitors on a static page; his live edit breaks the sign-up box, and Git rolls it back"],
+  ["3", "Tabs and Spaces", "Which language for which job · types checked early or late · take the AI's default (React, TypeScript) or not · a notebook for Walter's question", "3, 4", "The AI's mistakes per language; the ones types catch before the night, and the ones they can't"],
+  ["4", "The Spreadsheet", "Spreadsheet or database? · relational or document? · what a transaction protects · backups you've actually restored", "6", "Two bookings on one row at 8pm; the AI deletes the restaurants at 8:40 and the drilled backup is back in 15 minutes"],
+  ["5", "Log In", "Build the login or use a service? · who can see what (authorization) · how passwords are stored", "5, 11", "A restaurateur counting through other restaurants' pages; bots trying leaked passwords"],
+  ["6", "Launch Party", "Laptop or pipeline? · what the tests check · staging · error tracking and rollback", "8, 12", "Three of Ulrich's live changes: which check catches each, and how long each is broken"],
+  ["7", "Viral", "A cache, and how stale is too stale · a CDN · a queue for what can wait · one bigger server or several smaller", "7, 9", "The garage melts or doesn't; stale tables; the AI bill at fifty thousand sign-ups"],
+  ["8", "The Board Meeting", "Dashboards on the live database or a warehouse? · how fresh the numbers need to be · alerts", "6, 8", "Bookings slowing while the board refreshes; a nightly copy that breaks silently"],
+  ["9", "Hubbub Dine", "One app or many services? · rate limits on our API", "9, 10", "Hubbub's 212 services falling over on stage; its scraper hitting ours"],
+  ["10", "Charged Twice", "What to do when a payment times out · retries and idempotency keys · holding the last table", "10", "Double charges, phantom bookings and two parties at one table, at the 8pm peak"],
+  ["11", "The Leak", "Where secrets live · rotate or hide · which packages to trust · checking ownership on every request", "11", "Strangers on our leaked key until it's rotated; a made-up package that steals it"],
+  ["12", "The Conference", "Answers from the model's memory or from our menus (RAG)? · what the agent may do · ask the diner first · treat what it reads as data", "13", "A planted review hijacking the agent on stage, and which defence stops which harm"],
+  ["13", "Finale", "Aleister's everything-plan, cut back to the simplest version that works", "Capstone", "The season in one night, on the board the player already has"],
 ];
 
 /* ---------- shared screen bits ---------- */
@@ -863,7 +885,7 @@ const FRAMES = [
   { id: "f12", act: "5 · Thursday", name: "Cliffhanger", C: F12, min: "0:40",
     does: "Galen offers four million; Ricky asks why. Walter asks where people sign up. Ricky's going to be sick. Cut to black.",
     teaches: "Sets up Episode 2's landing page and waitlist.",
-    words: [], build: "Today's flash-forward choice is dropped from Level One to keep it about the map; the offer stays as a story beat (decision for Rob)." },
+    words: [], build: "Today's flash-forward choice is dropped from Level One to keep it about the map; the offer stays as a story beat." },
 ];
 
 function App() {
@@ -904,6 +926,7 @@ document.getElementById("problems").innerHTML = PROBLEMS.map(([h, p, fix]) => `<
 document.querySelector("#wordtable tbody").innerHTML = WORDS.map((r) => `<tr><td class="term">${esc(r[0])}</td><td class="when">${r[1]}</td><td>${esc(r[2])}</td><td>${esc(r[3])}</td></tr>`).join("");
 document.querySelector("#covtable tbody").innerHTML = COVERAGE.map((r) => `<tr><td class="term">${r[0]}</td><td class="when">${r[1]}</td><td>${r[2]}</td><td class="when">${r[3]}</td></tr>`).join("");
 document.getElementById("questions").innerHTML = QUESTIONS.map(([h, p, rec], k) => `<div class="q"><h3>${k + 1}. ${h}</h3><p>${p}</p><p class="rec">${rec}</p></div>`).join("");
+document.querySelector("#seasontable tbody").innerHTML = SEASON.map((r) => `<tr><td class="when">${r[0]}</td><td class="term">${r[1]}</td><td>${esc(r[2])}</td><td class="when">${r[3]}</td><td>${esc(r[4])}</td></tr>`).join("");
 
 ReactDOM.createRoot(document.getElementById("app")).render(html`<${App} />`);
 </script>
