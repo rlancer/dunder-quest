@@ -2272,6 +2272,9 @@ def build_mission_silicon(prefix: str) -> str:
     data = json.loads((MISSION / "data" / "season.json").read_text(encoding="utf-8"))
     img = f"{prefix}static/img/mission-silicon/"
     built = {ep["id"]: ep for ep in data["episodes"]}
+    # Episode 1, the Pilot, has its own data and scene.
+    if (MISSION / "data" / "pilot.json").exists():
+        built[1] = json.loads((MISSION / "data" / "pilot.json").read_text(encoding="utf-8"))
     modules = ms_modules()
     cast = "".join(
         f'<li><b>{esc(p["full"])}</b> <span>{esc(p["role"])}</span></li>'

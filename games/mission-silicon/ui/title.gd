@@ -9,6 +9,8 @@ extends Control
 ## title flyover (ui/flyover.gd) plays over it.
 
 const EPISODE := preload("res://scenes/episode.gd")
+## Episode 1, rebuilt teaching-first, is its own scene with its own data.
+const PILOT := preload("res://scenes/pilot.gd")
 const COLS := 7
 const TILE := Vector2(60, 72)
 const GAP := 3.0
@@ -51,7 +53,7 @@ func _ready() -> void:
 		var entry: Dictionary = outline[i]
 		var id := int(entry["id"])
 		var at := Vector2(x0 + (i % COLS) * (TILE.x + GAP), y0 + (i / COLS) * (TILE.y + GAP))
-		var ep := Season.episode(id)
+		var ep := _built(id)
 		if ep.is_empty():
 			add_child(_soon(entry, at))
 		else:
@@ -112,7 +114,18 @@ func _fill(c: Control, id: int, title: String, number_color: Color, title_color:
 
 
 
+## An episode that can be played: the Pilot from data/pilot.json, the rest
+## from data/season.json.
+func _built(id: int) -> Dictionary:
+	if id == 1 and not Season.pilot().is_empty():
+		return Season.pilot()
+	return Season.episode(id)
+
+
 func _play(id: int) -> void:
+	if id == 1 and not Season.pilot().is_empty():
+		get_tree().change_scene_to_node(PILOT.new())
+		return
 	var ep := EPISODE.new() as Episode
 	ep.episode_id = id
 	get_tree().change_scene_to_node(ep)

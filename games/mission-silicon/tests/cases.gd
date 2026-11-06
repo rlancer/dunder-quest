@@ -12,6 +12,8 @@ extends SceneTree
 ##      solution (every card combination, every pair of dial changes, and
 ##      random plans);
 ##   and the same plan gives the identical night twice.
+## Episode 1, the Pilot, is checked on its own decision boards instead
+## (`_pilot`, below).
 ##
 ## godot --headless --path . --script res://tests/cases.gd   ->  CASES result=ok
 
@@ -26,6 +28,8 @@ func _initialize() -> void:
 	var started := Time.get_ticks_msec()
 	# CASES_EP=9 checks one episode, for quick tuning.
 	var only := OS.get_environment("CASES_EP")
+	if only == "" or only == "1":
+		_pilot()
 	for ep in Season.episodes():
 		if only == "" or only == str(int(ep["id"])):
 			_continuity(ep)
@@ -237,3 +241,100 @@ func _try(ep: Dictionary, p: Plan, sol_runway: float, how: String) -> int:
 		_fail(ep, "%s plan passes with runway %.3f > %.3f: %s" % [how, r["runway"], sol_runway, p.describe()])
 		return 1
 	return 0
+
+
+## Episode 1, the Pilot (data/pilot.json, scenes/pilot.gd), has no pull
+## request or simulation: its lesson is in its decision boards and its
+## Thursday. Each board must let through exactly the options that fit
+## Thursday (the web app or the installable web app; renting the
+## backend), the sort's right answers must be the real ones, Thursday must
+## clear nine in ten on the web and fall short on native apps, the tech
+## stack must hide exactly one NEXT_PUBLIC_ key, and the marks must follow
+## the picks.
+func _pilot() -> void:
+	var d := Season.pilot()
+	var ep := {"id": 1}
+	if d.is_empty():
+		_fail(ep, "no data/pilot.json")
+		return
+	var budget := float(d["budget"]["time"])
+	# Decision 1: where it runs.
+	var reqs: Array = d["pick"]["reqs"]
+	var ok := []
+	for p in d["platforms"]:
+		for q in reqs:
+			if not p["r"].has(q["id"]):
+				_fail(ep, "platform %s says nothing about %s" % [p["id"], q["id"]])
+		if PilotModel.passes(p, reqs, budget):
+			ok.append(p["id"])
+	print("ep 1 platforms that fit Thursday: %s" % ",".join(ok))
+	if ok != ["web", "pwa"]:
+		_fail(ep, "the platforms that fit should be web and pwa, not %s" % ",".join(ok))
+	# Decision 3: build or rent, in the hours each passing platform leaves.
+	var breqs: Array = d["backend"]["reqs"]
+	for plat in ok:
+		var left := budget - float(PilotModel.platform(plat)["h"])
+		var fits := []
+		for b in d["backend"]["options"]:
+			for q in breqs:
+				if not b["r"].has(q["id"]):
+					_fail(ep, "backend %s says nothing about %s" % [b["id"], q["id"]])
+			if PilotModel.passes(b, breqs, left):
+				fits.append(b["id"])
+		print("  after %s (%sh left), backends that fit: %s" % [plat, left, ",".join(fits)])
+		if fits != ["baas"]:
+			_fail(ep, "after %s only renting should fit, not %s" % [plat, ",".join(fits)])
+	# Decision 2: the sort's right answers.
+	var want := {"ui": "front", "state": "front", "key": "back", "fee": "back", "who": "back", "all": "db", "menu": "db"}
+	var zones := []
+	for z in d["sort"]["zones"]:
+		zones.append(z["id"])
+	var seen := {}
+	for p in d["sort"]["pieces"]:
+		seen[p["id"]] = true
+		if want.get(p["id"], "") != p["z"]:
+			_fail(ep, "piece %s belongs in %s, not %s" % [p["id"], want.get(p["id"], "?"), p["z"]])
+		for z in zones:
+			if str(p["why"].get(z, "")) == "":
+				_fail(ep, "piece %s says nothing about %s" % [p["id"], z])
+	if seen.size() != want.size():
+		_fail(ep, "the sort has %d pieces, not %d" % [seen.size(), want.size()])
+	# Decision 4: one line of the plan sends the key to the browser.
+	var bad := 0
+	for line in d["plan"]["lines"]:
+		if line.get("bad", false):
+			bad += 1
+			if not str(line["c"]).contains("NEXT_PUBLIC_") or str(line["fixed"]).contains("NEXT_PUBLIC_"):
+				_fail(ep, "the bad plan line isn't the NEXT_PUBLIC_ key, or its fix still is")
+	if bad != 1:
+		_fail(ep, "the plan should hide exactly one bad line, not %d" % bad)
+	# Thursday.
+	var goal := float(d["goal_share"])
+	for build in ["web", "pwa", "native", "cross"]:
+		var t := PilotModel.thursday(build)
+		print("  Thursday on %s: %d%% found a place (%d fit, %d near, %d wrong night, %d couldn't open it, of %d)" % [
+			build, roundi(t["share"] * 100.0), t["fit"], t["near"], t["wrong"], t["none"], t["n"]])
+		if int(t["n"]) != 200:
+			_fail(ep, "Thursday on %s has %d testers, not 200" % [build, t["n"]])
+		var should: bool = ok.has(build)
+		if (t["share"] >= goal) != should:
+			_fail(ep, "Thursday on %s %s the goal" % [build, "misses" if should else "makes"])
+	if PilotModel.thursday("web")["wrong"] == 0:
+		_fail(ep, "the 4:40 iPhone bug hits nobody on the web")
+	# Everything a passing pick needs for Gerard's record.
+	for plat in ok:
+		if not d["postmortem"]["platform_rows"].has(plat):
+			_fail(ep, "no decision record row for %s" % plat)
+		if float(PilotModel.platform(plat)["h"]) + float(d["backend"]["options"][1]["h"]) > budget:
+			_fail(ep, "%s and renting don't fit the %s hours" % [plat, budget])
+	for r in d["postmortem"]["rows"] + d["postmortem"]["platform_rows"].values():
+		if r.size() != d["postmortem"]["heads"].size():
+			_fail(ep, "a decision record row has %d cells, not %d" % [r.size(), d["postmortem"]["heads"].size()])
+	# The marks.
+	var cases := [["web", false, {"live": true, "lean": true, "ulrich": true}],
+		["pwa", false, {"live": true, "lean": false, "ulrich": true}],
+		["web", true, {"live": true, "lean": true, "ulrich": false}]]
+	for c in cases:
+		var m := PilotModel.marks(c[0], c[1])
+		if JSON.stringify(m) != JSON.stringify(c[2]):
+			_fail(ep, "marks for %s (native tried: %s) are %s, not %s" % [c[0], c[1], m, c[2]])
