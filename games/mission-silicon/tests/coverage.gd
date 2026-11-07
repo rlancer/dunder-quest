@@ -27,7 +27,11 @@ func _initialize() -> void:
 	for m in wanted:
 		if not covered.has(_key(m)):
 			fails.append("module %s has no episode" % _key(m))
-	for ep in Season.episodes():
+	# Episode 1, the Pilot, has its own data (data/pilot.json).
+	var built: Array = Season.episodes().duplicate()
+	if not Season.pilot().is_empty():
+		built.push_front(Season.pilot())
+	for ep in built:
 		var match_found := false
 		for entry in outline:
 			if int(entry["id"]) == int(ep["id"]):
@@ -36,7 +40,7 @@ func _initialize() -> void:
 					fails.append("episode %d doesn't match the outline" % ep["id"])
 		if not match_found:
 			fails.append("episode %d isn't in the outline" % ep["id"])
-	print("COVERAGE %d modules, %d episodes outlined, %d built" % [wanted.size(), outline.size(), Season.episodes().size()])
+	print("COVERAGE %d modules, %d episodes outlined, %d built" % [wanted.size(), outline.size(), built.size()])
 	print("COVERAGE result=%s" % ("ok" if fails.is_empty() else "FAIL " + "; ".join(fails)))
 	quit(0 if fails.is_empty() else 1)
 

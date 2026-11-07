@@ -237,6 +237,8 @@ And across the game:
 
 ## Episode 1 on paper: *Pilot*
 
+> Superseded: Episode 1 is now the teaching-first Pilot in [storyboard/pilot.html](storyboard/pilot.html), built as `scenes/pilot.gd` (data in `data/pilot.json`). This section describes the old pull-request Pilot.
+
 Stage 0, Module 0 (building with AI: you decide what gets built and check that it was; most AI failures are the wrong thing built well, from a vague request). Borrowed set piece: the pilot's choice, where the tech giant's CEO offers to buy the idea outright on day one while the strange VC offers a small investment to build it yourself, and the founder turns the money down. The lines are in `data/season.json`.
 
 It's the first episode, so it's small and it teaches the loop itself: a short PR, four questions, one dial, a two-hour live moment for two hundred people, no hotfix, and a few lines from Ricky the first time the planning board, a card, the questions and a box come up (`tutorial` in the data).

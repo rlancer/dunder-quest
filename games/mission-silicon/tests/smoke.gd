@@ -1,6 +1,6 @@
 extends Node
 
-## Loads the title (skipping its flyover) and every built episode for a few frames and quits.
+## Loads the title (skipping its flyover), the Pilot and every other built episode for a few frames and quits.
 ## godot --headless --path . res://tests/smoke.tscn   ->  SMOKE result=ok
 
 
@@ -41,6 +41,16 @@ func _run() -> void:
 			tree.quit(1)
 			return
 	print("ok audio")
+	# Episode 1, the Pilot, is its own scene.
+	var pilot := Pilot.new()
+	tree.change_scene_to_node(pilot)
+	for _i in 30:
+		await tree.process_frame
+	if Season.pilot().is_empty() or pilot.phase == "":
+		print("SMOKE result=fail the Pilot didn't start")
+		tree.quit(1)
+		return
+	print("ok episode 1 (the Pilot)")
 	for ep in Season.episodes():
 		var node := Episode.new()
 		node.episode_id = int(ep["id"])

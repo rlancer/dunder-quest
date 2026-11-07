@@ -100,6 +100,21 @@ func black(text: String = "", hold: int = 90) -> void:
 	await _wait(hold)
 
 
+## The cut to black that names the next episode (the Pilot's end).
+func next_card(top: String, title: String, sub: String, hold: int = 150) -> void:
+	_begin(Palette.BLACK)
+	var a := UI.place(UI.label(top, Palette.LABEL, Palette.GREEN), Rect2(0, 92, 480, 14)) as Label
+	a.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_content.add_child(a)
+	var t := UI.place(UI.title(title, 28, Palette.WHITE), Rect2(0, 108, 480, 40)) as Label
+	t.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_content.add_child(t)
+	var s := UI.place(UI.label(sub, Palette.LABEL, Palette.SLATE_LIGHT), Rect2(0, 152, 480, 14)) as Label
+	s.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_content.add_child(s)
+	await _wait(hold)
+
+
 func hide_card() -> void:
 	visible = false
 
