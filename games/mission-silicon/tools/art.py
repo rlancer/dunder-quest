@@ -266,6 +266,17 @@ SCENES = {
         "background, no words; strings of party lights, some out; paper cups everywhere; a dark sky with the city glow. "
         "Quiet, deflated, funny. " + STYLE
     ),
+    # The web Pilot's main set: the cast walk about on its floor and argue.
+    "den": ROOM + (
+        "the big living room of a shabby old Victorian house in San Francisco's Mission District used as a "
+        "startup incubator, on a bright weekday afternoon. On the left a big whiteboard on wheels, wiped "
+        "almost clean with faint smudges; in the middle at the back a sagging brown leather sofa under a tall "
+        "bay window with colourful Victorian houses across the street; on the right a big wall-mounted TV, "
+        "switched off and dark, above a low cabinet with a games console and tangled cables; a worn rug, "
+        "potted plants, a beanbag, a mantel of odd trophies, a hallway door. The floor across the whole "
+        "bottom third is bare, worn wooden floorboards with nothing on it, room for people to stand. Warm, "
+        "sunny and scruffy. " + STYLE
+    ),
     "house": (
         "Key art for a pixel-art comedy game title screen: the outside of a slightly run-down painted "
         "Victorian house on a steep San Francisco street in the Mission District at dusk, pale grey-green "

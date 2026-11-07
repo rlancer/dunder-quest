@@ -3,7 +3,7 @@
 	"title": "Pilot",
 	"short": "PILOT",
 	"modules": [0, 1, 4, 5, 11, 13],
-	"note": "Episode 1, rebuilt teaching-first from storyboard/pilot.html: the map of a web app, one search through it, then four decisions checked against Thursday's requirements. Played by scenes/pilot.gd. Hours, prices and counts are illustrative.",
+	"note": "Episode 1, played as an interactive sitcom (web/src/Pilot.tsx plays `show`, scene by scene): the cast act out the four boxes of a web app, argue each of four decisions on stage, and the player picks a side; a pick that fails Thursday plays a flash-forward and the champion says when it would be right. Hours, prices and counts are illustrative.",
 	"budget": {"bank": 200000, "burn": 15000, "time": 8},
 	"goal_share": 0.9,
 	"lean_platform": "web",
@@ -19,198 +19,113 @@
 		"gerard": {"name": "Gerard", "voice": "fable", "style": "A precise, earnest, slightly fussy operations manager."},
 		"galen": {"name": "Galen", "voice": "sage", "style": "A serene, smooth, faintly menacing tech guru CEO who speaks in calm visionary tones."}
 	},
-
-	"cold_open": {
-		"place": "Monday, 8am · move-in day",
-		"backdrop": "movein",
-		"lines": [
-			{"who": "ulrich", "say": "Welcome to the house. Ten percent of whatever you make under this roof is mine. In return, I make you a founder. There's no paperwork. There's a little paperwork."},
-			{"who": "gilroy", "say": "That's Aleister Jr. It runs on Aleister, my server in the garage. It writes code all night and it has never once asked a question."},
-			{"who": "walter", "say": "... Two hundred thousand. On Thursday, two hundred of my diners try Forkcast. On whatever they carry."},
-			{"who": "veronica", "say": "Some have iPhones, some have Android phones, some will be at their desks on laptops. If they can all use it and it finds them a table, he invests."},
-			{"who": "aleister", "say": "Eight hours! I know exactly what to build. I'll start now!"},
-			{"who": "ricky", "say": "Before it builds anything: the whiteboard. There are decisions here we can't take back on Friday."}
-		]
+	"sets": {
+		"movein": "Monday, 8am · move-in day",
+		"den": "The house · Monday",
+		"pitch": "Ravello Capital · Thursday"
 	},
+
 	"goal_card": {
 		"head": "THURSDAY: WALTER'S TEST",
 		"items": ["200 diners, on iPhones, Android phones and laptops", "Each asks for an evening and gets a place that fits", "Aleister has 8 hours of building"],
 		"sub": "FIRST, FOUR DECISIONS"
 	},
 
-	"map": {
-		"prompt": "Ricky's whiteboard · every web app, drawn four ways · tap each box",
-		"boxes": {
-			"device": {"n": "Diner's phone or laptop", "s": "frontend"},
-			"server": {"n": "Our server", "s": "backend"},
-			"db": {"n": "Database", "s": "kept for good"},
-			"model": {"n": "AI model", "s": "another company's API"}
-		},
-		"wire": "the internet",
-		"hint": {"who": "ricky", "say": "Every app you'll ever build is some version of this. Four boxes. Tap each one."},
-		"done": "next: follow one search through it",
-		"done_say": {"who": "ricky", "say": "That's the whole map. Now let's follow one search through it, box by box."},
-		"keys": {"pic": "Picture it as", "real": "The real name", "fk": "In Forkcast", "note": "Remember"},
-		"info": {
-			"device": {"say": "The frontend is the dining room: everything the diner sees and taps. It runs on their phone or laptop, not on ours.", "h": "The frontend: the diner's phone or laptop", "pic": "The dining room. What the diner sees and touches.", "real": "Frontend, or the client. HTML, CSS and JavaScript in a browser; or an app.", "fk": "The search box, the answers, the Book button.", "note": "It runs on their device, not ours."},
-			"server": {"say": "The backend is the kitchen. Diners never go in. It holds our rules and our secrets, and only we can change it.", "h": "The backend: our server", "pic": "The kitchen and the front desk. Diners never go in.", "real": "Backend, or the server. Code on a computer we run or rent.", "fk": "Checks each search, applies the rules, calls the AI model.", "note": "Only we can change what it does."},
-			"db": {"say": "The database is the reservations book. Anything that has to last, like every booking, gets written down here.", "h": "The database", "pic": "The reservations book. Written down, kept for good.", "real": "Database. Most often Postgres.", "fk": "Restaurants, every request, every booking.", "note": "The server reads and writes it; diners never touch it directly."},
-			"model": {"say": "The AI model is an expert we phone. Another company runs it, we pay for every call, and our secret key proves the bill is ours.", "h": "The AI model", "pic": "An expert we phone. We pay for every call.", "real": "A model's API: the menu of requests another company's servers accept.", "fk": "Turns \"quiet for six on Friday\" into suggestions.", "note": "We call it with a secret key that proves the bill is ours."}
-		}
-	},
-
-	"steps": {
-		"prompt": "Follow one search",
-		"guide": {"who": "ricky", "say": "Walter searches for a table. Watch the request travel round the map, then come back."},
-		"list": [
-			{"at": "device", "t": "Walter types “quiet for six, Friday” and taps Search. The frontend packs it into a request.", "term": "Request", "eg": "{ \"party\": 6, \"night\": \"Friday\", \"quiet\": true }  is JSON: a filled-in form"},
-			{"at": "wire", "t": "It crosses the internet to forkcast.app. DNS turns that name into the server's address. HTTPS seals it, so nobody on the café Wi-Fi can read it.", "term": "DNS · HTTPS", "eg": "The phone book, and a sealed envelope."},
-			{"at": "server", "t": "The backend checks it's a real request, then calls the AI model's API with our secret key.", "term": "Backend rules", "eg": "The kitchen decides; the dining room only asks."},
-			{"at": "model", "t": "The model suggests five places. We pay a little for this call.", "term": "API call", "eg": "About a cent or two a search. Illustrative, like all the game's prices."},
-			{"at": "db", "t": "The backend asks the database which of the five have a table for six on Friday, then saves Walter's request.", "term": "Database query", "eg": "Kept for good: the server can restart, the request is still there."},
-			{"at": "device", "t": "The response comes back, and the frontend draws the answer: Nonna's back room. All of that took about a second.", "term": "Response", "eg": "Every tap that fetches something is one trip round this loop."}
-		]
-	},
-
-	"ways": {
-		"prompt": "Decision 1 · Where does Forkcast run?",
-		"status": "Four ways to ship",
-		"lines": [
-			{"who": "aleister", "say": "Three apps! iPhone in Swift, Android in Kotlin, and one for laptops. Native, like the real companies!"},
-			{"who": "danesh", "say": "Native is where the serious developers are. Nobody's impressed by a website."},
-			{"who": "gilroy", "say": "Three apps is three sets of bugs, and every fix queues for two app stores."},
-			{"who": "ulrich", "say": "Nobody types a web address any more. If it isn't in the App Store, it isn't a real company."},
-			{"who": "ricky", "say": "Tap each one. They're all real choices. The question is which one fits Thursday."}
-		],
-		"hint": {"who": "ricky", "say": "Tap each way to see what it's good at and what it costs."}
-	},
 	"platforms": [
-		{"id": "web", "n": "Web app", "rn": "In the browser · e.g. Next.js, React", "how": "One site that opens from a link in any browser, laid out for phones first.", "good": "Every device from day one. A fix reaches everyone on their next tap.", "cost": "Fewer phone powers. Not in the app stores.", "h": 4, "fix": 3, "laptops": true,
+		{"id": "web", "n": "Web app", "rn": "In the browser · e.g. Next.js, React", "champ": "gilroy", "h": 4, "fix": 3, "laptops": true,
 			"r": {"all": ["y", "Any browser, on any device."], "time": ["y", "About 4 hours."], "link": ["y", "The link opens it."], "fix": ["y", "Change the site and every diner has the fix on their next tap."], "remind": ["p", "Works on Android. On iPhone only once it's added to the home screen."]}},
-		{"id": "pwa", "n": "Installable web app", "rn": "Progressive web app (PWA)", "how": "The same web app, which diners can also add to their home screen like an app.", "good": "Everything the web app does, plus an icon and notifications once installed.", "cost": "Still not in the stores. iPhone notifications need it on the home screen.", "h": 5, "fix": 3, "laptops": true,
+		{"id": "pwa", "n": "Installable web app", "rn": "Progressive web app (PWA)", "champ": "ricky", "h": 5, "fix": 3, "laptops": true,
 			"r": {"all": ["y", "Any browser, on any device."], "time": ["y", "About 5 hours."], "link": ["y", "The link opens it; installing is optional."], "fix": ["y", "Same as a web app."], "remind": ["y", "Once it's on the home screen, iPhones included."]}},
-		{"id": "native", "n": "Native apps", "rn": "Swift for iPhone · Kotlin for Android", "how": "A separate app for each kind of phone, from the App Store and Google Play.", "good": "The smoothest feel, and every phone feature: camera, background location, widgets.", "cost": "Two codebases, three with laptops. Every update waits for store review, then for each person to update.", "h": 20, "fix": 0, "laptops": false,
+		{"id": "native", "n": "Native apps", "rn": "Swift for iPhone · Kotlin for Android", "champ": "aleister", "h": 20, "fix": 0, "laptops": false,
 			"r": {"all": ["n", "Laptops would need a third app."], "time": ["n", "About 20 hours for the two phone apps."], "link": ["n", "Testers install a test app first, then ours."], "fix": ["n", "Each fix waits for store review, usually about a day, then for every person to update."], "remind": ["y", "Native apps do this best."]}},
-		{"id": "cross", "n": "Cross-platform app", "rn": "React Native · Flutter", "how": "One codebase that becomes both an iPhone app and an Android app.", "good": "One codebase for both phones, close to the native feel.", "cost": "Still goes through both stores. Laptops need a separate web version.", "h": 12, "fix": 0, "laptops": false,
+		{"id": "cross", "n": "Cross-platform app", "rn": "React Native · Flutter", "champ": "danesh", "h": 12, "fix": 0, "laptops": false,
 			"r": {"all": ["p", "Both phones from one codebase; laptops need a web version too."], "time": ["n", "About 12 hours, before any web version."], "link": ["n", "Testers install it first."], "fix": ["p", "Most fixes go through store review; some tools can send small fixes straight to phones."], "remind": ["y", "Yes."]}}
 	],
 	"pick": {
-		"prompt": "Decision 1 · Pick one, and check it against Thursday",
-		"head": "The four ways",
 		"needs": "What Thursday needs",
 		"reqs": [
-			{"id": "all", "t": "Works on iPhones, Android phones and laptops", "must": true},
-			{"id": "time", "t": "Built in the 8 hours, with time left for the rest", "must": true},
-			{"id": "link", "t": "Opens from the link in Walter's email", "must": true},
-			{"id": "fix", "t": "A fix on the night reaches everyone in minutes", "must": true},
-			{"id": "remind", "t": "Remind diners before dinner", "later": true}
+			{"id": "all", "t": "Works on iPhones, Android phones and laptops", "s": "Every device", "must": true},
+			{"id": "time", "t": "Built in the 8 hours, with time left for the rest", "s": "In 8 hours", "must": true},
+			{"id": "link", "t": "Opens from the link in Walter's email", "s": "From a link", "must": true},
+			{"id": "fix", "t": "A fix on the night reaches everyone in minutes", "s": "Fix in minutes", "must": true},
+			{"id": "remind", "t": "Remind diners before dinner", "s": "Reminders", "later": true}
 		],
-		"later": "(not Thursday)",
-		"guide": {"who": "ricky", "say": "Pick one, and check it against what Thursday needs. Every must has to be a yes."},
-		"quips": {
-			"native": {"who": "ulrich", "say": "A real company! I'll tell the press."},
-			"cross": {"who": "danesh", "say": "One codebase, two stores. That's the grown-up answer."},
-			"web": {"who": "gilroy", "say": "Boring. Works on everything. Correct."},
-			"pwa": {"who": "gilroy", "say": "Boring. Works on everything. Correct."}
-		},
-		"wrong": "Right for another product: one that lives on the phone, uses the camera or background location, or wants a place in the stores. Wrong for Thursday.",
-		"right_head": "What to tell your AI: “a responsive web app, mobile first.”",
-		"right": "Start on the web unless there's a reason not to. Make it installable when reminders matter; go native when the phone itself is the product."
+		"right_head": "What to tell your AI: “a responsive web app, mobile first.”"
 	},
 
-	"noserver": {
-		"prompt": "Decision 2 · Aleister's simplest plan",
-		"lines": [
-			{"who": "aleister", "say": "Good news: we don't need a server at all! The app talks straight to the AI model. Fewer boxes. Simplest possible!"},
-			{"who": "gilroy", "say": "Let me look at the app."}
-		],
-		"button": "Open the app's code, as any browser can",
-		"code": [
-			"// app.js · downloaded by every diner's browser",
-			"const MODEL_KEY = \"sk-fc-8f3a91c2e7b0...\";",
-			"",
-			"async function search(evening) {",
-			"  return fetch(\"https://api.model.example/v1/ask\", {",
-			"    headers: { Authorization: \"Bearer \" + MODEL_KEY },",
-			"    body: JSON.stringify({ evening }),",
-			"  });",
-			"}"
-		],
-		"key_line": 1,
-		"after": [
-			{"who": "gilroy", "say": "That's our key. Every diner downloads it with the app. Anyone can copy it and run their own projects on our bill."},
-			{"who": "ricky", "say": "The phone can't keep a secret. That's what the box in the middle is for."}
-		],
-		"stamp": {"label": "THE RULE", "term": "The frontend is public", "plain": "Everything sent to a browser or a phone can be read and changed by whoever holds it. Secrets and rules stay on the server.", "eg": "Real term: a secret key (or API key). What to tell your AI: “keep keys on the server.”"}
-	},
+	"code": [
+		{"c": "// app.js · downloaded by every diner's browser"},
+		{"c": "const MODEL_KEY = \"sk-fc-8f3a91c2e7b0...\";", "key": true},
+		{"c": ""},
+		{"c": "async function search(evening) {", "note": {"who": "ricky", "say": "That's just the search, the part a diner's tap runs. Look for something that should be secret."}},
+		{"c": "  return fetch(\"https://api.model.example/v1/ask\", {", "note": {"who": "gilroy", "say": "That's the model's web address. Everyone knows it. Like my number in the phone book."}},
+		{"c": "    headers: { Authorization: \"Bearer \" + MODEL_KEY },", "note": {"who": "gilroy", "say": "Warm. That sends the key with every call. But where does the key come from?"}},
+		{"c": "    body: JSON.stringify({ evening }),", "note": {"who": "danesh", "say": "That's the diner's question, packed as JSON. Harmless."}},
+		{"c": "  });"},
+		{"c": "}"}
+	],
 
 	"sort": {
-		"prompt": "Decision 2 · What goes where? Tap a piece, then where it lives",
-		"placed": "placed",
-		"guide": {"who": "ricky", "say": "Seven pieces of Forkcast. Tap one, then tap where it lives: the diner's phone, our server, or the database."},
-		"done": "Screens on the phone, rules and secrets on the server, what must last in the database.",
-		"take_back": "Tap the red one to take it back and move it.",
 		"pieces": [
-			{"id": "ui", "t": "Search box and buttons", "z": "front", "why": {"front": "What diners touch has to be on their screen.", "back": "The server can send it, but it runs on the diner's screen.", "db": "A database stores data, not screens."}},
-			{"id": "state", "t": "Party size typed so far", "z": "front", "why": {"front": "What the screen remembers right now. Real term: state.", "back": "Asking the server on every tap is slow. Keep it on the screen until they press Search.", "db": "Nobody needs it once they press Search."}},
-			{"id": "key", "t": "The AI model's secret key", "z": "back", "why": {"front": "Anyone can open the app and copy it. Gilroy just did.", "back": "Only our server uses it, read from its settings.", "db": "It isn't data the app looks up. It goes in the server's settings."}},
-			{"id": "fee", "t": "Working out the $2 fee", "z": "back", "why": {"front": "A diner can edit the page and pay $0.", "back": "The server works out the price; the phone only shows it.", "db": "The price can be stored here, but the server has to be what applies it."}},
-			{"id": "who", "t": "Who can see which booking", "z": "back", "why": {"front": "Hiding a button keeps nobody out. They can ask the server directly.", "back": "The server checks every request. Real term: authorization.", "db": "The database holds bookings; the server decides who sees them."}},
-			{"id": "all", "t": "Every booking ever made", "z": "db", "why": {"front": "Each phone would know only its own, and lose them with the phone.", "back": "In the server's memory they vanish when it restarts.", "db": "Kept for good, and searchable."}},
-			{"id": "menu", "t": "Restaurant menus", "z": "db", "why": {"front": "Too big for every phone, and out of date by tomorrow.", "back": "The server reads them from the database when it needs them.", "db": "One copy, kept up to date."}}
+			{"id": "ui", "t": "Search box and buttons", "z": "front", "why": {
+				"front": {"who": "danesh", "say": "Mine. What diners touch has to be on their screen."},
+				"back": {"who": "ulrich", "say": "I could send it, but I don't run on the diner's screen. Sadly."},
+				"db": {"who": "gerard", "say": "I keep records, not buttons. I'd be a terrible button."}}},
+			{"id": "key", "t": "The AI model's secret key", "z": "back", "why": {
+				"front": {"who": "danesh", "say": "Anyone can open me and copy it. Gilroy literally just did."},
+				"back": {"who": "ulrich", "say": "Into my pocket, read from my settings. Only I ever use it."},
+				"db": {"who": "gerard", "say": "It isn't data the app looks up. It belongs in the server's settings."}}},
+			{"id": "fee", "t": "Working out the $2 booking fee", "z": "back", "why": {
+				"front": {"who": "danesh", "say": "If I work out the price, any diner can edit me and pay nothing."},
+				"back": {"who": "ulrich", "say": "I work out the price. The phone only shows it. As it should be."},
+				"db": {"who": "gerard", "say": "I can store the price, but the server has to be the one that applies it."}}},
+			{"id": "who", "t": "Who can see which booking", "z": "back", "why": {
+				"front": {"who": "danesh", "say": "Hiding a button keeps nobody out. They just ask the server directly."},
+				"back": {"who": "ulrich", "say": "I check every single request. The real term is authorization."},
+				"db": {"who": "gerard", "say": "I hold the bookings. The server decides who gets to see them."}}},
+			{"id": "all", "t": "Every booking ever made", "z": "db", "why": {
+				"front": {"who": "danesh", "say": "I'd only know my own. And I'd lose them all the day I'm dropped in a toilet."},
+				"back": {"who": "ulrich", "say": "In my memory they'd vanish every time I restart. Which is often."},
+				"db": {"who": "gerard", "say": "Kept for good, and searchable. This is the happiest day of my life."}}}
 		],
 		"zones": [
-			{"id": "front", "h": "Diner's phone or laptop", "s": "Frontend · anyone can open it"},
-			{"id": "back", "h": "Our server", "s": "Backend · only we can change it"},
-			{"id": "db", "h": "Database", "s": "Kept for good"}
-		]
+			{"id": "front", "who": "danesh", "h": "The phone", "s": "Frontend · anyone can open it"},
+			{"id": "back", "who": "ulrich", "h": "Our server", "s": "Backend · only we can change it"},
+			{"id": "db", "who": "gerard", "h": "Database", "s": "Kept for good"}
+		],
+		"done": "Screens on the phone, rules and secrets on the server, what must last in the database."
 	},
 
 	"backend": {
-		"prompt": "Decision 3 · Build the backend, or rent it?",
 		"needs": "What Forkcast needs",
-		"guide": {"who": "ricky", "say": "Now the backend. Aleister can write our own, we can rent the pieces, or an AI builder can make the lot. Check each against what Forkcast needs."},
-		"spent": 4,
 		"options": [
-			{"id": "own", "n": "Aleister writes our own backend", "rn": "e.g. Node.js with TypeScript, on a server", "good": "Full control: any rule we can describe.", "cost": "We look after logins, backups and updates ourselves.", "h": 6,
+			{"id": "own", "n": "Write our own backend", "rn": "e.g. Node.js with TypeScript, on a server", "champ": "danesh", "h": 6,
 				"r": {"time": ["n", "6 hours. There are {left} left."], "save": ["y", "In a database we set up."], "rules": ["y", "Anything we can write."], "later": ["y", "Anything we can write."], "take": ["y", "It's our code."]}},
-			{"id": "baas", "n": "Rent the backend pieces", "rn": "Backend-as-a-service · e.g. Supabase, Firebase", "good": "Database, logins and file storage ready-made; small server functions for our own rules.", "cost": "Its way of doing things, some lock-in, and a bill that grows with us.", "h": 2,
+			{"id": "baas", "n": "Rent the backend pieces", "rn": "Backend-as-a-service · e.g. Supabase, Firebase", "champ": "gilroy", "h": 2,
 				"r": {"time": ["y", "About 2 hours."], "save": ["y", "A real database (Supabase's is Postgres)."], "rules": ["y", "In small server functions."], "later": ["p", "Possible; big integrations may need our own server later."], "take": ["p", "Supabase is Postgres, which moves; Firebase's database is its own format, harder to leave."]}},
-			{"id": "builder", "n": "An AI app builder makes and hosts the lot", "rn": "All-in-one AI app builders", "good": "The fastest start: describe it and it's live.", "cost": "Hard to change how it works underneath. The app lives on their platform.", "h": 1,
+			{"id": "builder", "n": "An AI app builder makes the lot", "rn": "All-in-one AI app builders", "champ": "aleister", "h": 1,
 				"r": {"time": ["y", "About an hour."], "save": ["y", "Built in."], "rules": ["p", "As far as the builder allows."], "later": ["n", "Custom connections are where these struggle."], "take": ["p", "Many export the code, but it's built their way."]}}
 		],
 		"reqs": [
-			{"id": "time", "t": "Fits the {left} hours left", "must": true},
-			{"id": "save", "t": "Keeps every diner's request for good", "must": true},
-			{"id": "rules", "t": "Our own rules run on a server (the fee, who sees what)", "must": true},
-			{"id": "later", "t": "Can talk to restaurants' booking systems", "later": true},
-			{"id": "take", "t": "We can take it with us if we outgrow it"}
+			{"id": "time", "t": "Fits the {left} hours left", "s": "{left} hours", "must": true},
+			{"id": "save", "t": "Keeps every diner's request for good", "s": "Keeps data", "must": true},
+			{"id": "rules", "t": "Our own rules run on a server (the fee, who sees what)", "s": "Our rules", "must": true},
+			{"id": "later", "t": "Can talk to restaurants' booking systems", "s": "Restaurants' systems", "later": true},
+			{"id": "take", "t": "We can take it with us if we outgrow it", "s": "Can leave"}
 		],
-		"quip": {"who": "gilroy", "say": "Renting is someone else's server with a nicer website. Sometimes that's exactly what you want."},
-		"wrong": "None of these is wrong forever. Many teams rent first and build their own pieces as they grow.",
-		"right_head": "Build vs buy, and lock-in.",
-		"right": "Renting is faster and costs control; lock-in is how hard it is to move out later. Tell your AI: “Supabase for the database and logins; our rules in server functions.”"
+		"right_head": "Build vs buy, and lock-in."
 	},
 
 	"plan": {
-		"prompt": "Decision 4 · Aleister's plan. Tap each line to place it",
 		"head": "FORKCAST · TECH STACK",
-		"read": "read",
 		"lines": [
-			{"c": {"web": "Frontend: Next.js (React + TypeScript), mobile first", "pwa": "Frontend: Next.js (React + TypeScript), mobile first, installable"}, "box": "Frontend",
-				"plain": {"web": "Next.js is a popular framework for web apps. React draws the screens; TypeScript catches some mistakes before anything runs. Mobile first: decision 1.", "pwa": "Next.js is a popular framework for web apps. React draws the screens; TypeScript catches some mistakes before anything runs. Mobile first and installable: decision 1."}},
-			{"c": "Backend: Next.js API routes, hosted on Vercel", "box": "Backend", "plain": "Small pieces of server code in the same project, run by a host called Vercel only when a request arrives. Real term: serverless."},
-			{"c": "Database + logins: Supabase (Postgres)", "box": "Database", "plain": "The rented backend from decision 3. Postgres is the database underneath, the most common one there is."},
-			{"c": "AI: model API, called from the backend only", "box": "AI model", "plain": "Searches go from the phone to our server, then to the model, as on the whiteboard. Decision 2."},
-			{"c": "Config: NEXT_PUBLIC_MODEL_KEY=sk-fc-8f3a…", "box": "?", "bad": true, "fixed": "Config: MODEL_KEY=sk-fc-8f3a… (server only)", "fixed_box": "Backend", "look": "Look closer",
-				"plain": "An environment variable: a setting kept outside the code. But in Next.js a name starting NEXT_PUBLIC_ means “include this in what every browser downloads”. The key is headed for the phone again."}
+			{"c": {"web": "Frontend: Next.js (React + TypeScript), mobile first", "pwa": "Frontend: Next.js (React + TypeScript), mobile first, installable"}, "box": "Frontend", "claim": {"who": "danesh", "say": "That one's me. Next.js draws the screens; TypeScript catches some mistakes before anything runs. Fine."}},
+			{"c": "Backend: Next.js API routes, hosted on Vercel", "box": "Backend", "claim": {"who": "ulrich", "say": "That's me. Little bits of server code that run when a request arrives. Serverless. Still the brains."}},
+			{"c": "Database + logins: Supabase (Postgres)", "box": "Database", "claim": {"who": "gerard", "say": "That's my book. The rented backend we chose, with Postgres underneath."}},
+			{"c": "AI: model API, called from the backend only", "box": "AI model", "claim": {"who": "gilroy", "say": "Me, called from the server only. Correct. Annoyingly."}},
+			{"c": "Config: NEXT_PUBLIC_MODEL_KEY=sk-fc-8f3a…", "box": "?", "bad": true, "fixed": "Config: MODEL_KEY=sk-fc-8f3a… (server only)", "fixed_box": "Backend"}
 		],
-		"guide": {"who": "ricky", "say": "Tap each line and put it on the map. A line you can't place is the one to question."},
-		"intro": {"who": "aleister", "say": "Here's the plan! Every line is a choice you made. Mostly."},
-		"fix_button": "Tell Aleister: the key stays on the server",
-		"fixed": {"who": "aleister", "say": "Fixed! I named it public because... I see it now."},
-		"merge": "MERGE",
-		"stamp": {"label": "NEW WORD", "term": "Tech stack", "plain": "The list of tools a plan uses, layer by layer. Before you merge, put every line on the map. A line you can't place is a question to ask."}
+		"merge": "MERGE"
 	},
 
 	"thursday": {
@@ -238,9 +153,8 @@
 	},
 
 	"postmortem": {
-		"prompt": "Gerard's postmortem: what we decided, and why",
+		"prompt": "Gerard's decision record",
 		"when": "Thursday, 6pm",
-		"guide": {"who": "gerard", "say": "Here's what we decided, and why. One line per big decision. Future you will thank present you."},
 		"bill": 214,
 		"heads": ["Decision", "We chose", "Because", "We gave up", "Look again when"],
 		"platform_rows": {
@@ -252,8 +166,7 @@
 			["The backend", "Rented: Supabase", "Ready by Thursday, logins included", "Some control; a bill that grows", "Restaurants' systems need our own server"],
 			["The plan", "Next.js on Vercel, key on the server", "Every line maps to a box", "", "Every plan Aleister sends"]
 		],
-		"word": "New word · architecture decision record: a few lines per big decision, saying what we chose, why, what it cost, and when to look again.",
-		"cheque": {"who": "veronica", "say": "Walter's cheque. Two hundred thousand. He wrote one word on the back: “Boring.” From Walter, that's a compliment."},
+		"word": "Architecture decision record: a few lines per big decision, saying what we chose, why, what it cost, and when to look again.",
 		"runway": "Walter's $200,000, and $15,000 a month to run the house. From next episode, every box costs some of it.",
 		"marks": {
 			"live": ["Live: 9 in 10 found a place", "Live: under 9 in 10 found a place"],
@@ -262,15 +175,268 @@
 		}
 	},
 
-	"cliffhanger": {
-		"place": "The house · Thursday night",
-		"backdrop": "house",
-		"lines": [
+	"next": {"top": "NEXT", "title": "THE WHITEBOARD", "sub": "Episode 2 · the landing page and the waitlist"},
+
+	"show": [
+		{"id": "cold", "beats": [
+			{"set": "movein", "cast": {"ricky": 18}},
+			{"walk": "ulrich", "x": 58, "from": "right"},
+			{"who": "ulrich", "say": "Welcome to the house. Ten percent of whatever you make under this roof is mine. In return, I make you a founder. There's no paperwork. There's a little paperwork."},
+			{"walk": "aleister", "x": 80, "from": "right"},
+			{"walk": "gilroy", "x": 38, "from": "left"},
+			{"who": "gilroy", "say": "That's Aleister Jr. It runs on Aleister, my server in the garage. It writes code all night and it has never once asked a question."},
+			{"who": "aleister", "say": "Questions slow me down!"},
+			{"walk": "walter", "x": 66, "from": "right"},
+			{"walk": "veronica", "x": 50, "from": "right"},
+			{"walk": "ulrich", "x": 92},
+			{"walk": "aleister", "x": 106},
+			{"who": "walter", "say": "... Two hundred thousand. On Thursday, two hundred of my diners try Forkcast. On whatever they carry."},
+			{"who": "veronica", "say": "Some have iPhones, some have Android phones, some will be at their desks on laptops. If they can all use it and it finds them a table, he invests."},
+			{"walk": "walter", "x": 112},
+			{"walk": "veronica", "x": 112},
+			{"walk": "aleister", "x": 70},
+			{"who": "aleister", "say": "Eight hours! I know exactly what to build. I'll start now!"},
+			{"walk": "ricky", "x": 56},
+			{"who": "ricky", "say": "Before it builds anything: the whiteboard. There are decisions here we can't take back on Friday."},
+			{"card": "goal"}
+		]},
+
+		{"id": "map", "beats": [
+			{"set": "den", "place": "The house · Monday, 9am", "cast": {"ricky": 14, "ulrich": 46, "danesh": 62, "gerard": 76, "gilroy": 90}},
+			{"who": "ricky", "say": "Every app you'll ever build is some version of four boxes. I'll draw them."},
+			{"who": "ulrich", "say": "Boxes are for people who can't visualise. We act it out. I did two weeks of improv. I was asked to leave for being too good."},
+			{"walk": "ulrich", "x": 46},
+			{"who": "ulrich", "say": "I'll be the server. Obviously. The brains.", "sign": {"ulrich": "Server · backend"}},
+			{"who": "ricky", "say": "The backend is more of a kitchen. Diners never go in. It holds our rules and our secrets, and only we can change it.", "term": "Backend · the server"},
+			{"walk": "danesh", "x": 28},
+			{"who": "danesh", "say": "Then I'm the phone. The face of the operation. The pretty one.", "sign": {"danesh": "The phone · frontend"}},
+			{"who": "ricky", "say": "The frontend is everything the diner sees and taps. It runs on their phone or laptop, not on ours.", "term": "Frontend · the client"},
+			{"walk": "gerard", "x": 64},
+			{"who": "gerard", "say": "Could I be the database? I already write everything down. People have asked me to stop.", "sign": {"gerard": "Database"}},
+			{"who": "ricky", "say": "The database is the reservations book. Anything that has to last, like every booking, gets written down there.", "term": "Database · e.g. Postgres"},
+			{"walk": "gilroy", "x": 84},
+			{"who": "gilroy", "say": "I'll be the AI model. Another company. I charge by the question and I don't care about you.", "sign": {"gilroy": "AI model"}},
+			{"who": "ricky", "say": "An expert we phone. We pay for every call, and our secret key proves the bill is ours.", "term": "API · an API key"},
+			{"prop": {"envelope": "danesh"}},
+			{"who": "ricky", "say": "Walter types “quiet for six, Friday” and taps Search. The phone packs it into a request.", "term": "Request · JSON, a filled-in form"},
+			{"choice": "handoff", "prompt": "Danesh is holding Walter's search. Who does he hand it to?", "options": [
+				{"id": "ulrich", "label": "Ulrich · our server", "ok": true},
+				{"id": "gilroy", "label": "Gilroy · the AI model"},
+				{"id": "gerard", "label": "Gerard · the database"}
+			], "then": {
+				"gilroy": [
+					{"walk": "danesh", "x": 76},
+					{"who": "gilroy", "say": "You can't phone me without our secret key. You'd have to carry it around. In public. Hold that thought."},
+					{"walk": "danesh", "x": 28}
+				],
+				"gerard": [
+					{"walk": "danesh", "x": 56},
+					{"who": "gerard", "say": "Diners don't write in the book themselves. Imagine the handwriting. Imagine the lies."},
+					{"walk": "danesh", "x": 28}
+				]
+			}},
+			{"give": "danesh", "to": "ulrich"},
+			{"who": "ricky", "say": "It crosses the internet to forkcast dot app. DNS turns that name into the server's address. HTTPS seals it, so nobody on the café Wi-Fi can read it.", "term": "DNS · HTTPS"},
+			{"who": "ulrich", "say": "I check it's a real request. Then I phone the expert. With the key, from my pocket."},
+			{"give": "ulrich", "to": "gilroy"},
+			{"who": "gilroy", "say": "Five restaurants. That'll be two cents. I'll be keeping the envelope. No, I won't."},
+			{"give": "gilroy", "to": "ulrich"},
+			{"give": "ulrich", "to": "gerard"},
+			{"who": "gerard", "say": "Three of those five have a table for six on Friday. And I've written down that Walter asked. Forever.", "term": "Database query"},
+			{"give": "gerard", "to": "ulrich"},
+			{"give": "ulrich", "to": "danesh"},
+			{"who": "danesh", "say": "Nonna's back room. About one second, round trip. The face takes the credit.", "term": "Response"},
+			{"prop": {"envelope": null}},
+			{"who": "ricky", "say": "Every tap that fetches something is one trip round that loop."},
+			{"who": "ulrich", "say": "I'd like it noted that the brains did most of the work."}
+		]},
+
+		{"id": "platform", "decision": 1, "beats": [
+			{"card": "DECISION 1", "sub": "Where does Forkcast run?"},
+			{"set": "den", "cast": {"ricky": 14, "danesh": 34, "ulrich": 50, "gilroy": 68, "veronica": 84}},
+			{"board": "platforms"},
+			{"walk": "aleister", "x": 92, "from": "right"},
+			{"walk": "veronica", "x": 76},
+			{"who": "aleister", "say": "Three apps! iPhone in Swift, Android in Kotlin, and one for laptops. Native, like the real companies!", "mark": "native"},
+			{"who": "gilroy", "say": "Three apps is three sets of bugs, and every fix queues for two app stores."},
+			{"who": "danesh", "say": "Then one codebase that becomes both phone apps. React Native. Cross-platform. The grown-up answer.", "mark": "cross"},
+			{"who": "veronica", "say": "And the forty-four diners on laptops?"},
+			{"who": "danesh", "say": "Laptops are a niche."},
+			{"who": "ulrich", "say": "Nobody types a web address any more. If it isn't in the App Store, it isn't a real company."},
+			{"walk": "gilroy", "x": 60},
+			{"who": "gilroy", "say": "A web app. One site. Opens from Walter's link on anything with a browser, and a fix reaches everyone on their next tap.", "mark": "web"},
+			{"who": "ricky", "say": "Or the same web app, installable. An icon on the home screen, and reminders before dinner. An hour more.", "mark": "pwa"},
+			{"who": "ricky", "say": "They're all real choices. The question is which one fits Thursday. Every must on the board needs a yes."},
+			{"choice": "platform", "prompt": "Everyone turns to you. Where does Forkcast run?", "from": "platforms", "then": {
+				"native": [
+					{"card": "FLASH-FORWARD", "sub": "Thursday, 4pm · if we'd gone native", "auto": 2200},
+					{"set": "pitch", "board": null, "cast": {"veronica": 34, "walter": 52, "aleister": 74}},
+					{"who": "veronica", "say": "Forty-four of Walter's diners are on laptops. There's nothing for them to open."},
+					{"who": "aleister", "say": "And the iPhone fix is in App Store review! Usually about a day!"},
+					{"who": "walter", "say": "..."},
+					{"set": "den", "board": "platforms", "place": "Back to Monday", "cast": {"ricky": 14, "danesh": 34, "ulrich": 50, "gilroy": 60, "veronica": 76, "aleister": 92}},
+					{"who": "danesh", "say": "Fine. Native is right when the phone itself is the product: the camera, background location, a place in the store. Not for Thursday."},
+					{"who": "ulrich", "say": "I still think we should tell the press it's an app."}
+				],
+				"cross": [
+					{"card": "FLASH-FORWARD", "sub": "Thursday, 4pm · if we'd gone cross-platform", "auto": 2200},
+					{"set": "pitch", "board": null, "cast": {"veronica": 34, "walter": 52, "aleister": 74}},
+					{"who": "veronica", "say": "The diners had to install a test app before they could install ours. Half gave up. The laptops couldn't open anything."},
+					{"who": "aleister", "say": "Also the twelve hours of building ran out at hour eight! Mathematically!"},
+					{"who": "walter", "say": "..."},
+					{"set": "den", "board": "platforms", "place": "Back to Monday", "cast": {"ricky": 14, "danesh": 34, "ulrich": 50, "gilroy": 60, "veronica": 76, "aleister": 92}},
+					{"who": "danesh", "say": "Cross-platform is right when you need both phones and the stores, and you have the time. One codebase is still two store reviews."}
+				],
+				"web": [
+					{"who": "gilroy", "say": "Boring. Works on everything. Correct."},
+					{"who": "ricky", "say": "Start on the web unless there's a reason not to. Make it installable when reminders matter; go native when the phone itself is the product."},
+					{"stamp": "platform"}
+				],
+				"pwa": [
+					{"who": "gilroy", "say": "Boring. Works on everything. Correct."},
+					{"who": "ricky", "say": "It passes. But reminders aren't Thursday's problem, so that's an hour we didn't strictly need. Fine."},
+					{"stamp": "platform"}
+				]
+			}},
+			{"board": null},
+			{"who": "ulrich", "say": "For the record, I'll be telling people at parties that it's an app."}
+		]},
+
+		{"id": "noserver", "decision": 2, "beats": [
+			{"card": "DECISION 2", "sub": "What goes where?"},
+			{"set": "den", "cast": {"ricky": 12, "danesh": 28, "ulrich": 46, "gerard": 64, "gilroy": 84}, "sign": {"danesh": "The phone · frontend", "ulrich": "Server · backend", "gerard": "Database", "gilroy": "AI model"}},
+			{"walk": "aleister", "x": 54, "from": "right"},
+			{"who": "aleister", "say": "Good news: we don't need a server at all! The app talks straight to the AI model. Fewer boxes. Simplest possible!"},
+			{"who": "ulrich", "say": "So I've been fired from my own metaphor. Wonderful."},
+			{"walk": "ulrich", "x": -15},
+			{"sign": {"ulrich": null}},
+			{"walk": "gerard", "x": 48},
+			{"walk": "aleister", "x": 94},
+			{"walk": "danesh", "x": 66},
+			{"who": "gilroy", "say": "Key, please."},
+			{"who": "danesh", "say": "Aleister put it in the app. So, I have it. In my... app pocket.", "prop": {"key": "danesh"}},
+			{"who": "gilroy", "say": "Let me look at the app."},
+			{"screen": "code"},
+			{"choice": "code", "prompt": "Every diner's browser downloads this. Tap the line that gives it away.", "from": "code", "then": {
+				"key": [
+					{"mark": "key", "who": "gilroy", "say": "That's our key. Every diner downloads it with the app. Anyone can copy it and run their own projects on our bill."},
+					{"prop": {"key": "gilroy"}},
+					{"who": "gilroy", "say": "Copied. I'm mining cryptocurrency on your bill now. Kidding. Probably."}
+				]
+			}},
+			{"screen": null},
+			{"walk": "danesh", "x": 28},
+			{"walk": "gerard", "x": 64},
+			{"walk": "ulrich", "x": 46, "from": "left"},
+			{"who": "ulrich", "say": "The brains return.", "sign": {"ulrich": "Server · backend"}},
+			{"who": "ricky", "say": "The phone can't keep a secret. That's what the box in the middle is for."},
+			{"prop": {"key": "ulrich"}},
+			{"stamp": "rule"},
+			{"who": "gerard", "say": "I've made sticky notes. Five pieces of Forkcast. Tell me where each one lives."},
+			{"choice": "sort", "piece": "ui", "prompt": "Gerard holds up: “Search box and buttons.” Where does it live?", "from": "zones"},
+			{"choice": "sort", "piece": "key", "prompt": "“The AI model's secret key.” Where does it live?", "from": "zones"},
+			{"choice": "sort", "piece": "fee", "prompt": "“Working out the $2 booking fee.” Where?", "from": "zones"},
+			{"choice": "sort", "piece": "who", "prompt": "“Who can see which booking.” Where?", "from": "zones"},
+			{"choice": "sort", "piece": "all", "prompt": "“Every booking ever made.” Where?", "from": "zones"},
+			{"who": "ricky", "say": "Screens on the phone, rules and secrets on the server, what must last in the database."}
+		]},
+
+		{"id": "backend", "decision": 3, "beats": [
+			{"card": "DECISION 3", "sub": "Build the backend, or rent it?"},
+			{"set": "den", "cast": {"ricky": 14, "danesh": 32, "gilroy": 50, "gerard": 68}},
+			{"board": "backend"},
+			{"who": "danesh", "say": "We write our own. Node, TypeScript, our own server. Real engineers build.", "mark": "own"},
+			{"who": "gilroy", "say": "Then real engineers do logins, backups and updates at three in the morning. Six hours of it before Thursday."},
+			{"walk": "gilroy", "x": 44},
+			{"who": "gilroy", "say": "Or we rent the pieces. Supabase: a real Postgres database, logins and storage, ready made. Our rules go in small server functions.", "mark": "baas"},
+			{"who": "gilroy", "say": "Renting is someone else's server with a nicer website. Sometimes that's exactly what you want."},
+			{"walk": "aleister", "x": 86, "from": "right"},
+			{"who": "aleister", "say": "Or I make the whole thing in an AI app builder in one hour! Live before lunch!", "mark": "builder"},
+			{"who": "gerard", "say": "Will it talk to the restaurants' own booking systems? Next month?"},
+			{"who": "aleister", "say": "It will try very, very hard."},
+			{"who": "ricky", "say": "Look at what the platform left us in hours, and the musts. Then pick."},
+			{"choice": "backend", "prompt": "Everyone turns to you. Build it, rent it, or let the builder make it?", "from": "backend", "then": {
+				"own": [
+					{"card": "FLASH-FORWARD", "sub": "Thursday, 3:58pm · if we'd built our own", "auto": 2200},
+					{"set": "den", "board": null, "place": "The house · Thursday, 3:58pm", "cast": {"ricky": 30, "aleister": 62}},
+					{"who": "aleister", "say": "Two more hours! Logins are nearly... Walter's diners are here, aren't they."},
+					{"who": "ricky", "say": "None of these is wrong forever. Many teams rent first and build their own pieces as they grow."},
+					{"set": "den", "board": "backend", "place": "Back to Monday", "cast": {"ricky": 14, "danesh": 32, "gilroy": 44, "gerard": 68, "aleister": 86}},
+					{"who": "danesh", "say": "Our own backend is right when the rules outgrow anything you can rent. Not in four hours."}
+				],
+				"builder": [
+					{"card": "FLASH-FORWARD", "sub": "A month later · if the app builder made it", "auto": 2200},
+					{"set": "den", "board": null, "place": "The house · a month later", "cast": {"gerard": 36, "aleister": 64}},
+					{"who": "gerard", "say": "The builder couldn't run our booking-fee rule on a server, so the price gets checked on the diner's phone. Diners have noticed. Most now pay nothing."},
+					{"who": "gerard", "say": "And Nonna's booking system wants to connect. The builder doesn't do that, and we can't change how it works underneath."},
+					{"who": "aleister", "say": "I could build it again somewhere else! From the beginning! Happily!"},
+					{"set": "den", "board": "backend", "place": "Back to Monday", "cast": {"ricky": 14, "danesh": 32, "gilroy": 44, "gerard": 68, "aleister": 86}},
+					{"who": "aleister", "say": "Fine. App builders are right for a prototype you'll throw away, or a tool just for us. Not for this."}
+				],
+				"baas": [
+					{"who": "ricky", "say": "Renting is faster and costs control; lock-in is how hard it is to move out later. Supabase is Postgres underneath, so we could."},
+					{"stamp": "backend"}
+				]
+			}},
+			{"board": null}
+		]},
+
+		{"id": "plan", "decision": 4, "beats": [
+			{"card": "DECISION 4", "sub": "Read the plan"},
+			{"set": "den", "cast": {"ricky": 12, "danesh": 28, "ulrich": 44, "gerard": 60, "gilroy": 76}, "sign": {"danesh": "The phone · frontend", "ulrich": "Server · backend", "gerard": "Database", "gilroy": "AI model"}},
+			{"walk": "aleister", "x": 92, "from": "right"},
+			{"who": "aleister", "say": "Here's the plan! Every line is a choice you made. Mostly."},
+			{"screen": "plan"},
+			{"who": "ricky", "say": "Every line of a plan should belong to one of the boxes. Whoever's playing that box claims it."},
+			{"choice": "plan", "prompt": "One line on Aleister's plan nobody can claim. Which one would you question?", "from": "plan", "then": {
+				"bad": [
+					{"who": "danesh", "say": "Wait. Nobody claims that one, because it's coming to me."},
+					{"who": "ricky", "say": "In Next.js, a setting whose name starts NEXT_PUBLIC goes into what every browser downloads. The key is headed for the phone again.", "term": "Environment variable"},
+					{"prop": {"key": "danesh"}},
+					{"who": "ricky", "say": "Tell Aleister: the key stays on the server."},
+					{"who": "aleister", "say": "Fixed! I named it public because... I see it now.", "fix": true},
+					{"give": "danesh", "to": "ulrich"},
+					{"who": "ulrich", "say": "Into the brains' pocket. Where it belongs."}
+				]
+			}},
+			{"stamp": "stack"},
+			{"screen": null},
+			{"who": "aleister", "say": "Merging! Building! See you Thursday!"},
+			{"walk": "aleister", "x": 112}
+		]},
+
+		{"id": "thursday", "beats": [
+			{"card": "THURSDAY", "sub": "Walter's test"},
+			{"set": "den", "place": "The house · Thursday, 4pm", "cast": {"ricky": 18, "gilroy": 34, "danesh": 48, "ulrich": 62, "gerard": 78}},
+			{"widget": "thursday"},
+			{"who": "ulrich", "say": "Did we win? We won. I could feel it."},
+			{"walk": "veronica", "x": 92, "from": "right"},
+			{"walk": "gerard", "x": 74}
+		]},
+
+		{"id": "postmortem", "beats": [
+			{"who": "gerard", "say": "Here's what we decided, and why. One line per big decision. Future you will thank present you."},
+			{"widget": "record"},
+			{"who": "veronica", "say": "Walter's cheque. Two hundred thousand. He wrote one word on the back: “Boring.” From Walter, that's a compliment."}
+		]},
+
+		{"id": "cliff", "beats": [
+			{"set": "den", "place": "The house · Thursday night", "cast": {"ricky": 22, "ulrich": 40}},
+			{"walk": "galen", "x": 68, "from": "right"},
 			{"who": "galen", "say": "Forkcast is a beautiful idea. Hubbub would like to give it a home. Four million dollars, today."},
+			{"walk": "galen", "x": 112},
 			{"who": "ricky", "say": "Why pay four million for something he could build in a month? Unless he wants nobody to build it."},
+			{"walk": "walter", "x": 76, "from": "right"},
 			{"who": "walter", "say": "... My two hundred thousand stands. One question. Where do people sign up?"},
+			{"walk": "walter", "x": 112},
 			{"who": "ricky", "say": "A page for people to sign up on. By Saturday, for Ulrich's party. I'm going to be sick."}
-		],
-		"next": {"top": "NEXT", "title": "THE WHITEBOARD", "sub": "Episode 2 · the landing page and the waitlist"}
+		]}
+	],
+
+	"stamps": {
+		"platform": {"label": "WHAT TO TELL YOUR AI", "term": "“A responsive web app, mobile first.”", "plain": "One site that opens from a link on any device and lays itself out for phones first. A fix reaches everyone on their next tap.", "eg": "Real terms: web app; progressive web app (PWA) if it's installable; native or cross-platform apps when the phone is the product."},
+		"rule": {"label": "THE RULE", "term": "The frontend is public", "plain": "Everything sent to a browser or a phone can be read and changed by whoever holds it. Secrets and rules stay on the server.", "eg": "Real term: a secret key (or API key). What to tell your AI: “keep keys on the server.”"},
+		"backend": {"label": "NEW WORDS", "term": "Build vs buy, and lock-in", "plain": "Renting a backend (a backend-as-a-service) is faster and costs some control. Lock-in is how hard it is to move out later.", "eg": "What to tell your AI: “Supabase for the database and logins; our rules in server functions.”"},
+		"stack": {"label": "NEW WORD", "term": "Tech stack", "plain": "The list of tools a plan uses, layer by layer. Before you merge, put every line on the map. A line you can't place is a question to ask.", "eg": "Real term: environment variable, a setting kept outside the code. NEXT_PUBLIC_ ones are sent to every browser."}
 	}
 }
