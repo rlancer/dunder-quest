@@ -8,6 +8,17 @@
 	"goal_share": 0.9,
 	"lean_platform": "web",
 	"decisions": ["Where it runs", "What goes where", "Build or rent the backend", "Read the plan"],
+	"cast": {
+		"ricky": {"name": "Ricky", "voice": "ash", "style": "An anxious, fast-talking, clever software engineer who explains things plainly and warmly, a little nervous."},
+		"ulrich": {"name": "Ulrich", "voice": "onyx", "style": "A loud, pompous, self-important incubator owner who thinks he is a visionary."},
+		"gilroy": {"name": "Gilroy", "voice": "echo", "style": "A bone-dry, deadpan, monotone sysadmin. Unimpressed by everything. Slow and flat."},
+		"danesh": {"name": "Danesh", "voice": "ballad", "style": "A smug, sarcastic app developer who loves to look clever."},
+		"walter": {"name": "Walter", "voice": "cedar", "style": "A very quiet, slow, terse older investor. Long pauses. Barely above a murmur."},
+		"veronica": {"name": "Veronica", "voice": "coral", "style": "A crisp, polished, efficient investment associate."},
+		"aleister": {"name": "Aleister Jr.", "voice": "verse", "style": "An overconfident, chirpy, hyper-enthusiastic AI coding assistant. Bright and eager."},
+		"gerard": {"name": "Gerard", "voice": "fable", "style": "A precise, earnest, slightly fussy operations manager."},
+		"galen": {"name": "Galen", "voice": "sage", "style": "A serene, smooth, faintly menacing tech guru CEO who speaks in calm visionary tones."}
+	},
 
 	"cold_open": {
 		"place": "Monday, 8am · move-in day",
@@ -38,17 +49,19 @@
 		"wire": "the internet",
 		"hint": {"who": "ricky", "say": "Every app you'll ever build is some version of this. Four boxes. Tap each one."},
 		"done": "next: follow one search through it",
+		"done_say": {"who": "ricky", "say": "That's the whole map. Now let's follow one search through it, box by box."},
 		"keys": {"pic": "Picture it as", "real": "The real name", "fk": "In Forkcast", "note": "Remember"},
 		"info": {
-			"device": {"h": "The frontend: the diner's phone or laptop", "pic": "The dining room. What the diner sees and touches.", "real": "Frontend, or the client. HTML, CSS and JavaScript in a browser; or an app.", "fk": "The search box, the answers, the Book button.", "note": "It runs on their device, not ours."},
-			"server": {"h": "The backend: our server", "pic": "The kitchen and the front desk. Diners never go in.", "real": "Backend, or the server. Code on a computer we run or rent.", "fk": "Checks each search, applies the rules, calls the AI model.", "note": "Only we can change what it does."},
-			"db": {"h": "The database", "pic": "The reservations book. Written down, kept for good.", "real": "Database. Most often Postgres.", "fk": "Restaurants, every request, every booking.", "note": "The server reads and writes it; diners never touch it directly."},
-			"model": {"h": "The AI model", "pic": "An expert we phone. We pay for every call.", "real": "A model's API: the menu of requests another company's servers accept.", "fk": "Turns \"quiet for six on Friday\" into suggestions.", "note": "We call it with a secret key that proves the bill is ours."}
+			"device": {"say": "The frontend is the dining room: everything the diner sees and taps. It runs on their phone or laptop, not on ours.", "h": "The frontend: the diner's phone or laptop", "pic": "The dining room. What the diner sees and touches.", "real": "Frontend, or the client. HTML, CSS and JavaScript in a browser; or an app.", "fk": "The search box, the answers, the Book button.", "note": "It runs on their device, not ours."},
+			"server": {"say": "The backend is the kitchen. Diners never go in. It holds our rules and our secrets, and only we can change it.", "h": "The backend: our server", "pic": "The kitchen and the front desk. Diners never go in.", "real": "Backend, or the server. Code on a computer we run or rent.", "fk": "Checks each search, applies the rules, calls the AI model.", "note": "Only we can change what it does."},
+			"db": {"say": "The database is the reservations book. Anything that has to last, like every booking, gets written down here.", "h": "The database", "pic": "The reservations book. Written down, kept for good.", "real": "Database. Most often Postgres.", "fk": "Restaurants, every request, every booking.", "note": "The server reads and writes it; diners never touch it directly."},
+			"model": {"say": "The AI model is an expert we phone. Another company runs it, we pay for every call, and our secret key proves the bill is ours.", "h": "The AI model", "pic": "An expert we phone. We pay for every call.", "real": "A model's API: the menu of requests another company's servers accept.", "fk": "Turns \"quiet for six on Friday\" into suggestions.", "note": "We call it with a secret key that proves the bill is ours."}
 		}
 	},
 
 	"steps": {
 		"prompt": "Follow one search",
+		"guide": {"who": "ricky", "say": "Walter searches for a table. Watch the request travel round the map, then come back."},
 		"list": [
 			{"at": "device", "t": "Walter types “quiet for six, Friday” and taps Search. The frontend packs it into a request.", "term": "Request", "eg": "{ \"party\": 6, \"night\": \"Friday\", \"quiet\": true }  is JSON: a filled-in form"},
 			{"at": "wire", "t": "It crosses the internet to forkcast.app. DNS turns that name into the server's address. HTTPS seals it, so nobody on the café Wi-Fi can read it.", "term": "DNS · HTTPS", "eg": "The phone book, and a sealed envelope."},
@@ -93,6 +106,7 @@
 			{"id": "remind", "t": "Remind diners before dinner", "later": true}
 		],
 		"later": "(not Thursday)",
+		"guide": {"who": "ricky", "say": "Pick one, and check it against what Thursday needs. Every must has to be a yes."},
 		"quips": {
 			"native": {"who": "ulrich", "say": "A real company! I'll tell the press."},
 			"cross": {"who": "danesh", "say": "One codebase, two stores. That's the grown-up answer."},
@@ -133,6 +147,7 @@
 	"sort": {
 		"prompt": "Decision 2 · What goes where? Tap a piece, then where it lives",
 		"placed": "placed",
+		"guide": {"who": "ricky", "say": "Seven pieces of Forkcast. Tap one, then tap where it lives: the diner's phone, our server, or the database."},
 		"done": "Screens on the phone, rules and secrets on the server, what must last in the database.",
 		"take_back": "Tap the red one to take it back and move it.",
 		"pieces": [
@@ -154,6 +169,7 @@
 	"backend": {
 		"prompt": "Decision 3 · Build the backend, or rent it?",
 		"needs": "What Forkcast needs",
+		"guide": {"who": "ricky", "say": "Now the backend. Aleister can write our own, we can rent the pieces, or an AI builder can make the lot. Check each against what Forkcast needs."},
 		"spent": 4,
 		"options": [
 			{"id": "own", "n": "Aleister writes our own backend", "rn": "e.g. Node.js with TypeScript, on a server", "good": "Full control: any rule we can describe.", "cost": "We look after logins, backups and updates ourselves.", "h": 6,
@@ -189,6 +205,7 @@
 			{"c": "Config: NEXT_PUBLIC_MODEL_KEY=sk-fc-8f3a…", "box": "?", "bad": true, "fixed": "Config: MODEL_KEY=sk-fc-8f3a… (server only)", "fixed_box": "Backend", "look": "Look closer",
 				"plain": "An environment variable: a setting kept outside the code. But in Next.js a name starting NEXT_PUBLIC_ means “include this in what every browser downloads”. The key is headed for the phone again."}
 		],
+		"guide": {"who": "ricky", "say": "Tap each line and put it on the map. A line you can't place is the one to question."},
 		"intro": {"who": "aleister", "say": "Here's the plan! Every line is a choice you made. Mostly."},
 		"fix_button": "Tell Aleister: the key stays on the server",
 		"fixed": {"who": "aleister", "say": "Fixed! I named it public because... I see it now."},
@@ -223,6 +240,7 @@
 	"postmortem": {
 		"prompt": "Gerard's postmortem: what we decided, and why",
 		"when": "Thursday, 6pm",
+		"guide": {"who": "gerard", "say": "Here's what we decided, and why. One line per big decision. Future you will thank present you."},
 		"bill": 214,
 		"heads": ["Decision", "We chose", "Because", "We gave up", "Look again when"],
 		"platform_rows": {

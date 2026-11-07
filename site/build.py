@@ -436,8 +436,8 @@ def build_splash(prefix: str = "") -> str:
          "Meet the flatmates"),
         ("game-ms", "Build with AI", "Mission Silicon", f"{prefix}mission-silicon/", f"{prefix}mission-silicon/play/",
          "mission-silicon.png", MS_ALT,
-         "You can't code. Your AI teammate can, a bit too confidently. Fourteen episodes in an incubator house, from a "
-         "landing page to sixty cities: read its pull request, cut what you don't need, and watch the night play out.",
+         "You can't code. Your AI teammate can, a bit too confidently. Learn the decisions behind every app you'll build "
+         "with AI: where it runs, what stays on the server, build or rent. The voiced Pilot is playable now.",
          "Meet the house"),
     ]
     cards = "".join(f"""
@@ -2234,21 +2234,22 @@ def curb_page(body: str, prefix: str) -> str:
 """
 
 
-## Mission Silicon's page at /mission-silicon/, the fourth game, in prototype:
-## startup green on off-white, Montserrat ExtraBold headings. The cast and the
-## season come from `mission-silicon/data/season.json`, the data the game
-## plays, and the modules from `mission-silicon/CURRICULUM.md`. Screenshots
-## and the social card are painted by `mission-silicon/tools/site_art.gd`.
+## Mission Silicon's page at /mission-silicon/, the fourth game, being rebuilt
+## as a web app (`mission-silicon/web/`) to teach first: startup green on
+## off-white, Montserrat ExtraBold headings. The cast and the season outline
+## come from `mission-silicon/data/season.json`, the Pilot from
+## `data/pilot.json`, and the modules from `mission-silicon/CURRICULUM.md`.
+## The screenshots are of the web Pilot.
 MS_ALT = "Mission Silicon: the name in heavy slate type on off-white, beside the game's whiteboard of servers with traffic running through it."
 MS_DESC = ("Mission Silicon, a Dunder Quest game in the making: you're a non-technical founder launching an AI startup, "
            "and your AI coding assistant is very sure of itself. Learn how web apps are built by steering one. "
-           "All fourteen episodes of the first season are playable free in your browser.")
+           "The Pilot is free to play in your browser, voiced, on a phone or a computer; the rest of the season is being rebuilt.")
 
 
 def tag_mission_silicon_page(index: Path) -> None:
-    """The same tags for Mission Silicon, in mission-silicon/, which Godot
-    exports to mission-silicon/play/index.html."""
-    desc = "Play the Mission Silicon prototype, the Dunder Quest game about building apps with AI, right in your browser."
+    """The same tags for Mission Silicon, in mission-silicon/, whose web app
+    is built to mission-silicon/play/index.html."""
+    desc = "Play the Pilot of Mission Silicon, the Dunder Quest game about building apps with AI, right in your browser."
     text = index.read_text(encoding="utf-8")
     if 'property="og:title"' in text:
         return
@@ -2271,10 +2272,8 @@ def ms_modules() -> dict[str, str]:
 def build_mission_silicon(prefix: str) -> str:
     data = json.loads((MISSION / "data" / "season.json").read_text(encoding="utf-8"))
     img = f"{prefix}static/img/mission-silicon/"
-    built = {ep["id"]: ep for ep in data["episodes"]}
-    # Episode 1, the Pilot, has its own data and scene.
-    if (MISSION / "data" / "pilot.json").exists():
-        built[1] = json.loads((MISSION / "data" / "pilot.json").read_text(encoding="utf-8"))
+    # Only the Pilot is playable while the season is rebuilt to teach first.
+    built = {1: json.loads((MISSION / "data" / "pilot.json").read_text(encoding="utf-8"))}
     modules = ms_modules()
     cast = "".join(
         f'<li><b>{esc(p["full"])}</b> <span>{esc(p["role"])}</span></li>'
@@ -2288,31 +2287,32 @@ def build_mission_silicon(prefix: str) -> str:
             label = "The whole picture" if key == "capstone" else f"Module {key}"
             names.append(f'{label}: {esc(title.split(",")[0].split(":")[0])}' if title else label)
         playable = entry["id"] in built
-        state = '<a class="ms-tag" href="play/">Play it</a>' if playable else '<span class="ms-tag ms-soon">Coming</span>'
+        state = '<a class="ms-tag" href="play/">Play it</a>' if playable else '<span class="ms-tag ms-soon">Being rebuilt</span>'
         season.append(f'<li{" class=ms-live" if playable else ""}><span class="ms-num">{entry["id"]}</span>'
                       f'<b>{esc(entry["title"])}</b> {state}<small>{"; ".join(names)}</small></li>')
     steps = [
-        ("planning.png", "Read the AI's plan",
-         "Aleister Jr., your AI teammate, answers every crisis with a pull request. Keep or cut each change, ask it the questions a "
-         "good founder asks (where's the bottleneck? how stale can this be?), and turn the dials. Nothing tells you if a choice is right."),
-        ("trouble.png", "Watch the night play out",
-         "Merge, and thousands of simulated diners pour through what you built. Servers max out, caches go stale, the garage server "
-         "overheats, and the real names for what's going wrong pop up where it happens."),
-        ("postmortem.png", "Find out why",
-         "The postmortem says what broke, in plain words and then the real term, and what to tell your AI next time. Runway is the "
-         "score: outages burn money, and so does building more than you need."),
+        ("planning.png", "Make the real decisions",
+         "Every episode turns on a few architecture decisions you'll face building anything with AI: where the app runs, what goes "
+         "on the phone and what stays on the server, whether to build or rent. Each option is checked against what the app needs "
+         "as you pick, and the wrong ones still say when they'd be right."),
+        ("trouble.png", "Read the AI's plan",
+         "Aleister Jr., your AI teammate, writes up a plan in real tools: Next.js, Supabase, Vercel. Put every line on the map of "
+         "your app. The one you can't place is the one to question."),
+        ("postmortem.png", "Watch it go live",
+         "Two hundred diners try it on their phones and laptops, and every result traces back to a decision you made. Then the "
+         "team writes it down: what you chose, why, what it cost, and when to look again."),
     ]
     step_html = "".join(
         f'<li><img src="{img}{shot}" alt="" width="720" height="405" loading="lazy"><h3>{esc(h)}</h3><p>{esc(p)}</p></li>'
         for shot, h, p in steps)
     body = f"""
 <section class="ms-hero">
-  <p class="ms-kicker">a dunder_quest game · early prototype</p>
+  <p class="ms-kicker">a dunder_quest game · being rebuilt to teach first</p>
   <h1>Mission Silicon</h1>
   <p class="ms-lede">You've moved into an incubator house to launch an AI startup, and you can't code. Your AI coding assistant can. It's fast, tireless, and very sure of itself. Learn enough about how apps are built (servers, databases, caches, scaling, security, the AI itself) to tell it what to build, and when to say no.</p>
-  <p class="ms-actions"><a class="ms-btn" href="play/">Play the season</a></p>
-  <p class="ms-fine">The whole season, all fourteen episodes. Best played on a computer or a phone held sideways.</p>
-  <img class="ms-shot" src="{img}live.png" alt="The game's whiteboard during Friday night: diners flow through a load balancer, two app servers, a Redis cache and Postgres, while an investor texts everyone he knows" width="720" height="405">
+  <p class="ms-actions"><a class="ms-btn" href="play/">Play the Pilot</a></p>
+  <p class="ms-fine">Episode 1, voiced by the cast. Works on a phone or a computer. The rest of the season is being rebuilt.</p>
+  <img class="ms-shot" src="{img}live.png" alt="Thursday in the Pilot: two hundred diners as squares by device, iPhones, Android phones and laptops, beside a clock, a meter against the nine-in-ten goal, and the 4:40 iPhone bug and its fix" width="720" height="405">
 </section>
 <section class="ms-section" id="how">
   <h2>How it plays</h2>
@@ -2325,7 +2325,7 @@ def build_mission_silicon(prefix: str) -> str:
 </section>
 <section class="ms-section" id="season">
   <h2>The season</h2>
-  <p>Fourteen episodes, from a landing page to a company in several cities, and every one teaches a piece of how web apps are built. You never write code: you learn enough to direct an AI that does.</p>
+  <p>The season runs from a landing page to a company in several cities, and every episode teaches a piece of how web apps are built. You never write code: you learn enough to direct an AI that does. It's being rebuilt to teach first, one episode at a time, starting with the Pilot.</p>
   <ol class="ms-season">{"".join(season)}</ol>
 </section>
 """
@@ -2359,7 +2359,7 @@ def ms_page(body: str, prefix: str) -> str:
 {body}
 </main>
 <footer class="ms-foot">
-  <p>Mission Silicon. One incubator house, one AI teammate, fourteen episodes of how apps get built.</p>
+  <p>Mission Silicon. One incubator house, one AI teammate, and how apps get built.</p>
   <p><a href="play/">Play in your browser</a> · <a href="{prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="{prefix}{QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="{prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="{REPO}/tree/main/games/mission-silicon">Source on GitHub</a></p>
 </footer>
 </body>

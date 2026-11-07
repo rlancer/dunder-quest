@@ -2,8 +2,9 @@
 # Builds the website into build/site, with Dunder Quest (games/dunder-quest/) in build/site/play
 # Flatmates.js (games/flatmates/) in build/site/flatmates/play,
 # beside its page in build/site/flatmates, and Curb Your Oxidation
-# (games/curb/) in build/site/curb/play, and the Mission Silicon prototype
-# (games/mission-silicon/) in build/site/mission-silicon/play.
+# (games/curb/) in build/site/curb/play, and Mission Silicon, a web app
+# (games/mission-silicon/web/, built with bun and Vite, not Godot), in
+# build/site/mission-silicon/play.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -34,7 +35,6 @@ python3 "${ROOT}/site/build.py" --curb "${ROOT}/build/site/curb/play/index.html"
 python3 "${ROOT}/scripts/fit_pages_limit.py" "${ROOT}/build/site/curb/play"
 
 mkdir -p build/site/mission-silicon/play
-"$GODOT" --headless --path "$MISSION" --import
-"$GODOT" --headless --path "$MISSION" --export-release "Web" "${ROOT}/build/site/mission-silicon/play/index.html"
+(cd "${MISSION}/web" && bun install --frozen-lockfile && bun run build)
+cp -r "${MISSION}/web/dist/." build/site/mission-silicon/play/
 python3 "${ROOT}/site/build.py" --mission-silicon "${ROOT}/build/site/mission-silicon/play/index.html"
-python3 "${ROOT}/scripts/fit_pages_limit.py" "${ROOT}/build/site/mission-silicon/play"
