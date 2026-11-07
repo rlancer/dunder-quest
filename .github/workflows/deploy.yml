@@ -34,7 +34,7 @@ jobs:
       - name: Check the Flatmates.js lesson cards
         run: node games/flatmates/tests/verify_lessons.mjs
 
-      # Mission Silicon is a web app built with bun, in the site build below.
+      # The site build, its checks and Mission Silicon's web app all run on bun.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.3

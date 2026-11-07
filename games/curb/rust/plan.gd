@@ -4,7 +4,7 @@ extends RefCounted
 ## One of Barry's plans: a short Rust program on his legal pad, with blanks
 ## the player fills from a few options. The code is text with «slot» marks;
 ## a pick replaces each mark with the chosen option's text, so what the
-## checker sees, what rustc sees (tests/verify_rust.py) and what the pad
+## checker sees, what rustc sees (tests/verify_rust.ts) and what the pad
 ## shows are the same characters.
 
 const OPEN := "«"

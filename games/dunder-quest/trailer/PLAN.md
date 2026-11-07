@@ -184,7 +184,7 @@ Uploading pixel art to YouTube at 4K (×8) is a well-known trick: YouTube serves
 - **Crop:** game at ×4 (1920×1080), cropped to a 1080-wide window that follows the squire (270×270 native pixels). That fills the middle of the 1920-tall frame, with cards above and below.
 - **Stack:** the full game frame at ×4 cropped to 1080×1080 above a large code card, or the whole frame at ×2 (960×540) with room to spare. "Code on top, game below" reads well on phones and plays to the hook.
 
-Don't host the video files on Cloudflare Pages: `scripts/fit_pages_limit.py` exists because Pages caps file size. Host on YouTube and embed it.
+Don't host the video files on Cloudflare Pages: `scripts/fit_pages_limit.ts` exists because Pages caps file size. Host on YouTube and embed it.
 
 ## 9. Production checklist
 

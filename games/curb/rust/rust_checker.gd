@@ -18,7 +18,7 @@ extends RefCounted
 ## twice with the same numbering: once to type it and record each variable's
 ## uses, once to check moves and borrows against those uses.
 ##
-## tests/verify_rust.py compiles every plan, in every combination of its
+## tests/verify_rust.ts compiles every plan, in every combination of its
 ## blanks, with the real rustc and checks this agrees with it.
 ##
 ## check(src) -> {"ok": bool, "errors": [{"code", "msg", "line"}]}
