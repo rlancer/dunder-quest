@@ -34,6 +34,11 @@ jobs:
       - name: Check the Flatmates.js lesson cards
         run: node games/flatmates/tests/verify_lessons.mjs
 
+      # Mission Silicon is a web app built with bun, in the site build below.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.3
+
       - name: Build the site and the browser games
         run: bash scripts/export_web.sh
 
@@ -42,18 +47,14 @@ jobs:
       - name: Check Curb Your Oxidation against rustc
         run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/curb/tests/check.sh
 
-      # Every episode's data must prove its lesson in the simulation, every
-      # curriculum module needs an episode, and the bot plays each episode
-      # through the UI.
+      # The Pilot's data must prove its lesson (model.test.ts), and the bot
+      # plays it through its real screens (pilot.test.tsx).
       - name: Check Mission Silicon
-        run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/mission-silicon/tests/check.sh
+        working-directory: games/mission-silicon/web
+        run: bun run typecheck && bun run test
 
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
-
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.4.3
 
       - name: Install the deploy CLI
         working-directory: deploy

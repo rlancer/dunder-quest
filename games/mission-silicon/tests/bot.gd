@@ -28,6 +28,9 @@ var _dir: String = "res://tests/shots"
 ## The window at a phone size (zero: the project's own window).
 var _phone: Vector2i = Vector2i.ZERO
 var ep_node: Episode
+## The scene being played: the Pilot or an episode (both have `phase` and
+## `dialogue`).
+var scene
 
 
 func _ready() -> void:
@@ -49,6 +52,8 @@ func _run() -> void:
 	Card.test_auto_frames = 20 if _shots else 2
 	Episode.test_ticks_per_frame = 4 if _shots else 30
 	Episode.test_stay = true
+	Pilot.test_minutes_per_frame = 2 if _shots else 20
+	Pilot.test_stay = true
 	if _shots:
 		DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(_dir))
 		if _phone != Vector2i.ZERO:
@@ -59,8 +64,11 @@ func _run() -> void:
 		await _frames(10)
 		await _flyover()
 		await _shot("title")
-	for ep in Season.episodes():
-		await _play(ep)
+	await _play_pilot()
+	# BOT_PILOT_ONLY=1 plays just the Pilot, for quick checks.
+	if OS.get_environment("BOT_PILOT_ONLY") == "":
+		for ep in Season.episodes():
+			await _play(ep)
 	print("BOT result=%s" % ("ok" if _fails.is_empty() else "FAIL " + "; ".join(_fails)))
 	tree.quit(0 if _fails.is_empty() else 1)
 
@@ -124,27 +132,27 @@ func _flyover() -> void:
 
 func _wait_phase(want: String) -> bool:
 	for _i in CAP:
-		if ep_node.phase == want:
+		if scene.phase == want:
 			return true
 		await get_tree().process_frame
-	_fail("never reached %s (stuck in %s)" % [want, ep_node.phase])
+	_fail("never reached %s (stuck in %s)" % [want, scene.phase])
 	return false
 
 
 func _find(name: String) -> Control:
-	return ep_node.find_child(name, true, false) as Control
+	return scene.find_child(name, true, false) as Control
 
 
 ## A real tap: a press and a release at the control's centre, once any
 ## dialogue on screen (the first episode's tutorial lines) has moved on.
 func _tap(name: String) -> bool:
 	for _i in CAP:
-		if not ep_node.dialogue.visible:
+		if not scene.dialogue.visible:
 			break
 		await get_tree().process_frame
 	var c := _find(name)
 	if c == null or not c.is_visible_in_tree():
-		_fail("no visible %s to tap in %s" % [name, ep_node.phase])
+		_fail("no visible %s to tap in %s" % [name, scene.phase])
 		return false
 	# Scroll it into view first, as a player would.
 	var up := c.get_parent()
@@ -168,7 +176,7 @@ func _tap(name: String) -> bool:
 
 
 func _check_layout(where: String) -> void:
-	_check_node(ep_node, where)
+	_check_node(scene, where)
 
 
 func _check_node(n: Node, where: String) -> void:
@@ -243,6 +251,7 @@ func _through_live(ep: Dictionary, answers: Dictionary) -> bool:
 func _play(ep: Dictionary) -> void:
 	ep_node = Episode.new()
 	ep_node.episode_id = int(ep["id"])
+	scene = ep_node
 	get_tree().change_scene_to_node(ep_node)
 	if _shots:
 		await _frames(8)
@@ -361,3 +370,232 @@ func _play(ep: Dictionary) -> void:
 	if not await _wait_phase("done"):
 		return
 	print("ep %d done in %d takes" % [ep["id"], ep_node.takes])
+
+
+func _visible(name: String) -> bool:
+	var c := _find(name)
+	return c != null and c.is_visible_in_tree()
+
+
+func _next_ready() -> bool:
+	var b := _find("Next") as Button
+	return b != null and b.is_visible_in_tree() and not b.disabled
+
+
+## Waits for any dialogue on screen to move on.
+func _quiet() -> void:
+	for _i in CAP:
+		if not scene.dialogue.visible:
+			return
+		await get_tree().process_frame
+
+
+## The Pilot, through its real buttons: every box on the map, every step of
+## the search, every way to ship; then one wrong pick before the right one
+## at each decision (native apps, the key on the phone, our own backend,
+## MERGE before the key is fixed), each checked to hold the player back.
+## Thursday must match the headless run on the web and fall short on
+## native apps, and the marks must follow the picks (native was tried, so
+## no Ulrich mark).
+func _play_pilot() -> void:
+	var p := Pilot.new()
+	scene = p
+	get_tree().change_scene_to_node(p)
+	if _shots:
+		await _frames(8)
+		await _shot("pilot_cold_open")
+		await _wait_phase("title")
+		await _frames(6)
+		await _shot("pilot_title_card")
+	if not await _wait_phase("goal"):
+		return
+	await _frames(2)
+	_check_layout("pilot goal")
+	await _shot("pilot_goal")
+	await _tap("Next")
+
+	# The map: Next only once all four boxes are open.
+	await _wait_phase("map")
+	await _frames(2)
+	_check_layout("pilot map")
+	await _shot("pilot_map")
+	for k in ["device", "server", "db", "model"]:
+		if _visible("Next"):
+			_fail("pilot: the map's Next shows before every box is open")
+		await _tap("Box_" + k)
+		if k == "model":
+			_check_layout("pilot map info")
+			await _shot("pilot_map_model")
+	await _tap("Next")
+
+	# One search, step by step.
+	await _wait_phase("steps")
+	for i in 5:
+		if _visible("Next"):
+			_fail("pilot: the search's Next shows before the last step")
+		await _tap("StepNext")
+		if i == 0:
+			await _frames(30 if _shots else 2)
+			_check_layout("pilot steps")
+			await _shot("pilot_step_wire")
+	await _tap("Next")
+
+	# Four ways to ship.
+	await _wait_phase("ways")
+	if _shots:
+		await _frames(4)
+		await _shot("pilot_ways_lines")
+	await _quiet()
+	for k in ["web", "pwa", "native", "cross"]:
+		await _tap("Way_" + k)
+	_check_layout("pilot ways")
+	await _shot("pilot_ways")
+	await _tap("Next")
+
+	# Decision 1: native first (Ulrich's card), then the web app.
+	await _wait_phase("pick")
+	await _tap("Pick_native")
+	_check_layout("pilot pick native")
+	await _shot("pilot_pick_native")
+	if _visible("Next"):
+		_fail("pilot: native apps can go on to Thursday")
+	await _tap("Pick_cross")
+	if _visible("Next"):
+		_fail("pilot: cross-platform can go on to Thursday")
+	await _tap("Pick_pwa")
+	_check_layout("pilot pick pwa")
+	await _shot("pilot_pick_pwa")
+	await _tap("Pick_web")
+	if not _next_ready():
+		_fail("pilot: the web app can't go on")
+	_check_layout("pilot pick web")
+	await _shot("pilot_pick_web")
+	await _tap("Next")
+
+	# Aleister's no-server plan, and the key in the code.
+	await _wait_phase("noserver")
+	await _tap("OpenCode")
+	await _quiet()
+	await _frames(2)
+	if not _visible("Stamp"):
+		_fail("pilot: no rule stamp after the key")
+	_check_layout("pilot noserver")
+	await _shot("pilot_noserver")
+	await _tap("Next")
+
+	# Decision 2: the key on the phone first, then where everything lives.
+	await _wait_phase("sort")
+	await _frames(2)
+	_check_layout("pilot sort")
+	await _shot("pilot_sort")
+	await _tap("Piece_key")
+	await _tap("Zone_front")
+	if not _visible("Placed_key") or _visible("Next"):
+		_fail("pilot: the key on the phone isn't shown in the wrong place")
+	_check_layout("pilot sort wrong")
+	await _shot("pilot_sort_wrong")
+	await _tap("Placed_key")
+	await _tap("Zone_back")
+	var right := {"ui": "front", "state": "front", "fee": "back", "who": "back", "all": "db", "menu": "db"}
+	for id in right:
+		await _tap("Piece_" + id)
+		await _tap("Zone_" + right[id])
+	if not _next_ready():
+		_fail("pilot: every piece in its place and still no Next")
+	_check_layout("pilot sort done")
+	await _shot("pilot_sort_done")
+	await _tap("Next")
+
+	# Decision 3: our own backend first, then renting.
+	await _wait_phase("backend")
+	await _tap("Back_own")
+	if _visible("Next"):
+		_fail("pilot: writing our own backend fits the hours left")
+	_check_layout("pilot backend own")
+	await _shot("pilot_backend_own")
+	await _tap("Back_builder")
+	if _visible("Next"):
+		_fail("pilot: the AI app builder can go on")
+	await _tap("Back_baas")
+	if not _next_ready():
+		_fail("pilot: renting the backend can't go on")
+	_check_layout("pilot backend rent")
+	await _shot("pilot_backend_rent")
+	await _tap("Next")
+
+	# Decision 4: MERGE waits until every line is read and the key is fixed.
+	await _wait_phase("plan")
+	await _frames(2)
+	await _shot("pilot_plan")
+	for i in 5:
+		if _next_ready():
+			_fail("pilot: MERGE before the plan's read")
+		await _tap("Line_%d" % i)
+	_check_layout("pilot plan bad line")
+	await _shot("pilot_plan_key")
+	if _next_ready():
+		_fail("pilot: MERGE with the key still public")
+	await _tap("TellAleister")
+	await _quiet()
+	if not _next_ready():
+		_fail("pilot: the key's fixed and every line read, and still no MERGE")
+	_check_layout("pilot plan fixed")
+	await _shot("pilot_plan_fixed")
+	await _tap("Next")
+
+	# Thursday: the player's web app, then the native comparison.
+	await _wait_phase("thursday")
+	await _quiet()
+	var shot_mid := false
+	for _i in CAP:
+		if _next_ready():
+			break
+		if not shot_mid and p._minute >= 46.0:
+			shot_mid = true
+			_check_layout("pilot thursday")
+			await _shot("pilot_thursday_bug")
+		await get_tree().process_frame
+	var expect := PilotModel.thursday("web")
+	var share := (_find("Share") as Label).text
+	if share != "%d%%" % roundi(expect["share"] * 100.0):
+		_fail("pilot: Thursday on screen says %s, the headless run %d%%" % [share, roundi(expect["share"] * 100.0)])
+	if expect["share"] < float(Season.pilot()["goal_share"]):
+		_fail("pilot: the web app misses Thursday's goal")
+	await _shot("pilot_thursday_web")
+	await _tap("Build_native")
+	for _i in CAP:
+		if p._minute >= float(Season.pilot()["thursday"]["minutes"]):
+			break
+		await get_tree().process_frame
+	await _frames(2)
+	_check_layout("pilot thursday native")
+	await _shot("pilot_thursday_native")
+	if PilotModel.thursday("native")["share"] >= float(Season.pilot()["goal_share"]):
+		_fail("pilot: native apps make Thursday's goal")
+	await _tap("Next")
+
+	# Gerard's record, the runway and the marks.
+	await _wait_phase("postmortem")
+	await _frames(2)
+	_check_layout("pilot postmortem")
+	await _shot("pilot_postmortem")
+	if p.result.get("share", 0.0) != expect["share"]:
+		_fail("pilot: the record's Thursday isn't the web app's")
+	await _tap("Next")
+	await _wait_phase("record")
+	await _frames(4)
+	_check_layout("pilot record")
+	await _shot("pilot_record")
+	var want := {"live": true, "lean": true, "ulrich": false}
+	if JSON.stringify(p.earned) != JSON.stringify(want):
+		_fail("pilot: marks %s, not %s" % [p.earned, want])
+	print("pilot: Thursday %d%% on the web, marks %s" % [roundi(expect["share"] * 100.0), p.earned])
+	await _quiet()
+	await _tap("Next")
+	if _shots:
+		await _wait_phase("cliffhanger")
+		await _frames(8)
+		await _shot("pilot_cliffhanger")
+	if not await _wait_phase("done"):
+		return
+	print("ep 1 (the Pilot) done")
