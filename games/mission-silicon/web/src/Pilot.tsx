@@ -14,6 +14,7 @@ import type { Line } from "./lines";
 import { voiceKey } from "./lines";
 import { P, clock, feed, fill, hoursLeft, marks, outcome, passes, platform, testers, thursday, type Option, type Req } from "./model";
 import { Guide, MapView, Next, Notice, ReqTable, Stamp, Talk, castName, Portrait, type BoxId } from "./ui";
+import { useTheme, type Theme } from "./theme";
 import { setVoice, speak, stop, unlock, useAfterSpeech, useVoice } from "./voice";
 import movein from "../../assets/backgrounds/movein.png";
 import house from "../../assets/backgrounds/house.png";
@@ -93,8 +94,11 @@ export default function Pilot({ speed = 10 }: { speed?: number }) {
 }
 
 // The bar: the episode, the four decisions, Aleister's hours, the sound.
+const THEME: Record<Theme, [string, string]> = { auto: ["◐", "Auto"], light: ["☀", "Light"], dark: ["☾", "Dark"] };
+
 function Bar({ frame, picks }: { frame: Frame; picks: Picks }) {
   const { on } = useVoice();
+  const [theme, nextTheme] = useTheme();
   const at = FRAMES.indexOf(frame);
   const cur = DECISION[frame] ?? 0;
   const used = (picks.platform ? platform(picks.platform)!.h : 0) + (picks.backend ? P.backend.options.find((b) => b.id === picks.backend)!.h : 0);
@@ -121,6 +125,9 @@ function Bar({ frame, picks }: { frame: Frame; picks: Picks }) {
       </span>
       <button className="sound" onClick={() => (on ? setVoice(false) : (unlock(), setVoice(true)))} aria-pressed={on} aria-label={on ? "Turn voices off" : "Turn voices on"}>
         {on ? "🔊" : "🔇"}<span className="lbl"> {on ? "Voices" : "Muted"}</span>
+      </button>
+      <button className="sound" onClick={nextTheme} aria-label={`Theme: ${THEME[theme][1]}. Tap to change.`} title="Light, dark, or your device's setting">
+        {THEME[theme][0]}<span className="lbl"> {THEME[theme][1]}</span>
       </button>
     </header>
   );

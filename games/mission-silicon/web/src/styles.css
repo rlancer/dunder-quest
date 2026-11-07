@@ -38,9 +38,11 @@
   color-scheme: light;
 }
 
-/* Dark mode follows the device's setting. */
+/* Dark mode follows the device's setting unless the bar's theme button has
+   picked one (data-theme on <html>, set by theme.ts). The two blocks are the
+   same colours. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --paper: #14181d;
     --card: #1e242b;
     --ink: #e4e8ec;
@@ -59,6 +61,25 @@
     --target-bg: #15241d;
     color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --paper: #14181d;
+  --card: #1e242b;
+  --ink: #e4e8ec;
+  --slate: #262e38;
+  --slate-mid: #9aa5b1;
+  --slate-light: #56616e;
+  --rule: #333b45;
+  --green-dark: #6fd6a3;
+  --green-pale: #173a2a;
+  --amber-pale: #3b2d14;
+  --red-pale: #3d1d20;
+  --amber-ink: #f3b65a;
+  --red-ink: #ff8585;
+  --good-bg: #12291f;
+  --bad-bg: #2c1618;
+  --target-bg: #15241d;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }

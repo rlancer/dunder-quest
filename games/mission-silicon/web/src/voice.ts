@@ -20,6 +20,11 @@ function load(): boolean {
 let on = load();
 let unlocked = false;
 let playing = "";
+// Which call to speak() is current. Starting a line while the last one is
+// still loading makes the browser reject the last one's play(); that
+// rejection must not mark the new line as finished, or the conversation
+// moves on and cuts the new speaker off.
+let turn = 0;
 const audio = typeof Audio === "undefined" ? null : new Audio();
 const subs = new Set<() => void>();
 const emit = () => subs.forEach((f) => f());
@@ -45,17 +50,23 @@ export function unlock(): void {
 
 export function speak(l: Line | null | undefined): void {
   if (!audio || !l) return;
+  const mine = ++turn;
   audio.pause();
   const url = urls.get(voiceKey(l));
   playing = on && unlocked && url ? voiceKey(l) : "";
   if (!playing) return emit();
   audio.src = url!;
-  audio.play().catch(() => ((playing = ""), emit()));
+  audio.play().catch(() => {
+    if (mine !== turn) return;
+    playing = "";
+    emit();
+  });
   emit();
 }
 
 export function stop(): void {
   if (!audio) return;
+  turn++;
   audio.pause();
   playing = "";
   emit();
