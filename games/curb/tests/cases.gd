@@ -2,7 +2,7 @@ extends SceneTree
 
 ## Runs every plan in every combination of its blanks through the in-game
 ## checker (and, when it compiles, the runner), and writes the verdicts to
-## tests/out/cases.json for tests/verify_rust.py to hold up against rustc.
+## tests/out/cases.json for tests/verify_rust.ts to hold up against rustc.
 ## Also checks each plan's starting picks fail the way the scene says and its
 ## solution prints exactly what the scene needs.
 ##

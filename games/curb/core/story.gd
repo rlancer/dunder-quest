@@ -4,7 +4,7 @@ extends RefCounted
 ## The script of the whole season, from data/scenes.json: the cast, the ten
 ## scenes (each with its bickering, its plans and its freeze-frame ending),
 ## Sharon's rants for each rustc error code, and the lesson cards.
-## tests/verify_rust.py reads the same file and compiles every plan and card
+## tests/verify_rust.ts reads the same file and compiles every plan and card
 ## with the real rustc.
 
 const PATH := "res://data/scenes.json"

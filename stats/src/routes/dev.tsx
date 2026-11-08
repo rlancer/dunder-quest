@@ -171,7 +171,7 @@ bash scripts/export_desktop.sh   # desktop zips into build/downloads`}
         </pre>
         <p className="hint">
           Building locally needs Linux with bash, curl, zip and unzip; it fetches Godot 4.7.2. To preview only the
-          site, run <code>python site/build.py build/site</code>, then <code>python -m http.server -d build/site</code>.
+          site, run <code>bun site/build.ts build/site</code>, then <code>bunx serve build/site</code>.
         </p>
       </section>
     </>

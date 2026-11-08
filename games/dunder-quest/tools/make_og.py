@@ -207,7 +207,7 @@ def tiny_logo(n: int, border: int, unit: int, under: int, pairs: int, space: int
 
 def favicon() -> None:
     """/favicon.ico, for tools that ask for that path instead of reading the
-    page's icon link. site/build.py copies it to the site root."""
+    page's icon link. site/build.ts copies it to the site root."""
     sizes = [tiny_logo(16, 1, 1, 3, 1, 0, 1), tiny_logo(32, 1, 2, 3, 2, 1, 2), tiny_logo(48, 2, 3, 4, 2, 2, 3)]
     sizes[-1].save(FAVICON, format="ICO", sizes=[im.size for im in sizes], append_images=sizes[:-1])
     print(f"wrote {FAVICON.relative_to(ROOT.parents[1])}")
@@ -215,7 +215,7 @@ def favicon() -> None:
 
 def site_art() -> None:
     """The world map cropped for the home page's trail (its pins come from
-    `x`/`y` in site/build.py), and each guardian's first frame at 2x for the
+    `x`/`y` in site/build.ts), and each guardian's first frame at 2x for the
     lesson pages."""
     art = SITE / "static" / "img"
     world = Image.open(ROOT / "assets" / "backgrounds" / "world_map.png").convert("RGB")

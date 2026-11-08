@@ -42,12 +42,12 @@ godot --headless --path . --import
 godot --headless --path . res://tests/smoke.tscn            # every scene loads
 godot --headless --path . --script res://tests/cases.gd     # CASES result=ok: every plan, every combination of blanks
 godot --headless --path . res://tests/bot.tscn              # BOT result=ok: plays all ten, wrong answer first at every plan
-python tests/verify_rust.py                                 # RUST result=ok: rustc agrees with the checker (needs rustc)
+bun tests/verify_rust.ts                                    # RUST result=ok: rustc agrees with the checker (needs rustc)
 godot --path . res://tests/shots.tscn -- scene=5            # screenshots into tests/shots/ (needs a window)
 bash tests/check.sh                                         # cases, bot and rustc, as CI runs them
 ```
 
-`verify_rust.py` compiles every plan in every combination of its blanks with the real rustc and runs what builds. The starting picks must fail with the scene's error code, the solution must print exactly the scene's lines, every lesson card must print what it says (or fail with its code), and the in-game checker must agree with rustc on every combination: the same pass or fail, an error code rustc also reports, and the same output and panics. CI runs it with the runner's rustc.
+`verify_rust.ts` compiles every plan in every combination of its blanks with the real rustc and runs what builds. The starting picks must fail with the scene's error code, the solution must print exactly the scene's lines, every lesson card must print what it says (or fail with its code), and the in-game checker must agree with rustc on every combination: the same pass or fail, an error code rustc also reports, and the same output and panics. CI runs it with the runner's rustc.
 
 ## Trailer capture
 
