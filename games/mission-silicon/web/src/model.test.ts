@@ -2,9 +2,15 @@
 // options that fit Thursday (the web app or the installable web app; renting
 // the backend), the sort's right answers are the real ones, Thursday clears
 // nine in ten on the web and falls short on native apps, the tech stack hides
-// exactly one NEXT_PUBLIC_ key, and the marks follow the picks.
+// exactly one NEXT_PUBLIC_ key, and the marks follow the picks. Then the
+// script: everyone in it can be drawn and voiced, every choice has a right
+// answer, and every pick that fails Thursday plays a scene that says why.
 
 import { describe, expect, test } from "vitest";
+import { allLines } from "./lines";
+import { SCENES, type Beat } from "./show";
+import { hasSet, hasSprite } from "./Stage";
+import { optionsFor } from "./Pilot";
 import { P, fill, hoursLeft, marks, passes, platform, thursday, type Option, type Req } from "./model";
 
 const budget = P.budget.time;
@@ -34,13 +40,20 @@ describe("Decision 3: build or rent", () => {
 });
 
 describe("Decision 2: the sort", () => {
-  const want: Record<string, string> = { ui: "front", state: "front", key: "back", fee: "back", who: "back", all: "db", menu: "db" };
-  test("each piece belongs where it really lives, and says why for every zone", () => {
+  const want: Record<string, string> = { ui: "front", key: "back", fee: "back", who: "back", all: "db" };
+  test("each piece belongs where it really lives, and the one playing each place says why", () => {
     expect(P.sort.pieces.map((p) => p.id).sort()).toEqual(Object.keys(want).sort());
     for (const p of P.sort.pieces) {
       expect(p.z, p.id).toBe(want[p.id]);
-      for (const z of P.sort.zones) expect((p.why as Record<string, string>)[z.id], `${p.id} in ${z.id}`).toBeTruthy();
+      for (const z of P.sort.zones) {
+        const line = (p.why as Record<string, { who: string; say: string }>)[z.id];
+        expect(line?.say, `${p.id} in ${z.id}`).toBeTruthy();
+        expect(line.who, `${p.id} in ${z.id}`).toBe(z.who);
+      }
     }
+  });
+  test("exactly one line of the app's code is the key", () => {
+    expect(P.code.filter((l) => "key" in l)).toHaveLength(1);
   });
 });
 
@@ -81,5 +94,39 @@ describe("The marks", () => {
     ["web", true, { live: true, lean: true, ulrich: false }],
   ] as const)("%s, native tried %s", (build, tried, want) => {
     expect(marks(build, tried)).toEqual(want);
+  });
+});
+
+describe("The script", () => {
+  const beats: Beat[] = [];
+  const walk = (list: Beat[]) => {
+    for (const b of list) {
+      beats.push(b);
+      for (const t of Object.values(b.then ?? {})) walk(t);
+    }
+  };
+  for (const s of SCENES) walk(s.beats);
+
+  test("everyone on stage has a sprite, and every set has a backdrop", () => {
+    for (const b of beats) {
+      for (const who of [b.walk, b.give, b.to, ...Object.keys(b.cast ?? {})]) if (who) expect(hasSprite(who), who).toBe(true);
+      if (b.set) expect(hasSet(b.set), b.set).toBe(true);
+    }
+  });
+  test("everyone who speaks has a voice and a portrait name", () => {
+    for (const l of allLines()) expect(P.cast, l.who).toHaveProperty(l.who);
+  });
+  test("every choice offers one right answer and plays something for each wrong one", () => {
+    const picks = { platform: "web", tried: [], backend: "", triedBackend: [], misplaced: 0, fixed: false };
+    for (const b of beats.filter((x) => x.choice)) {
+      const opts = optionsFor(b, picks);
+      const ok = opts.filter((o) => o.ok);
+      if (b.from === "platforms") expect(ok.map((o) => o.id)).toEqual(["web", "pwa"]);
+      else expect(ok, b.prompt).toHaveLength(1);
+      for (const o of opts) expect(o.then.length, `${b.prompt} → ${o.id}`).toBeGreaterThan(o.ok && !b.from ? -1 : 0);
+    }
+  });
+  test("every stamp the script shows exists", () => {
+    for (const b of beats) if (b.stamp) expect(P.stamps).toHaveProperty(b.stamp);
   });
 });

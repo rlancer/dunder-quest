@@ -2324,8 +2324,8 @@ function buildMissionSilicon(prefix: string): string {
   const steps = [
     ["planning.png", "Make the real decisions",
       "Every episode turns on a few architecture decisions you'll face building anything with AI: where the app runs, what goes "
-      + "on the phone and what stays on the server, whether to build or rent. Each option is checked against what the app needs "
-      + "as you pick, and the wrong ones still say when they'd be right."],
+      + "on the phone and what stays on the server, whether to build or rent. The house argues each one out while the whiteboard "
+      + "checks it against what the app needs, then everyone turns to you. Pick wrong and you see it go wrong, and why it'd be right elsewhere."],
     ["trouble.png", "Read the AI's plan",
       "Aleister Jr., your AI teammate, writes up a plan in real tools: Next.js, Supabase, Vercel. Put every line on the map of "
       + "your app. The one you can't place is the one to question."],
