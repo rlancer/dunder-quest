@@ -1,109 +1,536 @@
-// Episode 1, the Pilot, on the web: the cold open and Walter's test; the map
-// of a web app and one search followed through it; four decisions, each
-// checked against Thursday's requirements as the player picks (where it
-// runs, what goes where, build or rent the backend, reading the plan);
-// Thursday by device; Gerard's decision record; the cliffhanger.
+// Episode 1, the Pilot, played as an interactive sitcom. The cast act out
+// the four boxes of a web app on stage, argue each of four decisions (where
+// it runs, what goes where, build or rent the backend, reading the plan),
+// and turn to the player to pick. A pick that fails Thursday plays a
+// flash-forward of Thursday going wrong, then its champion says when it
+// would be the right choice, and the player picks again. Then Thursday by
+// device, Gerard's decision record, and the cliffhanger.
 //
-// Every word is in ../data/pilot.json and the rules are in model.ts. The
-// story is pixel art (Scene); the lessons are plain, readable cards, with a
-// cast member speaking each step aloud (Guide, Talk).
+// Every word is in ../data/pilot.json (`show` is the script) and the rules
+// are in model.ts; show.ts says what each beat does to the stage, and
+// Stage.tsx draws it. Below the stage, the dock holds whatever the beat
+// needs: the line being spoken, the whiteboard, the TV, a choice, a widget.
 
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useReducer } from "react";
 import type { Line } from "./lines";
 import { voiceKey } from "./lines";
 import { P, clock, feed, fill, hoursLeft, marks, outcome, passes, platform, testers, thursday, type Option, type Req } from "./model";
-import { Guide, MapView, Next, Notice, ReqTable, Stamp, Talk, castName, Portrait, type BoxId } from "./ui";
+import { EMPTY, SCENES, apply, expandGive, holds, type Beat, type Opt, type StageState } from "./show";
+import Stage from "./Stage";
+import { Guide, Next, Notice, Portrait, Stamp, castName } from "./ui";
 import { useTheme, type Theme } from "./theme";
 import { setVoice, speak, stop, unlock, useAfterSpeech, useVoice } from "./voice";
-import movein from "../../assets/backgrounds/movein.png";
-import house from "../../assets/backgrounds/house.png";
-
-const BACKDROPS: Record<string, string> = { movein, house };
-
-const FRAMES = ["title", "cold", "goal", "map", "steps", "ways", "pick", "noserver", "sort", "backend", "plan", "thursday", "postmortem", "cliff", "end"] as const;
-type Frame = (typeof FRAMES)[number];
-// Which of the four decisions each frame is part of.
-const DECISION: Partial<Record<Frame, number>> = { ways: 1, pick: 1, noserver: 2, sort: 2, backend: 3, plan: 4 };
 
 export type Picks = { platform: string; tried: string[]; backend: string; triedBackend: string[]; misplaced: number; fixed: boolean };
 const NO_PICKS: Picks = { platform: "", tried: [], backend: "", triedBackend: [], misplaced: 0, fixed: false };
 const SAVE = "ms-pilot";
 
-function loadSave(): { frame: number; picks: Picks } | null {
+type Saved = { scene: number; picks: Picks };
+function loadSave(): Saved | null {
   try {
     const s = JSON.parse(localStorage.getItem(SAVE) || "null");
-    return s && typeof s.frame === "number" ? s : null;
+    return s && typeof s.scene === "number" && s.scene < SCENES.length ? s : null;
   } catch {
     return null;
   }
 }
 
-const ricky = (say: string): Line => ({ who: "ricky", say });
+// ---- The run: where we are in the script, and the stage it has built ----
+
+type Run = {
+  mode: "title" | "show" | "end";
+  scene: number;
+  queue: Beat[];
+  stage: StageState;
+  picks: Picks;
+  // Options already tried at each choice, so a retry shows them crossed out.
+  tried: Record<string, string[]>;
+  // The last line spoken, kept in the dock while people walk.
+  line: Beat | null;
+  // Bumped on every beat, so a line repeated word for word still restarts.
+  n: number;
+};
+
+const START: Run = { mode: "title", scene: 0, queue: [], stage: EMPTY, picks: NO_PICKS, tried: {}, line: null, n: 0 };
+
+const choiceKey = (b: Beat) => `${b.choice}${b.piece ? ":" + b.piece : ""}`;
+
+// The options a choice offers, which one is right, and what each one plays.
+export function optionsFor(b: Beat, picks: Picks): (Opt & { then: Beat[] })[] {
+  const own = (id: string, dflt: Beat[] = []) => b.then?.[id] ?? dflt;
+  switch (b.from) {
+    case "platforms":
+      return P.platforms.map((p) => ({ id: p.id, label: p.n, ok: passes(p, P.pick.reqs as Req[], P.budget.time), then: own(p.id) }));
+    case "backend": {
+      const left = hoursLeft(picks.platform || "web");
+      return P.backend.options.map((o) => ({ id: o.id, label: o.n, ok: passes(o as Option, P.backend.reqs as Req[], left), then: own(o.id) }));
+    }
+    case "code":
+      return P.code.flatMap((l, i) => ("key" in l ? [{ id: "key", label: l.c, ok: true, then: own("key") }] : "note" in l ? [{ id: String(i), label: l.c, then: own(String(i), [l.note as Beat]) }] : []));
+    case "plan":
+      return P.plan.lines.map((l, i) => ("bad" in l ? { id: "bad", label: String(l.c), ok: true, then: own("bad") } : { id: String(i), label: String(l.c), then: own(String(i), [l.claim as Beat]) }));
+    case "zones": {
+      const piece = P.sort.pieces.find((p) => p.id === b.piece)!;
+      return P.sort.zones.map((z) => ({ id: z.id, label: `${castName(z.who)} · ${z.h}`, ok: piece.z === z.id, then: [(piece.why as Record<string, Line>)[z.id] as Beat] }));
+    }
+    default:
+      return (b.options ?? []).map((o) => ({ ...o, then: own(o.id) }));
+  }
+}
+
+// Plays instant beats until one holds the show (or the script runs out).
+function settle(r: Run): Run {
+  let { queue, stage, scene, line } = r;
+  queue = [...queue];
+  for (let guard = 0; guard < 500; guard++) {
+    const head = queue[0];
+    if (!head) {
+      if (scene + 1 >= SCENES.length) return { ...r, mode: "end", queue, stage, scene, line };
+      scene++;
+      queue = [...SCENES[scene].beats];
+      continue;
+    }
+    if (head.give) {
+      queue.splice(0, 1, ...expandGive(stage, head));
+      continue;
+    }
+    stage = apply(stage, head);
+    if (holds(head)) {
+      if (head.say !== undefined) line = head;
+      if (head.card) line = null;
+      return { ...r, queue, stage, scene, line, n: r.n + 1 };
+    }
+    queue.shift();
+  }
+  throw new Error("the script never stops for a line");
+}
+
+// The stage as it stands at the start of a scene, for Continue: every
+// earlier scene's beats (not the branches), with nobody mid-walk.
+function stageAt(scene: number): StageState {
+  let s = EMPTY;
+  for (const sc of SCENES.slice(0, scene)) {
+    for (const b of sc.beats) {
+      if (b.give) for (const g of expandGive(s, b)) s = apply(s, g);
+      else s = apply(s, b);
+    }
+  }
+  const actors = Object.fromEntries(Object.entries(s.actors).map(([k, a]) => [k, { ...a, enter: undefined }]));
+  return { ...s, actors, cut: s.cut + 1 };
+}
+
+type Act = { t: "start"; from?: Saved } | { t: "next" } | { t: "choose"; id: string } | { t: "title" };
+
+function reduce(r: Run, a: Act): Run {
+  switch (a.t) {
+    case "title":
+      return START;
+    case "start": {
+      const scene = a.from?.scene ?? 0;
+      return settle({ ...START, mode: "show", scene, queue: [...SCENES[scene].beats], stage: a.from ? stageAt(scene) : EMPTY, picks: a.from?.picks ?? NO_PICKS });
+    }
+    case "next": {
+      const head = r.queue[0];
+      if (!head || head.choice) return r;
+      return settle({ ...r, queue: r.queue.slice(1) });
+    }
+    case "choose": {
+      const head = r.queue[0];
+      if (!head?.choice) return r;
+      const opt = optionsFor(head, r.picks).find((o) => o.id === a.id);
+      if (!opt) return r;
+      const key = choiceKey(head);
+      const tried = { ...r.tried, [key]: [...new Set([...(r.tried[key] ?? []), a.id])] };
+      const p = { ...r.picks };
+      if (head.from === "platforms") {
+        p.tried = [...new Set([...p.tried, a.id])];
+        if (opt.ok) p.platform = a.id;
+      }
+      if (head.from === "backend") {
+        p.triedBackend = [...new Set([...p.triedBackend, a.id])];
+        if (opt.ok) p.backend = a.id;
+      }
+      if (head.from === "zones" && !opt.ok) p.misplaced++;
+      if (head.from === "plan" && opt.ok) p.fixed = true;
+      // A wrong pick plays its scene, then the same choice comes back.
+      const rest = r.queue.slice(1);
+      const queue = opt.ok ? [...opt.then, ...rest] : [...opt.then, head, ...rest];
+      return settle({ ...r, queue, tried, picks: p });
+    }
+  }
+}
+
+// ---- The episode ----
 
 export default function Pilot({ speed = 10 }: { speed?: number }) {
   const saved = useMemo(loadSave, []);
-  const [i, setI] = useState(0);
-  const [picks, setPicks] = useState<Picks>(NO_PICKS);
-  const frame = FRAMES[i];
-  const go = (n: number) => {
-    stop();
-    setI(n);
-    window.scrollTo?.({ top: 0 });
-  };
-  const next = () => go(i + 1);
-  const pick = (p: Partial<Picks>) => setPicks((x) => ({ ...x, ...p }));
+  const [r, dispatch] = useReducer(reduce, START);
+  const head = r.queue[0];
+  const next = () => dispatch({ t: "next" });
 
   useEffect(() => {
     try {
-      if (i > 0 && frame !== "end") localStorage.setItem(SAVE, JSON.stringify({ frame: i, picks }));
-      if (frame === "end") localStorage.removeItem(SAVE);
+      if (r.mode === "show") localStorage.setItem(SAVE, JSON.stringify({ scene: r.scene, picks: r.picks }));
+      if (r.mode === "end") localStorage.removeItem(SAVE);
     } catch {}
-  }, [i, picks]);
+  }, [r.scene, r.mode]);
 
-  const start = (from?: { frame: number; picks: Picks }) => {
-    unlock();
-    setPicks(from?.picks ?? NO_PICKS);
-    go(from?.frame ?? 1);
-  };
+  // A wait holds the show for its time, then moves on. The bot, running
+  // Thursday at infinite speed, doesn't wait for walks either.
+  useEffect(() => {
+    if (!head?.wait) return;
+    const t = setTimeout(next, speed === Infinity ? 0 : head.wait);
+    return () => clearTimeout(t);
+  }, [r.n]);
 
+  // Lines are spoken as they come up.
+  useEffect(() => {
+    if (head?.say !== undefined) speak(head as Line);
+    else if (!head?.wait) stop();
+  }, [r.n]);
+
+  useEffect(() => {
+    window.scrollTo?.({ top: 0 });
+  }, [r.scene, r.mode]);
+
+  if (r.mode === "title")
+    return (
+      <Title
+        saved={saved}
+        onStart={(from) => {
+          unlock();
+          dispatch({ t: "start", from });
+        }}
+      />
+    );
+  if (r.mode === "end") return <EndCard onAgain={() => dispatch({ t: "start" })} />;
+
+  const scene = SCENES[r.scene];
+  if (head?.card) return <Card key={r.n} beat={speed === Infinity ? { ...head, auto: undefined } : head} onNext={next} />;
+
+  const speaking = head?.say !== undefined ? head : null;
   return (
     <>
-      {frame !== "title" && <Bar frame={frame} picks={picks} />}
-      <AnimatePresence mode="wait">
-        <motion.div key={frame} style={{ flex: 1, display: "flex", flexDirection: "column" }} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.18 }}>
-          {frame === "title" && <Title saved={saved} onStart={start} />}
-          {frame === "cold" && <Scene {...P.cold_open} onDone={next} />}
-          {frame === "goal" && <GoalCard onNext={next} />}
-          {frame === "map" && <MapFrame onNext={next} />}
-          {frame === "steps" && <StepsFrame onNext={next} />}
-          {frame === "ways" && <WaysFrame onNext={next} />}
-          {frame === "pick" && <PickFrame picks={picks} pick={pick} onNext={next} />}
-          {frame === "noserver" && <NoServerFrame onNext={next} />}
-          {frame === "sort" && <SortFrame picks={picks} pick={pick} onNext={next} />}
-          {frame === "backend" && <BackendFrame picks={picks} pick={pick} onNext={next} />}
-          {frame === "plan" && <PlanFrame picks={picks} pick={pick} onNext={next} />}
-          {frame === "thursday" && <ThursdayFrame picks={picks} speed={speed} onNext={next} />}
-          {frame === "postmortem" && <PostmortemFrame picks={picks} onNext={next} />}
-          {frame === "cliff" && <Scene {...P.cliffhanger} onDone={next} />}
-          {frame === "end" && <EndCard onAgain={() => start()} />}
-        </motion.div>
-      </AnimatePresence>
+      <Bar scene={r.scene} picks={r.picks} />
+      <main className={`show${r.stage.board || r.stage.screen || head?.widget ? " compact" : ""}`}>
+        <Stage s={r.stage} speaker={speaking?.who ?? null} onTap={speaking ? next : undefined} />
+        <div className="dock">
+          {head?.choice ? (
+            <ChoicePanel beat={head} r={r} onPick={(id) => dispatch({ t: "choose", id })} />
+          ) : head?.stamp ? (
+            <>
+              <Stamp s={P.stamps[head.stamp]} />
+              <Next onClick={next}>Go on</Next>
+            </>
+          ) : head?.widget === "thursday" ? (
+            <ThursdayWidget picks={r.picks} speed={speed} onDone={next} />
+          ) : head?.widget === "record" ? (
+            <RecordWidget picks={r.picks} onDone={next} />
+          ) : (
+            <Caption key={r.n} line={r.line} live={!!speaking} onNext={next} />
+          )}
+          {!head?.choice && <Screens s={r.stage} picks={r.picks} claimed={r.tried.plan ?? []} />}
+        </div>
+      </main>
+      <span hidden data-scene={scene.id} />
     </>
   );
 }
 
-// The bar: the episode, the four decisions, Aleister's hours, the sound.
+// ---- The dock ----
+
+// The line being spoken: face, name, words, and the real term when there is
+// one. It moves on when the voice finishes, or on a tap.
+function Caption({ line, live, onNext }: { line: Beat | null; live: boolean; onNext: () => void }) {
+  const l = line as (Line & Beat) | null;
+  const { playing } = useVoice();
+  useAfterSpeech(l ? voiceKey(l) : "", () => live && onNext());
+  if (!l) return <div className="caption empty" />;
+  const speaking = playing === voiceKey(l);
+  return (
+    <div className={`caption${live ? "" : " old"}`} onClick={live ? onNext : undefined}>
+      <Portrait who={l.who} size={56} />
+      <div className="words">
+        <div className="name pixel">
+          {castName(l.who)}
+          {speaking && <span className="live" aria-hidden />}
+          {live && (
+            <button className="replay" onClick={(e) => (e.stopPropagation(), speak(l))} aria-label={`Hear ${castName(l.who)} again`}>
+              ↻
+            </button>
+          )}
+        </div>
+        <div className="text">{l.say}</div>
+        {l.term && (
+          <div className="term">
+            <span>Real term</span> {l.term}
+          </div>
+        )}
+      </div>
+      {live && (
+        <button className="btn small go" onClick={(e) => (e.stopPropagation(), onNext())} aria-label="Next line">
+          ›
+        </button>
+      )}
+    </div>
+  );
+}
+
+// The whiteboard and the TV, when they're on.
+function Screens({ s, picks, claimed, choose }: { s: StageState; picks: Picks; claimed: string[]; choose?: { tried: string[]; onPick: (id: string) => void } }) {
+  return (
+    <>
+      {s.board && <Board kind={s.board} marked={s.marked} picks={picks} choose={choose} />}
+      {s.screen === "code" && <CodeScreen found={s.marked.includes("key")} choose={choose} />}
+      {s.screen === "plan" && <PlanScreen fixed={s.fixed} picks={picks} claimed={claimed} choose={choose} />}
+    </>
+  );
+}
+
+function ChoicePanel({ beat, r, onPick }: { beat: Beat; r: Run; onPick: (id: string) => void }) {
+  const tried = r.tried[choiceKey(beat)] ?? [];
+  const opts = optionsFor(beat, r.picks);
+  const onScreen = beat.from === "platforms" || beat.from === "backend" || beat.from === "code" || beat.from === "plan";
+  const last = tried.length ? opts.find((o) => o.id === tried[tried.length - 1]) : undefined;
+  return (
+    <motion.div className="choice" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="kicker">Your call</div>
+      <h2>{beat.prompt}</h2>
+      {last && !last.ok && (beat.from === "platforms" || beat.from === "backend") && <Misses kind={beat.from} id={last.id} picks={r.picks} />}
+      {onScreen ? (
+        <Screens s={r.stage} picks={r.picks} claimed={r.tried.plan ?? []} choose={{ tried, onPick }} />
+      ) : (
+        <div className="options">
+          {opts.map((o) => (
+            <button key={o.id} className={`option${tried.includes(o.id) ? " fail" : ""}`} disabled={tried.includes(o.id)} onClick={() => onPick(o.id)}>
+              <span className="n">{o.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+const MARK: Record<string, string> = { y: "✓", p: "~", n: "✗" };
+const MARK_WORD: Record<string, string> = { y: "Yes", p: "Partly", n: "No" };
+
+// The whiteboard: each option against the requirements. A row fills in when
+// someone argues for it; the reasons for the row being argued are spelled
+// out beneath. When it's the player's call, each row is a button.
+function Board({ kind, marked, picks, choose }: { kind: "platforms" | "backend"; marked: string[]; picks: Picks; choose?: { tried: string[]; onPick: (id: string) => void } }) {
+  const left = hoursLeft(picks.platform || "web");
+  const f = (s: string) => (kind === "backend" ? fill(s, left) : s);
+  const reqs = (kind === "platforms" ? P.pick.reqs : P.backend.reqs) as (Req & { s: string })[];
+  const rows = (kind === "platforms" ? P.platforms : P.backend.options) as (Option & { rn: string; champ: string })[];
+  const hours = kind === "platforms" ? P.budget.time : left;
+  const shown = (id: string) => !!choose || marked.includes(id);
+  const focus = rows.find((o) => o.id === (choose ? choose.tried[choose.tried.length - 1] : marked[marked.length - 1]));
+  return (
+    <div className="board">
+      <div className="board-head">
+        <span>{kind === "platforms" ? P.pick.needs : P.backend.needs}</span>
+        <span className="hrs">{hours} hours to spend</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th />
+            {reqs.map((q) => (
+              <th key={q.id} className={q.must ? "must" : "dim"} title={f(q.t)}>
+                {f(q.s)}
+                <small>{q.must ? "must" : q.later ? "later" : "nice"}</small>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((o) => {
+            const ok = passes(o, reqs, hours);
+            const tried = choose?.tried.includes(o.id);
+            const head = (
+              <>
+                <Portrait who={o.champ} size={28} />
+                <span>
+                  <b>{o.n}</b>
+                  <small>
+                    {o.rn} · {o.h}h
+                  </small>
+                </span>
+              </>
+            );
+            return (
+              <tr key={o.id} className={`${tried ? (ok ? "ok" : "no") : ""}${focus?.id === o.id ? " focus" : ""}`}>
+                <th>
+                  {choose ? (
+                    <button className="rowpick" disabled={tried} onClick={() => choose.onPick(o.id)} aria-label={o.n}>
+                      {head}
+                    </button>
+                  ) : (
+                    <span className="rowpick">{head}</span>
+                  )}
+                </th>
+                {reqs.map((q) => {
+                  const v = o.r[q.id];
+                  return (
+                    <td key={q.id} className={q.must ? "" : "dim"}>
+                      {shown(o.id) && v ? (
+                        <motion.span className={`mk ${v[0]}`} initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} title={f(v[1])} aria-label={`${MARK_WORD[v[0]]}: ${f(v[1])}`}>
+                          {MARK[v[0]]}
+                        </motion.span>
+                      ) : (
+                        <span className="mk q">?</span>
+                      )}
+                    </td>
+                  );
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {focus && shown(focus.id) && (
+        <motion.ul key={focus.id} className="reasons" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <li className="who">{focus.n}</li>
+          {reqs.map((q) => {
+            const v = focus.r[q.id];
+            return (
+              v && (
+                <li key={q.id}>
+                  <span className={`mk ${v[0]}`}>{MARK[v[0]]}</span> <b>{f(q.s)}:</b> {f(v[1])}
+                </li>
+              )
+            );
+          })}
+        </motion.ul>
+      )}
+      {choose && <p className="hint">Every must needs a ✓. Tap the one you'd go with.</p>}
+    </div>
+  );
+}
+
+// Which musts a failed pick misses, so it says exactly why.
+function Misses({ kind, id, picks }: { kind: "platforms" | "backend"; id: string; picks: Picks }) {
+  const left = hoursLeft(picks.platform || "web");
+  const hours = kind === "platforms" ? P.budget.time : left;
+  const reqs = (kind === "platforms" ? P.pick.reqs : P.backend.reqs) as Req[];
+  const o = (kind === "platforms" ? P.platforms : P.backend.options).find((x) => x.id === id) as Option;
+  const f = (s: string) => fill(s, left);
+  const miss = reqs.filter((q) => !q.later && q.must && o.r[q.id]?.[0] !== "y").map((q) => f(q.t));
+  if (o.h > hours && !miss.length) miss.push(`Fits the ${hours} hours`);
+  return (
+    <Notice kind="bad" head={`${o.n}: not this time`}>
+      Misses {miss.length} must{miss.length === 1 ? "" : "s"}: {miss.join("; ")}.
+    </Notice>
+  );
+}
+
+// The TV: the app's code, as any browser can read it.
+function CodeScreen({ found, choose }: { found: boolean; choose?: { tried: string[]; onPick: (id: string) => void } }) {
+  return (
+    <pre className="code tv" aria-label="The app's code">
+      {P.code.map((l, k) => {
+        const id = "key" in l ? "key" : String(k);
+        const tappable = choose && ("key" in l || "note" in l);
+        const cls = `${"key" in l && found ? "hot" : l.c.startsWith("//") ? "dim" : ""}${choose?.tried.includes(id) ? " tried" : ""}`;
+        return tappable ? (
+          <button key={k} className={`codeline ${cls}`} disabled={choose.tried.includes(id)} onClick={() => choose.onPick(id)}>
+            {l.c}
+          </button>
+        ) : (
+          <div key={k} className={cls}>
+            {l.c || " "}
+          </div>
+        );
+      })}
+    </pre>
+  );
+}
+
+// The TV: Aleister's tech stack, each line tagged with its box once claimed.
+function PlanScreen({ fixed, picks, claimed, choose }: { fixed: boolean; picks: Picks; claimed: string[]; choose?: { tried: string[]; onPick: (id: string) => void } }) {
+  const plat = picks.platform || "web";
+  const text = (v: string | Record<string, string>) => (typeof v === "string" ? v : (v[plat] ?? v.web));
+  return (
+    <div className="plan tv">
+      <div className="head">{P.plan.head}</div>
+      {P.plan.lines.map((l, k) => {
+        const bad = "bad" in l;
+        const id = bad ? "bad" : String(k);
+        const c = bad && fixed ? l.fixed! : text(l.c);
+        const box = bad && fixed ? l.fixed_box! : l.box;
+        const known = fixed || claimed.includes(id);
+        const inner = (
+          <>
+            <span>{c}</span>
+            <span className={`boxtag${known ? (box === "?" ? " q" : " placed") : ""}`}>{known ? box : "?"}</span>
+          </>
+        );
+        return choose ? (
+          <button key={k} className={`stackline${choose.tried.includes(id) ? " open" : ""}`} disabled={choose.tried.includes(id)} onClick={() => choose.onPick(id)}>
+            {inner}
+          </button>
+        ) : (
+          <div key={k} className={`stackline${bad && !fixed ? " bad" : ""}`}>
+            {inner}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---- Cards, bar, title, end ----
+
+function Card({ beat, onNext }: { beat: Beat; onNext: () => void }) {
+  useEffect(() => {
+    if (!beat.auto) return;
+    const t = setTimeout(onNext, beat.auto);
+    return () => clearTimeout(t);
+  }, []);
+  if (beat.card === "goal") {
+    const g = P.goal_card;
+    return (
+      <div className="card-screen" onClick={onNext}>
+        <div>
+          <div className="kicker">{g.head}</div>
+          <ul>
+            {g.items.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+          <div className="kicker" style={{ color: "#fff" }}>
+            {g.sub}
+          </div>
+          <button className="btn">Show me →</button>
+        </div>
+      </div>
+    );
+  }
+  const flash = beat.card === "FLASH-FORWARD";
+  return (
+    <motion.div className={`card-screen${flash ? " flash" : ""}`} onClick={onNext} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+      <div>
+        <h1>{beat.card}</h1>
+        {beat.sub && <p className="sub big">{beat.sub}</p>}
+        <button className="btn ghost small" aria-label="Go on">
+          Tap to go on
+        </button>
+      </div>
+    </motion.div>
+  );
+}
+
 const THEME: Record<Theme, [string, string]> = { auto: ["◐", "Auto"], light: ["☀", "Light"], dark: ["☾", "Dark"] };
 
-function Bar({ frame, picks }: { frame: Frame; picks: Picks }) {
+function Bar({ scene, picks }: { scene: number; picks: Picks }) {
   const { on } = useVoice();
   const [theme, nextTheme] = useTheme();
-  const at = FRAMES.indexOf(frame);
-  const cur = DECISION[frame] ?? 0;
+  const cur = SCENES[scene].decision ?? 0;
+  const doneBy = (k: number) => SCENES.findIndex((s) => s.decision === k) < scene && cur !== k;
   const used = (picks.platform ? platform(picks.platform)!.h : 0) + (picks.backend ? P.backend.options.find((b) => b.id === picks.backend)!.h : 0);
   const left = P.budget.time - used;
-  const doneBy = [FRAMES.indexOf("noserver"), FRAMES.indexOf("backend"), FRAMES.indexOf("plan"), FRAMES.indexOf("thursday")];
   return (
     <header className="bar">
       <span className="brand">
@@ -112,7 +539,7 @@ function Bar({ frame, picks }: { frame: Frame; picks: Picks }) {
       <span className="ep">Episode 1 · Pilot</span>
       <span className="decisions" aria-label="The four decisions">
         {P.decisions.map((d, k) => (
-          <span key={d} title={d} className={`dec${at >= doneBy[k] ? " done" : cur === k + 1 ? " on" : ""}`}>
+          <span key={d} title={d} className={`dec${doneBy(k + 1) ? " done" : cur === k + 1 ? " on" : ""}`}>
             {k + 1}
           </span>
         ))}
@@ -124,16 +551,18 @@ function Bar({ frame, picks }: { frame: Frame; picks: Picks }) {
         </span>
       </span>
       <button className="sound" onClick={() => (on ? setVoice(false) : (unlock(), setVoice(true)))} aria-pressed={on} aria-label={on ? "Turn voices off" : "Turn voices on"}>
-        {on ? "🔊" : "🔇"}<span className="lbl"> {on ? "Voices" : "Muted"}</span>
+        {on ? "🔊" : "🔇"}
+        <span className="lbl"> {on ? "Voices" : "Muted"}</span>
       </button>
       <button className="sound" onClick={nextTheme} aria-label={`Theme: ${THEME[theme][1]}. Tap to change.`} title="Light, dark, or your device's setting">
-        {THEME[theme][0]}<span className="lbl"> {THEME[theme][1]}</span>
+        {THEME[theme][0]}
+        <span className="lbl"> {THEME[theme][1]}</span>
       </button>
     </header>
   );
 }
 
-function Title({ saved, onStart }: { saved: { frame: number; picks: Picks } | null; onStart: (from?: { frame: number; picks: Picks }) => void }) {
+function Title({ saved, onStart }: { saved: Saved | null; onStart: (from?: Saved) => void }) {
   return (
     <div className="card-screen">
       <div>
@@ -141,7 +570,7 @@ function Title({ saved, onStart }: { saved: { frame: number; picks: Picks } | nu
         <h1>
           MISSION <b>SILICON</b>
         </h1>
-        <p className="sub">You're a non-technical founder with an AI startup and a very confident AI coding assistant. Learn the decisions behind every app you'll build with AI.</p>
+        <p className="sub">You're a non-technical founder with an AI startup, a house full of opinions and a very confident AI coding assistant. Watch them argue; you make the calls.</p>
         <div className="row">
           {saved ? (
             <>
@@ -159,529 +588,70 @@ function Title({ saved, onStart }: { saved: { frame: number; picks: Picks } | nu
           )}
         </div>
         <p className="sub" style={{ fontSize: 14 }}>
-          The cast talk you through it. Turn your sound on, or read along.
+          The cast talk it through. Turn your sound on, or read along and tap.
         </p>
       </div>
     </div>
   );
 }
 
-// A story scene: a pixel-art backdrop and one line at a time beneath it. The
-// next line comes when the voice finishes, or on a tap.
-function Scene({ place, backdrop, lines, onDone }: { place: string; backdrop: string; lines: Line[]; onDone: () => void }) {
-  const [n, setN] = useState(0);
-  const line = lines[n];
-  const advance = () => (n + 1 < lines.length ? setN(n + 1) : onDone());
-  useEffect(() => speak(line), [n]);
-  useAfterSpeech(voiceKey(line), () => n + 1 < lines.length && setN((x) => Math.min(x + 1, lines.length - 1)));
-  return (
-    <div className="scene" onClick={advance} role="button" tabIndex={0} aria-label="Next line" onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && advance()}>
-      <div className="backdrop">
-        <img className="px" src={BACKDROPS[backdrop]} alt="" />
-        <span className="place pixel">{place}</span>
-      </div>
-      <AnimatePresence mode="wait">
-        <motion.div key={n} className="say" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-          <Portrait who={line.who} size={64} />
-          <div>
-            <div className="name pixel">{castName(line.who)}</div>
-            <div className="text">{line.say}</div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-      <div className="tap">{n + 1 < lines.length ? "Tap for the next line" : "Tap to go on"} · {n + 1} of {lines.length}</div>
-    </div>
-  );
-}
-
-function GoalCard({ onNext }: { onNext: () => void }) {
-  const g = P.goal_card;
+function EndCard({ onAgain }: { onAgain: () => void }) {
+  const n = P.next;
   return (
     <div className="card-screen">
       <div>
-        <div className="kicker">{g.head}</div>
-        <ul>
-          {g.items.map((t) => (
-            <li key={t}>{t}</li>
-          ))}
-        </ul>
-        <div className="kicker" style={{ color: "#fff" }}>
-          {g.sub}
-        </div>
-        <button className="btn" onClick={onNext}>
-          Show me →
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// Act 1: the map. Four boxes; each says what it is.
-function MapFrame({ onNext }: { onNext: () => void }) {
-  const m = P.map;
-  const [sel, setSel] = useState<BoxId | null>(null);
-  const [seen, setSeen] = useState<Record<string, boolean>>({});
-  const n = Object.keys(seen).length;
-  const tap = (k: BoxId) => {
-    setSel(k);
-    setSeen((s) => ({ ...s, [k]: true }));
-  };
-  const info = sel ? m.info[sel] : null;
-  const line = info ? ricky(info.say) : n === 4 ? m.done_say : m.hint;
-  return (
-    <div className="lesson">
-      {n === 4 && info ? <Talk key={sel} lines={[line, m.done_say]} /> : <Guide line={line} />}
-      <h2>Every app is four boxes</h2>
-      <p className="lede">{m.prompt}</p>
-      <MapView hot={sel ?? undefined} seen={seen} onTap={tap} />
-      {info && (
-        <motion.div key={sel} className="panel" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-          <strong>{info.h}</strong>
-          <dl className="facts">
-            {(["pic", "real", "fk", "note"] as const).map((k) => (
-              <div key={k} style={{ display: "contents" }}>
-                <dt>{m.keys[k]}</dt>
-                <dd>{info[k]}</dd>
-              </div>
-            ))}
-          </dl>
-        </motion.div>
-      )}
-      <Next onClick={onNext} disabled={n < 4} why={n < 4 ? `Tap all four boxes · ${n} of 4` : m.done}>
-        Follow a search
-      </Next>
-    </div>
-  );
-}
-
-// Act 1: one search, step by step, the envelope moving box to box.
-function StepsFrame({ onNext }: { onNext: () => void }) {
-  const list = P.steps.list;
-  const [k, setK] = useState(0);
-  const s = list[k];
-  return (
-    <div className="lesson">
-      <Guide line={ricky(s.t)} />
-      <h2>{P.steps.prompt}</h2>
-      <MapView at={s.at} hot={s.at === "wire" ? undefined : s.at} label={k === list.length - 1 ? "response" : "request"} />
-      <motion.div key={k} className="panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-        <span className="term">
-          Step {k + 1} · {s.term}
-        </span>
-        <div className="eg">{s.eg.includes("{") ? <code>{s.eg}</code> : s.eg}</div>
-      </motion.div>
-      <div className="steps-nav">
-        <span className="dots" aria-label={`Step ${k + 1} of ${list.length}`}>
-          {list.map((_, j) => (
-            <span key={j} className={`dot${j <= k ? " on" : ""}`} />
-          ))}
-        </span>
-        <button className="btn ghost small" onClick={() => setK(k - 1)} disabled={k === 0}>
-          ← Back
-        </button>
-        {k < list.length - 1 ? (
-          <button className="btn small" onClick={() => setK(k + 1)}>
-            Next step →
+        <div className="kicker">{n.top}</div>
+        <h1>{n.title}</h1>
+        <p className="sub">{n.sub}</p>
+        <p className="sub">Episode 2 is being rebuilt. The Pilot is all there is for now.</p>
+        <div className="row">
+          <button className="btn" onClick={onAgain}>
+            Play the Pilot again
           </button>
-        ) : (
-          <button className="btn small" onClick={onNext}>
-            On to the decisions →
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// Decision 1: four ways to put an app in front of people.
-function WaysFrame({ onNext }: { onNext: () => void }) {
-  const [ready, setReady] = useState(false);
-  const [sel, setSel] = useState<string | null>(null);
-  const [seen, setSeen] = useState<Record<string, boolean>>({});
-  const n = Object.keys(seen).length;
-  const p = sel ? platform(sel)! : null;
-  return (
-    <div className="lesson">
-      <Talk lines={P.ways.lines} onDone={() => setReady(true)} />
-      {ready && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h2>{P.ways.prompt}</h2>
-          <p className="lede">{P.ways.status}. Tap each to see what it's good at and what it costs.</p>
-          <div className="options">
-            {P.platforms.map((o) => (
-              <button key={o.id} className={`option${seen[o.id] ? " seen" : ""}${sel === o.id ? " sel" : ""}`} onClick={() => (setSel(o.id), setSeen((s) => ({ ...s, [o.id]: true })))} aria-pressed={sel === o.id}>
-                <span className="n">{o.n}</span>
-                <span className="realname">{o.rn}</span>
-              </button>
-            ))}
-          </div>
-          {p && (
-            <motion.div key={p.id} className="panel" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}>
-              <strong>{p.n}</strong> · {p.how}
-              <div className="goodcost">
-                <div className="good">
-                  <b>Good at</b>
-                  {p.good}
-                </div>
-                <div className="cost">
-                  <b>Costs</b>
-                  {p.cost}
-                </div>
-              </div>
-            </motion.div>
-          )}
-          <Next onClick={onNext} disabled={n < 4} why={n < 4 ? `Look at all four · ${n} of 4` : "Now pick one for Thursday."}>
-            Pick one
-          </Next>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-// Decision 1: pick one, against Thursday's requirements. Only the web app
-// and the installable web app go on; the others say when they'd be right.
-function PickFrame({ picks, pick, onNext }: { picks: Picks; pick: (p: Partial<Picks>) => void; onNext: () => void }) {
-  const q = P.pick;
-  const [sel, setSel] = useState<string | null>(picks.platform || null);
-  const p = sel ? platform(sel)! : null;
-  const reqs = q.reqs as Req[];
-  const ok = p ? passes(p, reqs, P.budget.time) : false;
-  const choose = (id: string) => {
-    setSel(id);
-    const fits = passes(platform(id)!, reqs, P.budget.time);
-    pick({ tried: [...new Set([...picks.tried, id])], platform: fits ? id : "" });
-  };
-  const quip = sel ? (q.quips as Record<string, Line>)[sel] : null;
-  return (
-    <div className="lesson">
-      <Guide line={q.guide} voice={!sel} />
-      <h2>{q.prompt}</h2>
-      <div className="options">
-        {P.platforms.map((o) => {
-          const fits = passes(o, reqs, P.budget.time);
-          const tried = picks.tried.includes(o.id);
-          return (
-            <button key={o.id} className={`option${sel === o.id ? " sel" : ""}${tried && !fits ? " fail" : ""}`} onClick={() => choose(o.id)} aria-pressed={sel === o.id}>
-              <span className="n">{o.n}</span>
-              <span className="h">About {o.h} hours of Aleister's 8</span>
-              {tried && <span className={`tag ${fits ? "ok" : "no"}`}>{fits ? "Fits Thursday" : "Doesn't fit Thursday"}</span>}
-            </button>
-          );
-        })}
-      </div>
-      <div className="panel">
-        <ReqTable reqs={reqs} r={p?.r ?? null} head={q.needs} laterNote={q.later} />
-      </div>
-      {p && quip && (
-        <div style={{ marginTop: 14 }} key={p.id}>
-          <Talk lines={[quip, ricky(ok ? q.right : q.wrong)]} />
-          {ok ? <Notice kind="good" head="Fits Thursday">{q.right_head}</Notice> : <Misses name={p.n} what="not for Thursday" reqs={reqs} r={p.r} hours={P.budget.time} h={p.h} />}
+          <a className="btn ghost" href="../" style={{ textDecoration: "none", display: "inline-grid", placeItems: "center" }}>
+            About the game
+          </a>
         </div>
-      )}
-      <Next onClick={onNext} disabled={!ok} why={!sel ? "Pick one to check it." : ok ? "" : "Every MUST needs a yes. Try another."}>
-        Lock it in
-      </Next>
-    </div>
-  );
-}
-
-// Decision 2: Aleister's no-server plan, and the key anyone can read.
-function NoServerFrame({ onNext }: { onNext: () => void }) {
-  const d = P.noserver;
-  const [stage, setStage] = useState(0);
-  return (
-    <div className="lesson">
-      <Talk lines={d.lines} onDone={() => setStage((s) => Math.max(s, 1))} />
-      <h2>{d.prompt}</h2>
-      <MapView skipServer at={undefined} />
-      {stage >= 1 && stage < 2 && (
-        <div className="next-row" style={{ justifyContent: "flex-start" }}>
-          <button className="btn" onClick={() => setStage(2)}>
-            {d.button}
-          </button>
-        </div>
-      )}
-      {stage >= 2 && (
-        <>
-          <pre className="code" aria-label="The app's code">
-            {d.code.map((c, k) => (
-              <div key={k} className={k === d.key_line ? "hot" : c.startsWith("//") ? "dim" : ""}>
-                {c || " "}
-              </div>
-            ))}
-          </pre>
-          <div style={{ marginTop: 14 }}>
-            <Talk lines={d.after} onDone={() => setStage(3)} />
-          </div>
-        </>
-      )}
-      {stage >= 3 && (
-        <>
-          <Stamp s={d.stamp} />
-          <Next onClick={onNext}>So what goes where?</Next>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Decision 2: the sort. Tap a piece, then where it lives. A piece in the
-// wrong place shows why and must be taken back before the next.
-function SortFrame({ picks, pick, onNext }: { picks: Picks; pick: (p: Partial<Picks>) => void; onNext: () => void }) {
-  const s = P.sort;
-  const [placed, setPlaced] = useState<Record<string, string>>({});
-  const [armed, setArmed] = useState<string | null>(null);
-  const [last, setLast] = useState<{ id: string; z: string } | null>(null);
-  const wrong = Object.entries(placed).find(([id, z]) => s.pieces.find((p) => p.id === id)!.z !== z)?.[0];
-  const allRight = s.pieces.every((p) => placed[p.id] === p.z);
-  const put = (z: string) => {
-    if (!armed) return;
-    const piece = s.pieces.find((p) => p.id === armed)!;
-    setPlaced({ ...placed, [armed]: z });
-    setLast({ id: armed, z });
-    if (piece.z !== z) pick({ misplaced: picks.misplaced + 1 });
-    setArmed(null);
-  };
-  const takeBack = (id: string) => {
-    const { [id]: _, ...rest } = placed;
-    setPlaced(rest);
-    setLast(null);
-    setArmed(id);
-  };
-  const lp = last ? s.pieces.find((p) => p.id === last.id)! : null;
-  return (
-    <div className="lesson">
-      <Guide line={allRight ? ricky(s.done) : s.guide} />
-      <h2>{s.prompt}</h2>
-      <div className="pieces" aria-label="Pieces to place">
-        {s.pieces
-          .filter((p) => !placed[p.id])
-          .map((p) => (
-            <button key={p.id} className={`piece${armed === p.id ? " armed" : ""}`} disabled={!!wrong} onClick={() => setArmed(armed === p.id ? null : p.id)} aria-pressed={armed === p.id}>
-              {p.t}
-            </button>
-          ))}
-        {allRight && <span className="why">All seven placed.</span>}
       </div>
-      <div className="zones">
-        {s.zones.map((z) => (
-          <div key={z.id} className={`zone${armed ? " target" : ""}`} onClick={() => put(z.id)} role={armed ? "button" : undefined} aria-label={armed ? `Put it on: ${z.h}` : undefined}>
-            <span className="h">{z.h}</span>
-            <span className="s">{z.s}</span>
-            {s.pieces
-              .filter((p) => placed[p.id] === z.id)
-              .map((p) =>
-                p.z === z.id ? (
-                  <div key={p.id} className="placed">
-                    <b>{p.t}</b>
-                  </div>
-                ) : (
-                  <button key={p.id} className="placed wrong" onClick={(e) => (e.stopPropagation(), takeBack(p.id))}>
-                    <b>{p.t}</b>
-                    {s.take_back}
-                  </button>
-                ),
-              )}
-          </div>
-        ))}
-      </div>
-      {lp && last && (
-        <Notice key={`${last.id}-${last.z}`} kind={lp.z === last.z ? "good" : "bad"} head={lp.t}>
-          {(lp.why as Record<string, string>)[last.z]}
-        </Notice>
-      )}
-      <Next onClick={onNext} disabled={!allRight} why={allRight ? s.done : `${Object.keys(placed).length - (wrong ? 1 : 0)} of ${s.pieces.length} ${s.placed}`}>
-        Next decision
-      </Next>
     </div>
   );
 }
 
-// Decision 3: build or rent the backend, in the hours the platform left.
-function BackendFrame({ picks, pick, onNext }: { picks: Picks; pick: (p: Partial<Picks>) => void; onNext: () => void }) {
-  const b = P.backend;
-  const left = hoursLeft(picks.platform);
-  const [sel, setSel] = useState<string | null>(picks.backend || null);
-  const reqs = b.reqs as Req[];
-  const o = sel ? (b.options.find((x) => x.id === sel)! as Option & (typeof b.options)[number]) : null;
-  const ok = o ? passes(o, reqs, left) : false;
-  const choose = (id: string) => {
-    setSel(id);
-    const opt = b.options.find((x) => x.id === id)! as Option;
-    pick({ triedBackend: [...new Set([...picks.triedBackend, id])], backend: passes(opt, reqs, left) ? id : "" });
-  };
-  const f = (s: string) => fill(s, left);
-  return (
-    <div className="lesson">
-      <Guide line={b.guide} voice={!sel} />
-      <h2>{b.prompt}</h2>
-      <p className="lede">
-        {platform(picks.platform)?.n} took {platform(picks.platform)?.h} of Aleister's {P.budget.time} hours. {left} left.
-      </p>
-      <div className="options">
-        {b.options.map((x) => {
-          const fits = passes(x as Option, reqs, left);
-          const tried = picks.triedBackend.includes(x.id);
-          return (
-            <button key={x.id} className={`option${sel === x.id ? " sel" : ""}${tried && !fits ? " fail" : ""}`} onClick={() => choose(x.id)} aria-pressed={sel === x.id}>
-              <span className="n">{x.n}</span>
-              <span className="realname">{x.rn}</span>
-              <span className="h">About {x.h} hour{x.h === 1 ? "" : "s"}</span>
-              {tried && <span className={`tag ${fits ? "ok" : "no"}`}>{fits ? "Fits" : "Doesn't fit"}</span>}
-            </button>
-          );
-        })}
-      </div>
-      {o && (
-        <motion.div key={o.id} className="goodcost" style={{ marginBottom: 12 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <div className="good">
-            <b>Good at</b>
-            {o.good}
-          </div>
-          <div className="cost">
-            <b>Costs</b>
-            {o.cost}
-          </div>
-        </motion.div>
-      )}
-      <div className="panel">
-        <ReqTable reqs={reqs} r={o?.r ?? null} head={b.needs} laterNote="(later)" fill={f} />
-      </div>
-      {o && (
-        <div style={{ marginTop: 14 }} key={o.id}>
-          <Talk lines={ok ? [b.quip, ricky(b.right)] : [ricky(b.wrong)]} />
-          {ok ? <Notice kind="good" head="Fits">{b.right_head}</Notice> : <Misses name={o.n} what="not this time" reqs={reqs} r={o.r} hours={left} h={o.h} fill={f} />}
-        </div>
-      )}
-      <Next onClick={onNext} disabled={!ok} why={!sel ? "Pick one to check it." : ok ? "" : "Every MUST needs a yes. Try another."}>
-        Lock it in
-      </Next>
-    </div>
-  );
-}
-
-// Which musts an option misses, so a wrong pick says exactly why.
-function Misses({ name, what, reqs, r, hours, h, fill: f = (s) => s }: { name: string; what: string; reqs: Req[]; r: Record<string, string[]>; hours: number; h: number; fill?: (s: string) => string }) {
-  const miss = reqs.filter((q) => !q.later && q.must && r[q.id]?.[0] !== "y").map((q) => f(q.t));
-  if (h > hours && !miss.length) miss.push(`Fits the ${hours} hours`);
-  return (
-    <Notice kind="bad" head={`${name}: ${what}`}>
-      Misses {miss.length} must{miss.length === 1 ? "" : "s"}: {miss.join("; ")}.
-    </Notice>
-  );
-}
-
-const BOX_OF: Record<string, BoxId> = { Frontend: "device", Backend: "server", Database: "db", "AI model": "model" };
-
-// Decision 4: Aleister's tech stack. Each line goes on the map; the one that
-// can't is the NEXT_PUBLIC_ key, headed for the phone again.
-function PlanFrame({ picks, pick, onNext }: { picks: Picks; pick: (p: Partial<Picks>) => void; onNext: () => void }) {
-  const d = P.plan;
-  const [ready, setReady] = useState(false);
-  const [open, setOpen] = useState<Record<number, boolean>>({});
-  const [cur, setCur] = useState<number | null>(null);
-  const [fixed, setFixed] = useState(picks.fixed);
-  const plat = picks.platform || "web";
-  const text = (v: string | Record<string, string>) => (typeof v === "string" ? v : v[plat] ?? v.web);
-  const n = Object.keys(open).length;
-  const done = n === d.lines.length && fixed;
-  const line = cur !== null ? d.lines[cur] : null;
-  const isBad = (l: (typeof d.lines)[number]) => "bad" in l && !!l.bad;
-  const boxOf = (l: (typeof d.lines)[number]) => (isBad(l) && fixed && "fixed_box" in l ? l.fixed_box! : l.box);
-  return (
-    <div className="lesson">
-      <Talk lines={[d.guide, d.intro]} onDone={() => setReady(true)} />
-      {ready && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <h2>{d.prompt}</h2>
-          <div className="cols">
-            <div className="stack">
-              <div className="head">{d.head}</div>
-              {d.lines.map((l, k) => {
-                const bad = isBad(l);
-                const c = bad && fixed && "fixed" in l ? l.fixed! : text(l.c);
-                const box = boxOf(l);
-                return (
-                  <button key={k} className={`stackline${open[k] ? " open" : ""}${bad && !fixed ? " bad" : ""}`} onClick={() => (setCur(k), setOpen((o) => ({ ...o, [k]: true })))} aria-pressed={cur === k}>
-                    <span>{c}</span>
-                    <span className={`boxtag${open[k] ? (box === "?" ? " q" : " placed") : ""}`}>{open[k] ? box : d.read}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div>
-              <MapView hot={line ? BOX_OF[boxOf(line)] : undefined} seen={Object.fromEntries(Object.keys(open).map((k) => [BOX_OF[boxOf(d.lines[+k])], true]))} />
-              {line && (
-                <motion.div key={`${cur}-${fixed}`} className={`notice${isBad(line) && !fixed ? " bad" : ""}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  {isBad(line) && !fixed && "look" in line && <h4>{line.look}</h4>}
-                  {text(line.plain)}
-                  {isBad(line) && !fixed && (
-                    <div className="next-row" style={{ justifyContent: "flex-start" }}>
-                      <button className="btn small" onClick={() => (setFixed(true), pick({ fixed: true }))}>
-                        {d.fix_button}
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
-              )}
-            </div>
-          </div>
-          {fixed && (
-            <div style={{ marginTop: 14 }}>
-              <Guide line={d.fixed} />
-            </div>
-          )}
-          {done && <Stamp s={d.stamp} />}
-          <Next onClick={onNext} disabled={!done} why={done ? "" : n < d.lines.length ? `Place every line on the map · ${n} of ${d.lines.length}` : "One line can't be placed. Look closer."}>
-            {d.merge}
-          </Next>
-        </motion.div>
-      )}
-    </div>
-  );
-}
+// ---- Widgets ----
 
 // Thursday: 200 testers on three kinds of device, each square one diner,
 // the 4:40 iPhone bug, and the same evening on native apps for comparison.
-function ThursdayFrame({ picks, speed, onNext }: { picks: Picks; speed: number; onNext: () => void }) {
+function ThursdayWidget({ picks, speed, onDone }: { picks: Picks; speed: number; onDone: () => void }) {
   const T = P.thursday;
   const mine = picks.platform || "web";
-  const [build, setBuild] = useState(mine);
-  const [m, setM] = useState(0);
-  const [running, setRunning] = useState(true);
-  const [ranMine, setRanMine] = useState(false);
+  const [st, set] = useReducer((s: { build: string; m: number; running: boolean; ranMine: boolean }, p: Partial<typeof s>) => ({ ...s, ...p }), { build: mine, m: 0, running: true, ranMine: false });
+  const { build, m, running, ranMine } = st;
   const all = testers();
   useEffect(() => {
     if (!running) return;
     let raf = 0;
     let last = performance.now();
+    let cur = m;
     const tick = (now: number) => {
       const dt = Math.max(0, now - last) / 1000;
       last = now;
-      setM((x) => (speed === Infinity ? T.minutes : Math.min(T.minutes, x + dt * speed)));
-      raf = requestAnimationFrame(tick);
+      cur = speed === Infinity ? T.minutes : Math.min(T.minutes, cur + dt * speed);
+      if (cur >= T.minutes) set({ m: T.minutes, running: false, ranMine: ranMine || build === mine });
+      else {
+        set({ m: cur });
+        raf = requestAnimationFrame(tick);
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [running, build]);
-  useEffect(() => {
-    if (m >= T.minutes) {
-      setRunning(false);
-      if (build === mine) setRanMine(true);
-    }
-  }, [m]);
-  const restart = (b: string) => {
-    setBuild(b);
-    setM(0);
-    setRunning(true);
-  };
+  const restart = (b: string) => set({ build: b, m: 0, running: true });
   const c = thursday(build, m);
   const share = c.n ? c.fit / c.n : 0;
   const finished = m >= T.minutes;
   const goal = P.goal_share;
   return (
-    <div className="lesson">
+    <div className="widget">
       <Guide line={T.intro} />
       <h2>Thursday · {T.title}</h2>
       <div className="next-row" style={{ justifyContent: "flex-start", marginTop: 4 }}>
@@ -694,7 +664,7 @@ function ThursdayFrame({ picks, speed, onNext }: { picks: Picks; speed: number; 
           </button>
         </span>
         {!finished && (
-          <button className="btn ghost small" onClick={() => setRunning(!running)}>
+          <button className="btn ghost small" onClick={() => set({ running: !running })}>
             {running ? "Pause" : "Resume"}
           </button>
         )}
@@ -750,29 +720,30 @@ function ThursdayFrame({ picks, speed, onNext }: { picks: Picks; speed: number; 
           </ul>
         </div>
       </div>
-      {finished && (
-        <Notice kind={share >= goal ? "good" : "bad"} head={`${platform(build)!.n}: ${Math.round(share * 100)}% found a place that fits`}>
-          {build === "native"
-            ? `On native apps the laptops can't open it at all, and the iPhone fix waits for store review. That's why the platform decision mattered.`
-            : `${c.wrong} iPhone diners booked the wrong night before the fix went live three minutes later. On the web, a fix reaches everyone on their next tap. Try "${T.native}" to see the other road.`}
-        </Notice>
-      )}
-      <Next onClick={onNext} disabled={!ranMine} why={ranMine ? "" : "Watch your build's evening to the end."}>
-        Gerard's postmortem
+      <AnimatePresence>
+        {finished && (
+          <Notice kind={share >= goal ? "good" : "bad"} head={`${platform(build)!.n}: ${Math.round(share * 100)}% found a place that fits`}>
+            {build === "native"
+              ? `On native apps the laptops can't open it at all, and the iPhone fix waits for store review. That's why the platform decision mattered.`
+              : `${c.wrong} iPhone diners booked the wrong night before the fix went live three minutes later. On the web, a fix reaches everyone on their next tap. Try "${T.native}" to see the other road.`}
+          </Notice>
+        )}
+      </AnimatePresence>
+      <Next onClick={onDone} disabled={!ranMine} why={ranMine ? "" : "Watch your build's evening to the end."}>
+        Back to the house
       </Next>
     </div>
   );
 }
 
-// Gerard's decision record, the marks, Walter's cheque and the runway.
-function PostmortemFrame({ picks, onNext }: { picks: Picks; onNext: () => void }) {
+// Gerard's decision record, the marks and the runway.
+function RecordWidget({ picks, onDone }: { picks: Picks; onDone: () => void }) {
   const d = P.postmortem;
   const plat = picks.platform || "web";
   const rows = [(d.platform_rows as Record<string, string[]>)[plat], ...d.rows];
   const m = marks(plat, picks.tried.includes("native"));
   return (
-    <div className="lesson">
-      <Talk lines={[d.guide, d.cheque]} />
+    <div className="widget">
       <h2>{d.prompt}</h2>
       <p className="lede">{d.when}</p>
       <table className="adr">
@@ -784,9 +755,9 @@ function PostmortemFrame({ picks, onNext }: { picks: Picks; onNext: () => void }
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr key={r[0]}>
-              {r.map((cell, k) => (
+          {rows.map((row) => (
+            <tr key={row[0]}>
+              {row.map((cell, k) => (
                 <td key={k} data-h={k ? d.heads[k] : undefined}>
                   {cell || "—"}
                 </td>
@@ -795,7 +766,7 @@ function PostmortemFrame({ picks, onNext }: { picks: Picks; onNext: () => void }
           ))}
         </tbody>
       </table>
-      <Notice head="New word">{d.word.replace(/^New word · /, "")}</Notice>
+      <Notice head="New word">{d.word}</Notice>
       <div className="marks">
         {(["live", "lean", "ulrich"] as const).map((k) => (
           <span key={k} className={`markchip${m[k] ? "" : " miss"}`}>
@@ -807,30 +778,7 @@ function PostmortemFrame({ picks, onNext }: { picks: Picks; onNext: () => void }
       <Notice kind="good" head="Runway">
         {d.runway}
       </Notice>
-      <Next onClick={onNext}>Thursday night</Next>
+      <Next onClick={onDone}>Go on</Next>
     </div>
   );
 }
-
-function EndCard({ onAgain }: { onAgain: () => void }) {
-  const n = P.cliffhanger.next;
-  return (
-    <div className="card-screen">
-      <div>
-        <div className="kicker">{n.top}</div>
-        <h1>{n.title}</h1>
-        <p className="sub">{n.sub}</p>
-        <p className="sub">Episode 2 is being rebuilt. The Pilot is all there is for now.</p>
-        <div className="row">
-          <button className="btn" onClick={onAgain}>
-            Play the Pilot again
-          </button>
-          <a className="btn ghost" href="../" style={{ textDecoration: "none", display: "inline-grid", placeItems: "center" }}>
-            About the game
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
-

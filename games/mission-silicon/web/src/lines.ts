@@ -20,23 +20,8 @@ export function voiceKey(l: Line): string {
   return `${l.who}-${hash(l.say)}`;
 }
 
-// What Ricky reads that isn't written as a line: the search's steps, the
-// verdicts and the rules.
-export function narrated(): Line[] {
-  const r = (say: string): Line => ({ who: "ricky", say });
-  return [
-    ...P.steps.list.map((s) => r(s.t)),
-    r(P.pick.wrong),
-    r(P.pick.right),
-    r(P.noserver.stamp.plain),
-    r(P.sort.done),
-    r(P.backend.wrong),
-    r(P.backend.right),
-    r(P.plan.stamp.plain),
-  ];
-}
-
-// Every {who, say} in the Pilot's data, then the narrated lines, once each.
+// Every {who, say} in the Pilot's data, once each: the script's lines and
+// the reactions a choice plays (code notes, plan claims, sticky notes).
 export function allLines(): Line[] {
   const out = new Map<string, Line>();
   const walk = (x: unknown): void => {
@@ -48,6 +33,5 @@ export function allLines(): Line[] {
     }
   };
   walk(P);
-  for (const l of narrated()) out.set(voiceKey(l), l);
   return [...out.values()];
 }
