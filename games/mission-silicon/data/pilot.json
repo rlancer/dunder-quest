@@ -9,15 +9,15 @@
 	"lean_platform": "web",
 	"decisions": ["Where it runs", "What goes where", "Build or rent the backend", "Read the plan"],
 	"cast": {
-		"ricky": {"name": "Ricky", "voice": "ash", "style": "An anxious, fast-talking, clever software engineer who explains things plainly and warmly, a little nervous."},
-		"ulrich": {"name": "Ulrich", "voice": "onyx", "style": "A loud, pompous, self-important incubator owner who thinks he is a visionary."},
-		"gilroy": {"name": "Gilroy", "voice": "echo", "style": "A bone-dry, deadpan, monotone sysadmin. Unimpressed by everything. Slow and flat."},
-		"danesh": {"name": "Danesh", "voice": "ballad", "style": "A smug, sarcastic app developer who loves to look clever."},
-		"walter": {"name": "Walter", "voice": "cedar", "style": "A very quiet, slow, terse older investor. Long pauses. Barely above a murmur."},
-		"veronica": {"name": "Veronica", "voice": "coral", "style": "A crisp, polished, efficient investment associate."},
-		"aleister": {"name": "Aleister Jr.", "voice": "verse", "style": "An overconfident, chirpy, hyper-enthusiastic AI coding assistant. Bright and eager."},
-		"gerard": {"name": "Gerard", "voice": "fable", "style": "A precise, earnest, slightly fussy operations manager."},
-		"galen": {"name": "Galen", "voice": "sage", "style": "A serene, smooth, faintly menacing tech guru CEO who speaks in calm visionary tones."}
+		"ricky": {"name": "Ricky", "voice": "harry", "style": "An anxious, fast-talking, clever software engineer who explains things plainly and warmly, a little nervous."},
+		"ulrich": {"name": "Ulrich", "voice": "roger", "style": "A loud, pompous, self-important incubator owner who thinks he is a visionary."},
+		"gilroy": {"name": "Gilroy", "voice": "brian", "style": "A bone-dry, deadpan, monotone sysadmin. Unimpressed by everything. Slow and flat."},
+		"danesh": {"name": "Danesh", "voice": "liam", "style": "A smug, sarcastic app developer who loves to look clever."},
+		"walter": {"name": "Walter", "voice": "bill", "style": "A very quiet, slow, terse older investor. Long pauses. Barely above a murmur."},
+		"veronica": {"name": "Veronica", "voice": "sarah", "style": "A crisp, polished, efficient investment associate."},
+		"aleister": {"name": "Aleister Jr.", "voice": "will", "style": "An overconfident, chirpy, hyper-enthusiastic AI coding assistant. Bright and eager."},
+		"gerard": {"name": "Gerard", "voice": "george", "style": "A precise, earnest, slightly fussy operations manager."},
+		"galen": {"name": "Galen", "voice": "river", "style": "A serene, smooth, faintly menacing tech guru CEO who speaks in calm visionary tones."}
 	},
 	"sets": {
 		"movein": "Monday, 8am · move-in day",
