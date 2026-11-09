@@ -29,6 +29,20 @@
         "--strictPort"
       ],
       "port": 5180
+    },
+    {
+      "name": "mission-silicon-lab",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "games/mission-silicon/lab",
+        "dev",
+        "--port",
+        "5181",
+        "--strictPort"
+      ],
+      "port": 5181
     }
   ]
 }
