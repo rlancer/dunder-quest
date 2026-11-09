@@ -12,6 +12,6 @@ Pixel-art games that teach programming, playable at [dunderquest.com](https://du
 | `deploy/` | Cloudflare deploy of `build/site`. |
 | `stats/` | The play-stats dashboard and its D1 database. See its [README](stats/README.md). |
 
-Each game is its own Godot project: open `games/<game>/project.godot`. Their art, music and trailer tools live in each game's `tools/` and run from that game's folder (`python tools/...`). Flatmates.js and Curb Your Oxidation reuse Dunder Quest's generators. The OpenRouter key for those tools goes in `.env` at the repo root (copy `.env.example`).
+Each game is its own Godot project: open `games/<game>/project.godot`. Their art, music and trailer tools live in each game's `tools/` and run from that game's folder (`python tools/...`). Flatmates.js and Curb Your Oxidation reuse Dunder Quest's generators. The OpenRouter key for those tools goes in `.env` at the repo root (copy `.env.example`). To generate images through the Grok CLI instead, run `grok login` and set `IMAGE_PROVIDER=grok`.
 
 CI (`.github/workflows/deploy.yml`) builds everything on every push and pull request, deploys PRs and `dev` to dev.dunderquest.com and `main` to production.

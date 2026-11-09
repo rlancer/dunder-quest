@@ -94,11 +94,7 @@ def main() -> None:
         for name in names:
             install(name)
         return
-    env = base.load_env()
-    url = env.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
-    key = env.get("OPENROUTER_API_KEY", "")
-    if not key:
-        sys.exit("OPENROUTER_API_KEY is missing from .env")
+    url, key = base.credentials()
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {pool.submit(generate, name, url, key): name for name in names}
         for future in as_completed(futures):
