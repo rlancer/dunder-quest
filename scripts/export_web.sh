@@ -4,7 +4,9 @@
 # beside its page in build/site/flatmates, and Curb Your Oxidation
 # (games/curb/) in build/site/curb/play, and Mission Silicon, a web app
 # (games/mission-silicon/web/, built with bun and Vite, not Godot), in
-# build/site/mission-silicon/play.
+# build/site/mission-silicon/play, with the Human Backend
+# (games/mission-silicon/human/), a different game on the same subject, in
+# build/site/mission-silicon/human.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -38,3 +40,7 @@ mkdir -p build/site/mission-silicon/play
 (cd "${MISSION}/web" && bun install --frozen-lockfile && bun run build)
 cp -r "${MISSION}/web/dist/." build/site/mission-silicon/play/
 bun "${ROOT}/site/build.ts" --mission-silicon "${ROOT}/build/site/mission-silicon/play/index.html"
+
+mkdir -p build/site/mission-silicon/human
+(cd "${MISSION}/human" && bun install --frozen-lockfile && bun run build)
+cp -r "${MISSION}/human/dist/." build/site/mission-silicon/human/

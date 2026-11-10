@@ -2342,6 +2342,7 @@ function buildMissionSilicon(prefix: string): string {
   <p class="ms-lede">You've moved into an incubator house to launch an AI startup, and you can't code. Your AI coding assistant can. It's fast, tireless, and very sure of itself. Learn enough about how apps are built (servers, databases, caches, scaling, security, the AI itself) to tell it what to build, and when to say no.</p>
   <p class="ms-actions"><a class="ms-btn" href="play/">Play the Pilot</a></p>
   <p class="ms-fine">Episode 1, voiced by the cast. Works on a phone or a computer. The rest of the season is being rebuilt.</p>
+  <p class="ms-fine">New: <a href="human/">The Human Backend</a>, a ten-minute game on the same subject. Your AI built the app and forgot the part that does anything, so tonight the backend is you.</p>
   <img class="ms-shot" src="${img}live.png" alt="Thursday in the Pilot: two hundred diners as squares by device, iPhones, Android phones and laptops, beside a clock, a meter against the nine-in-ten goal, and the 4:40 iPhone bug and its fix" width="720" height="405">
 </section>
 <section class="ms-section" id="how">
