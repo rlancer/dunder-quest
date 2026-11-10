@@ -1,0 +1,22 @@
+{
+  "name": "mission-silicon-human",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fontsource/atkinson-hyperlegible-next": "5.3.0",
+    "@fontsource/pixelify-sans": "5.3.0"
+  },
+  "devDependencies": {
+    "happy-dom": "21.0.4",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.1.0"
+  }
+}

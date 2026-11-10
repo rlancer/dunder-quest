@@ -53,6 +53,12 @@ jobs:
         working-directory: games/mission-silicon/web
         run: bun run typecheck && bun run test
 
+      # Each night of the Human Backend must prove its lesson (engine.test.ts),
+      # and a bot plays the real screen (ui.test.ts).
+      - name: Check Mission Silicon, the Human Backend
+        working-directory: games/mission-silicon/human
+        run: bun install --frozen-lockfile && bun run typecheck && bun run test
+
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
 
