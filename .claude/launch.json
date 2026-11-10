@@ -43,6 +43,20 @@
         "--strictPort"
       ],
       "port": 5181
+    },
+    {
+      "name": "mission-silicon-human",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "games/mission-silicon/human",
+        "dev",
+        "--port",
+        "5182",
+        "--strictPort"
+      ],
+      "port": 5182
     }
   ]
 }

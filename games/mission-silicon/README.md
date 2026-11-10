@@ -42,3 +42,15 @@ godot --path . res://tools/site_art.tscn                     # after the shots: 
 ```
 
 `cases.gd` runs the simulation headless for every episode: the solution passes and makes par; Aleister's pull request as proposed fails, and so does doing nothing; flipping any one decision fails the night, costs runway or is marked `free`, and every failure's top finding has a postmortem entry; Ulrich's card matters; and a seeded search (every card combination, every pair of dial changes, 3,000 random plans) finds nothing that passes with more runway than the solution. An episode with a `capstone` list (the Finale) also removes each part the season added to the board, one at a time, and the solution's night must fail every time with a finding. The bot checks the nights it plays on screen match the headless runs exactly.
+
+## The Human Backend
+
+A different game on the same curriculum, in [human/](human/) (vanilla TypeScript + Vite, bun): you are the server, and the robot copies what your hands do. See [HUMAN_BACKEND.md](HUMAN_BACKEND.md).
+
+```
+cd human
+bun install
+bun run dev                          # http://localhost:5173
+bun run typecheck && bun run test    # what CI runs
+mise exec -- python tools/art.py     # the desk and the diners, if a prompt changes
+```
