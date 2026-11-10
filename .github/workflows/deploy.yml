@@ -53,6 +53,12 @@ jobs:
         working-directory: games/mission-silicon/web
         run: bun run typecheck && bun run test
 
+      # Each level of the Lab must prove its lesson (model.test.ts), and the
+      # bot plays all three through the real screens (app.test.tsx).
+      - name: Check Mission Silicon, the Lab
+        working-directory: games/mission-silicon/lab
+        run: bun run typecheck && bun run test
+
       # Each night of the Human Backend must prove its lesson (engine.test.ts),
       # and a bot plays the real screen (ui.test.ts).
       - name: Check Mission Silicon, the Human Backend

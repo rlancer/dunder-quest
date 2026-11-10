@@ -2343,6 +2343,7 @@ function buildMissionSilicon(prefix: string): string {
   <p class="ms-actions"><a class="ms-btn" href="play/">Play the Pilot</a></p>
   <p class="ms-fine">Episode 1, voiced by the cast. Works on a phone or a computer. The rest of the season is being rebuilt.</p>
   <p class="ms-fine">New: <a href="human/">The Human Backend</a>, a ten-minute game on the same subject. Your AI built the app and forgot the part that does anything, so tonight the backend is you.</p>
+  <p class="ms-fine">Or try <a href="lab/">the Lab</a>, a proof of concept: your AI says the app is done, and you find out whether it is.</p>
   <img class="ms-shot" src="${img}live.png" alt="Thursday in the Pilot: two hundred diners as squares by device, iPhones, Android phones and laptops, beside a clock, a meter against the nine-in-ten goal, and the 4:40 iPhone bug and its fix" width="720" height="405">
 </section>
 <section class="ms-section" id="how">
