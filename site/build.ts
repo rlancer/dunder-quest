@@ -8,15 +8,13 @@
  * beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
  * JavaScript game, gets its own page in `flatmates/` and its export in
  * `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
- * `curb/` and `curb/play/`. Mission Silicon, the fourth game, is in
- * `mission-silicon/` and `mission-silicon/play/`, and has a card on the
- * splash after Dunder Quest and Flatmates.js.
+ * `curb/` and `curb/play/`.
+ * The splash has a card for each game.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
  *     bun site/build.ts --flatmates build/site/flatmates/play/index.html
  *     bun site/build.ts --curb build/site/curb/play/index.html
- *     bun site/build.ts --mission-silicon build/site/mission-silicon/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -27,7 +25,6 @@ const ROOT = resolve(SITE, "..");
 const QUEST = join(ROOT, "games", "dunder-quest");
 const FLATMATES = join(ROOT, "games", "flatmates");
 const CURB = join(ROOT, "games", "curb");
-const MISSION = join(ROOT, "games", "mission-silicon");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -311,7 +308,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}mission-silicon/">Mission Silicon</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}
@@ -430,7 +427,7 @@ ${downloadsSection(prefix)}
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest "
-  + "and JavaScript in Flatmates.js, and how apps are built with AI in Mission Silicon. Play them in your browser.";
+  + "and JavaScript in Flatmates.js. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -450,11 +447,6 @@ function buildSplash(prefix = ""): string {
       "Two mismatched flatmates in a very small Croydon flat. Swap between Clive and Jazz across six stops, from "
       + "calling a method to awaiting two promises, and script the one you aren't playing.",
       "Meet the flatmates"],
-    ["game-ms", "Build with AI", "Mission Silicon", `${prefix}mission-silicon/`, `${prefix}mission-silicon/play/`,
-      "mission-silicon.png", MS_ALT,
-      "You can't code. Your AI teammate can, a bit too confidently. Learn the decisions behind every app you'll build "
-      + "with AI: where it runs, what stays on the server, build or rent. The voiced Pilot is playable now.",
-      "Meet the house"],
   ];
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
@@ -2273,135 +2265,10 @@ ${body}
 `;
 }
 
-// Mission Silicon's page at /mission-silicon/, the fourth game, being rebuilt
-// as a web app (`mission-silicon/web/`) to teach first: startup green on
-// off-white, Montserrat ExtraBold headings. The cast and the season outline
-// come from `mission-silicon/data/season.json`, the Pilot from
-// `data/pilot.json`, and the modules from `mission-silicon/CURRICULUM.md`.
-// The screenshots are of the web Pilot.
-const MS_ALT = "Mission Silicon: the name in heavy slate type on off-white, beside the game's whiteboard of servers with traffic running through it.";
-const MS_DESC = "Mission Silicon, a Dunder Quest game in the making: you're a non-technical founder launching an AI startup, "
-  + "and your AI coding assistant is very sure of itself. Learn how web apps are built by steering one. "
-  + "The Pilot is free to play in your browser, voiced, on a phone or a computer; the rest of the season is being rebuilt.";
-
-/** The same tags for Mission Silicon, in mission-silicon/, whose web app
- * is built to mission-silicon/play/index.html. */
-function tagMissionSiliconPage(index: string): void {
-  const desc = "Play the Pilot of Mission Silicon, the Dunder Quest game about building apps with AI, right in your browser.";
-  tagGamePage(index, "Play Mission Silicon · Dunder Quest", desc, "mission-silicon/play/", "mission-silicon.png", MS_ALT);
-}
-
-/** Module number (or "capstone") to its title, from the curriculum's headings. */
-function msModules(): Record<string, string> {
-  const text = read(join(MISSION, "CURRICULUM.md"));
-  const out: Record<string, string> = {};
-  for (const m of text.matchAll(/^## Module (\d+): (.+)$/gm)) out[m[1]] = m[2].trim();
-  const capstone = text.match(/^## Capstone: (.+)$/m);
-  if (capstone) out.capstone = capstone[1].trim();
-  return out;
-}
-
-function buildMissionSilicon(prefix: string): string {
-  const data = JSON.parse(read(join(MISSION, "data", "season.json")));
-  const img = `${prefix}static/img/mission-silicon/`;
-  // Only the Pilot is playable while the season is rebuilt to teach first.
-  const built = new Map([[1, JSON.parse(read(join(MISSION, "data", "pilot.json")))]]);
-  const modules = msModules();
-  const cast = Object.values(data.cast).map((p: Json) =>
-    `<li><b>${esc(p.full)}</b> <span>${esc(p.role)}</span></li>`).join("");
-  const season = data.outline.map((entry: Json) => {
-    const names = entry.modules.map((m: Json) => {
-      const key = String(m);
-      const title = modules[key] ?? "";
-      const label = key === "capstone" ? "The whole picture" : `Module ${key}`;
-      return title ? `${label}: ${esc(title.split(",")[0].split(":")[0])}` : label;
-    });
-    const playable = built.has(entry.id);
-    const state = playable ? '<a class="ms-tag" href="play/">Play it</a>' : '<span class="ms-tag ms-soon">Being rebuilt</span>';
-    return `<li${playable ? " class=ms-live" : ""}><span class="ms-num">${entry.id}</span>`
-      + `<b>${esc(entry.title)}</b> ${state}<small>${names.join("; ")}</small></li>`;
-  });
-  const steps = [
-    ["planning.png", "Make the real decisions",
-      "Every episode turns on a few architecture decisions you'll face building anything with AI: where the app runs, what goes "
-      + "on the phone and what stays on the server, whether to build or rent. The house argues each one out while the whiteboard "
-      + "checks it against what the app needs, then everyone turns to you. Pick wrong and you see it go wrong, and why it'd be right elsewhere."],
-    ["trouble.png", "Read the AI's plan",
-      "Aleister Jr., your AI teammate, writes up a plan in real tools: Next.js, Supabase, Vercel. Put every line on the map of "
-      + "your app. The one you can't place is the one to question."],
-    ["postmortem.png", "Watch it go live",
-      "Two hundred diners try it on their phones and laptops, and every result traces back to a decision you made. Then the "
-      + "team writes it down: what you chose, why, what it cost, and when to look again."],
-  ];
-  const stepHtml = steps.map(([shot, h, p]) =>
-    `<li><img src="${img}${shot}" alt="" width="720" height="405" loading="lazy"><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
-  const body = `
-<section class="ms-hero">
-  <p class="ms-kicker">a dunder_quest game · being rebuilt to teach first</p>
-  <h1>Mission Silicon</h1>
-  <p class="ms-lede">You've moved into an incubator house to launch an AI startup, and you can't code. Your AI coding assistant can. It's fast, tireless, and very sure of itself. Learn enough about how apps are built (servers, databases, caches, scaling, security, the AI itself) to tell it what to build, and when to say no.</p>
-  <p class="ms-actions"><a class="ms-btn" href="play/">Play the Pilot</a></p>
-  <p class="ms-fine">Episode 1, voiced by the cast. Works on a phone or a computer. The rest of the season is being rebuilt.</p>
-  <p class="ms-fine">New: <a href="human/">The Human Backend</a>, a ten-minute game on the same subject. Your AI built the app and forgot the part that does anything, so tonight the backend is you.</p>
-  <img class="ms-shot" src="${img}live.png" alt="Thursday in the Pilot: two hundred diners as squares by device, iPhones, Android phones and laptops, beside a clock, a meter against the nine-in-ten goal, and the 4:40 iPhone bug and its fix" width="720" height="405">
-</section>
-<section class="ms-section" id="how">
-  <h2>How it plays</h2>
-  <ol class="ms-steps">${stepHtml}</ol>
-</section>
-<section class="ms-section" id="house">
-  <h2>The house</h2>
-  <p>Forkcast is an AI dinner concierge: tell it what kind of evening you want, and it finds the restaurant and books the table. You're its founder. These are the people (and the machine) around you.</p>
-  <ul class="ms-cast">${cast}</ul>
-</section>
-<section class="ms-section" id="season">
-  <h2>The season</h2>
-  <p>The season runs from a landing page to a company in several cities, and every episode teaches a piece of how web apps are built. You never write code: you learn enough to direct an AI that does. It's being rebuilt to teach first, one episode at a time, starting with the Pilot.</p>
-  <ol class="ms-season">${season.join("")}</ol>
-</section>
-`;
-  return msPage(body, prefix);
-}
-
-function msPage(body: string, prefix: string): string {
-  const title = "Mission Silicon · Dunder Quest";
-  return `<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>${title}</title>
-<meta name="description" content="${esc(MS_DESC)}">
-${headTags(title, MS_DESC, "mission-silicon/", "mission-silicon.png", MS_ALT)}
-<link rel="icon" href="${prefix}static/img/mission-silicon/icon.svg" type="image/svg+xml">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Montserrat:wght@800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="${prefix}static/mission-silicon.css">
-</head>
-<body class="ms">
-<a class="skip" href="#main">Skip to content</a>
-<header class="ms-bar">
-  <a class="ms-brand" href="./">Mission Silicon</a>
-  <nav aria-label="Mission Silicon"><a href="#how">How it plays</a><a href="#season">The season</a><a href="${prefix}">All games</a></nav>
-  <a class="ms-btn ms-btn-small" href="play/">Play</a>
-</header>
-<main id="main">
-${body}
-</main>
-<footer class="ms-foot">
-  <p>Mission Silicon. One incubator house, one AI teammate, and how apps get built.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${REPO}/tree/main/games/mission-silicon">Source on GitHub</a></p>
-</footer>
-</body>
-</html>
-`;
-}
-
 function main(): void {
   const args = process.argv.slice(2);
   const tag: Record<string, (index: string) => void> = {
-    "--mission-silicon": tagMissionSiliconPage, "--play": tagPlayPage,
+    "--play": tagPlayPage,
     "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage,
   };
   if (args[0] in tag) {
@@ -2442,7 +2309,6 @@ function main(): void {
   for (const [slug, build] of brand) write(join(out, "brand", slug, "index.html"), build("../../"));
   write(join(out, "flatmates", "index.html"), buildFlatmates("../"));
   write(join(out, "curb", "index.html"), buildCurb("../"));
-  write(join(out, "mission-silicon", "index.html"), buildMissionSilicon("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));
