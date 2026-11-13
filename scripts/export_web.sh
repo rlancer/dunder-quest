@@ -38,3 +38,8 @@ mkdir -p build/site/prince/play
 "$GODOT" --headless --path "$PRINCE" --export-release "Web" "${ROOT}/build/site/prince/play/index.html"
 bun "${ROOT}/site/build.ts" --prince "${ROOT}/build/site/prince/play/index.html"
 bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/prince/play"
+
+# Make It Pop (games/make-it-pop/), a web game built with bun and Vite.
+mkdir -p build/site/make-it-pop
+(cd "${ROOT}/games/make-it-pop" && bun install --frozen-lockfile && bun run build)
+cp -r "${ROOT}/games/make-it-pop/dist/." build/site/make-it-pop/

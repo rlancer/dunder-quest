@@ -8,6 +8,7 @@ Pixel-art games that teach programming, playable at [dunderquest.com](https://du
 | `games/flatmates/` | Flatmates.js, the JavaScript game (Godot 4.7). Plays at `/flatmates/play/`. See its [README](games/flatmates/README.md). |
 | `games/curb/` | Curb Your Oxidation, the Rust game (Godot 4.7). Plays at `/curb/play/`. See its [README](games/curb/README.md). |
 | `games/prince/` | Prince of Versions, the Git game (Godot 4.7). Plays at `/prince/play/`. See its [design](games/prince/GAME.md). |
+| `games/make-it-pop/` | Make It Pop, a prototype about asking an AI for what you want (TypeScript and Vite, built with bun). Plays at `/make-it-pop/`. |
 | `site/` | `build.ts` (run with Bun) writes the static site: the games splash at the root, Dunder Quest's page at `/dunder-quest/`, lessons, guide, brand, and the Flatmates.js and Curb Your Oxidation pages. |
 | `scripts/` | `export_web.sh` builds the site and the three web games into `build/site`; `export_desktop.sh` builds Dunder Quest's desktop downloads. |
 | `deploy/` | Cloudflare deploy of `build/site`. |

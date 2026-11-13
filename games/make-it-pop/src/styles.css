@@ -1,0 +1,104 @@
+/* Make It Pop. A chat on top, Dee's page in the middle, the AI's controls
+   under it, and one button that stays at the bottom of the screen. */
+
+:root {
+  --violet: #5b3df5;
+  --violet-ink: #3a22b8;
+  --sun: #ffd23f;
+  --ink: #1f1b2e;
+  --dim: #625c75;
+  --bg: #f4f1fb;
+  --card: #ffffff;
+  --line: #d9d3ea;
+  --body: "Atkinson Hyperlegible Next", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { background: var(--bg); }
+body { margin: 0; font: 17px/1.45 var(--body); color: var(--ink); -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+h1, h2, p, ul, ol, pre { margin: 0; }
+
+.bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--violet); color: #fff; }
+.logo { font-weight: 700; font-size: 18px; letter-spacing: 0.02em; }
+.logo::before { content: "✦ "; color: var(--sun); }
+.bar-r { font-size: 15px; }
+
+.sheet { max-width: 540px; margin: 0 auto; padding: 16px 16px 96px; display: flex; flex-direction: column; gap: 14px; }
+.fine { color: var(--dim); font-size: 15px; }
+.k { font-size: 13px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--dim); }
+
+.go { white-space: nowrap; min-height: 50px; padding: 10px 22px; border-radius: 12px; border: 2px solid var(--ink); background: var(--sun); font-weight: 700; font-size: 18px; box-shadow: 0 3px 0 var(--ink); }
+.go:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+.go.ghost { background: #fff; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ------------------------------------------------------------- the title */
+
+.title { min-height: 100vh; min-height: 100dvh; justify-content: center; padding-bottom: 32px; }
+.title h1 { font-size: 52px; line-height: 1; color: var(--violet); }
+.title h1::after { content: " ✦"; color: #e6a700; }
+.pitch { font-size: 26px; font-weight: 700; }
+.title .go { align-self: flex-start; margin-top: 8px; }
+
+/* ----------------------------------------------------------------- Dee */
+
+.dee { display: grid; grid-template-columns: 40px 1fr; gap: 10px; align-items: start; }
+.dee-face { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #e2437a; color: #fff; font-weight: 700; font-size: 20px; }
+.bubble { justify-self: start; background: var(--card); border: 2px solid var(--line); border-radius: 4px 16px 16px 16px; padding: 10px 14px; }
+.who { display: block; font-size: 13px; color: var(--dim); }
+.tag { display: inline-block; margin: 2px 0 4px; padding: 1px 8px; border-radius: 10px; background: var(--violet); color: #fff; font-size: 13px; font-weight: 700; }
+.lines { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.reply .bubble { border-color: var(--ink); background: #fff8dc; }
+
+/* --------------------------------------------------------- Dee's web page */
+
+.page { display: flex; gap: 12px; align-items: center; min-height: 190px; padding: 18px; border-radius: 12px; border: 3px solid var(--ink); color: #2a2018; overflow: hidden; }
+.page.photo-left { flex-direction: row-reverse; }
+.page.photo-top { flex-direction: column-reverse; text-align: center; }
+.page-text { flex: 1; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; min-width: 0; }
+.photo-top .page-text { align-items: center; }
+.page-dog { flex: 0 0 84px; }
+.page-dog svg { display: block; width: 84px; height: 84px; }
+.page-name { font-weight: 700; line-height: 1.05; overflow-wrap: anywhere; }
+.size-0 { font-size: 16px; } .size-1 { font-size: 22px; } .size-2 { font-size: 30px; } .size-3 { font-size: 40px; }
+.page-tag { font-size: 15px; }
+.page-btn { display: inline-block; padding: 8px 16px; border-radius: 22px; font: 700 15px var(--body); border: 2px solid #0003; }
+.font-fancy { font-family: "Brush Script MT", "Segoe Script", "Snell Roundhand", cursive; }
+.font-plain { font-family: var(--body); }
+.font-typewriter { font-family: "Courier New", ui-monospace, monospace; }
+.bg-cream { background: #fbf3dc; } .bg-pink { background: #f9b9d0; } .bg-sky { background: #a9d8f7; }
+.bg-navy { background: #1d2a55; color: #f6f1e4; } .bg-green { background: #2f9e5b; color: #fff; } .bg-orange { background: #f5993a; }
+.btn-cream, .opt.sw-cream { background: #fbf3dc; color: #2a2018; } .btn-pink, .opt.sw-pink { background: #f47fab; color: #2a2018; }
+.btn-sky, .opt.sw-sky { background: #7cc4f2; color: #12283a; } .btn-navy, .opt.sw-navy { background: #1d2a55; color: #fff; }
+.btn-green, .opt.sw-green { background: #2f9e5b; color: #fff; } .btn-orange, .opt.sw-orange { background: #f28c28; color: #2a1500; }
+
+/* ------------------------------------------------------- what you can do */
+
+.knobs { display: flex; flex-direction: column; gap: 10px; }
+.knob { display: flex; flex-direction: column; gap: 4px; }
+.knob-t { font-size: 14px; font-weight: 700; color: var(--dim); }
+.opts { display: flex; flex-wrap: wrap; gap: 6px; }
+.opt { min-height: 42px; padding: 6px 12px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-size: 15px; }
+.opt.sw { border-color: #0002; }
+.opt.on { border-color: var(--ink); box-shadow: 0 0 0 3px var(--sun); font-weight: 700; }
+.knob-repair .opts { flex-direction: column; }
+.knob-repair .opt { text-align: left; font-size: 16px; }
+
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px calc(12px + env(safe-area-inset-bottom)); background: #fffffff2; border-top: 2px solid var(--line); }
+.tries { font-size: 15px; color: var(--dim); }
+
+/* ---------------------------------------------------------------- lessons */
+
+.lesson { display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: var(--violet); color: #fff; }
+.lesson .k { color: var(--sun); }
+.lesson h2 { font-size: 26px; line-height: 1.15; }
+.tally { padding-top: 8px; border-top: 2px solid #fff4; font-weight: 700; }
+
+.end h1 { font-size: 34px; color: var(--violet); }
+.totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.totals div { display: flex; flex-direction: column; padding: 12px; border-radius: 12px; background: var(--card); border: 2px solid var(--line); }
+.totals b { font-size: 44px; line-height: 1; color: var(--violet); }
+.totals span { font-size: 15px; color: var(--dim); }
+.rules { padding-left: 1.4em; font-weight: 700; display: flex; flex-direction: column; gap: 4px; }
+.template { padding: 14px; border-radius: 12px; background: var(--ink); color: #f4f1fb; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; white-space: pre-wrap; }
