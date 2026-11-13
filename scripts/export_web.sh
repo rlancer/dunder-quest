@@ -6,7 +6,9 @@
 # (games/mission-silicon/web/, built with bun and Vite, not Godot), in
 # build/site/mission-silicon/play, with the Human Backend
 # (games/mission-silicon/human/), a different game on the same subject, in
-# build/site/mission-silicon/human.
+# build/site/mission-silicon/human, and Three Ways In
+# (games/mission-silicon/ways/), three sketches of how to teach it, in
+# build/site/mission-silicon/ways.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,3 +46,7 @@ bun "${ROOT}/site/build.ts" --mission-silicon "${ROOT}/build/site/mission-silico
 mkdir -p build/site/mission-silicon/human
 (cd "${MISSION}/human" && bun install --frozen-lockfile && bun run build)
 cp -r "${MISSION}/human/dist/." build/site/mission-silicon/human/
+
+mkdir -p build/site/mission-silicon/ways
+(cd "${MISSION}/ways" && bun install --frozen-lockfile && bun run build)
+cp -r "${MISSION}/ways/dist/." build/site/mission-silicon/ways/

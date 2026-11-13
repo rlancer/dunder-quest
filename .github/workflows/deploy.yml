@@ -59,6 +59,12 @@ jobs:
         working-directory: games/mission-silicon/human
         run: bun install --frozen-lockfile && bun run typecheck && bun run test
 
+      # Three Ways In: each sketch's rules (model.test.ts), and a bot plays
+      # each through its real screen (ui.test.ts).
+      - name: Check Mission Silicon, Three Ways In
+        working-directory: games/mission-silicon/ways
+        run: bun install --frozen-lockfile && bun run typecheck && bun run test
+
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
 

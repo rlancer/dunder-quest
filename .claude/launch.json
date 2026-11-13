@@ -43,6 +43,20 @@
         "--strictPort"
       ],
       "port": 5182
+    },
+    {
+      "name": "mission-silicon-ways",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "games/mission-silicon/ways",
+        "dev",
+        "--port",
+        "5184",
+        "--strictPort"
+      ],
+      "port": 5184
     }
   ]
 }
