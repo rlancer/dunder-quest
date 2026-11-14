@@ -85,6 +85,23 @@ Act I is the vertical slice in this build. Act II is designed and not built.
 9. **The Lost Sands** (`reflog`). The Vizier hard-resets your branch away. `git reflog` remembers every place HEAD has been; branch from the lost commit.
 10. **The Ledger** (boss: `rebase`, `push`, `pull`). The Princess's ledger is `origin`. The Vizier rebases and force-pushes over it; you pull, see the rewritten history, and restore it with `--force-with-lease` lessons on why nobody rewrites a shared branch.
 
+## How the Prince reads
+
+Rob watched the first trailer and said the Prince looked too pixelated (November 2026). Looking at the 1989 original and its sequel for reference only (nothing traced or copied), what makes their hero read well is not resolution but:
+
+- **A slim, long-legged silhouette**: about six heads tall, narrow in profile, no black outline, bright clothes against dark rooms.
+- **Fluid, rotoscoped motion**: a run of many frames with real weight (lean, bob, a flight phase, arms against legs), and in-between poses for take-off, the top of a jump, landing and falling.
+- **Enough pixels on him for a face and folds**: in the sequel, shading on cloth and skin.
+
+Ours had none of that. He was 24×32 at the room's own density (each of his pixels one sixteenth of a tile, 4×4 screen pixels at 1080p), built from 1-pixel rectangles with a hard black outline, five heads tall, with six run frames on a clock, so his feet slid. Next to the generated backdrops, which are painted much finer, he looked blocky.
+
+So, in `tools/paint.py`:
+
+- **Twice the density, same size.** A frame is 64×64 texels drawn into 32×32 room pixels, so his collision box and every room are untouched but his pixels are half as big. The tiles, the door, the Vizier and the Princess are repainted at the same density (Rob asked that nothing be coarser than the Prince), so no sprite sits next to one with bigger pixels. The backdrops stay at the room's density; they were already painted fine.
+- **A jointed figure, not rectangles.** Hips, knees, ankles, shoulders and elbows are posed by angle, and each limb is a tapered shape drawn four times larger and averaged down, so edges are smooth without being blurry. Each part is lit from the upper front in three tones, and he gets a thin dark rim (tinted by what it borders) instead of an ink outline.
+- **Eighteen frames**: two of idle breathing, a ten-frame run cycle (smooth curves through heel strike, push, toe-off, knee drive and reach, with the far arm and leg half a stride behind), take-off, apex, fall, a landing crouch, dead and the raised dagger. The run is paced by distance (`STRIDE` in `world/prince.gd`), so his feet keep up with the floor.
+- **Sharp at every window scale.** At 1080p a texel is exactly 2×2 screen pixels; at the default 3× window it would be 1.5 and come out as uneven stripes. `world/sharp_pixels.gdshader` (on the room and the Prince) keeps every texel a crisp square and blends only the seam between two texels across one screen pixel. It filters by hand with `texelFetch`, so nothing else goes soft, and it is exactly nearest at 2× and 4×. Each tile has a texel of its own edge repeated round it on the sheet, so tiles never bleed into their neighbours.
+
 ## Controls
 
 - **Keyboard:** arrows or A/D to run, Space/W/Up to jump, E or Down to pull a lever or read a scroll, Q or Tab to draw the dagger. In the dagger, arrows and Enter (or the mouse) pick a command.

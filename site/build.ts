@@ -44,6 +44,11 @@ const FM_TRAILER_ID = "EJ2w4MgKSpU";
 // Curb Your Oxidation's trailer, once it's on YouTube: paste its video ID
 // here. Empty leaves the trailer off the /curb/ page.
 const CURB_TRAILER_ID = "QZsFLN5z7R4";
+// Prince of Versions' trailer (games/prince/tools/make_trailer.py), once it's
+// on YouTube: paste its video ID here. Empty leaves the trailer off the
+// /prince/ page and the splash's card, and shows the thumbnail alone on the
+// brand kit.
+const PRINCE_TRAILER_ID = "";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -233,7 +238,8 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 // `dunder-quest/`, and its pages' logo goes there.
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
-const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"]];
+const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
+  ["prince/", "Prince of Versions"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -461,7 +467,8 @@ function buildSplash(prefix = ""): string {
         <p class="kicker">${kick}</p>
         <h3><a href="${about}">${name}</a></h3>
         <p>${blurb}</p>
-        <div class="cta"><a class="btn btn-small" href="${play}">Play ${name}</a><a class="game-more" href="${about}">${more} →</a></div>
+        <div class="cta"><a class="btn btn-small" href="${play}">Play ${name}</a><a class="game-more" href="${about}">${more} →</a>${
+  cls === "game-pv" && PRINCE_TRAILER_ID ? `<a class="game-more" href="https://www.youtube.com/watch?v=${PRINCE_TRAILER_ID}">Watch the trailer →</a>` : ""}</div>
       </div>
     </li>`).join("");
   const body = `
@@ -745,6 +752,14 @@ const TRAILER_CUTS = [
   ["Vertical Short", "1080×1920, under 60 s", "Shorts, TikTok, Reels (coming)"],
   ["GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"],
 ];
+const PV_TRAILER_FACTS = [
+  ["Length", "66 seconds"],
+  ["Music", "An original cue on oud, santur, ney and frame drums, 120 BPM; every cut lands on a beat"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the console's text is sharp; 4K is ×2"],
+];
+// Its YouTube chapters: `python tools/make_trailer.py` prints them (CHAPTER m:ss ...).
+const PV_CHAPTERS = "0:00 The dagger turns back time\n0:17 The Vizier commits too\n0:32 The merge conflict\n0:44 Five rooms of real Git";
 const FM_TRAILER_FACTS = [
   ["Length", "66 seconds, with a cold open"],
   ["Music", "A sitcom band cue, 123 BPM, with a piano breakdown for the awkward bit"],
@@ -765,6 +780,7 @@ Dunder Quest is a free pixel-art platformer where every stage teaches a piece of
 ▶ Every lesson and question: ${SITE_URL}lessons/
 ▶ Prefer JavaScript? Flatmates.js: ${SITE_URL}flatmates/
 ▶ Or Rust? Curb Your Oxidation: ${SITE_URL}curb/
+▶ Or Git? Prince of Versions: ${SITE_URL}prince/
 
 What's inside
 • 6 stages, 6 Python topics: lists, dictionaries, loops, booleans, functions, comprehensions
@@ -799,6 +815,7 @@ Flatmates.js is a free pixel-art game where you write the other flatmate's to-do
 ▶ The six stops and their scripts: ${SITE_URL}flatmates/
 ▶ Prefer Python? Dunder Quest: ${SITE_URL}
 ▶ Or Rust? Curb Your Oxidation: ${SITE_URL}curb/
+▶ Or Git? Prince of Versions: ${SITE_URL}prince/
 
 What's inside
 • 6 stops, 6 pieces of JavaScript: methods, template literals, loops, events, timers, async/await
@@ -832,6 +849,7 @@ Curb Your Oxidation is a free pixel-art game that teaches Rust. Barry Danvers, a
 ▶ The ten episodes and their plans: ${SITE_URL}curb/
 ▶ Prefer Python? Dunder Quest: ${SITE_URL}
 ▶ Or JavaScript? Flatmates.js: ${SITE_URL}flatmates/
+▶ Or Git? Prince of Versions: ${SITE_URL}prince/
 
 What's inside
 • 10 episodes, 10 pieces of Rust: let and mut, functions, ownership and moves, borrowing, &mut, structs and methods, enums and Option, Result and ?, Vec and loops, lifetimes
@@ -853,10 +871,38 @@ An homage to a certain LA cringe-comedy series. The names, lines and music are o
 #rust #rustlang #learnrust #indiegame #pixelart #godot #codinggame`;
 const CURB_YOUTUBE_TAGS = "learn rust, rust for beginners, rustlang, borrow checker, coding game, educational game, "
   + "pixel art, indie game, godot, sitcom, curb your oxidation, dunder quest";
+const PV_YOUTUBE_TITLE = "Prince of Versions – Learn Git With a Dagger That Turns Back Time | Official Trailer";
+const PV_YOUTUBE_DESCRIPTION = `Git is how you undo a mistake. Here, undo is a dagger that turns back time, and it only goes back to a commit.
+
+Prince of Versions is a free pixel-art platformer that teaches Git. The Vizier has the Princess, the hourglass is running, and every torch, gate and bridge in the palace is a file in a real Git repository. Pull a lever and the file changes. Seal the moment with the dagger and that's a commit. Fall on the spikes and the only way on is git reset --hard, back to a moment you sealed; whatever you hadn't committed is gone.
+
+▶ Play free in your browser: ${SITE_URL}prince/play/
+▶ The five rooms and what each one teaches: ${SITE_URL}prince/
+▶ More games that teach code (Rust, Python, JavaScript): ${SITE_URL}
+
+What's inside
+• 5 rooms, from your first commit to your first merge conflict: commit, status, reset --hard, log, revert, ORIG_HEAD, switch -c, merge, and a conflict with the Vizier
+• Real commit ids: the game hashes every commit the way Git does
+• Every room's solution replayed against the real git on every change, ids, files, conflicts and output
+• The palace guard who refuses commits on main is a real pre-commit hook
+• No typing: the dagger's commands are buttons, and each shows the exact command and Git's own reply
+• Keyboard, gamepad or touch. No signup.
+
+How it was made
+Opus 5.5 built the game: every line of Godot code, a Git model written in GDScript, the sprites painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backdrops and soundtrack. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/prince
+
+${PV_CHAPTERS}
+
+An homage to a certain palace-run platformer and its time-rewinding sequel. The names, rooms, art and music are original; it isn't affiliated with or endorsed by anyone who made them.
+
+#git #learngit #github #indiegame #pixelart #godot #codinggame`;
+const PV_YOUTUBE_TAGS = "learn git, git for beginners, git tutorial, version control, git commit, merge conflict, coding game, "
+  + "educational game, pixel art, indie game, godot, platformer, prince of versions, dunder quest";
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract.
+Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git in a palace at night, with a dagger that turns back time, but only to a commit.
 
 Opus 5.5 built every game here end to end: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -864,11 +910,12 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
   ["Play Curb Your Oxidation", `${SITE_URL}curb/play/`],
+  ["Play Prince of Versions", `${SITE_URL}prince/play/`],
   ["Source on GitHub", REPO],
 ];
 // [file, name, size YouTube asks for, where it goes, alt]
@@ -886,6 +933,7 @@ const CHANNEL_PLAYLISTS = [
   ["Dunder Quest", "The Python game: its trailer, and later the Short and the GIF loops cut to video."],
   ["Flatmates.js", "The JavaScript game: its trailer, and later its Short."],
   ["Curb Your Oxidation", "The Rust game: its trailer, and later its Short."],
+  ["Prince of Versions", "The Git game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
 const UPLOAD_SETTINGS = [
@@ -990,6 +1038,62 @@ const CURB_LAUNCH: Launch[] = [
     + "#rustlang #learntocode #gamedev",
   ], "Upload the Curb trailer as a native video rather than leaning on the link card. Post it from your own account: it names the show, which only Rob's own posts may do. Keep it \"inspired by\", with nothing that suggests the network is involved."],
 ];
+// Prince of Versions' launch, in the same shape. The hook is undo: everyone
+// learning to code, and everyone building with AI, eventually needs Git to
+// take back a mistake. Unlike Curb's posts these never name the original
+// game, even on Rob's own accounts: it's "a certain palace platformer".
+const PRINCE_LAUNCH: Launch[] = [
+  ["LinkedIn", "", "", [
+    "Everyone building with AI hits the same moment: the assistant made a change, it broke everything, and you want yesterday back. "
+    + "That's what Git is for. Most people learn it by losing work.\n\n"
+    + "So I had Claude make a game where undo is a dagger that turns back time.\n\n"
+    + "In Prince of Versions, every torch, gate and bridge in the palace is a file in a real Git repository. Seal a moment and that's a commit. "
+    + "Fall on the spikes and the only way on is git reset --hard, back to a moment you sealed. Whatever you didn't commit is gone. "
+    + "Then the Vizier starts committing too.\n\n"
+    + "No typing: the dagger's commands are buttons, and each one shows the exact command and Git's real reply. The commit ids are the real ones.\n\n"
+    + `Learn Git. Turn back the sands. 👇\n${SITE_URL}prince/\n\n`
+    + "#git #learntocode #gamedev",
+  ], "Upload the Prince of Versions trailer as a native video rather than leaning on the link card. Never name the game it's a spoof of: \"a certain palace platformer\" at most."],
+  ["X", "", "", [
+    "Git is the thing every beginner, and everyone vibe coding, eventually needs: a way to undo.\n\n"
+    + "So Claude made me a game where undo is a dagger that turns back time. It only rewinds to a commit.\n\n"
+    + `Prince of Versions, free in your browser 👇\n${SITE_URL}prince/`,
+    "Every torch, gate and bridge is a file in a real Git repo. Fall on the spikes with a torch uncommitted and git reset --hard takes it away.\n\n"
+    + "Then the Vizier commits sabotage on top of your work, and you have to go back further than HEAD.",
+    "The commit ids on screen are real: the game hashes commits the way Git does, and CI replays every room against the real git.\n\n"
+    + `Opus 5.5 wrote all of it, trailer included. Source:\n${REPO}/tree/main/games/prince`,
+  ], "Upload the 1080p trailer to the first post as a video. Tag @AnthropicAI and @claudeai on the last post."],
+  ["Bluesky", "", "", [
+    "Git is how you undo a mistake. So Claude made me a game where undo is a dagger that turns back time, "
+    + "and it only rewinds to a commit.\n\n"
+    + `Prince of Versions: a pixel palace platformer with a real Git repo inside. Free in your browser: ${SITE_URL}prince/`,
+  ], "Attach the trailer as a video. Bluesky caps posts at 300 characters."],
+  ["Hacker News", "", "Show HN: Prince of Versions – a platformer that teaches Git with a time-rewinding dagger", [
+    ["URL", `${SITE_URL}prince/play/`],
+    ["First comment, posted right away", "Git is the thing everyone learning to code, and now everyone building with an AI assistant, "
+    + "eventually needs, usually right after they've lost something. I wanted a way to learn it before that.\n\n"
+    + "Prince of Versions is a spoof of a certain palace platformer: the dagger that turns back the sands is version control, "
+    + "and it only goes back to a commit. Every torch, gate and bridge in a room is a one-line file in a Git repo modelled in GDScript. "
+    + "Act I is five rooms: commit and reset --hard, log and resetting past HEAD, revert and ORIG_HEAD, branches with a "
+    + "pre-commit hook guarding main, and a three-way merge conflict.\n\n"
+    + "You never type. The dagger's console is buttons, but each shows the exact command it runs and Git's output. The model hashes "
+    + "blobs, trees and commits the way Git does with fixed dates, so the ids on screen are real, and CI replays every room's "
+    + "solution and a set of wrong turns against the real git and demands the same ids, files, conflicts and output.\n\n"
+    + "Opus 5.5 wrote the game, the Git model, the sprites (painted from Python), the page and the trailer. Image and music "
+    + "models made the backdrops and soundtrack. I prompted and playtested.\n\n"
+    + `Source: ${REPO}/tree/main/games/prince`],
+  ], "Link the game itself. Stay in the thread and answer the Git pedants first: they'll check the commit ids, and they're real. Never ask anyone for upvotes."],
+  ["r/godot", "", "Opus 5.5 built a Git-teaching platformer in Godot 4, with a Git model in GDScript that matches real commit ids", [
+    "Prince of Versions is a pixel platformer where every mechanism in a room is a file in a Git repository, and the dagger that "
+    + "turns back time is git reset --hard. The repo is modelled in GDScript (git/repo.gd): it hashes blobs, trees and commits like Git, "
+    + "so a test can replay every room against the real git and demand identical ids.\n\n"
+    + "The trailer is the game recorded with --write-movie at 1920x1080 and cut in Python, no video editor.\n\n"
+    + `Play (web export): ${SITE_URL}prince/play/\nSource: ${REPO}/tree/main/games/prince`,
+  ], "Use the Showcase flair and upload the trailer as a Reddit video."],
+  ["r/WebGames", "", "Prince of Versions – a palace platformer where the rewind dagger is Git [free, no signup]", [
+    ["URL", `${SITE_URL}prince/play/`],
+  ], "A link post straight to the game. Check it loads on a phone held sideways first."],
+];
 
 // The brand kit's pages, in the order help(dunder_quest) lists them:
 // [slug, title, what's on it].
@@ -998,6 +1102,7 @@ const BRAND_PAGES = [
   ["art", "Art and social cards", "The sprites and scenes, and the card each page shows when its link is shared."],
   ["curb", "Curb Your Oxidation", "The Rust game's name, lines, palette, type, cast and cards."],
   ["flatmates", "Flatmates.js", "The JavaScript game's wordmark, lines, palette, type, art and cards."],
+  ["prince", "Prince of Versions", "The Git game's name, lines, palette, type, cast and cards."],
   ["trailers", "The trailers", "Every game's trailer, how each is made, and every cut."],
   ["youtube", "The YouTube channel", "The @dunderquest channel art, its description and links, and each video's upload form."],
   ["launch", "The launch posts", "One post per platform, ready to paste, in the order they go out."],
@@ -1146,7 +1251,8 @@ function buildBrandArt(prefix: string): string {
   const cards: [string, string, string][] = [["home.png", "Home", "Home, Dunder Quest, How to play, and any page without its own card"],
     ["lessons.png", "Lessons", "The lessons index"],
     ["flatmates.png", "Flatmates.js", "The Flatmates.js page and its game"],
-    ["curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game"]];
+    ["curb.png", "Curb Your Oxidation", "The Curb Your Oxidation page and its game"],
+    ["prince.png", "Prince of Versions", "The Prince of Versions page and its game"]];
   cards.push(...STAGES.map((s): [string, string, string] => [`${s.slug}.png`, `${s.id} · ${s.name}`, "That stage's lesson page"]));
   const cardItems = cardList(img, cards);
   const body = `
@@ -1162,7 +1268,7 @@ function buildBrandArt(prefix: string): string {
   <h2 id="cards-h">The social cards</h2>
   <p class="lede">What a link to each page looks like when it's shared. Chat apps show either the full card or a small square cut from its middle, shown beside each one, so anything that has to be read sits in the center.</p>
   <ul class="cards">${cardItems}</ul>
-  <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>, <code>games/flatmates/tools/og.py</code> and <code>site/curb_art.py</code>.</p>
+  <p class="fine">Painted by <code>games/dunder-quest/tools/make_og.py</code>, <code>games/flatmates/tools/og.py</code>, <code>site/curb_art.py</code> and <code>games/prince/tools/site_art.py</code>.</p>
 </section>`;
   return brandPage("art", body, prefix);
 }
@@ -1390,7 +1496,121 @@ function buildBrandFlatmates(prefix: string): string {
   return brandPage("flatmates", body, prefix);
 }
 
-const DQ_THUMB_ALT = "Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark";
+// Prince of Versions' page of the kit: [palette.gd name, what it's for].
+const PV_PALETTE = [
+  ["SAND", "The Sands of HEAD: the name, the sand trail and every highlight"],
+  ["SAND_PALE", "\"Prince of\" in the name, the hourglass"],
+  ["NIGHT", "The palace at night: backgrounds and title cards"],
+  ["INK", "Outlines, the console's panels"],
+  ["STONE", "Palace stone"],
+  ["PAPER", "Text, and the Prince's tunic"],
+  ["TEAL", "Commands on the title cards, the palace tiles"],
+  ["CRIMSON", "The Prince's sash, a modified file, a death"],
+  ["VIOLET", "The Vizier, and his commits on the trail"],
+  ["GREEN", "A lever that took, a clean working tree"],
+  ["STEEL", "Spikes, gates and the portcullis"],
+];
+// The lines Prince of Versions' trailer cuts to, in order (tools/make_trailer.py).
+const PV_TRAILER_CARDS = ["A dagger that turns back time.", "But only to a moment you sealed.", "A seal is a git commit.",
+  "The Vizier commits too.", "Real Git. Real commit ids."];
+const PV_THUMB_ALT = "Prince of Versions trailer thumbnail: the Prince raising the dagger of sand, the Vizier opposite, under 'Learn Git' and git reset --hard HEAD~1";
+const PV_CARD_SAMPLE = 'git status                   # what changed since the last commit\n'
+  + 'git commit -am "Light the first torch"\n'
+  + "git reset --hard HEAD         # throw away everything since";
+
+function buildBrandPrince(prefix: string): string {
+  const img = `${prefix}static/img/`;
+  const pv = `${img}prince/`;
+  const colors = godotPalette(PRINCE);
+  const data = JSON.parse(read(join(PRINCE, "data", "levels.json")));
+  const copy: [string, string, string][] = [
+    ["The Vizier has the Princess, the hourglass is running, and all you have is a dagger full of sand. It turns back time, but only to a moment you sealed. A seal is a git commit.",
+      "Page hero", "site/build.ts"],
+    ["Learn Git. Turn back the sands.", "Title screen, social card, trailer end card",
+      "games/prince/ui/title.gd, games/prince/tools/site_art.py, games/prince/tools/make_trailer.py"],
+    ["a __dunder_quest__ game", "Title screen, social card, trailer end card",
+      "games/prince/ui/title.gd, games/prince/tools/site_art.py, games/prince/tools/make_trailer.py"],
+    ["A palace platformer where the dagger that turns back time is version control.", "Home page card", "site/build.ts"],
+    [PV_TRAILER_CARDS.join(" "), "Trailer cards, one at a time", "games/prince/tools/make_trailer.py"],
+    ["LEARN GIT · git reset --hard HEAD~1", "Trailer thumbnail", "games/prince/tools/make_trailer.py"],
+    ["One prince, one dagger, and every commit you'll wish you'd made.", "Page footer", "site/build.ts"],
+    [PV_DESC, "Search results", "site/build.ts"],
+  ];
+  const cast = Object.values(data.cast).map((p: Json) => p.full).join(", ");
+  const art: Art[] = [["title.png", "Title art", "The title screen, the page's hero and the social card", 480, 270, 1],
+    ["cast_prince.png", data.cast.prince.full, "The hero, in a white tunic and red sash", 64, 64, 2],
+    ["cast_dagger.png", "The Dagger of HEAD", "Drawn: the console comes up", 64, 64, 2],
+    ["cast_vizier.png", data.cast.vizier.full, "The villain, who commits sabotage", 48, 80, 2],
+    ["cast_princess.png", data.cast.princess.full, "Keeps the palace ledger", 48, 72, 2],
+    ["kit_tiles.png", "The palace tiles", "Stone, spikes, gates, bridges, levers, torches, a scroll: each one a file", 512, 32, 1],
+    ["kit_door.png", "The exit", "Shut, open, and barred by the Vizier", 144, 64, 2],
+    ["commit.png", "A torch, uncommitted", "git status lists it until it's sealed", 480, 270, 1],
+    ["dead.png", "Dead", "The only way on is git reset --hard", 480, 270, 1],
+    ["vizier.png", "The Vizier's commit", "His seal on the sand trail, in violet", 480, 270, 1],
+    ["conflict.png", "The merge conflict", "In the markers Git really writes", 480, 270, 1]];
+  const body = `
+<section class="section kit" aria-labelledby="pv-logo-h">
+  <p class="kicker">prince.__logo__</p>
+  <h2 id="pv-logo-h">The name</h2>
+  <p class="lede">Two lines of Pixelify Sans on palace night: <b>Prince of</b> small in pale sand, <b>Versions</b> big in the sand of the dagger, left-aligned the way the title screen sets it. The URL and the repo folder are just <code>prince</code>.</p>
+  <div class="kit-logo pv-logo">
+    <p class="kit-mark pv-mark"><small>Prince of</small> Versions</p>
+    <a href="${pv}icon.svg"><img src="${pv}icon.svg" alt="The Prince of Versions icon" width="128" height="128"></a>
+  </div>
+  <p class="fine">Download the icon as <a href="${pv}icon.svg">SVG</a>. It's <code>games/prince/icon.svg</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-voice-h">
+  <p class="kicker">prince.__doc__</p>
+  <h2 id="pv-voice-h">How it's described</h2>
+  <p class="lede">The hook is undo: Git is how you take back a mistake, and here undo is a dagger that turns back time, but only to a commit.</p>
+  ${copyTable(copy)}
+  <p>It's an homage to a certain palace-run platformer and its time-rewinding sequel. Names are homage names only: ${esc(cast)}. The sprites, rooms and music are its own, never copies, and nothing public names the original.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-color-h">
+  <p class="kicker">prince.__colors__</p>
+  <h2 id="pv-color-h">The palette</h2>
+  <p class="lede">A palace at night, read from <code>games/prince/core/palette.gd</code>.</p>
+  <ul class="swatches">${swatchList(PV_PALETTE.map(([n, use]): [string, string, string] => [n, colors[n], use]))}</ul>
+  <figure class="code kit-pv"><figcaption>A lesson card, as the clear card shows it</figcaption><pre><code>${pvCode(PV_CARD_SAMPLE.split("\n"))}</code></pre></figure>
+</section>
+
+<section class="section kit" aria-labelledby="pv-type-h">
+  <p class="kicker">prince.__fonts__</p>
+  <h2 id="pv-type-h">The type</h2>
+  <ul class="specimens">
+    <li><p class="sp-pixel">Prince of Versions</p><b>Pixelify Sans</b> <span>The name, the title cards and the game's words, on this site and in the trailer · <a href="${prefix}static/fonts/PixelifySans.ttf">TTF</a></span></li>
+    <li><p class="sp-label">$ git reset --hard HEAD~1</p><b>VT323</b> <span>The dagger's console: every command and Git's reply · <a href="${prefix}static/fonts/VT323.ttf">TTF</a></span></li>
+    <li><p class="sp-body">The dagger only goes back to a commit.</p><b>Atkinson Hyperlegible</b> <span>Body text on this site</span></li>
+  </ul>
+  <p class="fine">All three are under the SIL Open Font License.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-art-h">
+  <p class="kicker">prince.__art__</p>
+  <h2 id="pv-art-h">The cast and the art</h2>
+  <p class="lede">The game draws at 480×270. Scale it by whole numbers with nearest-neighbor. Click a piece for the original file.</p>
+  <ul class="art">${artList(pv, art)}</ul>
+  <p class="fine">Sprites and tiles are painted by <code>games/prince/tools/paint.py</code>, the backdrops by <code>tools/scenery.py</code>; <code>tools/site_art.py</code> cuts them out for this page.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-cards-h">
+  <p class="kicker">prince.__cards__</p>
+  <h2 id="pv-cards-h">The social card and the thumbnail</h2>
+  <ul class="cards">${cardList(img, [["prince.png", "Prince of Versions", "The Prince of Versions page and its game"]])}${thumbItem(pv + "trailer.png", PV_THUMB_ALT)}</ul>
+  <p class="fine">The card is painted by <code>games/prince/tools/site_art.py</code>, the thumbnail by <code>games/prince/tools/make_trailer.py</code>. The trailer itself is on <a href="${prefix}brand/trailers/">the trailers page</a>, and its upload form on <a href="${prefix}brand/youtube/">the YouTube page</a>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-launch-h">
+  <p class="kicker">prince.__launch__</p>
+  <h2 id="pv-launch-h">The launch posts</h2>
+  <p class="lede">Prince of Versions' posts are on <a href="${prefix}brand/launch/#launch-prince-h">the launch page</a>.</p>
+</section>`;
+  return brandPage("prince", body, prefix);
+}
+
+const DQ_THUMB_ALT ="Trailer thumbnail: Tom the Enchanter's duel on print(list(range(4))), under the Dunder Quest wordmark";
 const FM_THUMB_ALT = "Flatmates.js trailer thumbnail: Clive and Jazz on their sofas, under 'Learn JavaScript. Blame your flatmate.' and jazz.walk(7);";
 const CURB_THUMB_ALT = "Curb Your Oxidation trailer thumbnail: the title in yellow serif on black, over Sharon interrupting with error[E0382]";
 
@@ -1437,6 +1657,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="lede">Cut like the series it's an homage to: black title cards, a squint, a freeze frame and a tuba, cut fast to the music. Made the same way, from the repo, with no video editor.</p>
   ${trailerPlayer(CURB_TRAILER_ID, `${img}curb/trailer.png`, CURB_THUMB_ALT, "Curb Your Oxidation")}
   <p class="fine">Its working files are in <code>games/curb/trailer/</code>.</p>
+</section>
+
+<section class="section kit" aria-labelledby="pv-trailer-h">
+  <p class="kicker">prince.__trailer__</p>
+  <h2 id="pv-trailer-h">Prince of Versions</h2>
+  <p class="lede">A palace run cut fast to an original cue on oud, santur and frame drums: a commit, a death and the sands running back, the Vizier's sabotage commit, branches on the sand trail, and a merge conflict on the music's dead stop. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(PRINCE_TRAILER_ID, `${img}prince/trailer.png`, PV_THUMB_ALT, "Prince of Versions")}
+  <dl class="facts">${PV_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/prince/trailer/README.md">games/prince/trailer/README.md</a>.</p>
 </section>
 
 <section class="section kit">
@@ -1486,7 +1715,10 @@ function buildBrandYoutube(prefix: string): string {
       "games/flatmates/trailer/out/flatmates_trailer_4k.mp4")
     + uploadKit("Curb Your Oxidation", CURB_TRAILER_ID, `${img}curb/trailer.png`, "curb_thumbnail.png",
       CURB_YOUTUBE_TITLE, CURB_YOUTUBE_DESCRIPTION, CURB_YOUTUBE_TAGS, "Curb Your Oxidation",
-      "games/curb/trailer/out/curb_trailer_4k.mp4");
+      "games/curb/trailer/out/curb_trailer_4k.mp4")
+    + uploadKit("Prince of Versions", PRINCE_TRAILER_ID, `${img}prince/trailer.png`, "prince_thumbnail.png",
+      PV_YOUTUBE_TITLE, PV_YOUTUBE_DESCRIPTION, PV_YOUTUBE_TAGS, "Prince of Versions",
+      "games/prince/trailer/out/prince_trailer_4k.mp4");
   const body = `
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
@@ -1531,7 +1763,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code> or <code>CURB_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code> or <code>PRINCE_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -1539,12 +1771,20 @@ function buildBrandYoutube(prefix: string): string {
 function buildBrandLaunch(prefix: string): string {
   const launch = LAUNCH.map((post) => launchPost(...post)).join("");
   const curb = CURB_LAUNCH.map((post) => launchPost(...post)).join("");
+  const prince = PRINCE_LAUNCH.map((post) => launchPost(...post)).join("");
   const body = `
 <section class="section kit" aria-labelledby="launch-curb-h">
   <p class="kicker">curb.__launch__</p>
   <h2 id="launch-curb-h">Curb Your Oxidation</h2>
   <p class="lede">The Rust game's posts. The hook: a fun way to learn Rust, in a world where everyone's vibe coding. They're for Rob's own accounts, so unlike the rest of Curb's copy they name the show, as "inspired by".</p>
   <ol class="launch">${curb}</ol>
+</section>
+
+<section class="section kit" aria-labelledby="launch-prince-h">
+  <p class="kicker">prince.__launch__</p>
+  <h2 id="launch-prince-h">Prince of Versions</h2>
+  <p class="lede">The Git game's posts. The hook: Git is what every learner, and everyone building with AI, eventually needs to undo a mistake, and here undo is a dagger that turns back time. Unlike Curb's, these never name the game it spoofs, not even on Rob's own accounts.</p>
+  <ol class="launch">${prince}</ol>
 </section>
 
 <section class="section kit" aria-labelledby="launch-h">
@@ -1894,7 +2134,7 @@ function buildFlatmates(prefix: string): string {
 <section class="section fm-family" aria-labelledby="family-h">
   <p class="kicker">a ${WORDMARK} game</p>
   <h2 id="family-h">Prefer Python?</h2>
-  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper. The third, <a href="${prefix}curb/">Curb Your Oxidation</a>, teaches Rust on the Westside of LA.</p>
+  <p class="lede">Flatmates.js is the second Dunder Quest game. The first, <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a>, teaches Python on a quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and duel the Bridgekeeper. The third, <a href="${prefix}curb/">Curb Your Oxidation</a>, teaches Rust on the Westside of LA, and the fifth, <a href="${prefix}prince/">Prince of Versions</a>, teaches Git with a dagger that turns back time.</p>
   <p class="fine">Flatmates.js is an homage to a certain Croydon flat-share sitcom. The names and jokes are winks, not the show's own characters or lines, and it isn't affiliated with or endorsed by anyone who made it.</p>
 </section>`;
   return fmPage(body, prefix);
@@ -1932,7 +2172,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2223,8 +2463,8 @@ ${trailer}
 
 <section class="section cy-family" aria-labelledby="family-h">
   <p class="kicker">a ${WORDMARK} game</p>
-  <h2 id="family-h">Prefer Python, or JavaScript?</h2>
-  <p class="lede">Curb Your Oxidation is the third Dunder Quest game. <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> teaches Python on a quest for the Grail, and <a href="${prefix}flatmates/">Flatmates.js</a> teaches JavaScript in a very small Croydon flat.</p>
+  <h2 id="family-h">Prefer Python, JavaScript, or Git?</h2>
+  <p class="lede">Curb Your Oxidation is the third Dunder Quest game. <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> teaches Python on a quest for the Grail, <a href="${prefix}flatmates/">Flatmates.js</a> teaches JavaScript in a very small Croydon flat, and <a href="${prefix}prince/">Prince of Versions</a> teaches Git with a dagger that turns back time.</p>
   <p class="fine">Curb Your Oxidation is an homage to a certain LA cringe-comedy series. The names, lines and music are original, not the show's own, and it isn't affiliated with or endorsed by anyone who made it.</p>
 </section>`;
   return curbPage(body, prefix);
@@ -2262,7 +2502,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2327,6 +2567,14 @@ function buildPrince(prefix: string): string {
       <p>${esc(level.card.insight)}</p>
     </li>`).join("");
   const cast = Object.values(data.cast).map((p: Json) => `<li><b>${esc(p.full)}</b> <span>${esc(p.role)}</span></li>`).join("");
+  // No trailer yet: the section appears once PRINCE_TRAILER_ID is set.
+  const trailer = !PRINCE_TRAILER_ID ? "" : `
+<section class="pv-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(PRINCE_TRAILER_ID, `${img}trailer.png`, PV_THUMB_ALT, "Prince of Versions")}
+  <p class="pv-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
   const next = PV_NEXT.map(([cmd, what]) => `<li><code>${esc(cmd)}</code> <span>${esc(what)}</span></li>`).join("");
   const body = `
 <section class="pv-hero">
@@ -2340,6 +2588,7 @@ function buildPrince(prefix: string): string {
   <img class="pv-shot" src="${img}title.png" alt="${esc(PV_ALT)}" width="960" height="540">
 </section>
 
+${trailer}
 <section class="pv-section" id="how">
   <h2>How it plays</h2>
   <ol class="pv-steps">${stepHtml}</ol>
@@ -2412,9 +2661,10 @@ ${body}
 </main>
 <footer class="pv-foot">
   <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
 </footer>
-</body>
+${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
+` : ""}</body>
 </html>
 `;
 }
@@ -2458,7 +2708,8 @@ function main(): void {
   write(join(out, "guide", "index.html"), buildGuide("../"));
   write(join(out, "brand", "index.html"), buildBrand("../"));
   const brand: [string, (prefix: string) => string][] = [["identity", buildBrandIdentity], ["art", buildBrandArt],
-    ["curb", buildBrandCurb], ["flatmates", buildBrandFlatmates], ["trailers", buildBrandTrailers],
+    ["curb", buildBrandCurb], ["flatmates", buildBrandFlatmates], ["prince", buildBrandPrince],
+    ["trailers", buildBrandTrailers],
     ["youtube", buildBrandYoutube], ["launch", buildBrandLaunch]];
   for (const [slug, build] of brand) write(join(out, "brand", slug, "index.html"), build("../../"));
   write(join(out, "flatmates", "index.html"), buildFlatmates("../"));

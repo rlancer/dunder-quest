@@ -56,6 +56,11 @@ var _audio: StageAudio
 
 func _ready() -> void:
 	add_to_group(&"room")
+	# The tiles, the door and the Vizier are painted at two texels to a room
+	# pixel; this keeps them sharp at any window scale.
+	var sharp := ShaderMaterial.new()
+	sharp.shader = Prince.SHARP
+	material = sharp
 	level = Story.level(level_id)
 	repo = Steps.open_room(level)
 	_grid = PackedStringArray(level.map)
@@ -403,7 +408,9 @@ func _mark_touching() -> void:
 # --- drawing -----------------------------------------------------------------
 
 func _tile(name: String, col: int, row: int, tint: Color = Color.WHITE, lift: float = 0.0) -> void:
-	draw_texture_rect_region(TILES, Rect2(col * T, row * T - lift, T, T), Rect2(TILE[name] * T, 0, T, T), tint)
+	# The sheet is painted at two texels to a room pixel, each 32-texel tile
+	# in a 34-texel cell with its edges repeated (tools/paint.py).
+	draw_texture_rect_region(TILES, Rect2(col * T, row * T - lift, T, T), Rect2(TILE[name] * 34 + 1, 1, 32, 32), tint)
 
 
 func _draw() -> void:
@@ -472,11 +479,11 @@ func _draw() -> void:
 			if changed:
 				_draw_changed(col, row)
 	if _door_at.x >= 0:
-		draw_texture_rect_region(DOOR, Rect2(_door_at.x * T - 4, (_door_at.y - 1) * T, 24, 32), Rect2(door_frame() * 24, 0, 24, 32))
+		draw_texture_rect_region(DOOR, Rect2(_door_at.x * T - 4, (_door_at.y - 1) * T, 24, 32), Rect2(door_frame() * 48, 0, 48, 64))
 	if _vizier_shown:
 		var frame := 1 if _vizier_casting else 0
 		var bob := sin(_clock * 2.0) * 1.0
-		draw_texture_rect_region(VIZIER, Rect2(_vizier_at.x - 12, _vizier_at.y - 40 + bob, 24, 40), Rect2(frame * 24, 0, 24, 40))
+		draw_texture_rect_region(VIZIER, Rect2(_vizier_at.x - 12, _vizier_at.y - 40 + bob, 24, 40), Rect2(frame * 48, 0, 48, 80))
 
 
 ## A grain of loose sand over anything changed since the last commit.

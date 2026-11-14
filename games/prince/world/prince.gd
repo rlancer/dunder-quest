@@ -6,7 +6,24 @@ extends Node2D
 ## and the bot's jumps land where a player's would.
 
 const SHEET := preload("res://assets/sprites/prince.png")
-const FRAME := Vector2(24, 32)
+const SHARP := preload("res://world/sharp_pixels.gdshader")
+## A frame of the sheet is 64x64 texels, painted at twice the room's pixel
+## density, and drawn into 32x32 room pixels (tools/paint.py).
+const TEXELS := Vector2(64, 64)
+const FRAME := Vector2(32, 32)
+## Frames on the sheet, in tools/paint.py's PRINCE_FRAMES order.
+const F_IDLE := 0
+const F_RUN := 2
+const RUN_FRAMES := 10
+const F_JUMP := 12
+const F_APEX := 13
+const F_FALL := 14
+const F_LAND := 15
+const F_DEAD := 16
+const F_DAGGER := 17
+## Room pixels run per ten-frame stride, so his feet keep pace with the floor.
+const STRIDE := 56.0
+const LAND_TIME := 0.1
 const WIDTH := 10.0
 const HEIGHT := 26.0
 const RUN := 96.0
@@ -33,6 +50,15 @@ var jumped: bool = false
 var _coyote: float = 0.0
 var _buffer: float = 0.0
 var _clock: float = 0.0
+var _stride: float = 0.0
+var _land: float = 0.0
+
+
+func _ready() -> void:
+	# Two texels to a room pixel, kept even squares at any window scale.
+	var sharp := ShaderMaterial.new()
+	sharp.shader = SHARP
+	material = sharp
 
 
 func place(at: Vector2) -> void:
@@ -82,6 +108,8 @@ func step(delta: float, dir: float, jump_pressed: bool, jump_held: bool) -> void
 	var was_on_floor := on_floor
 	_move_y(vel.y * delta)
 	landed = on_floor and not was_on_floor
+	_stride = fmod(_stride + absf(vel.x) * delta, STRIDE) if on_floor else 0.0
+	_land = LAND_TIME if landed else maxf(0.0, _land - delta)
 	position = pos.round()
 	queue_redraw()
 
@@ -126,18 +154,22 @@ func _move_y(amount: float) -> void:
 
 func _frame() -> int:
 	if not alive:
-		return 9
+		return F_DEAD
 	if dagger_up:
-		return 10
+		return F_DAGGER
 	if not on_floor:
-		return 7 if vel.y < 0.0 else 8
+		if vel.y < -90.0:
+			return F_JUMP
+		return F_APEX if vel.y < 90.0 else F_FALL
 	if absf(vel.x) > 8.0:
-		return 1 + int(_clock * 12.0) % 6
-	return 0
+		return F_RUN + int(_stride / STRIDE * RUN_FRAMES) % RUN_FRAMES
+	if _land > 0.0:
+		return F_LAND
+	return F_IDLE + int(_clock * 1.2) % 2
 
 
 func _draw() -> void:
-	var source := Rect2(_frame() * FRAME.x, 0, FRAME.x, FRAME.y)
+	var source := Rect2(_frame() * TEXELS.x, 0, TEXELS.x, TEXELS.y)
 	var dest := Rect2(-FRAME.x / 2.0, -FRAME.y, FRAME.x, FRAME.y)
 	if facing < 0.0:
 		dest = Rect2(FRAME.x / 2.0, -FRAME.y, -FRAME.x, FRAME.y)

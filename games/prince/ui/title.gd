@@ -88,8 +88,10 @@ func _draw() -> void:
 	draw_string(Palette.mono(), Vector2(37, 120), "a __dunder_quest__ game", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Palette.TEAL.lightened(0.3))
 	if _rooms.visible:
 		draw_string(Palette.pixel(), Vector2(36, 232), "Rooms cleared %d/%d" % [Progress.cleared_count(), Story.count()], HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(Palette.PAPER, 0.8))
-	var frame := 10 if fmod(_clock, 5.0) > 3.6 else 0
-	draw_texture_rect_region(PRINCE, Rect2(196, 180, 48, 64), Rect2(24 * frame, 0, 24, 32))
+	# The Prince's sheet is painted at twice the room's density, so here, at
+	# twice his room size, each of his pixels is one of the title's.
+	var frame := Prince.F_DAGGER if fmod(_clock, 5.0) > 3.6 else Prince.F_IDLE + int(_clock * 1.2) % 2
+	draw_texture_rect_region(PRINCE, Rect2(188, 180, 64, 64), Rect2(Prince.TEXELS.x * frame, 0, Prince.TEXELS.x, Prince.TEXELS.y))
 
 
 func _input(event: InputEvent) -> void:

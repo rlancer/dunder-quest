@@ -21,6 +21,14 @@ extends Node
 
 const FRAME_CAP := 60 * 40
 
+## Frames between the dagger's buttons, and after the last one before moving
+## on. The trailer's run (tests/trailer_run.gd) slows these so a viewer can
+## read the console.
+var press_frames := 2
+var hold_frames := 2
+## Fast-forwards cards, speeches and the rewind. The trailer's run turns it off.
+var fast := true
+
 var _fails: PackedStringArray = []
 var room: Room
 var _id: int = 0
@@ -28,7 +36,7 @@ var _id: int = 0
 
 func _ready() -> void:
 	Progress.persist = false
-	Room.test_fast = true
+	Room.test_fast = fast
 	StageAudio.web_audio_unlocked = true
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_run.call_deferred()
@@ -176,13 +184,13 @@ func git(acts: Array) -> Dictionary:
 		return {}
 	var before := room.repo.log.size()
 	for act: String in acts:
-		await get_tree().process_frame
-		await get_tree().process_frame
+		for _i in press_frames:
+			await get_tree().process_frame
 		if not room.console.press(act):
 			_fail("no button %s (there are: %s)" % [act, ", ".join(room.console.acts())])
 			return {}
-	await get_tree().process_frame
-	await get_tree().process_frame
+	for _i in hold_frames:
+		await get_tree().process_frame
 	await moment("%d_git_%d" % [_id, room.commands_run])
 	var last := {}
 	for entry: Dictionary in room.repo.log.slice(before):
