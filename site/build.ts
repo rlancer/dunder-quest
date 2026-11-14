@@ -48,7 +48,7 @@ const CURB_TRAILER_ID = "QZsFLN5z7R4";
 // on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /prince/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
-const PRINCE_TRAILER_ID = "";
+const PRINCE_TRAILER_ID = "sm25tC3CK9g";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -759,7 +759,7 @@ const PV_TRAILER_FACTS = [
   ["Pixels", "Captured at 1920×1080 so the console's text is sharp; 4K is ×2"],
 ];
 // Its YouTube chapters: `python tools/make_trailer.py` prints them (CHAPTER m:ss ...).
-const PV_CHAPTERS = "0:00 The dagger turns back time\n0:17 The Vizier commits too\n0:32 The merge conflict\n0:44 Five rooms of real Git";
+const PV_CHAPTERS = "0:00 The dagger turns back time\n0:17 The Vizier commits too\n0:32 The merge conflict\n0:48 Five rooms of real Git";
 const FM_TRAILER_FACTS = [
   ["Length", "66 seconds, with a cold open"],
   ["Music", "A sitcom band cue, 123 BPM, with a piano breakdown for the awkward bit"],

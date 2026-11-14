@@ -48,4 +48,4 @@ trailer/
 ## Backlog
 
 - [x] **Listening pass.** The cue's beats and its stop were placed by measurement; Rob watched the cut and approved it (November 2026).
-- [ ] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then paste its video ID into `PRINCE_TRAILER_ID` in `site/build.ts`.
+- [x] **Upload** (November 2026, video `sm25tC3CK9g`) to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then paste its video ID into `PRINCE_TRAILER_ID` in `site/build.ts`.
