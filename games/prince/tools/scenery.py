@@ -91,7 +91,7 @@ def main() -> None:
         for name in names:
             install(name)
         return
-    url, key = api()
+    url, key = base.credentials() if base.uses_grok() else api()
     with ThreadPoolExecutor(max_workers=4) as pool:
         futures = {pool.submit(generate, name, url, key): name for name in names}
         for future in as_completed(futures):

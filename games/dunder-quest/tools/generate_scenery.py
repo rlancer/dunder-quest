@@ -6,6 +6,9 @@ and the downscaled pixel art is written into assets/backgrounds.
 
     python tools/generate_scenery.py            # generate + install
     python tools/generate_scenery.py --install  # re-run the pixel pass only
+
+Set IMAGE_PROVIDER=grok, in the environment or .env, to generate through the
+Grok CLI instead (see grok_image.py). Every game's art tools use this request.
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ import argparse
 import base64
 import io
 import json
+import os
 import sys
 import urllib.error
 import urllib.request
@@ -21,6 +25,10 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from PIL import Image, ImageFilter
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import grok_image  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "tools" / "generated" / "scenery"
@@ -139,7 +147,25 @@ def load_env() -> dict[str, str]:
     return values
 
 
+def uses_grok() -> bool:
+    return (os.environ.get("IMAGE_PROVIDER") or load_env().get("IMAGE_PROVIDER")) == "grok"
+
+
+def credentials() -> tuple[str, str]:
+    """The OpenRouter base URL and key that request_image takes. Grok needs neither."""
+    if uses_grok():
+        # Callers scrub the key from error text, and replacing "" would garble it.
+        return "", "grok-cli-login"
+    env = load_env()
+    key = env.get("OPENROUTER_API_KEY", "")
+    if not key:
+        sys.exit("OPENROUTER_API_KEY is missing from .env")
+    return env.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/"), key
+
+
 def request_image(base: str, key: str, prompt: str, aspect: str, transparent: bool) -> Image.Image:
+    if uses_grok():
+        return grok_image.request_image(prompt, aspect, transparent)
     body = {
         "model": MODEL,
         "prompt": prompt,
@@ -218,11 +244,7 @@ def main() -> None:
     args = parser.parse_args()
     names = args.only or list(JOBS)
     if not args.install:
-        env = load_env()
-        key = env.get("OPENROUTER_API_KEY", "")
-        base = env.get("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1").rstrip("/")
-        if not key:
-            sys.exit("OPENROUTER_API_KEY is missing from .env")
+        base, key = credentials()
         RAW.mkdir(parents=True, exist_ok=True)
         with ThreadPoolExecutor(max_workers=4) as pool:
             futures = {pool.submit(request_image, base, key, *JOBS[n][:3]): n for n in names}
