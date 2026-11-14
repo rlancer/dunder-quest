@@ -12,18 +12,18 @@ extends CanvasLayer
 
 ## Drawn buttons, in viewport pixels. Jump and the dagger sit this far in
 ## from the right edge, which moves when a room widens the view.
-const LEFT_CENTER := Vector2(30.0, 236.0)
-const RIGHT_CENTER := Vector2(84.0, 236.0)
+const LEFT_CENTER := Vector2(26.0, 238.0)
+const RIGHT_CENTER := Vector2(74.0, 238.0)
 const JUMP_FROM_RIGHT := Vector2(34.0, 232.0)
 const DAGGER_FROM_RIGHT := Vector2(84.0, 244.0)
-const MOVE_RADIUS := 22.0
+const MOVE_RADIUS := 20.0
 const JUMP_RADIUS := 26.0
 const DAGGER_RADIUS := 18.0
 ## Touches below this line in the outer columns drive the pad.
 const PAD_TOP := 150.0
 const MOVE_ZONE_RIGHT := 140.0
 const RIGHT_ZONE_WIDTH := 130.0
-const FILL := Color(0.07, 0.07, 0.16, 0.4)
+const FILL := Color(0.07, 0.07, 0.16, 0.22)
 const RIM := Color(0.91, 0.73, 0.29, 0.65)
 const LIT := Color(0.91, 0.73, 0.29, 0.45)
 const GLYPH := Color(1.0, 0.95, 0.8, 0.85)

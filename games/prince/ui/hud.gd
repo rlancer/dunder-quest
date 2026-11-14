@@ -181,8 +181,8 @@ func _paint() -> void:
 		if sign_text != "":
 			_paint_scroll(sign_text)
 		_paint_toast()
-		if not TouchControls.active and room.state == "play" and room.commands_run == 0 and room.level_id == 1:
-			_text(Vector2(0, 264), "Arrows run · Space jumps · %s draws the dagger" % Controls.label(&"dagger"), 10, Color(Palette.PAPER, 0.7), Palette.pixel(), 480, HORIZONTAL_ALIGNMENT_CENTER)
+		if not TouchControls.active and room.state == "play" and sign_text == "" and room.commands_run == 0 and room.level_id == 1:
+			_text(Vector2(0, 46), "Arrows run · Space jumps · %s draws the dagger" % Controls.label(&"dagger"), 10, Color(Palette.PAPER, 0.7), Palette.pixel(), 480, HORIZONTAL_ALIGNMENT_CENTER)
 	if not _speech.is_empty():
 		_paint_speech()
 	match String(_card.get("kind", "")):
@@ -227,12 +227,12 @@ func _paint_toast() -> void:
 	var alpha := clampf(_toast_left, 0.0, 1.0)
 	var ok := int(_toast.exit) == 0
 	var out: Array = _toast.out
-	var box := Rect2(112, 240, 256, 28)
-	_board.draw_rect(box, Color(Palette.INK, 0.85 * alpha))
-	_board.draw_rect(box, Color(Palette.SAND if ok else Palette.CRIMSON, 0.6 * alpha), false, 1.0)
-	_text(box.position + Vector2(5, 11), "$ git " + Console.shown(_toast.cmd), 12, Color(Palette.SAND_PALE, alpha), Palette.mono(), box.size.x - 8)
+	# In the strip along the top, between the trail and the hourglass.
+	var box := Rect2(158, 1, 276, 28)
+	_board.draw_rect(Rect2(box.position.x - 4, 4, 1, 22), Color(Palette.SAND if ok else Palette.CRIMSON, 0.7 * alpha))
+	_text(box.position + Vector2(2, 11), "$ git " + Console.shown(_toast.cmd), 12, Color(Palette.SAND_PALE, alpha), Palette.mono(), box.size.x - 8)
 	if not out.is_empty():
-		_text(box.position + Vector2(5, 23), String(out[0]).strip_edges(), 12, Color(Palette.PAPER if ok else Palette.CRIMSON.lightened(0.4), alpha), Palette.mono(), box.size.x - 8)
+		_text(box.position + Vector2(2, 23), String(out[0]).strip_edges(), 12, Color(Palette.PAPER if ok else Palette.CRIMSON.lightened(0.4), alpha), Palette.mono(), box.size.x - 8)
 
 
 func _paint_speech() -> void:
