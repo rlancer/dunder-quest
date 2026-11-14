@@ -8,13 +8,14 @@
  * beside the pages (`scripts/export_web.sh` puts it there). Flatmates.js, the
  * JavaScript game, gets its own page in `flatmates/` and its export in
  * `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
- * `curb/` and `curb/play/`.
- * The splash has a card for each game.
+ * `curb/` and `curb/play/`. Prince of Versions, the Git
+ * game, is in `prince/` and `prince/play/`, with a card of its own.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
  *     bun site/build.ts --flatmates build/site/flatmates/play/index.html
  *     bun site/build.ts --curb build/site/curb/play/index.html
+ *     bun site/build.ts --prince build/site/prince/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -25,6 +26,7 @@ const ROOT = resolve(SITE, "..");
 const QUEST = join(ROOT, "games", "dunder-quest");
 const FLATMATES = join(ROOT, "games", "flatmates");
 const CURB = join(ROOT, "games", "curb");
+const PRINCE = join(ROOT, "games", "prince");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -308,7 +310,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}
@@ -426,8 +428,8 @@ ${downloadsSection(prefix)}
   return page("", body, prefix, { scripts: `<script src="${prefix}static/trailer.js"></script>`, path: QUEST_PAGE });
 }
 
-const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest "
-  + "and JavaScript in Flatmates.js. Play them in your browser.";
+const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
+  + "JavaScript in Flatmates.js and Git in Prince of Versions. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -447,6 +449,10 @@ function buildSplash(prefix = ""): string {
       "Two mismatched flatmates in a very small Croydon flat. Swap between Clive and Jazz across six stops, from "
       + "calling a method to awaiting two promises, and script the one you aren't playing.",
       "Meet the flatmates"],
+    ["game-pv", "Learn Git", "Prince of Versions", `${prefix}prince/`, `${prefix}prince/play/`, "prince.png", PV_ALT,
+      "A palace platformer where the dagger that turns back time is version control. It only rewinds to a commit, "
+      + "so you learn when to make one. Five rooms, from your first commit to a merge conflict with the Vizier.",
+      "Meet the Prince"],
   ];
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
@@ -486,10 +492,10 @@ function buildSplash(prefix = ""): string {
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, JavaScript, or no code at all?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, Git, or no code at all?</h2>
   <ul class="games">${cards}
   </ul>
-  <p class="count">Every snippet in every coding game is checked against the real thing: Python, Node and rustc. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every coding game is checked against the real thing: Python, Node, rustc and git. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 `;
   // Links to the old home's sections (in trailer descriptions, for one) now
@@ -498,7 +504,7 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, and building apps with AI.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, and building apps with AI.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`,
   });
 }
@@ -2265,11 +2271,159 @@ ${body}
 `;
 }
 
+// Prince of Versions' page at /prince/, the Git game: a palace at night, in
+// deep blue and sand gold. The rooms, their lesson cards, the cast and the
+// palace guard's hook all come from `prince/data/levels.json`, the data the
+// game plays and `prince/tests/verify_git.ts` holds to the real git. The
+// screenshots are copied in by `prince/tools/site_art.py`.
+const PV_ALT = "Prince of Versions: the name in sand-gold pixel type beside a moonlit palace on a cliff, a ribbon of sand blowing across the sky.";
+const PV_DESC = "Prince of Versions, a Dunder Quest game that teaches Git: the dagger that turns back the sands is version control, "
+  + "and it only takes you back to a commit. Play it free in your browser.";
+// Act II, from prince/GAME.md: designed, not built yet.
+const PV_NEXT: [string, string][] = [["git stash", "put a change down, switch timelines, pick it back up"],
+  ["git cherry-pick", "take one commit from another timeline without the rest"],
+  ["git bisect", "find which commit sprang the trap by halving the history"],
+  ["git reflog", "the last resort: everywhere HEAD has been, even after a reset"],
+  ["git rebase", "the Vizier rewrites history, and why nobody rewrites a shared branch"]];
+
+/** The same tags for Prince of Versions, the Git game in prince/, which
+ * Godot exports to prince/play/index.html. */
+function tagPrincePage(index: string): void {
+  const desc = "Play Prince of Versions, the Dunder Quest game that teaches Git, right in your browser.";
+  tagGamePage(index, "Play Prince of Versions · Dunder Quest", desc, "prince/play/", "prince.png", PV_ALT);
+}
+
+/** A lesson card's lines: commands in sand, comments dimmed. */
+function pvCode(lines: string[]): string {
+  return lines.map((line) => {
+    const at = line.indexOf("#");
+    if (at < 0) return esc(line);
+    return `${esc(line.slice(0, at))}<span class="c">${esc(line.slice(at))}</span>`;
+  }).join("\n");
+}
+
+function buildPrince(prefix: string): string {
+  const data = JSON.parse(read(join(PRINCE, "data", "levels.json")));
+  const img = `${prefix}static/img/prince/`;
+  const steps = [
+    ["commit.png", "Seal the moment", "The Prince lighting a torch, with git commit -am \"Light the first torch\" and its real output along the top",
+      "Every torch, gate and bridge in a room is a file in a real Git repository. Pull a lever and the file changes. "
+      + "Draw the dagger and commit, and that moment is yours to come back to."],
+    ["dead.png", "Die, and turn back the sands", "The dagger's console over a sepia room: the Prince is dead, and the only command offered is git reset --hard",
+      "Fall on the spikes and time stops. The dagger only goes back to a commit, so whatever you hadn't sealed is gone. "
+      + "You learn when to commit the way everybody does: by losing something."],
+    ["conflict.png", "Settle the conflict", "The console showing a merge conflict in gate, with Git's own markers: HEAD says open, winch says barred",
+      "Later rooms need two timelines at once. Branch, pull a lever in each, and merge. When both changed the same "
+      + "line, Git stops and asks, in the markers it really writes."],
+  ];
+  const stepHtml = steps.map(([shot, h, alt, p]) =>
+    `<li><img src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy"><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
+  const rooms = data.levels.map((level: Json) => `
+    <li class="pv-room">
+      <p class="pv-num">Room ${level.id}${level.boss ? " · boss" : ""}</p>
+      <h3>${esc(level.title)}</h3>
+      <p class="pv-git"><code>${esc(level.git)}</code></p>
+      <figure class="pv-card"><figcaption>${esc(level.card.title)}</figcaption><pre><code>${pvCode(level.card.code)}</code></pre></figure>
+      <p>${esc(level.card.insight)}</p>
+    </li>`).join("");
+  const cast = Object.values(data.cast).map((p: Json) => `<li><b>${esc(p.full)}</b> <span>${esc(p.role)}</span></li>`).join("");
+  const next = PV_NEXT.map(([cmd, what]) => `<li><code>${esc(cmd)}</code> <span>${esc(what)}</span></li>`).join("");
+  const body = `
+<section class="pv-hero">
+  <div class="pv-hero-copy">
+    <p class="pv-kicker">a dunder_quest game · learn Git</p>
+    <h1><span>Prince of</span> Versions</h1>
+    <p class="pv-lede">The Vizier has the Princess, the hourglass is running, and all you have is a dagger full of sand. It turns back time, but only to a moment you sealed. A seal is a <code>git commit</code>.</p>
+    <p class="pv-actions"><a class="pv-btn" href="play/">Play in your browser</a><a class="pv-more" href="#rooms">The five rooms →</a></p>
+    <p class="pv-fine">Free. Works on a phone held sideways, or with a keyboard or gamepad. Act I is playable now.</p>
+  </div>
+  <img class="pv-shot" src="${img}title.png" alt="${esc(PV_ALT)}" width="960" height="540">
+</section>
+
+<section class="pv-section" id="how">
+  <h2>How it plays</h2>
+  <ol class="pv-steps">${stepHtml}</ol>
+</section>
+
+<section class="pv-section" id="rooms">
+  <h2>The rooms</h2>
+  <p class="pv-intro">Act I is five rooms, from your first commit to your first merge conflict. Every room ends on a card with the commands you just used, as you'd type them.</p>
+  <ol class="pv-rooms">${rooms}
+  </ol>
+</section>
+
+<section class="pv-section pv-real" id="real">
+  <h2>It's real Git</h2>
+  <p>The dagger does the typing, and it shows every command it runs and Git's own reply. The commit ids on screen are the ones Git computes: the game hashes each commit the way Git does. On every change to the game, a script replays each room's solution, and a set of wrong turns, in a real repository and checks that <code>git</code> gives the same ids, the same files, the same conflicts and the same output.</p>
+  <p>The palace guard who refuses commits on <code>main</code> is a real <code>pre-commit</code> hook. This is all of him:</p>
+  <figure class="pv-card"><figcaption>.git/hooks/pre-commit</figcaption><pre><code>${esc(data.guard_hook.join("\n"))}</code></pre></figure>
+</section>
+
+<section class="pv-section" id="cast">
+  <h2>The palace</h2>
+  <ul class="pv-cast">${cast}</ul>
+  <img class="pv-shot" src="${img}vizier.png" alt="The Vizier on a balcony over armed spikes and a barred door, his own commit on the sand trail in violet" width="960" height="540" loading="lazy">
+</section>
+
+<section class="pv-section" id="next">
+  <h2>Act II: the Vizier rewrites history</h2>
+  <p class="pv-intro">Designed, not built yet. The dagger still has tricks to learn:</p>
+  <ul class="pv-next">${next}</ul>
+</section>
+
+<section class="pv-section" id="controls">
+  <h2>How to play</h2>
+  <ul class="pv-keys">
+    <li><b>Keyboard</b> <span>Arrows or A/D to run, Space to jump, Q to draw the dagger. Arrows and Enter (or the mouse) pick a command.</span></li>
+    <li><b>Phone</b> <span>Hold it sideways. Arrows on the left, JUMP and GIT on the right; the dagger's commands are buttons.</span></li>
+    <li><b>Gamepad</b> <span>D-pad or stick to run, A to jump, Y to draw the dagger.</span></li>
+  </ul>
+  <p class="pv-fine">Prince of Versions is an homage to a certain palace-run platformer and its time-rewinding sequel. The names, rooms, art and music are its own, and it isn't affiliated with or endorsed by anyone who made them.</p>
+</section>
+`;
+  return pvPage(body, prefix);
+}
+
+function pvPage(body: string, prefix: string): string {
+  const title = "Prince of Versions · Dunder Quest";
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${esc(PV_DESC)}">
+${headTags(title, PV_DESC, "prince/", "prince.png", PV_ALT)}
+<link rel="icon" href="${prefix}static/img/prince/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${prefix}static/prince.css">
+</head>
+<body class="pv">
+<a class="skip" href="#main">Skip to content</a>
+<header class="pv-bar">
+  <a class="pv-brand" href="./">Prince of Versions</a>
+  <nav aria-label="Prince of Versions"><a href="#how">How it plays</a><a href="#rooms">The rooms</a><a href="#real">Real Git</a><a href="${prefix}">All games</a></nav>
+  <a class="pv-btn pv-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="pv-foot">
+  <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+</footer>
+</body>
+</html>
+`;
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
-    "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage,
+    "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage, "--prince": tagPrincePage,
   };
   if (args[0] in tag) {
     tag[args[0]](args[1]);
@@ -2291,7 +2445,7 @@ function main(): void {
   mkdirSync(join(statics, "fonts"), { recursive: true });
   for (const [name, src] of Object.entries(FONTS)) copyFileSync(join(QUEST, src), join(statics, "fonts", name));
   copyFileSync(join(CURB, "assets", "fonts", "LibreFranklin.ttf"), join(statics, "fonts", "LibreFranklin.ttf"));
-  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"]]) { // their icons, for the brand kit
+  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }
 
@@ -2309,6 +2463,7 @@ function main(): void {
   for (const [slug, build] of brand) write(join(out, "brand", slug, "index.html"), build("../../"));
   write(join(out, "flatmates", "index.html"), buildFlatmates("../"));
   write(join(out, "curb", "index.html"), buildCurb("../"));
+  write(join(out, "prince", "index.html"), buildPrince("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));
