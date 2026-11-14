@@ -1,0 +1,538 @@
+{
+  "cast": {
+    "prince": {"full": "The Prince", "role": "nimble, brave, and carrying a dagger full of sand"},
+    "vizier": {"full": "Grand Vizier Rebasir", "role": "the villain, who commits sabotage and means to rewrite history"},
+    "princess": {"full": "Princess Shirin", "role": "locked in the tower, keeping the palace ledger"}
+  },
+  "guard_hook": [
+    "#!/bin/sh",
+    "# The palace guard: nothing is committed straight onto main, except a merge.",
+    "branch=$(git symbolic-ref --short HEAD)",
+    "if [ \"$branch\" = main ] && [ ! -f \"$(git rev-parse --git-dir)/MERGE_HEAD\" ]; then",
+    "  echo \"The palace guard: no commits straight onto main. Make a branch (git switch -c).\" >&2",
+    "  exit 1",
+    "fi"
+  ],
+  "levels": [
+    {
+      "id": 1,
+      "slug": "hall-of-seals",
+      "title": "The Hall of Seals",
+      "git": "git commit · git reset --hard HEAD",
+      "backdrop": "hall",
+      "music": "room",
+      "time": 180,
+      "unlock": ["commit", "reset"],
+      "branches": [],
+      "files": {"torch_1": "dark", "torch_2": "dark", "torch_3": "dark"},
+      "messages": {
+        "torch_1": {"lit": "Light the first torch"},
+        "torch_2": {"lit": "Light the second torch"},
+        "torch_3": {"lit": "Light the third torch"}
+      },
+      "exit_when": {"torch_1": "lit", "torch_2": "lit", "torch_3": "lit"},
+      "map": [
+        "##############################",
+        "##############################",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#...............b............#",
+        "#...1.a.......######....c.2..#",
+        "#.P...........######........E#",
+        "#########^^#########^^^#######",
+        "##############################"
+      ],
+      "legend": {
+        "a": {"type": "torch", "file": "torch_1"},
+        "b": {"type": "torch", "file": "torch_2"},
+        "c": {"type": "torch", "file": "torch_3"}
+      },
+      "signs": {
+        "1": "The Dagger of HEAD turns back the sands, but only to a moment you sealed. Light a torch, then draw the dagger and commit.",
+        "2": "The door opens only for sealed history. Commit the last torch."
+      },
+      "opening": [
+        "The Vizier has locked the Princess in the tower and turned the hourglass.",
+        "All you have is a dagger full of sand."
+      ],
+      "card": {
+        "title": "A commit is a save point",
+        "code": [
+          "git status                        # what changed since the last commit",
+          "git commit -am \"Light the first torch\"",
+          "git reset --hard HEAD             # throw away everything since"
+        ],
+        "insight": "A commit is a snapshot of every tracked file. reset --hard puts them all back, and whatever you hadn't committed is gone for good. (-a stages files Git already tracks; a brand-new file needs git add first.)"
+      },
+      "solution": [
+        ["set", "torch_1", "lit"],
+        ["commit"],
+        ["set", "torch_2", "lit"],
+        ["die"],
+        ["reset", "HEAD"],
+        ["set", "torch_2", "lit"],
+        ["commit"],
+        ["set", "torch_3", "lit"],
+        ["commit"]
+      ]
+    },
+    {
+      "id": 2,
+      "slug": "viziers-seal",
+      "title": "The Vizier's Seal",
+      "git": "git log · git reset --hard <commit>",
+      "backdrop": "dungeon",
+      "music": "room",
+      "time": 180,
+      "unlock": [],
+      "branches": [],
+      "files": {"bridge": "up", "spikes": "sheathed", "door": "open"},
+      "messages": {
+        "bridge": {"down": "Lower the bridge", "up": "Raise the bridge"},
+        "spikes": {"armed": "Arm the spikes"},
+        "door": {"barred": "Bar the door"}
+      },
+      "exit_when": {"door": "open"},
+      "map": [
+        "##############################",
+        "##############################",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#.....................V......#",
+        "#..................#######...#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#..1............2............#",
+        "#.P..p......................E#",
+        "########bbbbb#####ssssss######",
+        "########^^^^^#################"
+      ],
+      "legend": {
+        "p": {"type": "plate", "sets": {"bridge": "down"}},
+        "b": {"type": "bridge", "file": "bridge"},
+        "s": {"type": "spikes", "file": "spikes"}
+      },
+      "signs": {
+        "1": "Step on the plate to lower the bridge, then seal it. A commit saves every file in the room.",
+        "2": "The log lists every seal, newest first. HEAD is the newest, whoever made it."
+      },
+      "triggers": [
+        {
+          "col": 15,
+          "who": "vizier",
+          "say": [
+            "Sealing moments, little prince? So can I.",
+            "git commit -am \"Arm the spikes and bar the door\""
+          ],
+          "steps": [
+            ["set", "spikes", "armed"],
+            ["set", "door", "barred"],
+            ["commit", {"message":"Arm the spikes and bar the door", "author":"vizier"}]
+          ]
+        }
+      ],
+      "opening": [
+        "Down in the dungeons: a bridge, and a long walk to the door."
+      ],
+      "card": {
+        "title": "Go back further than HEAD",
+        "code": [
+          "git log --oneline                 # every commit, newest first",
+          "git reset --hard HEAD~1           # the commit before HEAD",
+          "git reset --hard 3f2a1c9          # or any commit, by its id"
+        ],
+        "insight": "HEAD is the newest commit on your branch, whoever made it. Resetting to an older commit drops every commit after it from the branch. commit -am takes every changed file, so the Vizier's commit swept up anything you hadn't sealed."
+      },
+      "solution": [
+        ["set", "bridge", "down"],
+        ["commit"],
+        ["trigger",0],
+        ["reset", "HEAD"],
+        ["reset", "msg:Lower the bridge"]
+      ]
+    },
+    {
+      "id": 3,
+      "slug": "princess-bridge",
+      "title": "The Princess's Bridge",
+      "git": "git revert · ORIG_HEAD",
+      "backdrop": "chasm",
+      "music": "room",
+      "time": 180,
+      "unlock": ["revert"],
+      "branches": [],
+      "files": {"bridge": "up", "door": "open", "portcullis": "shut"},
+      "history": [
+        ["set", "door", "barred"],
+        ["commit", {"message":"Bar the door", "author":"vizier"}],
+        ["set", "bridge", "down"],
+        ["commit", {"message":"Lower the bridge for you", "author":"princess"}]
+      ],
+      "messages": {
+        "bridge": {"down": "Lower the bridge", "up": "Raise the bridge"},
+        "door": {"barred": "Bar the door", "open": "Unbar the door"},
+        "portcullis": {"open": "Raise the portcullis"}
+      },
+      "exit_when": {"door": "open", "bridge": "down", "portcullis": "open"},
+      "map": [
+        "##############################",
+        "##############################",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................#........#",
+        "#...................g........#",
+        "#..1................g...2....#",
+        "#.P.............l...g......E.#",
+        "######bbbbbbbb################",
+        "######^^^^^^^^################"
+      ],
+      "legend": {
+        "b": {"type": "bridge", "file": "bridge"},
+        "g": {"type": "gate", "file": "portcullis"},
+        "l": {"type": "lever", "sets": {"portcullis": "open"}}
+      },
+      "signs": {
+        "1": "This room has a past. Draw the dagger and read the log: the Vizier barred the door, then the Princess lowered the bridge.",
+        "2": "A reset throws away every commit after it. A revert adds a new commit that undoes just one."
+      },
+      "opening": [
+        "Someone has been here before you. Two someones."
+      ],
+      "card": {
+        "title": "Undo one commit, keep the rest",
+        "code": [
+          "git revert 3f2a1c9                # a new commit that undoes that one",
+          "git reset --hard ORIG_HEAD        # undo the reset you just regretted"
+        ],
+        "insight": "revert doesn't remove anything from history: it adds a commit that does the opposite, so every later commit stays. It's the safe undo on a branch other people share. ORIG_HEAD is where HEAD was before your last reset or merge."
+      },
+      "solution": [
+        ["reset", "msg:The room as you found it"],
+        ["reset", "ORIG_HEAD"],
+        ["set", "portcullis", "open"],
+        ["revert", "msg:Bar the door"],
+        ["commit"]
+      ]
+    },
+    {
+      "id": 4,
+      "slug": "two-doors",
+      "title": "Two Doors",
+      "git": "git switch -c · git switch · git merge",
+      "backdrop": "doors",
+      "music": "room",
+      "time": 240,
+      "unlock": ["switch_c", "switch", "merge"],
+      "branches": ["left", "right", "spare"],
+      "protect_main": true,
+      "files": {"gate": "shut", "spikes": "sheathed"},
+      "messages": {"gate": {"open": "Open the gate", "shut": "Shut the gate"}, "spikes": {"armed": "Arm the spikes"}},
+      "exit_when": {"gate": "open", "spikes": "sheathed"},
+      "map": [
+        "##############################",
+        "##############################",
+        "#........................#...#",
+        "#........................#...#",
+        "#........................#...#",
+        "#........................#...#",
+        "#........................g...#",
+        "#.......1................g...#",
+        "#.........P..............g..E#",
+        "####..########..###sssss######",
+        "#.........#..................#",
+        "#.........#..................#",
+        "#.........#..................#",
+        "#.....2...#..................#",
+        "#..L......#.............R....#",
+        "##############################",
+        "##############################"
+      ],
+      "legend": {
+        "g": {"type": "gate", "file": "gate"},
+        "s": {"type": "spikes", "file": "spikes"},
+        "L": {"type": "lever", "sets": {"gate": "open"}},
+        "R": {"type": "lever", "sets": {"gate": "open", "spikes": "armed"}}
+      },
+      "signs": {
+        "1": "The palace guard lets no one commit straight onto main. Open a new timeline first: git switch -c.",
+        "2": "No way back up. But main is still where you left it: git switch main."
+      },
+      "opening": [
+        "Two ways down, and a guard on the main line."
+      ],
+      "card": {
+        "title": "Branches are parallel timelines",
+        "code": [
+          "git switch -c left                # a new branch, and step onto it",
+          "git switch main                   # back to main: the files change with you",
+          "git merge left                    # bring left's commits into main",
+          "# older spelling: git checkout -b left, git checkout main"
+        ],
+        "insight": "A branch is a name on a commit. Try something on a branch and main never knows. If main hasn't moved, merging just slides main forward to the branch (a fast-forward). Uncommitted changes follow you between branches unless the switch would overwrite them."
+      },
+      "solution": [
+        ["set", "gate", "open"],
+        ["commit", {"fails":true}],
+        ["switch_c", "left"],
+        ["commit"],
+        ["switch", "main"],
+        ["switch_c", "right"],
+        ["set", "gate", "open"],
+        ["set", "spikes", "armed"],
+        ["commit"],
+        ["switch", "main"],
+        ["merge", "right"],
+        ["reset", "ORIG_HEAD"],
+        ["merge", "left"]
+      ]
+    },
+    {
+      "id": 5,
+      "slug": "viziers-gate",
+      "title": "The Vizier's Gate",
+      "git": "git merge · conflicts",
+      "backdrop": "gate",
+      "music": "boss",
+      "time": 300,
+      "unlock": [],
+      "branches": ["tower", "winch", "spare"],
+      "protect_main": true,
+      "boss": true,
+      "files": {"gate": "shut", "bridge": "up"},
+      "messages": {
+        "gate": {"open": "Open the gate", "barred": "Bar the gate", "shut": "Shut the gate"},
+        "bridge": {"down": "Lower the drawbridge", "up": "Raise the drawbridge"}
+      },
+      "exit_when": {"gate": "open", "bridge": "down"},
+      "map": [
+        "##############################",
+        "##############################",
+        "#.....................#......#",
+        "#.....................#......#",
+        "#.....................#......#",
+        "#.....................#......#",
+        "#.....................g......#",
+        "#....1................g......#",
+        "#.....P...............g..V..E#",
+        "##..#####..##bbbbb############",
+        "#.....#.....#.....############",
+        "#.....#.....#.....############",
+        "#.....#.....#.....############",
+        "#.....#.....#.....############",
+        "#.T...#...W.#.....############",
+        "#############^^^^^############",
+        "##############################"
+      ],
+      "legend": {
+        "g": {"type": "gate", "file": "gate"},
+        "b": {"type": "bridge", "file": "bridge"},
+        "T": {"type": "lever", "sets": {"gate": "open"}},
+        "W": {"type": "lever", "sets": {"bridge": "down", "gate": "barred"}}
+      },
+      "signs": {
+        "1": "The tower lever opens the gate. The winch lowers the drawbridge, and its counterweight bars the gate. One timeline can't pull both. Two can: then merge them."
+      },
+      "triggers": [
+        {
+          "col": 24,
+          "who": "vizier",
+          "flee": true,
+          "say": [
+            "Two timelines through one gate? Impossible!",
+            "Keep your little main. I'll rewrite its history yet."
+          ],
+          "steps": []
+        }
+      ],
+      "opening": [
+        "The Vizier is waiting behind his gate.",
+        "\"One lever opens it. The other bars it. And you have one life, little prince.\""
+      ],
+      "card": {
+        "title": "A conflict is Git asking you",
+        "code": [
+          "<<<<<<< HEAD",
+          "open",
+          "=======",
+          "barred",
+          ">>>>>>> winch",
+          "git add gate                      # after you've fixed the file",
+          "git commit                        # finish the merge",
+          "git merge --abort                 # or call the whole merge off"
+        ],
+        "insight": "Git merges whatever only one side changed (the drawbridge). When both sides changed the same line, it writes both into the file between markers and stops. HEAD's side is the branch you're on; the other is the one you're merging in. Edit the file to what you want, add it, commit."
+      },
+      "solution": [
+        ["switch_c", "tower"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["switch_c", "winch"],
+        ["set", "bridge", "down"],
+        ["set", "gate", "barred"],
+        ["commit"],
+        ["switch", "main"],
+        ["merge", "tower"],
+        ["merge", "winch", {"fails":true}],
+        ["resolve", "gate", "theirs"],
+        ["commit_merge"],
+        ["reset", "ORIG_HEAD"],
+        ["merge", "winch", {"fails":true}],
+        ["resolve", "gate", "ours"],
+        ["commit_merge"]
+      ]
+    }
+  ],
+  "probes": [
+    {"level": 1, "name": "commit with nothing changed", "steps": [["commit"]]},
+    {
+      "level": 1,
+      "name": "two changes in one commit",
+      "steps": [
+        ["set", "torch_1", "lit"],
+        ["set", "torch_3", "lit"],
+        ["commit"],
+        ["reset", "HEAD~1"],
+        ["reset", "ORIG_HEAD"]
+      ]
+    },
+    {
+      "level": 2,
+      "name": "the Vizier sweeps up an uncommitted bridge",
+      "steps": [
+        ["set", "bridge", "down"],
+        ["trigger",0],
+        ["reset", "HEAD~1"]
+      ]
+    },
+    {
+      "level": 3,
+      "name": "revert the Princess, then the Vizier",
+      "steps": [
+        ["revert", "msg:Lower the bridge for you"],
+        ["revert", "msg:Bar the door"],
+        ["reset", "HEAD~2"]
+      ]
+    },
+    {
+      "level": 3,
+      "name": "revert blocked by a local change",
+      "steps": [
+        ["set", "door", "open"],
+        ["revert", "msg:Bar the door"]
+      ]
+    },
+    {
+      "level": 4,
+      "name": "local changes follow a switch, or block it",
+      "steps": [
+        ["switch_c", "left"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["set", "spikes", "armed"],
+        ["switch", "left"],
+        ["switch", "main"],
+        ["set", "gate", "open"],
+        ["switch", "left"],
+        ["merge", "left"],
+        ["switch_c", "left"],
+        ["switch", "main"]
+      ]
+    },
+    {
+      "level": 4,
+      "name": "the guard, a clean tree and a revert on main",
+      "steps": [
+        ["commit"],
+        ["switch_c", "left"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["merge", "left"],
+        ["merge", "left"],
+        ["revert", "msg:Open the gate"],
+        ["set", "spikes", "armed"],
+        ["commit"]
+      ]
+    },
+    {
+      "level": 5,
+      "name": "the other order: the answer is theirs",
+      "steps": [
+        ["switch_c", "tower"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["switch_c", "winch"],
+        ["set", "bridge", "down"],
+        ["set", "gate", "barred"],
+        ["commit"],
+        ["switch", "main"],
+        ["merge", "winch"],
+        ["merge", "tower"],
+        ["commit_merge"],
+        ["switch", "tower"],
+        ["merge_abort"],
+        ["merge_abort"],
+        ["merge", "tower"],
+        ["resolve", "gate", "theirs"],
+        ["commit_merge"]
+      ]
+    },
+    {
+      "level": 5,
+      "name": "a clean three-way merge, on a branch and on main",
+      "steps": [
+        ["switch_c", "tower"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["switch_c", "winch"],
+        ["set", "bridge", "down"],
+        ["commit"],
+        ["merge", "tower"],
+        ["switch", "main"],
+        ["merge", "winch"]
+      ]
+    },
+    {
+      "level": 5,
+      "name": "a merge over local changes",
+      "steps": [
+        ["switch_c", "tower"],
+        ["set", "gate", "open"],
+        ["commit"],
+        ["switch", "main"],
+        ["switch_c", "winch"],
+        ["set", "bridge", "down"],
+        ["commit"],
+        ["set", "gate", "barred"],
+        ["merge", "tower"],
+        ["reset", "HEAD"],
+        ["set", "bridge", "up"],
+        ["merge", "tower"]
+      ]
+    }
+  ]
+}
