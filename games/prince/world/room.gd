@@ -77,6 +77,7 @@ func _ready() -> void:
 		_backdrop = load(art) as Texture2D
 	_vizier_shown = bool(level.get("boss", false))
 
+	Sfx.warm()
 	_audio = StageAudio.new()
 	add_child(_audio)
 	prince = Prince.new()

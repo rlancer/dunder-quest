@@ -37,6 +37,11 @@ window/size/window_height_override=810
 window/stretch/mode="canvas_items"
 window/stretch/scale_mode="integer"
 
+[physics]
+
+; After a stalled frame, carry on from where he was rather than skipping him ahead.
+common/max_physics_steps_per_frame=2
+
 [gui]
 
 theme/custom="res://ui/theme.tres"
