@@ -15,6 +15,20 @@
         "build/site"
       ],
       "port": 8123
+    },
+    {
+      "name": "make-it-pop",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": [
+        "run",
+        "--cwd",
+        "games/make-it-pop",
+        "dev",
+        "--port",
+        "5186",
+        "--strictPort"
+      ],
+      "port": 5186
     }
   ]
 }

@@ -53,6 +53,12 @@ jobs:
       - name: Check Prince of Versions against git
         run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/prince/tests/check.sh
 
+      # Make It Pop's rules (game.test.ts), and a bot plays all five jobs
+      # through the real screen (ui.test.ts).
+      - name: Check Make It Pop
+        working-directory: games/make-it-pop
+        run: bun install --frozen-lockfile && bun run typecheck && bun run test
+
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
 
