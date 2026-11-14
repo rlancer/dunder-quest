@@ -15,20 +15,6 @@
         "build/site"
       ],
       "port": 8123
-    },
-    {
-      "name": "mission-silicon-web",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": [
-        "run",
-        "--cwd",
-        "games/mission-silicon/web",
-        "dev",
-        "--port",
-        "5180",
-        "--strictPort"
-      ],
-      "port": 5180
     }
   ]
 }

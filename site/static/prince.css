@@ -1,0 +1,104 @@
+/* Prince of Versions, standalone: a palace at night. Deep blue stone, the
+   sand-gold of the dagger and teal tilework, from prince/core/palette.gd,
+   with Pixelify Sans headings like the game's own cards. */
+
+:root {
+  color-scheme: dark;
+  --ink: #120d1a;
+  --night: #171c33;
+  --stone: #242b4a;
+  --line: #3a4470;
+  --sand: #e9b949;
+  --sand-pale: #f6e3a1;
+  --paper: #f5ebcc;
+  --dim: #b6b3c4;
+  --teal: #6ec8cc;
+  --violet: #b48be0;
+  --gutter: 16px;
+  --display: "Pixelify Sans", "Trebuchet MS", sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --mono: "Atkinson Hyperlegible Mono", ui-monospace, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body.pv { margin: 0; background: var(--ink); color: var(--paper); font: 1.0625rem/1.6 var(--body); }
+.pv img { max-width: 100%; height: auto; display: block; }
+.pv a { color: var(--sand); }
+.pv a:hover { color: var(--sand-pale); }
+.pv :focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.pv h1, .pv h2, .pv h3 { font-family: var(--display); font-weight: 700; line-height: 1.05; margin: 0 0 0.5em; }
+.pv h2 { font-size: clamp(1.7rem, 4vw, 2.4rem); color: var(--sand); }
+.pv h3 { font-size: 1.35rem; color: var(--sand-pale); }
+.pv code { font-family: var(--mono); font-size: 0.92em; color: var(--sand-pale); }
+
+.skip { position: absolute; left: -999px; top: 8px; background: var(--sand); color: var(--ink); padding: 8px 12px; z-index: 10; }
+.skip:focus { left: 8px; }
+
+/* The bar */
+.pv-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px; padding: 10px var(--gutter);
+  background: rgba(18, 13, 26, 0.94); border-bottom: 2px solid var(--sand); backdrop-filter: blur(6px); }
+.pv-brand { font: 700 1.25rem var(--display); color: var(--sand) !important; text-decoration: none; white-space: nowrap; }
+.pv-bar nav { display: flex; gap: 16px; margin-left: auto; overflow-x: auto; }
+.pv-bar nav a { color: var(--dim); text-decoration: none; white-space: nowrap; font-size: 0.95rem; }
+.pv-bar nav a:hover { color: var(--paper); }
+
+/* Buttons */
+.pv-btn { display: inline-block; font: 700 1.3rem var(--display); color: var(--ink) !important; background: var(--sand);
+  text-decoration: none; padding: 12px 22px; border: 2px solid var(--sand-pale); box-shadow: 0 4px 0 #8a6a1f; }
+.pv-btn:hover { background: var(--sand-pale); }
+.pv-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a6a1f; }
+.pv-btn-small { padding: 5px 14px; font-size: 1.05rem; box-shadow: none; }
+.pv-more { margin-left: 18px; font: 500 1.15rem var(--display); white-space: nowrap; }
+
+/* The hero */
+.pv-hero { max-width: 1100px; margin: 0 auto; padding: clamp(32px, 6vw, 72px) var(--gutter) 24px;
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(20px, 4vw, 48px); align-items: center; }
+.pv-kicker { font: 700 0.8rem/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); margin: 0 0 16px; }
+.pv-hero h1 { font-size: clamp(3rem, 8vw, 5.2rem); color: var(--sand); margin-bottom: 0.3em; }
+.pv-hero h1 span { display: block; font-size: 0.72em; font-weight: 500; color: var(--sand-pale); }
+.pv-lede { font-size: clamp(1.1rem, 2.2vw, 1.25rem); margin: 0 0 24px; }
+.pv-actions { margin: 0 0 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 0; }
+.pv-fine { color: var(--dim); font-size: 0.9rem; margin: 0; }
+.pv-shot { border: 2px solid var(--line); image-rendering: auto; width: 100%; }
+@media (max-width: 860px) { .pv-hero { grid-template-columns: 1fr; } }
+
+/* Sections */
+.pv-section { max-width: 1100px; margin: 0 auto; padding: 44px var(--gutter); }
+.pv-section > p { max-width: 46em; }
+.pv-intro { color: var(--dim); }
+.pv-steps { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+.pv-steps li { background: var(--night); border: 2px solid var(--line); }
+.pv-steps img { width: 100%; border-bottom: 2px solid var(--line); }
+.pv-steps h3 { margin: 16px 16px 6px; }
+.pv-steps p { margin: 0 16px 18px; color: var(--dim); font-size: 0.98rem; }
+@media (max-width: 860px) { .pv-steps { grid-template-columns: 1fr; } }
+
+/* The rooms */
+.pv-rooms { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.pv-room { background: var(--night); border: 2px solid var(--line); padding: 20px; min-width: 0; }
+.pv-room:last-child:nth-child(odd) { grid-column: 1 / -1; }
+.pv-room > p:last-child { margin: 0; color: var(--dim); font-size: 0.98rem; }
+.pv-num { font: 700 0.75rem/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal); margin: 0 0 8px; }
+.pv-room h3 { margin-bottom: 4px; font-size: 1.6rem; }
+.pv-git { margin: 0 0 14px; }
+.pv-git code { color: var(--teal); }
+.pv-card { margin: 0 0 14px; background: #0a0c18; border: 1px solid var(--line); }
+.pv-card figcaption { font: 700 0.85rem var(--body); color: var(--sand); padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.pv-card pre { margin: 0; padding: 12px; overflow-x: auto; font: 0.85rem/1.55 var(--mono); }
+.pv-card pre code { font-size: inherit; }
+.pv-card .c { color: #8089ad; }
+@media (max-width: 860px) { .pv-rooms { grid-template-columns: 1fr; } }
+
+.pv-real .pv-card { max-width: 46em; }
+
+/* Lists of people, commands and keys */
+.pv-cast, .pv-next, .pv-keys { list-style: none; padding: 0; margin: 16px 0 24px; max-width: 46em; }
+.pv-cast li, .pv-next li, .pv-keys li { padding: 10px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 11em 1fr; gap: 12px; }
+.pv-cast b, .pv-keys b { color: var(--sand-pale); }
+.pv-cast span, .pv-next span, .pv-keys span { color: var(--dim); }
+@media (max-width: 560px) { .pv-cast li, .pv-next li, .pv-keys li { grid-template-columns: 1fr; gap: 2px; } }
+
+/* The foot */
+.pv-foot { border-top: 2px solid var(--sand); margin-top: 32px; padding: 28px var(--gutter) 40px; text-align: center; color: var(--dim); font-size: 0.95rem; }
+.pv-foot p { max-width: 60em; margin: 0 auto 8px; }
