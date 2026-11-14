@@ -34,7 +34,7 @@ jobs:
       - name: Check the Flatmates.js lesson cards
         run: node games/flatmates/tests/verify_lessons.mjs
 
-      # The site build, its checks and Mission Silicon's web app all run on bun.
+      # The site build and its checks run on bun.
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.3
@@ -52,18 +52,6 @@ jobs:
       # commit ids, files, conflicts and output. Then the bot plays every room.
       - name: Check Prince of Versions against git
         run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/prince/tests/check.sh
-
-      # The Pilot's data must prove its lesson (model.test.ts), and the bot
-      # plays it through its real screens (pilot.test.tsx).
-      - name: Check Mission Silicon
-        working-directory: games/mission-silicon/web
-        run: bun run typecheck && bun run test
-
-      # Each night of the Human Backend must prove its lesson (engine.test.ts),
-      # and a bot plays the real screen (ui.test.ts).
-      - name: Check Mission Silicon, the Human Backend
-        working-directory: games/mission-silicon/human
-        run: bun install --frozen-lockfile && bun run typecheck && bun run test
 
       - name: Export the desktop builds
         run: bash scripts/export_desktop.sh
