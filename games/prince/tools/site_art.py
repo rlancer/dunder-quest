@@ -2,8 +2,9 @@
 
 Copies the screenshots the page uses out of tests/shots/ (made by
 `godot --path . res://tests/shots.tscn`, which needs a window) into
-site/static/img/prince/, and paints the social card (1200x630) from the title
-art and the game's own fonts.
+site/static/img/prince/, cuts the cast and the tiles out of the sprite sheets
+for the brand kit (/brand/prince/), and paints the social card (1200x630)
+from the title art and the game's own fonts.
 
     python tools/site_art.py
 """
@@ -46,6 +47,26 @@ def shots() -> None:
         print("copied", name)
 
 
+# Brand kit art: [file, sheet, crop box or None for the whole sheet].
+SPRITES = [
+    ("cast_prince.png", "prince.png", (0, 0, 24, 32)),
+    ("cast_dagger.png", "prince.png", (240, 0, 264, 32)),
+    ("cast_vizier.png", "vizier.png", (0, 0, 24, 40)),
+    ("cast_princess.png", "princess.png", None),
+    ("kit_tiles.png", "tiles.png", None),
+    ("kit_door.png", "door.png", None),
+]
+
+
+def sprites() -> None:
+    """Native-size cuts; the page scales them by whole numbers."""
+    OUT.mkdir(parents=True, exist_ok=True)
+    for name, sheet, box in SPRITES:
+        image = Image.open(ROOT / "assets" / "sprites" / sheet).convert("RGBA")
+        (image.crop(box) if box else image).save(OUT / name, optimize=True)
+        print("cut", name)
+
+
 def card() -> None:
     art = Image.open(ROOT / "assets" / "backgrounds" / "title.png").convert("RGB")
     # 480x270 -> 1200x675, nearest, cropped to 630 tall.
@@ -73,4 +94,5 @@ def card() -> None:
 
 if __name__ == "__main__":
     shots()
+    sprites()
     card()

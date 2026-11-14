@@ -441,6 +441,11 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .fm-logo { background: #0f0e15; border-color: #f7de1f; }
 .kit-mark.fm-mark { color: #f5ebd6; text-shadow: 0 4px 0 #000, 0 8px 0 rgba(0, 0, 0, 0.4); }
 .kit-mark.fm-mark i { color: #f7de1f; text-shadow: 0 4px 0 #5a4f00, 0 8px 0 rgba(0, 0, 0, 0.4); }
+.pv-logo { background: #171c33; border-color: #e8ba4a; }
+.kit-mark.pv-mark { color: #e8ba4a; text-shadow: 0 4px 0 #120d1a; line-height: 0.95; }
+.kit-mark.pv-mark small { display: block; font-size: 0.62em; color: #f5e3a1; }
+.kit-pv pre { font: 1.35rem/1.3 var(--label); background: #120d1a; color: #f5e3a1; border-left-color: #e8ba4a; white-space: pre; }
+.kit-pv .c { color: #a8b3cc; }
 .kit-pad pre { font: 1.35rem/1.3 var(--label); background: #fdf3a0; color: #1f2450; border-left-color: #e05c57; }
 .kit-pad .k { color: #8f288f; }
 .kit-pad .s { color: #1f751d; }
