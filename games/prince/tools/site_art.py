@@ -47,13 +47,15 @@ def shots() -> None:
         print("copied", name)
 
 
-# Brand kit art: [file, sheet, crop box or None for the whole sheet].
+# Brand kit art: [file, sheet, crop box or None for the whole sheet]. The
+# sheets are painted at two texels to a room pixel (tools/paint.py).
+PF = 64
+DAGGER = 17
 SPRITES = [
-    ("cast_prince.png", "prince.png", (0, 0, 24, 32)),
-    ("cast_dagger.png", "prince.png", (240, 0, 264, 32)),
-    ("cast_vizier.png", "vizier.png", (0, 0, 24, 40)),
+    ("cast_prince.png", "prince.png", (0, 0, PF, PF)),
+    ("cast_dagger.png", "prince.png", (DAGGER * PF, 0, DAGGER * PF + PF, PF)),
+    ("cast_vizier.png", "vizier.png", (0, 0, 48, 80)),
     ("cast_princess.png", "princess.png", None),
-    ("kit_tiles.png", "tiles.png", None),
     ("kit_door.png", "door.png", None),
 ]
 
@@ -65,6 +67,14 @@ def sprites() -> None:
         image = Image.open(ROOT / "assets" / "sprites" / sheet).convert("RGBA")
         (image.crop(box) if box else image).save(OUT / name, optimize=True)
         print("cut", name)
+    # The tiles in a plain strip, without the sheet's padding round each one.
+    sheet = Image.open(ROOT / "assets" / "sprites" / "tiles.png").convert("RGBA")
+    count = sheet.width // 34
+    strip = Image.new("RGBA", (32 * count, 32))
+    for i in range(count):
+        strip.paste(sheet.crop((i * 34 + 1, 1, i * 34 + 33, 33)), (i * 32, 0))
+    strip.save(OUT / "kit_tiles.png", optimize=True)
+    print("cut kit_tiles.png")
 
 
 def card() -> None:
@@ -84,9 +94,9 @@ def card() -> None:
     draw.text((80, 236), "Versions", font=pixel(112), fill=SAND)
     draw.text((84, 372), "Learn Git. Turn back the sands.", font=mono(46), fill=PAPER)
     draw.text((84, 424), "a __dunder_quest__ game", font=mono(38), fill=TEAL)
-    prince = Image.open(ROOT / "assets" / "sprites" / "prince.png").convert("RGBA").crop((240, 0, 264, 32))
-    prince = prince.resize((24 * 7, 32 * 7), Image.Resampling.NEAREST)
-    art.paste(prince, (560, 398), prince)
+    prince = Image.open(ROOT / "assets" / "sprites" / "prince.png").convert("RGBA").crop((DAGGER * PF, 0, DAGGER * PF + PF, PF))
+    prince = prince.resize((PF * 4, PF * 4), Image.Resampling.NEAREST)
+    art.paste(prince, (600, 374), prince)
     OG.parent.mkdir(parents=True, exist_ok=True)
     art.save(OG, optimize=True)
     print("painted", OG.name, art.size)

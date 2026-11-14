@@ -460,12 +460,14 @@ def thumbnail(path: Path) -> None:
     scene = Image.open(ROOT / "assets" / "backgrounds" / "hall.png").convert("RGB").resize((CW, CH), Image.NEAREST)
     img = Image.blend(scene, Image.new("RGB", (CW, CH), INK), 0.5)
     sprites = ROOT / "assets" / "sprites"
-    prince = Image.open(sprites / "prince.png").convert("RGBA").crop((240, 0, 264, 32))
-    vizier = Image.open(sprites / "vizier.png").convert("RGBA").crop((24, 0, 48, 40))
-    k = 6
-    prince = prince.resize((24 * k * S, 32 * k * S), Image.NEAREST)
-    vizier = vizier.resize((24 * 5 * S, 40 * 5 * S), Image.NEAREST)
-    img.paste(prince, (14 * S, 76 * S), prince)
+    # Both sheets are painted at two texels to a room pixel (tools/paint.py):
+    # the Prince's dagger frame is the 18th 64x64 cell, the Vizier's arms-up
+    # frame the second 48x80 one.
+    prince = Image.open(sprites / "prince.png").convert("RGBA").crop((17 * 64, 0, 18 * 64, 64))
+    vizier = Image.open(sprites / "vizier.png").convert("RGBA").crop((48, 0, 96, 80))
+    prince = prince.resize((64 * 3 * S, 64 * 3 * S), Image.NEAREST)
+    vizier = vizier.resize((48 * 5 * S // 2, 80 * 5 * S // 2), Image.NEAREST)
+    img.paste(prince, (-18 * S, 76 * S), prince)
     img.paste(vizier, (346 * S, 70 * S), vizier)
     rect(img, (0, 0, W, 58), fill=INK)
     rect(img, (0, 58, W, 60), fill=SAND)

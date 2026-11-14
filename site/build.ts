@@ -1538,12 +1538,12 @@ function buildBrandPrince(prefix: string): string {
   ];
   const cast = Object.values(data.cast).map((p: Json) => p.full).join(", ");
   const art: Art[] = [["title.png", "Title art", "The title screen, the page's hero and the social card", 480, 270, 1],
-    ["cast_prince.png", data.cast.prince.full, "The hero, in a white tunic and red sash", 24, 32, 4],
-    ["cast_dagger.png", "The Dagger of HEAD", "Drawn: the console comes up", 24, 32, 4],
-    ["cast_vizier.png", data.cast.vizier.full, "The villain, who commits sabotage", 24, 40, 3],
-    ["cast_princess.png", data.cast.princess.full, "Keeps the palace ledger", 24, 36, 3],
-    ["kit_tiles.png", "The palace tiles", "Stone, spikes, gates, bridges, levers, torches, a scroll: each one a file", 256, 16, 1],
-    ["kit_door.png", "The exit", "Shut, open, and barred by the Vizier", 72, 32, 3],
+    ["cast_prince.png", data.cast.prince.full, "The hero, in a white tunic and red sash", 64, 64, 2],
+    ["cast_dagger.png", "The Dagger of HEAD", "Drawn: the console comes up", 64, 64, 2],
+    ["cast_vizier.png", data.cast.vizier.full, "The villain, who commits sabotage", 48, 80, 2],
+    ["cast_princess.png", data.cast.princess.full, "Keeps the palace ledger", 48, 72, 2],
+    ["kit_tiles.png", "The palace tiles", "Stone, spikes, gates, bridges, levers, torches, a scroll: each one a file", 512, 32, 1],
+    ["kit_door.png", "The exit", "Shut, open, and barred by the Vizier", 144, 64, 2],
     ["commit.png", "A torch, uncommitted", "git status lists it until it's sealed", 480, 270, 1],
     ["dead.png", "Dead", "The only way on is git reset --hard", 480, 270, 1],
     ["vizier.png", "The Vizier's commit", "His seal on the sand trail, in violet", 480, 270, 1],

@@ -32,7 +32,7 @@ Act II (stash, cherry-pick, bisect, reflog, rebase and push) is designed in GAME
 - `data/levels.json`: the whole act. Each room's map, its files and which tiles show them, its starting history, the Vizier's triggers, the commands it unlocks, its solution, its lesson card, and the probes (wrong turns) the tests replay.
 - `world/room.gd`: one script builds every room from that data: the tiles drawn from the working tree, death, the rewind, the Vizier's cutscenes and the exit. `world/prince.gd` is the Prince. `ui/console.gd` is the dagger's console, `ui/trail.gd` the sand trail along the top (the commit graph: one grain per commit, branch banners, `HEAD` as the glint of the dagger), and `ui/hud.gd` the cards, speech, hourglass and toasts.
 - Sharp text: the window stretches in `canvas_items` mode, so the game is laid out at 480×270 and the pixel art scales up nearest-neighbor, while text is drawn at the window's own resolution.
-- Art and sound: `tools/paint.py` paints the sprites and tiles by hand; `tools/scenery.py` and `tools/music.py` generate the backdrops and music; `tools/sfx.py` synthesizes the sound effects; `tools/site_art.py` makes the page's screenshots, the brand kit's cut-out sprites and the social card. Fonts are Pixelify Sans and VT323 (both OFL).
+- Art and sound: `tools/paint.py` paints the sprites and tiles by hand, at two texels to a room pixel (see GAME.md, "How the Prince reads"); `tools/scenery.py` and `tools/music.py` generate the backdrops and music; `tools/sfx.py` synthesizes the sound effects; `tools/site_art.py` makes the page's screenshots, the brand kit's cut-out sprites and the social card. Fonts are Pixelify Sans and VT323 (both OFL).
 
 ## Checks
 
