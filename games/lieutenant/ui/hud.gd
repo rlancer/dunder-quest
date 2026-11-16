@@ -199,6 +199,7 @@ func hide_press_to_start() -> void:
 
 func _draw_hud() -> void:
 	var c := _canvas
+	Fit.frame(c)
 	if _freeze > 0.0:
 		c.draw_rect(Rect2(0, 0, 480, 270), Color(0.95, 0.82, 0.6, 0.14 * _freeze))
 		for edge in 4:
@@ -215,8 +216,12 @@ func _draw_hud() -> void:
 		_draw_bubble(c)
 	if prompt != "" and bubble.is_empty() and _card.is_empty() and _letterbox <= 0.0:
 		var w := Palette.mono().get_string_size(prompt, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
-		c.draw_rect(Rect2(240 - w / 2 - 6, 251, w + 12, 16), Color(0.05, 0.04, 0.05, 0.82))
-		c.draw_string(Palette.mono(), Vector2(roundf(240 - w / 2), 263), prompt, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM)
+		var plate := Rect2(240 - w / 2 - 6, 251, w + 12, 16)
+		c.draw_rect(plate, Color(0.05, 0.04, 0.05, 0.82))
+		Fit.check(plate, prompt)
+		Fit.begin(plate, "the prompt")
+		Fit.text(c, Palette.mono(), Vector2(roundf(240 - w / 2), 263), prompt, 16, Palette.CREAM)
+		Fit.end()
 	if not _slip.is_empty() and _card.is_empty() and _title.is_empty():
 		_draw_slip(c)
 	if not _card.is_empty():
@@ -229,6 +234,7 @@ func _draw_hud() -> void:
 		_draw_end(c)
 	if _press_start:
 		c.draw_rect(Rect2(0, 0, 480, 270), Color(0, 0, 0, 0.88))
+		Fit.cover(Fit.SCREEN)
 		_draw_centered(c, Palette.titles(), GAME, 132, 26, Palette.CREAM)
 		var press := "Tap to start" if TouchControls.active else "Press any key"
 		_draw_centered(c, Palette.mono(), press, 166, 16, Palette.EMBER)
@@ -239,12 +245,12 @@ func _draw_label(at: Vector2, text: String, align: HorizontalAlignment, color: C
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
 	var x := at.x - w if align == HORIZONTAL_ALIGNMENT_RIGHT else at.x
 	_canvas.draw_string_outline(font, Vector2(x, at.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, 4, Palette.INK)
-	_canvas.draw_string(font, Vector2(x, at.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
+	Fit.text(_canvas, font, Vector2(x, at.y), text, 16, color)
 
 
 func _draw_centered(c: Control, font: Font, text: String, y: float, size: int, color: Color) -> void:
 	var w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
-	c.draw_string(font, Vector2(roundf(240 - w / 2), y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
+	Fit.text(c, font, Vector2(roundf(240 - w / 2), y), text, size, color)
 
 
 func _draw_bubble(c: Control) -> void:
@@ -272,29 +278,34 @@ func _draw_bubble(c: Control) -> void:
 		var tip := Vector2(clampf(anchor.x, box.position.x + 6, box.end.x - 6), box.end.y)
 		c.draw_colored_polygon(PackedVector2Array([tip + Vector2(-4, 0), tip + Vector2(4, 0), Vector2(clampf(anchor.x, box.position.x + 2, box.end.x - 2), minf(anchor.y - 2, box.end.y + 8))]), border)
 		c.draw_colored_polygon(PackedVector2Array([tip + Vector2(-3, -1), tip + Vector2(3, -1), Vector2(clampf(anchor.x, box.position.x + 3, box.end.x - 3), minf(anchor.y - 4, box.end.y + 6))]), fill)
+	Fit.check(box, text)
+	Fit.begin(box, "a speech bubble")
 	var y := box.position.y + 11
 	if name != "":
-		c.draw_string(font, Vector2(box.position.x + 6, y), name, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER.darkened(0.3))
+		Fit.text(c, font, Vector2(box.position.x + 6, y), name, 16, Palette.EMBER.darkened(0.3))
 		y += 12
 	for line in lines:
-		c.draw_string(font, Vector2(box.position.x + 6, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.INK)
+		Fit.text(c, font, Vector2(box.position.x + 6, y), line, 16, Palette.INK)
 		y += 12
-	if _waiting and int(_clock * 3.0) % 2 == 0:
-		c.draw_string(font, box.end + Vector2(-9, -2), "v", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+	if _waiting and Fit.blink(int(_clock * 3.0) % 2 == 0):
+		Fit.text(c, font, box.end + Vector2(-9, -2), "v", 16, Palette.EMBER)
+	Fit.end()
 
 
 func _draw_caption(c: Control) -> void:
 	var font := Palette.mono()
 	var y := 226.0
+	Fit.begin(Rect2(0, 270 - 58, 480, 58), "the cold open's caption bar")
 	var stamp := str(_caption.stamp)
 	if stamp != "":
-		c.draw_string(Palette.pixel(), Vector2(24, y), stamp, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Palette.EMBER)
+		Fit.text(c, Palette.pixel(), Vector2(24, y), stamp, 13, Palette.EMBER)
 		y += 13
 	for line in SqlDraw.wrap(str(_caption.text), 432):
-		c.draw_string(font, Vector2(24, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.PAPER)
+		Fit.text(c, font, Vector2(24, y), line, 16, Palette.PAPER)
 		y += 12
-	if _waiting and int(_clock * 3.0) % 2 == 0:
-		c.draw_string(font, Vector2(462, 264), "v", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+	if _waiting and Fit.blink(int(_clock * 3.0) % 2 == 0):
+		Fit.text(c, font, Vector2(462, 264), "v", 16, Palette.EMBER)
+	Fit.end()
 
 
 func _draw_slip(c: Control) -> void:
@@ -307,11 +318,14 @@ func _draw_slip(c: Control) -> void:
 	var box := Rect2(Vector2(roundf(240 - w / 2 - 8), 22), Vector2(w + 16, 16 + lines.size() * 11))
 	c.draw_rect(box.grow(1), Color(Palette.NOTE_COVER, fade))
 	c.draw_rect(box, Color(Palette.NOTE, fade))
-	c.draw_string(font, box.position + Vector2(8, 11), str(_slip.title), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Palette.EMBER.darkened(0.3), fade))
+	Fit.check(box, str(_slip.title))
+	Fit.begin(box, "the notebook slip")
+	Fit.text(c, font, box.position + Vector2(8, 11), str(_slip.title), 16, Color(Palette.EMBER.darkened(0.3), fade))
 	var y := box.position.y + 22
 	for line in lines:
-		c.draw_string(font, Vector2(box.position.x + 8, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Palette.NOTE_INK, fade))
+		Fit.text(c, font, Vector2(box.position.x + 8, y), line, 16, Color(Palette.NOTE_INK, fade))
 		y += 11
+	Fit.end()
 
 
 func _draw_card(c: Control) -> void:
@@ -319,25 +333,30 @@ func _draw_card(c: Control) -> void:
 	var text_lines := SqlDraw.wrap(str(_card.get("text", "")), 424)
 	var sql_lines := str(_card.sql).split("\n")
 	var result: Dictionary = _card.result
-	var table := Printout.layout(result, 3, 420.0) if result.ok else {}
+	var table := Printout.layout(result, 3, 424.0) if result.ok else {}
 	var table_h: float = (table.lines as Array).size() * 11.0 + 4 if result.ok else 0.0
 	var h := 24.0 + sql_lines.size() * 11 + 8 + table_h + 6 + text_lines.size() * 12 + 16
 	var panel := Rect2(Vector2(20, maxf(roundf(135 - h / 2), 2)), Vector2(440, h))
 	c.draw_rect(Rect2(0, 0, 480, 270), Color(0, 0, 0, 0.45))
+	Fit.cover(Fit.SCREEN)
 	c.draw_rect(panel.grow(2), Palette.EMBER.darkened(0.25))
 	c.draw_rect(panel, Color(0.09, 0.07, 0.08, 0.97))
-	c.draw_string(Palette.pixel(), panel.position + Vector2(8, 15), str(_card.get("title", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Palette.CREAM)
+	Fit.check(panel, "(the lesson card \"%s\")" % _card.get("title", ""))
+	Fit.begin(panel, "the lesson card \"%s\"" % _card.get("title", ""))
+	Fit.text(c, Palette.pixel(), panel.position + Vector2(8, 15), str(_card.get("title", "")), 13, Palette.CREAM)
 	var tag := "from the Lieutenant's notebook"
 	var tag_w := font.get_string_size(tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
-	c.draw_string(font, Vector2(panel.end.x - tag_w - 8, panel.position.y + 14), tag, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+	Fit.text(c, font, Vector2(panel.end.x - tag_w - 8, panel.position.y + 14), tag, 16, Palette.EMBER)
 	# The query, on a strip of notebook paper.
 	var y := panel.position.y + 22
 	var strip := Rect2(panel.position.x + 8, y, 424, sql_lines.size() * 11 + 5)
 	c.draw_rect(strip, Palette.NOTE)
 	y += 11
+	Fit.begin(strip, "a lesson card's SQL")
 	for line in sql_lines:
 		SqlDraw.draw_line(c, Vector2(strip.position.x + 6, y), line)
 		y += 11
+	Fit.end()
 	y += 3
 	# What it returns, on printout paper.
 	if result.ok:
@@ -345,14 +364,16 @@ func _draw_card(c: Control) -> void:
 		y += table_h
 	y += 15
 	for line in text_lines:
-		c.draw_string(font, Vector2(panel.position.x + 8, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.PAPER.darkened(0.04))
+		Fit.text(c, font, Vector2(panel.position.x + 8, y), line, 16, Palette.PAPER.darkened(0.04))
 		y += 12
-	if _waiting and int(_clock * 3.0) % 2 == 0:
-		c.draw_string(font, Vector2(panel.end.x - 60, panel.end.y - 4), "Tap: OK" if TouchControls.active else "Enter: OK", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+	if _waiting and Fit.blink(int(_clock * 3.0) % 2 == 0):
+		Fit.text(c, font, Vector2(panel.end.x - 60, panel.end.y - 4), "Tap: OK" if TouchControls.active else "Enter: OK", 16, Palette.EMBER)
+	Fit.end()
 
 
 func _draw_title(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 480, 270), Color.BLACK)
+	Fit.cover(Fit.SCREEN)
 	_draw_centered(c, Palette.mono(), GAME.to_upper(), 92, 16, Palette.EMBER)
 	_draw_centered(c, Palette.titles(), str(_title.title), 132, 30, Palette.CREAM)
 	var y := 160.0
@@ -363,11 +384,12 @@ func _draw_title(c: Control) -> void:
 
 func _draw_end(c: Control) -> void:
 	c.draw_rect(Rect2(0, 0, 480, 270), Color.BLACK)
+	Fit.cover(Fit.SCREEN)
 	_draw_centered(c, Palette.mono(), GAME.to_upper(), 78, 16, Palette.EMBER)
 	_draw_centered(c, Palette.titles(), str(_end.title), 114, 26, Palette.CREAM)
 	var y := 144.0
 	for line: String in _end.lines:
 		_draw_centered(c, Palette.mono(), line, y, 16, Color(0.85, 0.83, 0.76))
 		y += 15
-	if _waiting and int(_clock * 2.0) % 2 == 0:
+	if _waiting and Fit.blink(int(_clock * 2.0) % 2 == 0):
 		_draw_centered(c, Palette.mono(), "Tap to carry on" if TouchControls.active else "Enter: carry on", 252, 16, Color(0.6, 0.6, 0.6))

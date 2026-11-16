@@ -6,7 +6,7 @@ extends Control
 
 const MUSIC := "res://assets/audio/music_title.ogg"
 const ART := "res://assets/backgrounds/desk.png"
-const TAB := Rect2(18, 36, 196, 37)
+const TAB := Rect2(12, 36, 208, 37)
 const STEP := 43.0
 const SHEET := Rect2(230, 34, 232, 210)
 
@@ -135,9 +135,12 @@ func _say(text: String) -> void:
 func _draw() -> void:
 	var mono := Palette.mono()
 	var titles := Palette.titles()
+	Fit.frame(self)
 	draw_rect(Rect2(0, 0, 480, 24), Color(0, 0, 0, 0.82))
-	draw_string(titles, Vector2(10, 17), "Just One More JOIN", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Palette.CREAM)
-	draw_string(mono, Vector2(218, 16), "Five people who thought of everything.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.8, 0.78, 0.72))
+	Fit.begin(Rect2(0, 0, 480, 24), "the case files' top bar")
+	Fit.text(self, titles, Vector2(10, 17), "Just One More JOIN", 14, Palette.CREAM)
+	Fit.text(self, mono, Vector2(218, 16), "Five people who thought of everything.", 16, Color(0.8, 0.78, 0.72))
+	Fit.end()
 	# The folders.
 	for id in range(1, Progress.count() + 1):
 		var c := Story.case(id)
@@ -153,22 +156,27 @@ func _draw() -> void:
 		draw_rect(Rect2(tab.position, Vector2(tab.size.x, 1)), paper.lightened(0.25))
 		if picked:
 			draw_rect(tab.grow(1), Palette.EMBER, false, 2.0)
-		draw_string(mono, tab.position + Vector2(tab.size.x - 46, 13), "CASE %d" % id, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.INK.lightened(0.3))
-		draw_string(titles, tab.position + Vector2(8, 17), str(c.get("title", "")) if open else "Sealed", HORIZONTAL_ALIGNMENT_LEFT, -1, 14, Palette.INK if open else Palette.INK.lightened(0.3))
-		draw_string(mono, tab.position + Vector2(8, 31), SqlDraw.fit(str(c.get("lesson", "")), tab.size.x - 16), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.SYN_KEYWORD if open else Palette.INK.lightened(0.3))
+		Fit.begin(tab, "a case folder")
+		# Top right: the case's number, or the stamp once it's closed.
 		if Progress.is_cleared(id):
-			_draw_stamp(tab.end + Vector2(-102, -34), 1.0 if not (picked and _stamp > 0.0) else clampf((1.6 - _stamp) * 4.0, 0.0, 1.0))
+			_draw_stamp(tab.position + Vector2(tab.size.x - 52, 3), 1.0 if not (picked and _stamp > 0.0) else clampf((1.6 - _stamp) * 4.0, 0.0, 1.0))
+		else:
+			Fit.text(self, mono, tab.position + Vector2(tab.size.x - 46, 13), "CASE %d" % id, 16, Palette.INK.lightened(0.3))
+		Fit.text(self, titles, tab.position + Vector2(8, 17), str(c.get("title", "")) if open else "Sealed", 14, Palette.INK if open else Palette.INK.lightened(0.3))
+		Fit.text(self, mono, tab.position + Vector2(8, 31), str(c.get("lesson", "")), 16, Palette.SYN_KEYWORD if open else Palette.INK.lightened(0.3))
+		Fit.end()
 	# The open file: a sheet of paper with tonight's suspect clipped to it.
 	var c := Story.case(_selected)
 	draw_rect(Rect2(SHEET.position + Vector2(3, 3), SHEET.size), Color(0, 0, 0, 0.4))
 	draw_rect(SHEET, Palette.NOTE)
 	draw_rect(Rect2(SHEET.position, Vector2(SHEET.size.x, 16)), Palette.NOTE_COVER)
-	draw_string(mono, SHEET.position + Vector2(8, 12), "L.A.P.D. HOMICIDE  ·  CASE %d" % _selected, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM)
+	Fit.begin(SHEET, "the open case file")
+	Fit.text(self, mono, SHEET.position + Vector2(8, 12), "L.A.P.D. HOMICIDE  ·  CASE %d" % _selected, 16, Palette.CREAM)
 	var x := SHEET.position.x + 10
 	var y := SHEET.position.y + 38
-	draw_string(titles, Vector2(x, y), str(c.get("title", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 20, Palette.NOTE_INK)
+	Fit.text(self, titles, Vector2(x, y), str(c.get("title", "")), 20, Palette.NOTE_INK)
 	y += 16
-	draw_string(mono, Vector2(x, y), str(c.get("place", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.NOTE_INK.lightened(0.2))
+	Fit.text(self, mono, Vector2(x, y), str(c.get("place", "")), 16, Palette.NOTE_INK.lightened(0.2))
 	y += 16
 	# The photograph.
 	var photo := Rect2(SHEET.end.x - 62, y - 4, 48, 60)
@@ -179,31 +187,37 @@ func _draw() -> void:
 		draw_texture_rect_region(sheet, Rect2(photo.position + Vector2(-8, 2), Vector2(64, 60)), Rect2(0, 10, 64, 60))
 	draw_rect(Rect2(photo.position.x + 18, photo.position.y - 8, 12, 8), Palette.STEEL)
 	var killer := str(c.get("killer", ""))
-	draw_string(mono, Vector2(x, y + 4), "TONIGHT'S SUSPECT", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER.darkened(0.3))
-	draw_string(mono, Vector2(x, y + 16), Story.full_name(killer), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.NOTE_INK)
+	# Beside the photograph, not under it.
+	Fit.begin(Rect2(x, y - 8, photo.position.x - 5 - x, 74), "the case file, beside the photograph")
+	Fit.text(self, mono, Vector2(x, y + 4), "TONIGHT'S SUSPECT", 16, Palette.EMBER.darkened(0.3))
+	Fit.text(self, mono, Vector2(x, y + 16), Story.full_name(killer), 16, Palette.NOTE_INK)
 	var role_y := y + 28
 	for line in SqlDraw.wrap(str((Story.data().cast as Dictionary).get(killer, {}).get("role", "")), 144):
-		draw_string(mono, Vector2(x, role_y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.NOTE_INK.lightened(0.25))
+		Fit.text(self, mono, Vector2(x, role_y), line, 16, Palette.NOTE_INK.lightened(0.25))
 		role_y += 11
+	Fit.end()
 	y += 74
-	draw_string(mono, Vector2(x, y), "TONIGHT'S SQL", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER.darkened(0.3))
+	Fit.text(self, mono, Vector2(x, y), "TONIGHT'S SQL", 16, Palette.EMBER.darkened(0.3))
 	y += 12
 	for line in SqlDraw.wrap(str(c.get("lesson", "")), SHEET.size.x - 20):
-		draw_string(mono, Vector2(x, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.SYN_KEYWORD)
+		Fit.text(self, mono, Vector2(x, y), line, 16, Palette.SYN_KEYWORD)
 		y += 11
 	y += 8
 	var status := "Closed in %d calls to Records" % Progress.best_tries(_selected) if Progress.is_cleared(_selected) else ("Open" if Progress.is_open(_selected) else "Sealed until the case before it is closed")
-	draw_string(mono, Vector2(x, y), status, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.GREEN.darkened(0.3) if Progress.is_cleared(_selected) else Palette.NOTE_INK.lightened(0.2))
+	for line in SqlDraw.wrap(status, SHEET.size.x - 20):
+		Fit.text(self, mono, Vector2(x, y), line, 16, Palette.GREEN.darkened(0.3) if Progress.is_cleared(_selected) else Palette.NOTE_INK.lightened(0.2))
+		y += 11
 	var go := "Tap this sheet to open the case" if TouchControls.active else "Enter: open the file   Esc: title"
-	draw_string(mono, Vector2(x, SHEET.end.y - 8), go, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.STEEL_DARK)
+	Fit.text(self, mono, Vector2(x, SHEET.end.y - 8), go, 16, Palette.STEEL_DARK)
+	Fit.end()
 	if _flash_time > 0.0:
 		var w := mono.get_string_size(_flash, HORIZONTAL_ALIGNMENT_LEFT, -1, 16).x
 		draw_string_outline(mono, Vector2(240 - w * 0.5, 262), _flash, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, 4, Palette.INK)
-		draw_string(mono, Vector2(240 - w * 0.5, 262), _flash, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM)
+		Fit.text(self, mono, Vector2(240 - w * 0.5, 262), _flash, 16, Palette.CREAM)
 
 
 func _draw_stamp(at: Vector2, amount: float) -> void:
 	var color := Color(Palette.RED.darkened(0.1), 0.85 * amount)
 	var box := Rect2(at, Vector2(46, 14)).grow(2.0 * (1.0 - amount))
 	draw_rect(box, color, false, 1.5)
-	draw_string(Palette.mono(), box.position + Vector2(5, 11), "CLOSED", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
+	Fit.text(self, Palette.mono(), box.position + Vector2(5, 11), "CLOSED", 16, color)

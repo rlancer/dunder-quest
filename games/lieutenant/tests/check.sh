@@ -2,8 +2,10 @@
 # Just One More JOIN's checks, as CI runs them: every question's solution
 # and every query its page can spell through the in-game SQL engine
 # (tests/replay.gd), the same SQL through the real SQLite (tests/verify_sql.ts),
-# then the bot through the prologue and every case. Uses $GODOT if set, else
-# fetches Godot the way the export scripts do.
+# the bot through the prologue and every case, then every screen the game
+# can put up, checked for text that breaks out of its panel
+# (tests/layout.tscn). Uses $GODOT if set, else fetches Godot the way the
+# export scripts do.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
@@ -18,3 +20,5 @@ grep -q "REPLAY result=ok" /tmp/lieutenant_replay.log
 bun "${GAME}/tests/verify_sql.ts"
 "$GODOT" --headless --path "$GAME" res://tests/bot.tscn | tee /tmp/lieutenant_bot.log
 grep -q "BOT result=ok" /tmp/lieutenant_bot.log
+"$GODOT" --headless --path "$GAME" res://tests/layout.tscn | tee /tmp/lieutenant_layout.log
+grep -q "LAYOUT result=ok" /tmp/lieutenant_layout.log

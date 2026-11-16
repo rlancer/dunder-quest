@@ -6,9 +6,10 @@ extends RefCounted
 ## and by lesson cards.
 
 
-## Sets a result out in at most `max_rows` rows and `width` room pixels.
-## Returns {lines: [{kind, cells}], widths: [chars], more}. Cells too wide
-## for their column are cut with "..".
+## Sets a result out in at most `max_rows` rows, for a strip of paper
+## `width` room pixels across. Returns {lines: [{kind, cells}], widths:
+## [chars], more, cut}. `cut` says the table had more columns than the paper
+## is wide, and its widest ones were narrowed (their cells end in "..").
 static func layout(result: Dictionary, max_rows: int, width: float) -> Dictionary:
 	var columns: Array = result.columns
 	var rows: Array = result.rows
@@ -20,9 +21,13 @@ static func layout(result: Dictionary, max_rows: int, width: float) -> Dictionar
 			w = maxi(w, Sql.show(row[i]).length())
 		widths.append(w)
 	# Trim the widest columns until the row fits.
-	var cell := SqlDraw.width("0")
-	var room := int(width / cell) - 2
+	var cell := SqlDraw.cell()
+	var room := int((width - 12.0) / cell)
+	# A table with more columns than the paper is wide gets its widest
+	# columns cut, the way a line printer would.
+	var cut := false
 	while _total(widths) > room:
+		cut = true
 		var widest := 0
 		for i in widths.size():
 			if int(widths[i]) > int(widths[widest]):
@@ -40,11 +45,12 @@ static func layout(result: Dictionary, max_rows: int, width: float) -> Dictionar
 		lines.append({"kind": "note", "text": "(no rows)"})
 	elif rows.size() > shown.size():
 		lines.append({"kind": "note", "text": "... and %d more rows" % (rows.size() - shown.size())})
-	return {"lines": lines, "widths": widths, "more": rows.size() - shown.size()}
+	return {"lines": lines, "widths": widths, "more": rows.size() - shown.size(), "cut": cut}
 
 
+## Characters across: each column, and two spaces between columns.
 static func _total(widths: Array) -> int:
-	var total := 0
+	var total := -2
 	for w: int in widths:
 		total += w + 2
 	return total
@@ -53,8 +59,9 @@ static func _total(widths: Array) -> int:
 ## Draws a laid-out table into `rect`, 11 room pixels to a line.
 static func draw(c: CanvasItem, rect: Rect2, table: Dictionary) -> void:
 	var font := Palette.mono()
-	var cell := SqlDraw.width("0")
+	var cell := SqlDraw.cell()
 	c.draw_rect(rect, Palette.BAR_LIGHT)
+	Fit.begin(rect, "a results table")
 	var y := rect.position.y + 2
 	var index := 0
 	for line: Dictionary in table.lines:
@@ -63,7 +70,7 @@ static func draw(c: CanvasItem, rect: Rect2, table: Dictionary) -> void:
 		var x := rect.position.x + 6
 		var base := y + 9
 		if line.kind == "note":
-			c.draw_string(font, Vector2(x, base), str(line.text), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.BAR_INK.lightened(0.35))
+			Fit.text(c, font, Vector2(x, base), str(line.text), 16, Palette.BAR_INK.lightened(0.35))
 		else:
 			var cells: Array = line.cells
 			for i in cells.size():
@@ -76,9 +83,10 @@ static func draw(c: CanvasItem, rect: Rect2, table: Dictionary) -> void:
 					color = Palette.SYN_KEYWORD
 				elif bool((line.nulls as Array)[i]):
 					color = Palette.EMBER.darkened(0.25)
-				c.draw_string(font, Vector2(roundf(x), base), text, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
+				Fit.text(c, font, Vector2(roundf(x), base), text, 16, color)
 				x += (w + 2) * cell
 			if line.kind == "head":
 				c.draw_line(Vector2(rect.position.x + 4, y + 10.5), Vector2(rect.end.x - 4, y + 10.5), Color(Palette.BAR_INK, 0.45), 1.0)
 		y += 11
 		index += 1
+	Fit.end()

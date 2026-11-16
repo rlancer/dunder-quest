@@ -95,11 +95,12 @@ func _process(delta: float) -> void:
 
 func _draw() -> void:
 	var titles := Palette.titles()
-	draw_string(titles, Vector2(38, 58), "Just One More", HORIZONTAL_ALIGNMENT_LEFT, -1, 30, Palette.CREAM)
-	draw_string(titles, Vector2(38, 96), "JOIN", HORIZONTAL_ALIGNMENT_LEFT, -1, 44, Palette.EMBER)
+	Fit.frame(self)
+	Fit.text(self, titles, Vector2(38, 58), "Just One More", 30, Palette.CREAM)
+	Fit.text(self, titles, Vector2(38, 96), "JOIN", 44, Palette.EMBER)
 	var mono := Palette.mono()
-	draw_string(mono, Vector2(40, 112), "He knows who did it. He needs a query that proves it. Learn SQL.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(0.86, 0.84, 0.78))
-	draw_string(mono, Vector2(40, 124), "a __dunder_quest__ game", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+	Fit.text(self, mono, Vector2(40, 112), "He knows who did it. He needs a query that proves it. Learn SQL.", 16, Color(0.86, 0.84, 0.78))
+	Fit.text(self, mono, Vector2(40, 124), "a __dunder_quest__ game", 16, Palette.EMBER)
 
 
 func _input(event: InputEvent) -> void:

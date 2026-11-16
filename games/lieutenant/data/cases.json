@@ -508,7 +508,7 @@
 						"where": ["calls.receiver = '555-0142'", "calls.caller = '555-0142'"]
 					},
 					"solution": {"select": ["phones.owner", "calls.at"], "from": "calls", "join": ["JOIN phones ON calls.caller = phones.number"], "where": ["calls.receiver = '555-0142'"]},
-					"hint": "Start from the calls, join the directory on, and match it to the number that did the calling.",
+					"hint": "Start from the calls. Join the directory to the number that called.",
 					"notes": {
 						"join:JOIN phones ON calls.receiver = phones.number": "That matches the directory to the phone that was ringing, so every row says Peggy Lund. I want whose phone made the call: the caller.",
 						"from:phones": "If I start FROM phones and then JOIN phones, that's the directory twice and no calls. Start from the calls."
@@ -538,7 +538,7 @@
 					},
 					"solution": {"select": ["calls.at", "phones.owner"], "from": "calls", "join": ["JOIN phones ON calls.receiver = phones.number"], "where": ["calls.caller = '555-0199'"], "order": "calls.at"},
 					"ordered": true,
-					"hint": "This time I know who called. It's the other end I want named, so the directory goes on the receiver.",
+					"hint": "I know who called. The directory goes on the receiver, the other end.",
 					"notes": {
 						"join:JOIN phones ON calls.caller = phones.number": "Matched on the caller, every row just says Hugo Brandt, car telephone. I know that. I want the name on the other end: the receiver.",
 						"where:calls.caller = '555-0100'": "0100 is the house. I'm asking about the car: 0199."
@@ -577,16 +577,16 @@
 					"rows": [
 						[201, "Opal Fenwick", "Dormital", 30, "Rexford Drugs", "O. Fenwick"],
 						[202, "Teddy Marlowe", "Dormital", 30, "Rexford Drugs", "T. Marlowe"],
-						[203, "Coco LaRue", "Calmex", 20, "Vine St Apothecary", "C. LaRue"],
+						[203, "Coco LaRue", "Calmex", 20, "Vine St Drugs", "C. LaRue"],
 						[204, "Teddy Marlowe", "Dormital", 30, "Pasadena Rx", "M. Sloane"],
 						[205, "Tad Winslow", "Calmex", 20, "Rexford Drugs", "T. Winslow"],
-						[206, "Teddy Marlowe", "Dormital", 30, "Ocean Park Drugs", "M. Sloane"],
-						[207, "Judge Amos Brill", "Dormital", 15, "Rexford Drugs", "D. Brill"],
-						[208, "Teddy Marlowe", "Dormital", 30, "Vine St Apothecary", "M. Sloane"],
+						[206, "Teddy Marlowe", "Dormital", 30, "Ocean Park Rx", "M. Sloane"],
+						[207, "Amos Brill", "Dormital", 15, "Rexford Drugs", "D. Brill"],
+						[208, "Teddy Marlowe", "Dormital", 30, "Vine St Drugs", "M. Sloane"],
 						[209, "Opal Fenwick", "Dormital", 30, "Rexford Drugs", "O. Fenwick"],
 						[210, "Teddy Marlowe", "Dormital", 30, "Studio City Rx", "M. Sloane"],
 						[211, "Tad Winslow", "Calmex", 20, "Rexford Drugs", "T. Winslow"],
-						[212, "Ginny Lombard", "Calmex", 10, "Ocean Park Drugs", "G. Lombard"],
+						[212, "Ginny Lombard", "Calmex", 10, "Ocean Park Rx", "G. Lombard"],
 						[213, "Teddy Marlowe", "Dormital", 30, "Harbor Drugs", "M. Sloane"]
 					]
 				}
@@ -824,7 +824,7 @@
 						"join": ["JOIN orders ON seating.seat = orders.seat", "LEFT JOIN orders ON seating.seat = orders.seat", "LEFT JOIN seating ON orders.seat = seating.seat"]
 					},
 					"solution": {"select": ["seating.guest", "orders.dish"], "from": "seating", "join": ["LEFT JOIN orders ON seating.seat = orders.seat"]},
-					"hint": "The file I want all of goes in FROM, on the left. The other one gets LEFT JOINed onto it.",
+					"hint": "All of the file in FROM is kept. LEFT JOIN the other one onto it.",
 					"notes": {
 						"join:JOIN orders ON seating.seat = orders.seat": "A plain JOIN is what I had before: nine rows, and the empty chair dropped. I need the kind that keeps every chair.",
 						"join:LEFT JOIN seating ON orders.seat = seating.seat": "That keeps every ticket and looks for its chair. Every ticket has a chair. It's the other way around I want: every chair, whether or not it has a ticket.",
@@ -881,7 +881,7 @@
 						"order": ["elevator.at"]
 					},
 					"solution": {"select": ["keys.holder", "elevator.at"], "from": "elevator", "join": ["JOIN keys ON elevator.key_no = keys.key_no"], "where": ["elevator.floor = 'penthouse'"]},
-					"hint": "The log has key numbers. The register has names. Join them on the key, and keep the penthouse.",
+					"hint": "Join the log to the register on the key. Then keep only the penthouse.",
 					"notes": {
 						"select:key_no": "Both files have a 'key_no'. I have to say whose.",
 						"join:JOIN keys ON elevator.trip = keys.key_no": "A trip number isn't a key number. Nothing matches, so nothing comes back. Key goes with key.",

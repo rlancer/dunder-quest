@@ -45,6 +45,7 @@ func _run() -> void:
 	CaseScene.test_pace = pace
 	Notebook.test_auto_frames = printout_frames
 	Notebook.test_pace = pace
+	Fit.audit = true
 	var only := 0
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("case="):
@@ -54,6 +55,9 @@ func _run() -> void:
 	for id in range(1, Story.count() + 1):
 		if only == 0 or only == id:
 			await _play(id)
+	# Any text that reached past its panel, or over other text, on the way.
+	for key: String in Fit.breaks:
+		_fail("%s (%s)" % [key, Fit.breaks[key]])
 	print("BOT result=%s" % ("ok" if _fails.is_empty() else "FAIL " + "; ".join(_fails)))
 	_finish()
 	tree.quit(0 if _fails.is_empty() else 1)
