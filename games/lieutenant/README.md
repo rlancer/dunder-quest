@@ -56,13 +56,16 @@ Never teach anything that isn't real SQL. The checks hold the game to that:
 - One rule is stricter than SQLite on purpose: a bare column beside an aggregate has to be in `GROUP BY`. SQLite would answer with a value from some row; PostgreSQL and most others refuse, and the game refuses in PostgreSQL's words and says so. `verify_sql.ts` checks that SQLite really does accept each of those.
 - `tests/bot.tscn` turns every page of the prologue, then plays every case with the real input actions: looks at the records, talks to the suspect, calls Records with a blank page and with the solution spoiled by one wrong chip (the case must not move on), then writes the solution the way a player does, by clicking the chips and the Call Records button on one question and with the arrow keys, Space and Enter on the next (it must move on).
 
+- `tests/layout.tscn` puts up every screen the game has (every line of dialogue with the speaker at either wall, every notebook page blank, solved and with every chip picked at once, every printout those give, every card, caption and slip, the case files in every state, each page of the prologue, by keys and by touch) and fails if any text reaches past the panel it's in, runs over other text, or doesn't fit. All text is drawn through `ui/fit.gd`, inside the panel it belongs to (`Fit.begin(rect, name)` ... `Fit.end()`), which is what lets the test see it; the bot runs the same check on the screens it passes through. A new line that's too long for its box fails here, with the words and by how many pixels.
+
 ```sh
 godot --headless --path . --import
 godot --headless --path . --script res://tests/replay.gd    # REPLAY result=ok: every solution and every spellable query
 bun tests/verify_sql.ts                                     # SQL result=ok: SQLite agrees on all of them
 godot --headless --path . res://tests/bot.tscn              # BOT result=ok: the prologue and all five cases
+godot --headless --path . res://tests/layout.tscn           # LAYOUT result=ok: no text outside its panel on any screen
 godot --path . res://tests/shots.tscn -- case=3             # screenshots into tests/shots/ (needs a window; xvfb-run works)
-bash tests/check.sh                                         # the first three, as CI runs them
+bash tests/check.sh                                         # all four, as CI runs them
 ```
 
 ## How it's built
@@ -70,7 +73,7 @@ bash tests/check.sh                                         # the first three, a
 - `data/cases.json`: everything. The cast, each case's cold open, its tables, the props that put a table in the notebook, its questions (the suspect's claim, the question, the chips on the page, the solution, the notes for particular wrong chips, what's said when it's right), its ending, the lesson cards and the stock lines.
 - `sql/`: `sql.gd` is the engine; `query.gd` turns the chips picked on a page into SQL text; `judge.gd` compares what came back with what the solution returns and picks the Lieutenant's remark.
 - `world/case_scene.gd`: one script builds every case from that data: the cold open, the title card, the arrival, walking and looking, the questions, the false exit, the freeze frame. `world/person.gd` is anyone standing in a room, `world/dog.gd` is Null.
-- `ui/notebook.gd` is the notebook and the printout, `ui/hud.gd` the bubbles, captions and cards, `ui/intro.gd` the prologue, `ui/files.gd` the case files, `ui/title.gd` the title.
+- `ui/fit.gd` draws every piece of text and knows which panel it's meant to stay inside. `ui/notebook.gd` is the notebook and the printout, `ui/hud.gd` the bubbles, captions and cards, `ui/intro.gd` the prologue, `ui/files.gd` the case files, `ui/title.gd` the title.
 - Sharp text: the window stretches in `canvas_items` mode, so the game is laid out at 480×270 and text is drawn at the window's own resolution. The cast and the rooms are painted at two texels to a room pixel and drawn through `world/sharp_pixels.gdshader` (the same shader as Prince of Versions), so they stay even at any window scale.
 
 ## Art and sound

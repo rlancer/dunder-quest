@@ -218,6 +218,12 @@ func _input(event: InputEvent) -> void:
 		turn()
 
 
+## Jumps to the end of this page's animation (the layout test looks at
+## every page as it finally stands).
+func settle() -> void:
+	_t = 60.0
+
+
 ## Finishes the page if it's still typing, otherwise turns it.
 func turn() -> void:
 	var text := str(_beats[_index].text)
@@ -246,8 +252,10 @@ func _draw_page() -> void:
 	var beat: Dictionary = _beats[_index]
 	var stage := str(beat.stage)
 	var mono := Palette.mono()
+	Fit.frame(c)
 	if stage in ["table", "query", "files"]:
 		c.draw_rect(Rect2(0, 0, 480, PANEL), Color(0.03, 0.02, 0.03, 0.72))
+	Fit.begin(Rect2(0, 0, 480, PANEL), "the prologue's picture")
 	match stage:
 		"table":
 			_draw_table(c, Rect2(84, 8, 284, 180), bool(beat.get("scan", false)), [])
@@ -255,7 +263,9 @@ func _draw_page() -> void:
 			_draw_query(c)
 		"files":
 			_draw_files(c)
+	Fit.end()
 	# The page of story.
+	Fit.begin(Rect2(0, PANEL, 480, VIEW.y - PANEL), "the prologue's page")
 	c.draw_rect(Rect2(0, PANEL, 480, VIEW.y - PANEL), Color(0.04, 0.03, 0.04))
 	c.draw_rect(Rect2(0, PANEL, 480, 1), Palette.EMBER.darkened(0.3))
 	var text := str(beat.text).substr(0, _typed())
@@ -263,16 +273,17 @@ func _draw_page() -> void:
 	for line in SqlDraw.wrap(str(beat.text), 440):
 		var shown := line.substr(0, clampi(text.length(), 0, line.length()))
 		text = text.substr(mini(text.length(), line.length() + 1))
-		c.draw_string(mono, Vector2(20, y), shown, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.PAPER)
+		Fit.text(c, mono, Vector2(20, y), shown, 16, Palette.PAPER)
 		y += 12
 	var word := str(beat.get("sql", ""))
 	var done := _typed() >= str(beat.text).length()
 	if word != "" and done:
 		var fade := clampf((_t - str(beat.text).length() / TYPE) * 2.5, 0.0, 1.0)
 		c.draw_rect(Rect2(20, 250, 2, 11), Color(Palette.EMBER, fade))
-		c.draw_string(mono, Vector2(28, 259), word, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Palette.EMBER, fade))
-	if done and int(_clock * 3.0) % 2 == 0:
-		c.draw_string(mono, Vector2(462, 262), "v", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+		Fit.text(c, mono, Vector2(28, 259), word, 16, Color(Palette.EMBER, fade))
+	if done and Fit.blink(int(_clock * 3.0) % 2 == 0):
+		Fit.text(c, mono, Vector2(462, 262), "v", 16, Palette.EMBER)
+	Fit.end()
 	if _black > 0.0:
 		c.draw_rect(Rect2(Vector2.ZERO, VIEW), Color(0, 0, 0, _black))
 
@@ -281,13 +292,16 @@ func _draw_page() -> void:
 ## across the columns; `lit` marks rows to pick out.
 func _draw_table(c: Control, rect: Rect2, scan: bool, lit: Array) -> void:
 	var mono := Palette.mono()
-	var table := Printout.layout(_guests, 14, rect.size.x - 12)
-	var cell := SqlDraw.width("0")
+	var table := Printout.layout(_guests, 14, rect.size.x)
+	var cell := SqlDraw.cell()
 	c.draw_rect(Rect2(rect.position + Vector2(-2, -2), rect.size + Vector2(4, 4)), Palette.BAR_INK.lightened(0.2))
 	c.draw_rect(Rect2(rect.position, Vector2(rect.size.x, 13)), Palette.NOTE_COVER)
-	c.draw_string(mono, rect.position + Vector2(6, 10), "guests", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM)
-	c.draw_string(mono, rect.position + Vector2(rect.size.x - 96, 10), "the guest book", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM.darkened(0.25))
+	Fit.begin(Rect2(rect.position, Vector2(rect.size.x, 13)), "the prologue's table heading")
+	Fit.text(c, mono, rect.position + Vector2(6, 10), "guests", 16, Palette.CREAM)
+	Fit.text(c, mono, rect.position + Vector2(rect.size.x - 96, 10), "the guest book", 16, Palette.CREAM.darkened(0.25))
+	Fit.end()
 	var body := Rect2(rect.position + Vector2(0, 13), Vector2(rect.size.x, (table.lines as Array).size() * 11.0 + 4))
+	Fit.check(body, "(the prologue's table)")
 	Printout.draw(c, body, table)
 	var rows: int = (table.lines as Array).size() - 1
 	if scan:
@@ -297,7 +311,7 @@ func _draw_table(c: Control, rect: Rect2, scan: bool, lit: Array) -> void:
 			var row := int(step / 0.22)
 			var band := Rect2(body.position.x, body.position.y + 2 + (row + 1) * 11, body.size.x, 11)
 			c.draw_rect(band, Color(Palette.EMBER, 0.32))
-			c.draw_string(mono, Vector2(body.end.x + 6, band.position.y + 9), "a row", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER)
+			Fit.text(c, mono, Vector2(body.end.x + 6, band.position.y + 9), "a row", 16, Palette.EMBER)
 		elif step >= rows * 0.22:
 			# Then a column at a time: this is one fact.
 			var column := int((step - rows * 0.22) / 0.9) % (table.widths as Array).size()
@@ -306,7 +320,7 @@ func _draw_table(c: Control, rect: Rect2, scan: bool, lit: Array) -> void:
 				x += (int(table.widths[i]) + 2) * cell
 			var band := Rect2(x - 3, body.position.y, (int(table.widths[column]) + 1) * cell + 4, body.size.y)
 			c.draw_rect(band, Color(Palette.SYN_KEYWORD, 0.22))
-			c.draw_string(mono, Vector2(body.end.x + 6, body.position.y + 11), "a column", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.DARK_KEYWORD)
+			Fit.text(c, mono, Vector2(body.end.x + 6, body.position.y + 11), "a column", 16, Palette.DARK_KEYWORD)
 	for row: int in lit:
 		c.draw_rect(Rect2(body.position.x, body.position.y + 2 + (row + 1) * 11, body.size.x, 11), Color(Palette.EMBER, 0.36))
 
@@ -318,7 +332,8 @@ func _draw_query(c: Control) -> void:
 	c.draw_rect(page.grow(2), Palette.NOTE_COVER)
 	c.draw_rect(page, Palette.NOTE)
 	c.draw_rect(Rect2(page.position, Vector2(page.size.x, 13)), Palette.NOTE_COVER)
-	c.draw_string(mono, page.position + Vector2(6, 10), "the question, in SQL", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.CREAM)
+	Fit.begin(page, "the prologue's notebook page")
+	Fit.text(c, mono, page.position + Vector2(6, 10), "the question, in SQL", 16, Palette.CREAM)
 	var typed := clampi(int((_t - 0.8) * 24.0), 0, DEMO.length())
 	var y := page.position.y + 30
 	var left := typed
@@ -338,9 +353,11 @@ func _draw_query(c: Control) -> void:
 				if str(_guests.rows[i][0]) == str(hit[0]):
 					lit.append(i)
 		var said := "Doris: \"%d rows.\"" % (demo.rows as Array).size()
-		c.draw_string(mono, Vector2(page.position.x + 8, page.end.y - 10), said, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.EMBER.darkened(0.3))
-		c.draw_string(mono, Vector2(page.position.x, page.end.y + 16), "'21:00' is nine at night.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.STEEL)
-		c.draw_string(mono, Vector2(page.position.x, page.end.y + 28), "Three guests came later.", HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Palette.STEEL)
+		Fit.text(c, mono, Vector2(page.position.x + 8, page.end.y - 10), said, 16, Palette.EMBER.darkened(0.3))
+	Fit.end()
+	if finished and demo.get("ok", false):
+		Fit.text(c, mono, Vector2(page.position.x, page.end.y + 16), "'21:00' is nine at night.", 16, Palette.STEEL)
+		Fit.text(c, mono, Vector2(page.position.x, page.end.y + 28), "Three guests came later.", 16, Palette.STEEL)
 	_draw_table(c, Rect2(192, 8, 284, 180), false, lit)
 
 
@@ -358,12 +375,15 @@ func _draw_files(c: Control) -> void:
 		c.draw_rect(Rect2(tab.position + Vector2(3, 3), tab.size), Color(0, 0, 0, 0.4 * shown))
 		c.draw_rect(Rect2(tab.position + Vector2(6, -6), Vector2(34, 7)), paper.darkened(0.08))
 		c.draw_rect(tab, paper)
-		c.draw_string(mono, tab.position + Vector2(8, 0), "CASE %d" % id, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Palette.INK.lightened(0.25), shown))
+		# The folder and the tab that sticks up from it.
+		Fit.begin(tab.grow_individual(0, 10, 0, 0), "a case folder in the prologue")
+		Fit.text(c, mono, tab.position + Vector2(8, 0), "CASE %d" % id, 16, Color(Palette.INK.lightened(0.25), shown))
 		var y := tab.position.y + 22
 		for line in SqlDraw.wrap(str(Story.case(id).get("title", "")), 66, titles, 13):
-			c.draw_string(titles, Vector2(tab.position.x + 6, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color(Palette.INK, shown))
+			Fit.text(c, titles, Vector2(tab.position.x + 6, y), line, 13, Color(Palette.INK, shown))
 			y += 15
 		y = tab.position.y + 62
 		for line in SqlDraw.wrap(str(Story.case(id).get("lesson", "")), 68):
-			c.draw_string(mono, Vector2(tab.position.x + 6, y), line, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color(Palette.SYN_KEYWORD, shown))
+			Fit.text(c, mono, Vector2(tab.position.x + 6, y), line, 16, Color(Palette.SYN_KEYWORD, shown))
 			y += 11
+		Fit.end()

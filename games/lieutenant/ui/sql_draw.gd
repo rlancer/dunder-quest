@@ -6,6 +6,8 @@ extends RefCounted
 
 const SIZE := 16
 const LINE := 11
+## What a clause's second line starts with.
+const INDENT := "    "
 const WORDS := ["SELECT", "DISTINCT", "FROM", "JOIN", "LEFT", "INNER", "OUTER", "ON", "WHERE", "GROUP", "BY", "HAVING", "ORDER", "ASC", "DESC", "LIMIT", "AND", "OR", "NOT", "IS", "NULL", "LIKE", "BETWEEN", "IN", "AS"]
 
 
@@ -50,18 +52,26 @@ static func tokens(line: String, base: Color, dark: bool = false) -> Array:
 	return out
 
 
-## Draws one line at `at` (baseline) and returns its width.
+## Draws one line at `at` (baseline) and returns its width. Each word is
+## placed by the width of everything before it, so a line comes out exactly
+## as wide as `width` says however many colours it's drawn in.
 static func draw_line(canvas: CanvasItem, at: Vector2, line: String, base: Color = Palette.NOTE_INK, dark: bool = false) -> float:
 	var font := Palette.mono()
-	var x := 0.0
+	var before := ""
 	for token: Array in tokens(line, base, dark):
-		canvas.draw_string(font, (at + Vector2(x, 0)).round(), str(token[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE, token[1])
-		x += font.get_string_size(str(token[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE).x
-	return x
+		Fit.text(canvas, font, at + Vector2(width(before), 0), str(token[0]), SIZE, token[1])
+		before += str(token[0])
+	return width(line)
 
 
 static func width(text: String) -> float:
 	return Palette.mono().get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, SIZE).x
+
+
+## How far one character of the code font moves along a line. (A single
+## character measures a little more than that: its width is rounded up.)
+static func cell() -> float:
+	return width("0".repeat(40)) / 40.0
 
 
 ## Breaks `text` into lines no wider than `limit`.
@@ -82,13 +92,21 @@ static func wrap(text: String, limit: float, font: Font = null, size: int = SIZE
 	return lines
 
 
-## Shortens `text` with ".." until it fits in `limit`.
-static func fit(text: String, limit: float) -> String:
-	if width(text) <= limit:
-		return text
-	while text.length() > 1 and width(text + "..") > limit:
-		text = text.substr(0, text.length() - 1)
-	return text + ".."
+## A query written a clause to a line, with any clause wider than `limit`
+## carried on to further lines, indented.
+static func wrap_clauses(clauses: PackedStringArray, limit: float) -> PackedStringArray:
+	var out := PackedStringArray()
+	for clause in clauses:
+		if width(clause) <= limit:
+			out.append(clause)
+			continue
+		# (SqlDraw.wrap, spelled out: a bare wrap() is GDScript's own, for numbers.)
+		var rest := SqlDraw.wrap(clause, limit)
+		out.append(rest[0])
+		rest.remove_at(0)
+		for line in SqlDraw.wrap(" ".join(rest), limit - width(INDENT)):
+			out.append(INDENT + line)
+	return out
 
 
 static func _word(c: String) -> bool:
