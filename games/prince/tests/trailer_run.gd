@@ -27,6 +27,7 @@ var _logged := 0
 
 func _init() -> void:
 	fast = false
+	with_intro = false
 	press_frames = 40
 	hold_frames = 80
 
