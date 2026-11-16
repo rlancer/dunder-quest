@@ -52,6 +52,15 @@ TRACKS = {
         "oud, sharp santur runs, brass stabs, a ticking clock-like pulse underneath. Dangerous and "
         "relentless, a villain's hourglass running out. Minor mode, fast tempo."
     ),
+    # Under the prologue's narration, so it stays out of the voice's way.
+    "intro": COMMON + (
+        "A gentle, storybook prologue underscore for a narrator telling a fairy tale: a slow, tender ney "
+        "flute melody over soft santur arpeggios and a warm low string pad, a plucked oud answering now and "
+        "then, a very soft daf heartbeat that grows a little darker and more ominous in the middle, then "
+        "opens out into a hopeful, quietly heroic close. Spacious and calm, no sudden loud hits, mostly in "
+        "the low and middle register so a speaking voice sits clearly on top. Minor mode with a raised "
+        "second, slow tempo."
+    ),
 }
 
 
