@@ -7,9 +7,9 @@ Vizier's lines in theirs, and the Git word for each beat by the narrator.
 A clip is named for its words, so editing a line in ui/intro.gd and running
 this again makes just that clip; --prune drops clips no line uses any more.
 
-The key is ELEVENLABS_API_KEY in .env (found as tools/common.py finds the
-OpenRouter key) and is never printed. Voices are ElevenLabs' stock ones;
-ELEVENLABS_VOICE_NARRATOR, _PRINCESS and _VIZIER in .env swap any of them.
+It goes through OpenRouter's speech endpoint, with the same key in .env as
+the art and the music (tools/common.py finds it); the key is never printed.
+Voices are ElevenLabs' stock ones.
 
     python tools/voice.py              # every clip that's missing
     python tools/voice.py --redo       # every clip, again
@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -34,21 +35,23 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(HERE))
 
-from common import load_env  # noqa: E402
+from common import api  # noqa: E402
 
 OUT = ROOT / "assets" / "voice"
 RAW = HERE / "generated" / "voice"
-API = "https://api.elevenlabs.io/v1/text-to-speech/{voice}?output_format=mp3_44100_128"
-MODEL = "eleven_multilingual_v2"
+# Made for steady narration, so sixteen separate clips sound like one reading.
+MODEL = "elevenlabs/eleven-multilingual-v2"
+# Every clip's loudness, in LUFS.
+LOUDNESS = -16.0
 
-# Stock ElevenLabs voices, and how each one should sound.
+# Stock ElevenLabs voices, by OpenRouter's names for them.
 VOICES = {
-    # George: a warm, mature British storyteller.
-    "narrator": ("JBFqnCBsd6RMkjVDRZzb", {"stability": 0.55, "similarity_boost": 0.75, "style": 0.25}),
-    # Lily: a young, warm British woman, brave behind bars.
-    "princess": ("pFZP5JQG7iQjIQuC4Bku", {"stability": 0.5, "similarity_boost": 0.75, "style": 0.35}),
-    # Callum: husky and sly, a villain enjoying himself.
-    "vizier": ("N2lVS1w4EtoT3dr4eOWO", {"stability": 0.35, "similarity_boost": 0.75, "style": 0.6}),
+    # A warm, mature British storyteller.
+    "narrator": "george",
+    # A young, warm British woman, brave behind bars.
+    "princess": "lily",
+    # Husky and sly, a villain enjoying himself.
+    "vizier": "callum",
 }
 
 
@@ -74,51 +77,58 @@ def lines() -> list[dict]:
     raise SystemExit("The game didn't list its lines:\n" + result.stdout[-2000:] + result.stderr[-2000:])
 
 
-def speak(key: str, line: dict, env: dict[str, str]) -> Path:
-    voice, settings = VOICES[line["voice"]]
-    voice = env.get(f"ELEVENLABS_VOICE_{line['voice'].upper()}", voice)
-    body = json.dumps({"text": line["text"], "model_id": env.get("ELEVENLABS_MODEL", MODEL),
-                       "voice_settings": settings}).encode("utf-8")
-    request = urllib.request.Request(API.format(voice=voice), data=body, method="POST", headers={
-        "xi-api-key": key, "Content-Type": "application/json", "Accept": "audio/mpeg"})
+def speak(url: str, key: str, line: dict, redo: bool) -> Path:
+    """The line as ElevenLabs read it. A reading already in tools/generated/
+    is used again unless `redo`, so re-levelling the clips costs nothing."""
+    raw = RAW / f"{line['key']}.mp3"
+    if raw.exists() and not redo:
+        return raw
+    body = json.dumps({"model": MODEL, "input": line["text"], "voice": VOICES[line["voice"]],
+                       "response_format": "mp3"}).encode("utf-8")
+    request = urllib.request.Request(f"{url}/audio/speech", data=body, method="POST", headers={
+        "Authorization": f"Bearer {key}", "Content-Type": "application/json"})
     try:
         with urllib.request.urlopen(request, timeout=120) as response:
             audio = response.read()
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", "replace").replace(key, "[REDACTED]")
         raise RuntimeError(f"HTTP {exc.code}: {detail[:400]}") from None
+    if len(audio) < 2000 or audio[:1] in (b"{", b"["):
+        raise RuntimeError(f"not audio: {audio[:200]!r}")
     RAW.mkdir(parents=True, exist_ok=True)
-    raw = RAW / f"{line['key']}.mp3"
     raw.write_bytes(audio)
     return raw
 
 
 def to_ogg(source: Path, dest: Path) -> None:
-    """Mono Ogg, loudness-matched, with the silence trimmed off both ends."""
+    """Mono Ogg with the silence trimmed off both ends, every clip as loud as
+    the next. The level is measured and then set, since a one-pass loudnorm
+    leaves a two-second clip several decibels short."""
     trim = "silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.05"
+    trimmed = f"{trim},areverse,{trim},areverse"
+    heard = subprocess.run(["ffmpeg", "-hide_banner", "-i", str(source), "-af", f"{trimmed},ebur128=framelog=quiet",
+                            "-f", "null", "-"], capture_output=True, text=True, check=True).stderr
+    gain = LOUDNESS - float(re.findall(r"I:\s+(-?[\d.]+) LUFS", heard)[-1])
     command = ["ffmpeg", "-y", "-loglevel", "error", "-i", str(source), "-af",
-               f"{trim},areverse,{trim},areverse,loudnorm=I=-16:TP=-1.5:LRA=11",
+               f"{trimmed},volume={gain:.2f}dB,alimiter=limit=0.84:level=false",
                "-ac", "1", "-ar", "44100", "-c:a", "libvorbis", "-q:a", "5", str(dest)]
     subprocess.run(command, check=True)
 
 
 def main() -> None:
     redo = "--redo" in sys.argv
-    env = load_env()
-    key = env.get("ELEVENLABS_API_KEY", "") or os.environ.get("ELEVENLABS_API_KEY", "")
     wanted = lines()
     todo = [line for line in wanted if redo or not (OUT / f"{line['key']}.ogg").exists()]
-    if todo and not key:
-        raise SystemExit("ELEVENLABS_API_KEY is missing from .env")
+    url, key = api() if todo else ("", "")
     OUT.mkdir(parents=True, exist_ok=True)
     failed = 0
     for line in todo:
         try:
-            to_ogg(speak(key, line, env), OUT / f"{line['key']}.ogg")
+            to_ogg(speak(url, key, line, redo), OUT / f"{line['key']}.ogg")
             print(f"SPOKE {line['key']} ({line['voice']}): {line['text']}", flush=True)
         except Exception as exc:  # keep the other lines going
             failed += 1
-            print(f"VOICE fail {line['key']}: {str(exc).replace(key, '[REDACTED]') if key else exc}", flush=True)
+            print(f"VOICE fail {line['key']}: {str(exc).replace(key, '[REDACTED]')}", flush=True)
     if "--prune" in sys.argv:
         keep = {f"{line['key']}.ogg" for line in wanted}
         for clip in OUT.glob("intro_*.ogg"):

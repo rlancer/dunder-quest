@@ -73,6 +73,8 @@ func _intro() -> void:
 	var intro := get_tree().current_scene as Intro
 	intro.driven = true
 	var beats := intro.beat_count()
+	for line: Dictionary in intro.lines():
+		_expect(ResourceLoader.exists(Intro.VOICE_DIR + line.key + ".ogg"), "no voice for \"%s\": run tools/voice.py" % line.text)
 	for index in beats:
 		_expect(intro.beat() == index, "the prologue is on beat %d, not %d" % [intro.beat(), index])
 		intro.pose()
