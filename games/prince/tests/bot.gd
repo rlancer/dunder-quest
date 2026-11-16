@@ -79,6 +79,8 @@ func _intro() -> void:
 		_expect(intro.beat() == index, "the prologue is on beat %d, not %d" % [intro.beat(), index])
 		intro.pose()
 		await moment("0_intro_%d" % (index + 1))
+		if index == beats - 1:
+			_intro_back(intro, index)
 		intro.advance()
 	var ledger := intro.ledger
 	_expect(ledger.is_clean() and ledger.history().size() == 6, "the prologue's ledger should hold six commits")
@@ -91,6 +93,26 @@ func _intro() -> void:
 		_fail("the prologue never reached the first room")
 		return
 	print("prologue: %d beats, then room %d" % [beats, (get_tree().current_scene as Room).level_id])
+
+
+## The left arrow, from the last beat back to the first of the ledger and on
+## again: going back must put the ledger as it stood then, and coming forward
+## must seal the very same commits.
+func _intro_back(intro: Intro, last: int) -> void:
+	var ledger_head := intro.ledger.head_sha()
+	var hall_head := intro.hall.head_sha()
+	for i in last - 1:
+		intro.back()
+	_expect(intro.beat() == 1, "going back should reach beat 2, not %d" % (intro.beat() + 1))
+	_expect(intro.ledger.history().size() == 1 and intro.ledger.is_clean(), "going back to beat 2 should leave the ledger unsealed")
+	intro.back()
+	intro.back()
+	_expect(intro.beat() == 0, "going back past the first beat should stay on it")
+	for i in last:
+		intro.advance()
+	_expect(intro.beat() == last, "coming forward again should reach the last beat")
+	_expect(intro.ledger.head_sha() == ledger_head, "the ledger should seal the same commits the second time")
+	_expect(intro.hall.head_sha() == hall_head and intro.hall.value("torch_2") == "dark", "the hall should end the same the second time")
 
 func _finish() -> void:
 	pass

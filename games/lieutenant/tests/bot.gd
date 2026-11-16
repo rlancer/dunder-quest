@@ -87,6 +87,15 @@ func _prologue() -> void:
 		_check(intro.page() == index, "the prologue is on page %d, not %d" % [intro.page(), index])
 		await _frames(page_frames)
 		await moment("prologue %d" % (index + 1))
+		if index == pages - 1:
+			# The left arrow, back to the first page and past it, then on again.
+			for i in pages:
+				intro.back()
+			_check(intro.page() == 0, "going back should stop on the first page, not page %d" % (intro.page() + 1))
+			for i in pages - 1:
+				intro.settle()
+				intro.turn()
+			_check(intro.page() == index, "coming forward again should reach the last page, not page %d" % (intro.page() + 1))
 		intro.turn()
 		await _frames(2)
 		intro.turn()
