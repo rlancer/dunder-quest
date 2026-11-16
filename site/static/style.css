@@ -606,6 +606,7 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .game-fm:hover { border-color: #f7de1f; }
 .game-ms:hover { border-color: #2bb673; }
 .game-pv:hover { border-color: #e9b949; }
+.game-jj:hover { border-color: #f08033; }
 /* Two across on a wide screen; an odd game out spans the row, art beside
    its copy. */
 @media (min-width: 761px) {
