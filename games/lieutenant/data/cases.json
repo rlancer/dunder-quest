@@ -1,0 +1,904 @@
+{
+	"cast": {
+		"lt": {"name": "Lt. Colonna", "full": "Lieutenant Colonna", "role": "Homicide. A raincoat, a cigar, a pencil he can never find"},
+		"null": {"name": "Null", "full": "Null", "role": "the Lieutenant's basset hound. He never got around to giving him a name"},
+		"doris": {"name": "Doris", "full": "Doris, Records Division", "role": "runs the department's new computer, and reads back exactly what it says"},
+		"voss": {"name": "Voss", "full": "Sterling Voss", "role": "real-estate developer, at a gala all evening"},
+		"bannister": {"name": "Ms. Bannister", "full": "Dinah Bannister", "role": "three-time finalist, owner of the Palisades Racquet Club"},
+		"brandt": {"name": "Brandt", "full": "Hugo Brandt", "role": "astrologer to the stars, at home in seclusion"},
+		"sloane": {"name": "Dr. Sloane", "full": "Dr. Miriam Sloane", "role": "psychiatrist, Beverly Hills"},
+		"harrow": {"name": "Mrs. Harrow", "full": "Augusta Harrow", "role": "owner of the Harrow Grand Hotel"}
+	},
+	"stock": {
+		"errors": {
+			"no_from": "I asked for a column and never said which file. That's what FROM is for.",
+			"no_column": "That column isn't in the file I'm asking. Either it's in another file, or I've got the wrong FROM.",
+			"no_table_column": "The %s file isn't in this query. It has to be in FROM, or JOINed in, before I can read its columns.",
+			"ambiguous": "Two files in this query have a column called that. I have to say whose: file.column.",
+			"aggregate_where": "WHERE looks at one row at a time. There's no count yet. A test on a count goes in HAVING.",
+			"having": "HAVING is for piles. I haven't made any piles: no GROUP BY, no count.",
+			"empty_select": "SELECT what? I haven't picked anything to read back.",
+			"strict": "One count for a whole pile of rows, and beside it I ask for a column that's different on every row. Which row's? I have to GROUP BY it.",
+			"other": "The machine didn't like that. Read it again, slowly."
+		},
+		"strict_note": "PostgreSQL's words, and most databases agree. SQLite would answer anyway, with a value from some row of its choosing.",
+		"misses": {
+			"columns_missing": "Right idea, but I don't see %s on the page. I need that read back too.",
+			"columns_extra": "Too much on the page. All I asked for was %s.",
+			"rows_none": "Nothing. Not one row. Either nobody fits, or I asked it wrong. Text has to match to the letter.",
+			"rows_more": "That's %d rows, and I only want %d of them. I have to narrow it down.",
+			"rows_fewer": "That's only %d. I've thrown out rows I need: there should be %d.",
+			"rows_other": "%d rows, but not the right ones. I'm asking the wrong question.",
+			"order_missing": "Right rows. But with no ORDER BY, they come back in whatever order the machine feels like. I need them in order.",
+			"order_wrong": "Right rows, wrong order."
+		},
+		"doris": {
+			"rows": "Records. %d rows, Lieutenant.",
+			"row": "Records. One row, Lieutenant.",
+			"none": "Records. Nothing, Lieutenant. Zero rows.",
+			"error": "The machine won't take it, Lieutenant. It says:",
+			"strict": "I'm not reading you that one, Lieutenant. It says:"
+		}
+	},
+	"cards": {
+		"c_select": {
+			"title": "SELECT and FROM",
+			"sql": "SELECT name, arrived\nFROM guests",
+			"text": "A table is a file of records: every row is one record, every column is one fact about it. FROM says which table. SELECT says which columns to read back, in the order you list them. SELECT * means all of them."
+		},
+		"c_where": {
+			"title": "WHERE",
+			"sql": "SELECT name, arrived\nFROM guests\nWHERE arrived > '21:00'",
+			"text": "WHERE keeps only the rows where the condition is true. Text goes in single quotes and has to match to the letter. Records writes the time the way the Army does: '21:00' is nine at night, so later times sort after earlier ones."
+		},
+		"c_like": {
+			"title": "LIKE",
+			"sql": "SELECT plate, owner\nFROM cars\nWHERE plate LIKE '%2'",
+			"text": "LIKE matches a pattern instead of the whole text. % stands for any run of characters (even none), and _ for exactly one. 'S%' starts with S. '%2' ends in 2. '%K%' has a K in it anywhere."
+		},
+		"c_and_or": {
+			"title": "AND, OR",
+			"sql": "SELECT plate, owner\nFROM cars\nWHERE color = 'white' OR color = 'red'",
+			"text": "AND keeps a row only when both conditions are true, so it narrows. OR keeps a row when either one is true, so it widens. No car is white AND red. Three are white OR red."
+		},
+		"c_order": {
+			"title": "ORDER BY and LIMIT",
+			"sql": "SELECT plate, at\nFROM gate_log\nORDER BY at\nLIMIT 2",
+			"text": "Unless you say ORDER BY, rows come back in no order you can count on. ORDER BY sorts them, smallest first; add DESC for largest first. LIMIT stops after that many rows. Together they ask for the first, the last, the most."
+		},
+		"c_join": {
+			"title": "JOIN ... ON",
+			"sql": "SELECT calls.at, phones.owner\nFROM calls\nJOIN phones ON calls.caller = phones.number\nWHERE calls.minutes > 5",
+			"text": "JOIN lays two tables side by side. ON says which rows go together: here a call goes with the phone that made it. Get ON wrong and you match every call with the wrong phone. With two tables in play, write table.column so there's no doubt whose column you mean."
+		},
+		"c_count": {
+			"title": "COUNT(*)",
+			"sql": "SELECT COUNT(*)\nFROM prescriptions\nWHERE drug = 'Calmex'",
+			"text": "COUNT(*) doesn't read the rows back. It counts them and hands you one number. WHERE still chooses which rows get counted. SUM, MIN, MAX and AVG do the same kind of thing to one column."
+		},
+		"c_group": {
+			"title": "GROUP BY",
+			"sql": "SELECT drug, COUNT(*)\nFROM prescriptions\nGROUP BY drug",
+			"text": "GROUP BY sorts the rows into piles, one pile for each value, and then the count is taken pile by pile: one row back per pile. Anything you SELECT beside the count has to be something you grouped by."
+		},
+		"c_having": {
+			"title": "HAVING",
+			"sql": "SELECT drug, COUNT(*)\nFROM prescriptions\nGROUP BY drug\nHAVING COUNT(*) > 5",
+			"text": "WHERE throws out rows before they're piled up. HAVING throws out whole piles afterward. A count doesn't exist until the piles do, so a test on COUNT(*) belongs in HAVING, never in WHERE."
+		},
+		"c_left": {
+			"title": "LEFT JOIN",
+			"tables": {
+				"detectives": {"columns": [["name", "TEXT"], ["desk", "INTEGER"]], "rows": [["Colonna", 4], ["Kowalski", 5], ["Diaz", 6]]},
+				"motor_pool": {"columns": [["desk", "INTEGER"], ["car", "TEXT"]], "rows": [[5, "Plymouth"], [6, "Dodge"]]}
+			},
+			"sql": "SELECT detectives.name, motor_pool.car\nFROM detectives\nLEFT JOIN motor_pool ON detectives.desk = motor_pool.desk",
+			"text": "A plain JOIN drops any row that has no partner. LEFT JOIN keeps every row of the left-hand table, the one in FROM. Where there's no partner, the other table's columns come back NULL: nothing there. The department never issued the Lieutenant a car."
+		},
+		"c_null": {
+			"title": "IS NULL",
+			"tables": {
+				"detectives": {"columns": [["name", "TEXT"], ["desk", "INTEGER"]], "rows": [["Colonna", 4], ["Kowalski", 5], ["Diaz", 6]]},
+				"motor_pool": {"columns": [["desk", "INTEGER"], ["car", "TEXT"]], "rows": [[5, "Plymouth"], [6, "Dodge"]]}
+			},
+			"sql": "SELECT detectives.name\nFROM detectives\nLEFT JOIN motor_pool ON detectives.desk = motor_pool.desk\nWHERE motor_pool.car IS NULL",
+			"text": "NULL means there's no value here. It isn't equal to anything, not even to another NULL, so = NULL is never true and finds nothing. Ask with IS NULL, or IS NOT NULL. LEFT JOIN and then IS NULL is how you find what's missing."
+		}
+	},
+	"cases": [
+		{
+			"id": 1,
+			"key": "gala",
+			"title": "Select Company",
+			"place": "The Hartwell Gala, Bel Air",
+			"lesson": "SELECT, FROM, WHERE",
+			"killer": "voss",
+			"killer_x": 318,
+			"cold_open": [
+				["8:05 PM", "At the Hartwell gala, Mrs. Voss signs the guest book. Twice. Once for a husband who isn't with her."],
+				["9:15 PM", "Across town, in the offices of Voss & Quill, Walter Quill stops being a partner."],
+				["9:50 PM", "Sterling Voss strolls into the gala, hands over his overcoat, and asks what he's missed."],
+				["", "He has thought of everything. He has thought of the guest book."]
+			],
+			"tables": {
+				"guests": {
+					"what": "the gala's guest book",
+					"columns": [["name", "TEXT"], ["arrived", "TEXT"], ["table_no", "INTEGER"]],
+					"rows": [
+						["Harold Hartwell", "19:30", 1], ["Mimi Hartwell", "19:30", 1], ["Opal Fenwick", "19:40", 1],
+						["Judge Amos Brill", "19:45", 2], ["Dolores Brill", "19:45", 2], ["Sterling Voss", "20:05", 3],
+						["Babs Voss", "20:05", 3], ["Rex Lombard", "20:10", 4], ["Ginny Lombard", "20:10", 4],
+						["Sen. Clay Mercer", "20:20", 2], ["Tad Winslow", "20:35", 4], ["Coco LaRue", "21:10", 5],
+						["Bunny Aldrich", "21:40", 5], ["Chip Aldrich", "21:40", 5]
+					]
+				},
+				"coat_check": {
+					"what": "the coat-check stubs",
+					"columns": [["ticket", "INTEGER"], ["name", "TEXT"], ["checked_at", "TEXT"], ["item", "TEXT"]],
+					"rows": [
+						[101, "Opal Fenwick", "19:41", "mink stole"], [102, "Judge Amos Brill", "19:46", "gray overcoat"],
+						[103, "Dolores Brill", "19:46", "fox wrap"], [104, "Babs Voss", "20:06", "white fur"],
+						[105, "Rex Lombard", "20:11", "camel coat"], [106, "Ginny Lombard", "20:11", "shawl"],
+						[107, "Sen. Clay Mercer", "20:21", "black overcoat"], [108, "Tad Winslow", "20:36", "raincoat"],
+						[109, "Coco LaRue", "21:11", "feather boa"], [110, "Bunny Aldrich", "21:41", "cape"],
+						[111, "Sterling Voss", "21:50", "black overcoat"]
+					]
+				}
+			},
+			"props": [
+				{"id": "book", "x": 150, "y": 146, "label": "the guest book", "table": "guests", "lines": [
+					["lt", "A guest book. Everybody signs in, with the time. My wife, she'd love this. She keeps a list of everything."],
+					["lt", "I had Doris down at Records type it into the new machine. It only answers in a thing called SQL.", "think"]
+				]},
+				{"id": "coats", "x": 432, "y": 84, "label": "the coat check", "table": "coat_check", "lines": [
+					["lt", "Say, that's some coat room. They give you a little ticket, and they write the time on the stub."],
+					["lt", "Doris typed these in too. She types everything in.", "think"]
+				]}
+			],
+			"opening": [
+				["lt", "Mr. Voss? Lieutenant Colonna, Homicide. I'm sorry to walk in on a party like this. It's about your partner, Mr. Quill."],
+				["voss", "Walter? Good Lord. When?"],
+				["lt", "A quarter past nine, the doctor says. At your office. I just have to ask where everybody was. It's routine."],
+				["voss", "I've been right here since eight o'clock, Lieutenant. It's in the guest book. Look for yourself.", "smug"]
+			],
+			"beats": [
+				{
+					"id": "1a",
+					"needs": ["book"],
+					"card": "c_select",
+					"claim": [
+						["voss", "Go on, then. Read the guest book. I have nothing but time.", "smug"],
+						["lt", "That's very kind, sir. I'll just telephone Records. May I use this phone?"]
+					],
+					"ask": "Read me the whole guest book, Doris. Every column.",
+					"tray": {
+						"select": ["*", "name", "arrived", "table_no"],
+						"from": ["guests"]
+					},
+					"solution": {"select": ["*"], "from": "guests"},
+					"hint": "FROM is the file. SELECT is what to read out of it. A star is everything.",
+					"success": [
+						["lt", "Fourteen names. That's a lot of guest book to read to a man over the telephone."],
+						["voss", "Then perhaps ask it something shorter."]
+					]
+				},
+				{
+					"id": "1b",
+					"needs": ["book"],
+					"card": "c_where",
+					"claim": [
+						["voss", "My name is in there, Lieutenant, with the time beside it. That ought to settle things."],
+						["lt", "I'm sure it will, sir. I'm sure it will.", "think"]
+					],
+					"ask": "Just Sterling Voss: his name and when he arrived.",
+					"tray": {
+						"select": ["*", "name", "arrived", "table_no"],
+						"from": ["guests"],
+						"where": ["name = 'Sterling Voss'", "name = 'Voss'", "table_no = 3", "arrived > '21:30'"]
+					},
+					"solution": {"select": ["name", "arrived"], "from": "guests", "where": ["name = 'Sterling Voss'"]},
+					"hint": "WHERE keeps the rows that pass a test. A name has to match to the letter.",
+					"notes": {
+						"where:name = 'Voss'": "'Voss' isn't 'Sterling Voss'. With an equals sign the text has to match all the way, first name and all.",
+						"where:table_no = 3": "Table three is Mr. Voss and Mrs. Voss. I asked about one of them."
+					},
+					"success": [
+						["voss", "Five past eight. As I said. Are we finished, Lieutenant?", "smug"],
+						["lt", "Five past eight. That's what it says, all right. I won't keep you, sir. I'll find my own way out."]
+					]
+				},
+				{
+					"id": "1c",
+					"needs": ["coats"],
+					"final": true,
+					"claim": [
+						["lt", "Oh, Mr. Voss? I'm sorry. There's one more question I'd like to put to the machine.", "point"],
+						["voss", "Of course there is."]
+					],
+					"ask": "Who checked a coat after nine-thirty? The name and the time on the stub.",
+					"tray": {
+						"select": ["*", "name", "checked_at", "item", "arrived"],
+						"from": ["guests", "coat_check"],
+						"where": ["checked_at > '21:30'", "checked_at < '21:30'", "name = 'Sterling Voss'", "item = 'black overcoat'"]
+					},
+					"solution": {"select": ["name", "checked_at"], "from": "coat_check", "where": ["checked_at > '21:30'"]},
+					"hint": "The stubs are a different file from the guest book. Nine-thirty is '21:30'.",
+					"notes": {
+						"select:arrived": "'arrived' is a column in the guest book. The coat stubs call theirs 'checked_at'.",
+						"where:name = 'Sterling Voss'": "That finds his stub, sure. But I want to see everybody after nine-thirty, so he can't say I singled him out."
+					},
+					"success": [
+						["lt", "You signed that book at five past eight, sir. And your overcoat got checked at ten to ten."],
+						["voss", "I... was carrying it. I forgot I had it on my arm.", "sweat"],
+						["lt", "For an hour and forty-five minutes. At a party. Sir, my wife says I'd lose my head if it wasn't attached, and even I never did that.", "think"],
+						["lt", "Mrs. Voss signed for the both of you. The book says when your name got here. The stub says when you did.", "point"]
+					]
+				}
+			],
+			"ending": [
+				["voss", "I should have kept the coat on.", "sweat"],
+				["lt", "It was a warm night, sir. Somebody would've remembered that, too."]
+			]
+		},
+		{
+			"id": 2,
+			"key": "club",
+			"title": "Out of Order",
+			"place": "The Palisades Racquet Club",
+			"lesson": "LIKE, AND, OR, ORDER BY, LIMIT",
+			"killer": "bannister",
+			"killer_x": 330,
+			"cold_open": [
+				["9:40 PM", "Topanga Canyon. A black sedan sits at the overlook with its lights off, beside a silver coupe."],
+				["", "Dinah Bannister, three-time finalist, releases a handbrake that isn't hers. Her partner goes down with his car."],
+				["", "A jogger sees the sedan pull away and remembers two things: it was black, and the plate began 4K."],
+				["10:25 PM", "She is back at her club. Her car, she will say, never left its space."]
+			],
+			"tables": {
+				"cars": {
+					"what": "the members' car register",
+					"columns": [["plate", "TEXT"], ["owner", "TEXT"], ["make", "TEXT"], ["color", "TEXT"]],
+					"rows": [
+						["2MC 471", "Judge Amos Brill", "Cadillac sedan", "black"], ["4KJ 882", "Dinah Bannister", "Mercedes sedan", "black"],
+						["3HV 968", "Skip Bannister", "Jaguar coupe", "silver"], ["4KR 310", "Opal Fenwick", "Lincoln sedan", "black"],
+						["7PL 204", "Coco LaRue", "Corvette", "red"], ["4KT 555", "Tad Winslow", "Triumph roadster", "green"],
+						["9DX 120", "Sen. Clay Mercer", "Lincoln sedan", "black"], ["4KA 019", "Rex Lombard", "Buick wagon", "white"],
+						["5KK 404", "Bunny Aldrich", "Mustang", "yellow"], ["1RB 733", "Chip Aldrich", "Ford pickup", "blue"],
+						["6WN 256", "Ginny Lombard", "VW Beetle", "orange"], ["8FS 642", "Mimi Hartwell", "Rolls-Royce", "white"]
+					]
+				},
+				"gate_log": {
+					"what": "the gate man's clipboards",
+					"columns": [["seq", "INTEGER"], ["plate", "TEXT"], ["direction", "TEXT"], ["at", "TEXT"]],
+					"rows": [
+						[1, "2MC 471", "IN", "17:15"], [2, "4KJ 882", "IN", "18:02"], [3, "3HV 968", "IN", "18:20"],
+						[4, "4KR 310", "IN", "18:30"], [5, "7PL 204", "IN", "18:45"], [6, "4KT 555", "IN", "19:05"],
+						[7, "4KJ 882", "IN", "22:25"], [8, "3HV 968", "OUT", "20:40"], [9, "4KJ 882", "OUT", "21:10"],
+						[10, "2MC 471", "OUT", "21:15"], [11, "7PL 204", "OUT", "21:50"], [12, "4KR 310", "OUT", "21:55"],
+						[13, "4KT 555", "OUT", "22:05"]
+					]
+				}
+			},
+			"props": [
+				{"id": "register", "x": 138, "y": 148, "label": "the car register", "table": "cars", "lines": [
+					["lt", "Every member's car, with the plate. That's a nice system. At my club they just yell."],
+					["lt", "I don't have a club. That was a joke. Doris has all this in the machine.", "think"]
+				]},
+				{"id": "clipboards", "x": 366, "y": 136, "label": "the gate log", "table": "gate_log", "lines": [
+					["lt", "The night man keeps two clipboards. One for cars coming in, one for cars going out."],
+					["lt", "Doris typed in the first clipboard and then the second. So it's all there. It's just not in order.", "think"]
+				]}
+			],
+			"opening": [
+				["lt", "Ms. Bannister, I saw you play at Forest Hills in '61. My wife's cousin had tickets. You were robbed in that third set."],
+				["bannister", "Lieutenant, my partner drove off a canyon road last night. Is there a question?"],
+				["lt", "Well, a jogger saw a second car up there. A black sedan. The plate started with a 4 and a K, that's all he got."],
+				["bannister", "Half this club drives a black sedan. Mine sat in its space all evening. Ask anyone.", "smug"]
+			],
+			"beats": [
+				{
+					"id": "2a",
+					"needs": ["register"],
+					"card": "c_like",
+					"claim": [
+						["bannister", "A 4 and a K. That narrows it to most of California.", "smug"],
+						["lt", "It does, ma'am. But I only have to start with the cars that park here."]
+					],
+					"ask": "Which members' plates begin with 4K? Plate, owner and color.",
+					"tray": {
+						"select": ["*", "plate", "owner", "make", "color"],
+						"from": ["cars"],
+						"where": ["plate LIKE '4K%'", "plate LIKE '%4K'", "plate LIKE '%K%'", "plate = '4K'"]
+					},
+					"solution": {"select": ["plate", "owner", "color"], "from": "cars", "where": ["plate LIKE '4K%'"]},
+					"hint": "The plate starts with 4K and then anything. % is the anything.",
+					"notes": {
+						"where:plate = '4K'": "No plate is just '4K'. Equals wants the whole plate. I only know how it starts.",
+						"where:plate LIKE '%4K'": "'%4K' is a plate that ends in 4K. The % goes where the part I don't know is.",
+						"where:plate LIKE '%K%'": "That's any plate with a K anywhere in it. The jogger said it began 4K."
+					},
+					"success": [
+						["lt", "Four cars. A green one, a white one, and two black ones."],
+						["bannister", "How thrilling for you."]
+					]
+				},
+				{
+					"id": "2b",
+					"needs": ["register"],
+					"card": "c_and_or",
+					"claim": [
+						["lt", "The jogger said black. So I don't need the green one and the white one.", "think"],
+						["bannister", "You can't cross them off with a pencil?"],
+						["lt", "I never have a pencil, ma'am."]
+					],
+					"ask": "The cars that begin 4K and are black. Plate and owner.",
+					"tray": {
+						"select": ["*", "plate", "owner", "make", "color"],
+						"from": ["cars"],
+						"where": ["plate LIKE '4K%'", "color = 'black'", "make LIKE '%sedan'"],
+						"logic": ["AND", "OR"]
+					},
+					"solution": {"select": ["plate", "owner"], "from": "cars", "where": ["plate LIKE '4K%'", "color = 'black'"], "logic": "AND"},
+					"hint": "Two tests, and a car has to pass both.",
+					"notes": {
+						"logic:OR": "OR lets a car through if it passes either test: every 4K car, and every black car too. I want the ones that pass both."
+					},
+					"success": [
+						["bannister", "Opal Fenwick is eighty-one years old and drives like it.", "smug"],
+						["lt", "That's two cars, ma'am. Yours and Mrs. Fenwick's. Till the machine says different, she's as good a suspect as you are."]
+					]
+				},
+				{
+					"id": "2c",
+					"needs": ["clipboards"],
+					"card": "c_order",
+					"claim": [
+						["bannister", "After nine o'clock that gate is dead, Lieutenant. Nobody comes and nobody goes."],
+						["lt", "Is that right. I wonder what the last few lines on the clipboards say.", "think"]
+					],
+					"ask": "The three latest entries in the gate log, newest first: plate, direction and time.",
+					"tray": {
+						"select": ["*", "plate", "direction", "at", "owner"],
+						"from": ["cars", "gate_log"],
+						"where": ["direction = 'IN'", "direction = 'OUT'"],
+						"order": ["at", "at DESC", "plate"],
+						"limit": ["1", "3", "5"]
+					},
+					"solution": {"select": ["plate", "direction", "at"], "from": "gate_log", "order": "at DESC", "limit": "3"},
+					"ordered": true,
+					"hint": "Newest first is the time, sorted downward. Then stop after three.",
+					"notes": {
+						"order:at": "That's the three earliest. For newest first the sort has to run downward: DESC.",
+						"select:owner": "'owner' is in the car register. The gate man only writes down plates."
+					},
+					"success": [
+						["lt", "Five to ten, a car goes out. Five past ten, a car goes out. And at 10:25 a car comes in. Plate 4KJ 882."],
+						["bannister", "The night man is half blind. He writes down whatever he likes."]
+					]
+				},
+				{
+					"id": "2d",
+					"needs": ["clipboards"],
+					"final": true,
+					"claim": [
+						["lt", "I'm sorry, ma'am, I'm nearly out of your hair. One more, and it's about those two black cars.", "point"],
+						["bannister", "You said that twenty minutes ago."]
+					],
+					"ask": "Every time 4KJ 882 or 4KR 310 went through the gate, in the order it happened: plate, direction, time.",
+					"tray": {
+						"select": ["plate", "direction", "at"],
+						"from": ["cars", "gate_log"],
+						"where": ["plate = '4KJ 882'", "plate = '4KR 310'", "direction = 'OUT'"],
+						"logic": ["AND", "OR"],
+						"order": ["at", "at DESC"],
+						"limit": ["1", "3"]
+					},
+					"solution": {"select": ["plate", "direction", "at"], "from": "gate_log", "where": ["plate = '4KJ 882'", "plate = '4KR 310'"], "logic": "OR", "order": "at"},
+					"ordered": true,
+					"hint": "Either plate will do, so it's one or the other. Then sort by the time.",
+					"notes": {
+						"logic:AND": "No car has two plates. AND wants one row to be both at once, and nothing is. I want either one: OR.",
+						"where:direction = 'OUT'": "I want to see them come in as well as go out. That's the whole point."
+					},
+					"success": [
+						["lt", "The jogger saw a black 4K sedan up at that overlook at twenty to ten."],
+						["lt", "At twenty to ten, Mrs. Fenwick's Lincoln was right here in the lot. It didn't go out till five to ten.", "think"],
+						["lt", "Yours went out at ten past nine and came back at 10:25. Only one black 4K car was out, ma'am. And you told me it never left its space.", "point"],
+						["bannister", "He was selling the club, Lieutenant. My club. To a man who builds parking lots.", "sweat"]
+					]
+				}
+			],
+			"ending": [
+				["bannister", "Robbed in the third set. You really were there?", "sweat"],
+				["lt", "Row forty, ma'am. I couldn't see a thing. But my wife's cousin said it was out."]
+			]
+		},
+		{
+			"id": 3,
+			"key": "malibu",
+			"title": "Inner Circle",
+			"place": "The House of Brandt, Malibu",
+			"lesson": "JOIN ... ON",
+			"killer": "brandt",
+			"killer_x": 322,
+			"cold_open": [
+				["8:50 PM", "Hugo Brandt, astrologer to the stars, telephones his secretary from his car, to be sure she is at home."],
+				["9:10 PM", "He sees to it that Peggy Lund will not be telling anyone who really writes the horoscopes."],
+				["9:40 PM", "Still on the coast highway, he rings his answering service. \"Brandt. I'm at home, charting. Hold my calls.\""],
+				["", "He has consulted the stars. He has not consulted the telephone company."]
+			],
+			"tables": {
+				"calls": {
+					"what": "the telephone company's toll records",
+					"columns": [["id", "INTEGER"], ["caller", "TEXT"], ["receiver", "TEXT"], ["at", "TEXT"], ["minutes", "INTEGER"]],
+					"rows": [
+						[1, "555-0123", "555-0100", "17:30", 12], [2, "555-0100", "555-0188", "18:05", 3],
+						[3, "555-0155", "555-0142", "18:40", 9], [4, "555-0142", "555-0166", "19:15", 4],
+						[5, "555-0199", "555-0142", "20:50", 1], [6, "555-0123", "555-0100", "21:00", 0],
+						[7, "555-0199", "555-0177", "21:40", 2], [8, "555-0166", "555-0142", "21:45", 0],
+						[9, "555-0100", "555-0177", "23:05", 1]
+					]
+				},
+				"phones": {
+					"what": "the reverse directory",
+					"columns": [["number", "TEXT"], ["owner", "TEXT"], ["place", "TEXT"]],
+					"rows": [
+						["555-0100", "Hugo Brandt", "house, Malibu"], ["555-0123", "Opal Fenwick", "house, Bel Air"],
+						["555-0142", "Peggy Lund", "apartment, Santa Monica"], ["555-0155", "Coco LaRue", "apartment, West Hollywood"],
+						["555-0166", "Tad Winslow", "house, Brentwood"], ["555-0177", "Starlight Answering Service", "office, Hollywood"],
+						["555-0188", "Sunset Florists", "shop, Sunset Boulevard"], ["555-0199", "Hugo Brandt", "car telephone"]
+					]
+				}
+			},
+			"props": [
+				{"id": "tolls", "x": 136, "y": 150, "label": "the toll records", "table": "calls", "lines": [
+					["lt", "The telephone company was nice enough to send over last night's calls. Who rang who, and when, and for how long."],
+					["lt", "Only it's all numbers. The telephone company thinks in numbers.", "think"]
+				]},
+				{"id": "directory", "x": 440, "y": 152, "label": "the reverse directory", "table": "phones", "lines": [
+					["lt", "Now this I like. A directory that goes backwards: you look up the number and it tells you whose it is."],
+					["lt", "Doris has it in the machine, right beside the calls.", "think"]
+				]}
+			],
+			"opening": [
+				["lt", "Mr. Brandt, my wife reads your column every morning. She won't leave the house till she knows what Scorpio's in for."],
+				["brandt", "Your wife is a woman of discernment. Poor Peggy. She typed that column for eleven years."],
+				["lt", "That's what I wanted to ask, sir. Did you talk to Miss Lund at all last evening?"],
+				["brandt", "I spoke to no one. I was here, in seclusion, charting, from sundown. Mercury was unusually demanding.", "smug"]
+			],
+			"beats": [
+				{
+					"id": "3a",
+					"needs": ["tolls"],
+					"claim": [
+						["brandt", "Certainly I never telephoned Peggy. Her number is 555-0142. See for yourself who did."],
+						["lt", "That's very helpful, sir. 0142. Let me write that down. Do you have a pencil?"]
+					],
+					"ask": "Every call TO 555-0142 last night: the number that called, and when.",
+					"tray": {
+						"select": ["*", "caller", "receiver", "at", "minutes"],
+						"from": ["calls"],
+						"where": ["receiver = '555-0142'", "caller = '555-0142'", "caller = '555-0100'"]
+					},
+					"solution": {"select": ["caller", "at"], "from": "calls", "where": ["receiver = '555-0142'"]},
+					"hint": "Her telephone was the one ringing. She's the receiver.",
+					"notes": {
+						"where:caller = '555-0142'": "That's the calls Miss Lund made. I want the calls she got: she's the receiver.",
+						"where:caller = '555-0100'": "That's Mr. Brandt's house phone calling out. I'm asking who rang Miss Lund."
+					},
+					"success": [
+						["lt", "Three calls. From 0155, from 0199, and from 0166."],
+						["brandt", "And my number, Lieutenant, ends in 0100. None of those is mine.", "smug"],
+						["lt", "No, sir. They're just numbers. I can't book a number.", "think"]
+					]
+				},
+				{
+					"id": "3b",
+					"needs": ["directory"],
+					"card": "c_join",
+					"claim": [
+						["lt", "The calls are in one file, sir, and the names are in another. I'd like to see them side by side."],
+						["brandt", "The heavens are also in two halves, Lieutenant. It takes a gift to join them."]
+					],
+					"ask": "The same three calls, with names: the owner of the phone that called, and when.",
+					"tray": {
+						"select": ["phones.owner", "phones.place", "calls.caller", "calls.at"],
+						"from": ["calls", "phones"],
+						"join": ["JOIN phones ON calls.caller = phones.number", "JOIN phones ON calls.receiver = phones.number"],
+						"where": ["calls.receiver = '555-0142'", "calls.caller = '555-0142'"]
+					},
+					"solution": {"select": ["phones.owner", "calls.at"], "from": "calls", "join": ["JOIN phones ON calls.caller = phones.number"], "where": ["calls.receiver = '555-0142'"]},
+					"hint": "Start from the calls, join the directory on, and match it to the number that did the calling.",
+					"notes": {
+						"join:JOIN phones ON calls.receiver = phones.number": "That matches the directory to the phone that was ringing, so every row says Peggy Lund. I want whose phone made the call: the caller.",
+						"from:phones": "If I start FROM phones and then JOIN phones, that's the directory twice and no calls. Start from the calls."
+					},
+					"success": [
+						["lt", "Coco LaRue at 6:40. Tad Winslow at a quarter to ten. And at ten to nine... Hugo Brandt."],
+						["brandt", "My car telephone. It's a new invention, Lieutenant, and it misdials constantly. A wrong number.", "sweat"],
+						["lt", "A wrong number. To your own secretary. That'll happen, sir. I won't take up any more of your evening."]
+					]
+				},
+				{
+					"id": "3c",
+					"needs": ["directory"],
+					"final": true,
+					"claim": [
+						["lt", "Oh, there is one thing, sir. It's probably nothing. That car telephone of yours.", "point"],
+						["brandt", "I called my answering service at 9:40, from this house. They'll tell you: 'Mr. Brandt, at home.' Ask the machine that."],
+						["lt", "That's just what I was going to do."]
+					],
+					"ask": "Everybody the car telephone, 555-0199, called last night, in order: the time, and whose phone it rang.",
+					"tray": {
+						"select": ["calls.at", "phones.owner", "phones.place", "calls.minutes"],
+						"from": ["calls", "phones"],
+						"join": ["JOIN phones ON calls.caller = phones.number", "JOIN phones ON calls.receiver = phones.number"],
+						"where": ["calls.caller = '555-0199'", "calls.receiver = '555-0199'", "calls.caller = '555-0100'"],
+						"order": ["calls.at", "calls.at DESC"]
+					},
+					"solution": {"select": ["calls.at", "phones.owner"], "from": "calls", "join": ["JOIN phones ON calls.receiver = phones.number"], "where": ["calls.caller = '555-0199'"], "order": "calls.at"},
+					"ordered": true,
+					"hint": "This time I know who called. It's the other end I want named, so the directory goes on the receiver.",
+					"notes": {
+						"join:JOIN phones ON calls.caller = phones.number": "Matched on the caller, every row just says Hugo Brandt, car telephone. I know that. I want the name on the other end: the receiver.",
+						"where:calls.caller = '555-0100'": "0100 is the house. I'm asking about the car: 0199."
+					},
+					"success": [
+						["lt", "Ten to nine, the car rings Peggy Lund. And at 9:40, the car rings the Starlight Answering Service."],
+						["lt", "You told them you were at home, sir. I believe that. But the telephone company says that call came from your automobile.", "think"],
+						["lt", "And at nine o'clock Mrs. Fenwick rang this house. Zero minutes. Nobody picked up. A man can't be at home in his car, sir.", "point"],
+						["brandt", "She was going to publish, Lieutenant. Eleven years of my predictions, in her handwriting.", "sweat"]
+					]
+				}
+			],
+			"ending": [
+				["brandt", "What's your sign, Lieutenant?", "sweat"],
+				["lt", "I couldn't tell you, sir. My wife knows. She says it explains everything."]
+			]
+		},
+		{
+			"id": 4,
+			"key": "office",
+			"title": "Group Therapy",
+			"place": "Dr. Sloane's Office, Beverly Hills",
+			"lesson": "COUNT, GROUP BY, HAVING",
+			"killer": "sloane",
+			"killer_x": 326,
+			"cold_open": [
+				["", "For six weeks Dr. Miriam Sloane has written the same prescription for the same patient."],
+				["", "Six bottles of sleeping pills, six drugstores, from Pasadena to Long Beach. No druggist sees more than one."],
+				["THURSDAY, 11:00 PM", "Teddy Marlowe, heir to a studio, takes what his doctor gives him and goes to sleep."],
+				["", "She has spread the risk. She has not spread it evenly."]
+			],
+			"tables": {
+				"prescriptions": {
+					"what": "the State Board's prescription file",
+					"columns": [["rx", "INTEGER"], ["patient", "TEXT"], ["drug", "TEXT"], ["pills", "INTEGER"], ["pharmacy", "TEXT"], ["picked_up_by", "TEXT"]],
+					"rows": [
+						[201, "Opal Fenwick", "Dormital", 30, "Rexford Drugs", "O. Fenwick"],
+						[202, "Teddy Marlowe", "Dormital", 30, "Rexford Drugs", "T. Marlowe"],
+						[203, "Coco LaRue", "Calmex", 20, "Vine St Apothecary", "C. LaRue"],
+						[204, "Teddy Marlowe", "Dormital", 30, "Pasadena Rx", "M. Sloane"],
+						[205, "Tad Winslow", "Calmex", 20, "Rexford Drugs", "T. Winslow"],
+						[206, "Teddy Marlowe", "Dormital", 30, "Ocean Park Drugs", "M. Sloane"],
+						[207, "Judge Amos Brill", "Dormital", 15, "Rexford Drugs", "D. Brill"],
+						[208, "Teddy Marlowe", "Dormital", 30, "Vine St Apothecary", "M. Sloane"],
+						[209, "Opal Fenwick", "Dormital", 30, "Rexford Drugs", "O. Fenwick"],
+						[210, "Teddy Marlowe", "Dormital", 30, "Studio City Rx", "M. Sloane"],
+						[211, "Tad Winslow", "Calmex", 20, "Rexford Drugs", "T. Winslow"],
+						[212, "Ginny Lombard", "Calmex", 10, "Ocean Park Drugs", "G. Lombard"],
+						[213, "Teddy Marlowe", "Dormital", 30, "Harbor Drugs", "M. Sloane"]
+					]
+				}
+			},
+			"props": [
+				{"id": "file", "x": 132, "y": 150, "label": "the prescription file", "table": "prescriptions", "lines": [
+					["lt", "Every prescription a doctor writes for these pills, the State Board gets a copy. I never knew that."],
+					["lt", "Doris put your whole year in the machine, Doctor. It took her a lunch hour.", "think"]
+				]},
+				{"id": "couch", "x": 428, "y": 158, "label": "the couch", "lines": [
+					["lt", "So this is the couch. My wife's sister goes to a fella with a couch. Forty dollars an hour, and he never says a word."],
+					["lt", "For forty dollars I'd want him to say something.", "think"]
+				]}
+			],
+			"opening": [
+				["lt", "Dr. Sloane, I appreciate this. I know you have patients. I'll be five minutes. It's about young Mr. Marlowe."],
+				["sloane", "Teddy was a deeply unhappy young man, Lieutenant. I'm afraid he had been hoarding his medication."],
+				["lt", "Hoarding. Yes, ma'am, that's what the coroner figures. A hundred and eighty pills. That's a lot of hoarding."],
+				["sloane", "I prescribed Teddy one bottle. Once. In March. What he did with it is a tragedy, not a crime.", "smug"]
+			],
+			"beats": [
+				{
+					"id": "4a",
+					"needs": ["file"],
+					"card": "c_count",
+					"claim": [
+						["sloane", "One bottle, Lieutenant. It's in my notes.", "smug"],
+						["lt", "I'm sure it is, Doctor. I just wonder what the State Board's copy says. I don't need them read out. Only how many."]
+					],
+					"ask": "How many prescriptions are on file for Teddy Marlowe? Just the number.",
+					"tray": {
+						"select": ["*", "patient", "COUNT(*)", "SUM(pills)"],
+						"from": ["prescriptions"],
+						"where": ["patient = 'Teddy Marlowe'", "drug = 'Dormital'"]
+					},
+					"solution": {"select": ["COUNT(*)"], "from": "prescriptions", "where": ["patient = 'Teddy Marlowe'"]},
+					"hint": "I don't want the rows. I want them counted, and only his.",
+					"notes": {
+						"select:SUM(pills)": "That adds up the pills. A hundred and eighty, I know that already. I want to know how many prescriptions.",
+						"where:drug = 'Dormital'": "That counts everybody's Dormital. I'm asking about one patient."
+					},
+					"success": [
+						["lt", "Six. The machine says six, Doctor."],
+						["sloane", "Refills. Every patient I have is on refills, Lieutenant. Look at any of them."]
+					]
+				},
+				{
+					"id": "4b",
+					"needs": ["file"],
+					"card": "c_group",
+					"claim": [
+						["lt", "Any of them. That's a good idea, ma'am. I'll look at all of them at once.", "think"]
+					],
+					"ask": "Each patient, and how many prescriptions that patient has on file.",
+					"tray": {
+						"select": ["patient", "drug", "COUNT(*)"],
+						"from": ["prescriptions"],
+						"where": ["drug = 'Dormital'"],
+						"group": ["patient", "drug"]
+					},
+					"solution": {"select": ["patient", "COUNT(*)"], "from": "prescriptions", "group": "patient"},
+					"hint": "One pile of prescriptions for each patient, and count each pile.",
+					"notes": {
+						"group:drug": "That's one pile per drug. I want one pile per patient.",
+						"where:drug = 'Dormital'": "That leaves out everybody on the other pills. She said look at any of them, so I'll count them all."
+					},
+					"success": [
+						["lt", "One, one, one, two, two... and six."],
+						["sloane", "Mrs. Fenwick has two. Mr. Winslow has two. You see? Refills."]
+					]
+				},
+				{
+					"id": "4c",
+					"needs": ["file"],
+					"card": "c_having",
+					"claim": [
+						["lt", "Two, yes, ma'am. Two I understand. I'd like the machine to show me only the ones with more than two.", "think"]
+					],
+					"ask": "Only the patients with more than two prescriptions: the patient and the count.",
+					"tray": {
+						"select": ["patient", "COUNT(*)"],
+						"from": ["prescriptions"],
+						"where": ["COUNT(*) > 2", "drug = 'Dormital'"],
+						"group": ["patient", "drug"],
+						"having": ["COUNT(*) > 2", "COUNT(*) > 1"]
+					},
+					"solution": {"select": ["patient", "COUNT(*)"], "from": "prescriptions", "group": "patient", "having": "COUNT(*) > 2"},
+					"hint": "Pile them up first, then throw out the small piles. That's not WHERE's job.",
+					"notes": {
+						"having:COUNT(*) > 1": "More than one lets in Mrs. Fenwick and Mr. Winslow, with their two apiece. I said more than two."
+					},
+					"success": [
+						["lt", "Just the one name, Doctor. Teddy Marlowe. Six."],
+						["sloane", "He was persuasive. He was in pain. I'm a physician, not a policeman.", "sweat"],
+						["lt", "No, ma'am. That's my job. I'm sorry to have taken your time."]
+					]
+				},
+				{
+					"id": "4d",
+					"needs": ["file"],
+					"final": true,
+					"claim": [
+						["lt", "Doctor? Forgive me. It's a silly thing. There's a column in that file I never asked about.", "point"],
+						["sloane", "Lieutenant, I have a patient at four."],
+						["lt", "It's the last column, ma'am. The one that says who came and picked them up."]
+					],
+					"ask": "Teddy Marlowe's prescriptions only: who picked them up, and how many each.",
+					"tray": {
+						"select": ["patient", "pharmacy", "picked_up_by", "COUNT(*)"],
+						"from": ["prescriptions"],
+						"where": ["patient = 'Teddy Marlowe'"],
+						"group": ["patient", "pharmacy", "picked_up_by"],
+						"having": ["COUNT(*) > 2"]
+					},
+					"solution": {"select": ["picked_up_by", "COUNT(*)"], "from": "prescriptions", "where": ["patient = 'Teddy Marlowe'"], "group": "picked_up_by"},
+					"hint": "WHERE picks out his rows first. Then one pile for each person who collected.",
+					"notes": {
+						"group:pharmacy": "Six drugstores, one bottle apiece. That's interesting all by itself. But I asked who walked in and picked them up.",
+						"having:COUNT(*) > 2": "That hides the one he picked up himself. I want to see both piles."
+					},
+					"success": [
+						["lt", "T. Marlowe, one. M. Sloane, five."],
+						["lt", "Six bottles from six drugstores, Doctor, so no druggist would see more than one. And five times, the person at the counter was you.", "think"],
+						["lt", "A fella who's hoarding pills, he goes to the drugstore on his corner. He doesn't send his psychiatrist to Long Beach.", "point"],
+						["sloane", "He was going to tell his father about us, Lieutenant. I'd have lost the practice.", "sweat"]
+					]
+				}
+			],
+			"ending": [
+				["sloane", "Tell me, Lieutenant. Do you always pretend to be this slow?", "sweat"],
+				["lt", "Oh, I'm not pretending, ma'am. That's why I need the machine."]
+			]
+		},
+		{
+			"id": 5,
+			"key": "hotel",
+			"title": "Left for Dead",
+			"place": "The Harrow Grand Hotel",
+			"lesson": "LEFT JOIN, IS NULL",
+			"killer": "harrow",
+			"killer_x": 324,
+			"cold_open": [
+				["8:00 PM", "The Harrow Grand Hotel is fifty years old tonight. Two hundred guests, and one head table."],
+				["8:55 PM", "Between the soup and the entree, Augusta Harrow leaves her chair and takes the service elevator to the penthouse."],
+				["9:05 PM", "Her nephew Julian, who has found a buyer for the hotel, leaves the terrace the quick way."],
+				["9:20 PM", "She is back in her chair. Nobody saw her go. Everybody at her table had dinner. Nearly everybody."]
+			],
+			"tables": {
+				"seating": {
+					"what": "the seating chart",
+					"columns": [["seat", "INTEGER"], ["guest", "TEXT"], ["table_no", "INTEGER"]],
+					"rows": [
+						[1, "Augusta Harrow", 1], [2, "Mayor Lyle Dunmore", 1], [3, "Opal Fenwick", 1], [4, "Judge Amos Brill", 1],
+						[5, "Dolores Brill", 1], [6, "Sen. Clay Mercer", 1], [7, "Coco LaRue", 2], [8, "Tad Winslow", 2],
+						[9, "Mimi Hartwell", 2], [10, "Harold Hartwell", 2]
+					]
+				},
+				"orders": {
+					"what": "the kitchen's entree tickets",
+					"columns": [["ticket", "INTEGER"], ["seat", "INTEGER"], ["dish", "TEXT"], ["sent_at", "TEXT"]],
+					"rows": [
+						[501, 2, "duck", "21:02"], [502, 3, "sole", "21:02"], [503, 4, "duck", "21:03"], [504, 5, "lamb", "21:03"],
+						[505, 6, "lamb", "21:04"], [506, 7, "sole", "21:08"], [507, 8, "duck", "21:09"], [508, 9, "duck", "21:09"],
+						[509, 10, "lamb", "21:10"]
+					]
+				},
+				"elevator": {
+					"what": "the service elevator's log",
+					"columns": [["trip", "INTEGER"], ["key_no", "TEXT"], ["floor", "TEXT"], ["at", "TEXT"]],
+					"rows": [
+						[1, "K-07", "kitchen", "20:15"], [2, "K-02", "penthouse", "20:55"], [3, "K-11", "laundry", "21:00"],
+						[4, "K-02", "lobby", "21:18"], [5, "K-07", "kitchen", "21:30"]
+					]
+				},
+				"keys": {
+					"what": "the key register",
+					"columns": [["key_no", "TEXT"], ["holder", "TEXT"]],
+					"rows": [["K-01", "Julian Harrow"], ["K-02", "Augusta Harrow"], ["K-07", "Chef Bruno"], ["K-11", "Housekeeping"]]
+				}
+			},
+			"props": [
+				{"id": "chart", "x": 136, "y": 122, "label": "the seating chart and the kitchen tickets", "table": "seating", "also": ["orders"], "lines": [
+					["lt", "A seating chart. Every chair has a number. And the kitchen writes the chair number on every dinner ticket."],
+					["lt", "Two files with the same number in both. Doris says that's the kind the machine likes best.", "think"]
+				]},
+				{"id": "elevator", "x": 440, "y": 34, "label": "the service elevator", "table": "elevator", "also": ["keys"], "lines": [
+					["lt", "A service elevator. It won't move without a key, and it writes down the key every time. Fifty years old and it keeps better records than I do."],
+					["lt", "There's a register at the desk that says who holds which key. Doris has both.", "think"]
+				]}
+			],
+			"opening": [
+				["lt", "Mrs. Harrow, I'm sorry about your nephew. And on a night like this. Fifty years. My wife and I had our honeymoon here. Well, across the street."],
+				["harrow", "Julian was fond of that terrace, Lieutenant, and fonder of champagne. It was bound to happen."],
+				["lt", "Yes, ma'am. Five past nine, he went over. I just have to put down where everybody was."],
+				["harrow", "I was at the head of my table from eight o'clock until midnight. I had the duck. Ask my kitchen.", "smug"]
+			],
+			"beats": [
+				{
+					"id": "5a",
+					"needs": ["chart"],
+					"claim": [
+						["harrow", "Two hundred people watched me eat my dinner, Lieutenant.", "smug"],
+						["lt", "I wouldn't bother two hundred people, ma'am. I'll just ask the kitchen tickets who had what."]
+					],
+					"ask": "Who had what: each guest and the dish on their ticket.",
+					"tray": {
+						"select": ["seat", "seating.guest", "seating.table_no", "orders.dish", "orders.sent_at"],
+						"from": ["seating", "orders"],
+						"join": ["JOIN orders ON seating.seat = orders.seat", "JOIN orders ON seating.table_no = orders.seat"]
+					},
+					"solution": {"select": ["seating.guest", "orders.dish"], "from": "seating", "join": ["JOIN orders ON seating.seat = orders.seat"]},
+					"hint": "The chart and the tickets go together on the chair number. Seat to seat.",
+					"notes": {
+						"select:seat": "Both files have a 'seat'. The machine won't guess which one I mean. I have to say seating.seat or orders.seat.",
+						"join:JOIN orders ON seating.table_no = orders.seat": "That matches a table number to a chair number. They're both numbers, so the machine goes along with it, and it's nonsense. Seat goes with seat."
+					},
+					"success": [
+						["lt", "Mrs. Fenwick had the sole. The Judge had the duck. That's nine dinners."],
+						["lt", "Ma'am, I count ten chairs.", "think"],
+						["harrow", "Then your machine cannot count."]
+					]
+				},
+				{
+					"id": "5b",
+					"needs": ["chart"],
+					"card": "c_left",
+					"claim": [
+						["lt", "It's a funny thing. When a chair has no ticket, a join just leaves the chair out. Like it was never there.", "think"],
+						["lt", "I'd like to see all ten chairs, ma'am. Dinner or no dinner."]
+					],
+					"ask": "Every guest on the chart, with a dish if there is one: guest and dish.",
+					"tray": {
+						"select": ["seating.guest", "orders.dish", "orders.ticket"],
+						"from": ["seating", "orders"],
+						"join": ["JOIN orders ON seating.seat = orders.seat", "LEFT JOIN orders ON seating.seat = orders.seat", "LEFT JOIN seating ON orders.seat = seating.seat"]
+					},
+					"solution": {"select": ["seating.guest", "orders.dish"], "from": "seating", "join": ["LEFT JOIN orders ON seating.seat = orders.seat"]},
+					"hint": "The file I want all of goes in FROM, on the left. The other one gets LEFT JOINed onto it.",
+					"notes": {
+						"join:JOIN orders ON seating.seat = orders.seat": "A plain JOIN is what I had before: nine rows, and the empty chair dropped. I need the kind that keeps every chair.",
+						"join:LEFT JOIN seating ON orders.seat = seating.seat": "That keeps every ticket and looks for its chair. Every ticket has a chair. It's the other way around I want: every chair, whether or not it has a ticket.",
+						"from:orders": "The file in FROM is the one LEFT JOIN keeps all of. I want all the chairs, so the chart goes in FROM."
+					},
+					"success": [
+						["lt", "Ten rows. Nine dinners. And beside Augusta Harrow the machine says NULL."],
+						["harrow", "It says what?"],
+						["lt", "NULL, ma'am. It means there's nothing there. I've got a dog by that name."]
+					]
+				},
+				{
+					"id": "5c",
+					"needs": ["chart"],
+					"card": "c_null",
+					"claim": [
+						["harrow", "One name in a list of ten. I can hardly be expected to read your machine's handwriting."],
+						["lt", "No, ma'am. I'll have it read out just the empty chairs. So there's no mistake.", "think"]
+					],
+					"ask": "Only the guests with no dinner ticket. One column: the guest.",
+					"tray": {
+						"select": ["seating.guest", "orders.dish", "orders.ticket"],
+						"from": ["seating", "orders"],
+						"join": ["JOIN orders ON seating.seat = orders.seat", "LEFT JOIN orders ON seating.seat = orders.seat", "LEFT JOIN seating ON orders.seat = seating.seat"],
+						"where": ["orders.ticket IS NULL", "orders.ticket = NULL", "orders.dish = 'duck'"]
+					},
+					"solution": {"select": ["seating.guest"], "from": "seating", "join": ["LEFT JOIN orders ON seating.seat = orders.seat"], "where": ["orders.ticket IS NULL"]},
+					"hint": "Keep every chair, then keep only the rows where the ticket came back empty.",
+					"notes": {
+						"where:orders.ticket = NULL": "Doris says nothing ever equals NULL. Not even NULL. '= NULL' is never true, so it finds nothing. The way to ask is IS NULL.",
+						"join:JOIN orders ON seating.seat = orders.seat": "A plain JOIN already threw the empty chair away. There's no NULL left to find. It has to be the LEFT JOIN."
+					},
+					"success": [
+						["lt", "One row. Augusta Harrow."],
+						["harrow", "A waiter mislaid a ticket. It proves I was hungry, Lieutenant. It does not prove I was anywhere else.", "smug"],
+						["lt", "No, ma'am, it doesn't. You're absolutely right. That's all it proves. Good night, Mrs. Harrow."]
+					]
+				},
+				{
+					"id": "5d",
+					"needs": ["elevator"],
+					"final": true,
+					"claim": [
+						["lt", "Mrs. Harrow? I'm sorry. I was on my way out and I saw your elevator. One more join and I'll go home.", "point"],
+						["harrow", "That elevator is for the staff."],
+						["lt", "Yes, ma'am. And for anybody with a key."]
+					],
+					"ask": "Who rode the service elevator to the penthouse, and when: the key's holder and the time.",
+					"tray": {
+						"select": ["keys.holder", "elevator.at", "elevator.floor", "key_no"],
+						"from": ["elevator", "keys", "seating"],
+						"join": ["JOIN keys ON elevator.key_no = keys.key_no", "JOIN keys ON elevator.trip = keys.key_no"],
+						"where": ["elevator.floor = 'penthouse'", "elevator.at > '21:00'"],
+						"order": ["elevator.at"]
+					},
+					"solution": {"select": ["keys.holder", "elevator.at"], "from": "elevator", "join": ["JOIN keys ON elevator.key_no = keys.key_no"], "where": ["elevator.floor = 'penthouse'"]},
+					"hint": "The log has key numbers. The register has names. Join them on the key, and keep the penthouse.",
+					"notes": {
+						"select:key_no": "Both files have a 'key_no'. I have to say whose.",
+						"join:JOIN keys ON elevator.trip = keys.key_no": "A trip number isn't a key number. Nothing matches, so nothing comes back. Key goes with key.",
+						"where:elevator.at > '21:00'": "After nine is too late. He went over at five past. I want whoever went UP: the penthouse."
+					},
+					"success": [
+						["lt", "Five to nine. One key rides up to the penthouse. Yours, Mrs. Harrow."],
+						["lt", "Five past nine, your nephew comes down the other way. Eighteen past, your key rides back to the lobby.", "think"],
+						["lt", "And the duck you had was never cooked. Ma'am, all night I've been looking for one thing that puts you in that chair. There isn't one.", "point"],
+						["harrow", "Fifty years, Lieutenant. He was going to make it a parking structure.", "sweat"]
+					]
+				}
+			],
+			"ending": [
+				["harrow", "You might at least have let me finish the anniversary.", "sweat"],
+				["lt", "I would have, ma'am. But the kitchen says you never started."]
+			]
+		}
+	]
+}

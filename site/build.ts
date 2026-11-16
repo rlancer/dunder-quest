@@ -9,13 +9,15 @@
  * JavaScript game, gets its own page in `flatmates/` and its export in
  * `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
  * `curb/` and `curb/play/`. Prince of Versions, the Git
- * game, is in `prince/` and `prince/play/`, with a card of its own.
+ * game, is in `prince/` and `prince/play/`, with a card of its own, and
+ * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
  *     bun site/build.ts --flatmates build/site/flatmates/play/index.html
  *     bun site/build.ts --curb build/site/curb/play/index.html
  *     bun site/build.ts --prince build/site/prince/play/index.html
+ *     bun site/build.ts --lieutenant build/site/lieutenant/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -27,6 +29,7 @@ const QUEST = join(ROOT, "games", "dunder-quest");
 const FLATMATES = join(ROOT, "games", "flatmates");
 const CURB = join(ROOT, "games", "curb");
 const PRINCE = join(ROOT, "games", "prince");
+const LIEUTENANT = join(ROOT, "games", "lieutenant");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -239,7 +242,7 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
 const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
-  ["prince/", "Prince of Versions"]];
+  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -316,7 +319,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}
@@ -435,7 +438,7 @@ ${downloadsSection(prefix)}
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
-  + "JavaScript in Flatmates.js and Git in Prince of Versions. Play them in your browser.";
+  + "JavaScript in Flatmates.js, Git in Prince of Versions and SQL in Just One More JOIN. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -459,6 +462,10 @@ function buildSplash(prefix = ""): string {
       "A palace platformer where the dagger that turns back time is version control. It only rewinds to a commit, "
       + "so you learn when to make one. Five rooms, from your first commit to a merge conflict with the Vizier.",
       "Meet the Prince"],
+    ["game-jj", "New · Learn SQL", "Just One More JOIN", `${prefix}lieutenant/`, `${prefix}lieutenant/play/`, "lieutenant.png", JJ_ALT,
+      "A rumpled homicide lieutenant, and five people who thought of everything. You watch each of them do it. "
+      + "Then you write the query that proves it, a clause at a time, from SELECT to LEFT JOIN.",
+      "Meet the Lieutenant"],
   ];
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
@@ -499,10 +506,10 @@ function buildSplash(prefix = ""): string {
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, JavaScript, Git, or no code at all?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, Git or SQL?</h2>
   <ul class="games">${cards}
   </ul>
-  <p class="count">Every snippet in every coding game is checked against the real thing: Python, Node, rustc and git. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git and SQLite. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 `;
   // Links to the old home's sections (in trailer descriptions, for one) now
@@ -511,7 +518,7 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, and building apps with AI.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git and SQL.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`,
   });
 }
@@ -2172,7 +2179,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2502,7 +2509,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2661,10 +2668,177 @@ ${body}
 </main>
 <footer class="pv-foot">
   <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
 </footer>
 ${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
 ` : ""}</body>
+</html>
+`;
+}
+
+// Just One More JOIN's page at /lieutenant/, the SQL game: Los Angeles after
+// dark, in the title's cream and ember. The cases, their lesson cards and
+// the cast all come from `lieutenant/data/cases.json`, the data the game
+// plays and `lieutenant/tests/verify_sql.ts` holds to the real SQLite. The
+// screenshots and the social card are made by `lieutenant/tools/site_art.py`.
+const JJ_ALT = "Just One More JOIN: the name in fat cream and orange letters over a Los Angeles street at night, a rumpled detective in a raincoat and his basset hound under a street lamp.";
+const JJ_DESC = "Just One More JOIN, a Dunder Quest game that teaches SQL: a rumpled homicide lieutenant knows who did it, "
+  + "and you write the query that proves it. Play it free in your browser.";
+// Act II, from lieutenant/README.md: designed, not built yet.
+const JJ_NEXT: [string, string][] = [["subqueries", "a question inside a question: everyone who paid more than the average"],
+  ["WITH", "give a query a name, then ask it something"],
+  ["window functions", "the row before this one: who used the key card just ahead of the victim"],
+  ["UPDATE and DELETE", "what happens to a ledger when somebody forgets the WHERE"],
+  ["transactions", "the transfer that was started and never committed"]];
+
+/** The same tags for Just One More JOIN, the SQL game in lieutenant/, which
+ * Godot exports to lieutenant/play/index.html. */
+function tagLieutenantPage(index: string): void {
+  const desc = "Play Just One More JOIN, the Dunder Quest game that teaches SQL, right in your browser.";
+  tagGamePage(index, "Play Just One More JOIN · Dunder Quest", desc, "lieutenant/play/", "lieutenant.png", JJ_ALT);
+}
+
+/** A lesson card's SQL: keywords and strings picked out. */
+function jjSql(sql: string): string {
+  return esc(sql)
+    .replace(/&#39;[^&]*&#39;|&#x27;[^&]*&#x27;|'[^']*'/g, (m) => `<span class="s">${m}</span>`)
+    .replace(/\b(SELECT|FROM|LEFT JOIN|JOIN|ON|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|AND|OR|IS NULL|LIKE|DESC)\b/g, '<span class="k">$1</span>');
+}
+
+function buildLieutenant(prefix: string): string {
+  const data = JSON.parse(read(join(LIEUTENANT, "data", "cases.json")));
+  const img = `${prefix}static/img/lieutenant/`;
+  const steps = [
+    ["cold.png", "Watch them do it", "A letterboxed street at night: Sterling Voss under a lamp, and the caption that he strolls into the gala at 9:50 and hands over his overcoat",
+      "Every case opens on the crime. You see who did it and how they covered it, before the Lieutenant has even "
+      + "arrived. So the question is never who. It's what record gives them away."],
+    ["notebook.png", "Write the query", "The Lieutenant's notebook: a question for Records, the tables found so far, chips for each clause, and the SQL they spell underneath",
+      "Walk him round the room. Every record he finds goes into the notebook as a table. Then build the question a "
+      + "clause at a time: what to SELECT, FROM which table, JOINed to what, WHERE."],
+    ["null.png", "Read what comes back", "A green-bar printout of ten guests and their dishes; beside Augusta Harrow, the dish is NULL",
+      "Doris in Records reads back exactly what the database returns: the rows, or its own error. A case moves on "
+      + "when your query returns what the question asked for, however you got there."],
+  ];
+  const stepHtml = steps.map(([shot, h, alt, p]) =>
+    `<li><img src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy"><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
+  const cases = data.cases.map((c: Json) => {
+    const ids: string[] = [];
+    for (const beat of c.beats) if (beat.card && !ids.includes(beat.card)) ids.push(beat.card);
+    const cards = ids.map((id) => {
+      const card = data.cards[id];
+      return `<figure class="jj-card"><figcaption>${esc(card.title)}</figcaption><pre><code>${jjSql(card.sql)}</code></pre><p>${esc(card.text)}</p></figure>`;
+    }).join("");
+    const who = data.cast[c.killer];
+    return `
+    <li class="jj-case">
+      <p class="jj-num">Case ${c.id} · ${esc(c.place)}</p>
+      <h3>${esc(c.title)}</h3>
+      <p class="jj-sql"><code>${esc(c.lesson)}</code></p>
+      <p class="jj-who">Tonight's suspect: <b>${esc(who.full)}</b>, ${esc(who.role)}. ${c.beats.length} questions for Records.</p>
+      <div class="jj-cards">${cards}</div>
+    </li>`;
+  }).join("");
+  const regulars = ["lt", "null", "doris"];
+  const cast = Object.entries(data.cast).map(([id, p]: [string, Json]) =>
+    `<li><b>${esc(p.full)}</b> <span>${esc(p.role)}${regulars.includes(id) ? "" : " (a suspect)"}</span></li>`).join("");
+  const next = JJ_NEXT.map(([what, about]) => `<li><code>${esc(what)}</code> <span>${esc(about)}</span></li>`).join("");
+  const body = `
+<section class="jj-hero">
+  <div class="jj-hero-copy">
+    <p class="jj-kicker">a dunder_quest game · learn SQL</p>
+    <h1><span>Just One More</span> JOIN</h1>
+    <p class="jj-lede">He knows who did it inside five minutes. Knowing isn't proof. Proof is one question, asked exactly right, and the department's new machine only takes questions in <code>SQL</code>.</p>
+    <p class="jj-actions"><a class="jj-btn" href="play/">Play in your browser</a><a class="jj-more" href="#cases">The five cases →</a></p>
+    <p class="jj-fine">Free. Works on a phone held sideways, or with a keyboard or gamepad. No typing: you build each query from chips.</p>
+  </div>
+  <img class="jj-shot" src="${img}title.png" alt="${esc(JJ_ALT)}" width="960" height="540">
+</section>
+
+<section class="jj-section" id="how">
+  <h2>How it plays</h2>
+  <ol class="jj-steps">${stepHtml}</ol>
+</section>
+
+<section class="jj-section" id="story">
+  <h2>Never seen SQL? It starts there</h2>
+  <p>A first game opens on a short prologue that tells the story and says what a database is: a table is a file of records, a row is one record, a column is one fact about it, and a query is a question you ask it. Then it types one, and the rows it matches light up.</p>
+  <div class="jj-pair">
+    <img class="jj-shot" src="${img}query.png" alt="The prologue: a query typed on a notebook page, SELECT name, arrived FROM guests WHERE arrived > '21:00', beside the guest book as a table with the three matching rows lit" width="960" height="540" loading="lazy">
+    <img class="jj-shot" src="${img}door.png" alt="The Lieutenant by the hotel's service elevator, a finger raised, telling Mrs. Harrow he has one more join" width="960" height="540" loading="lazy">
+  </div>
+</section>
+
+<section class="jj-section" id="cases">
+  <h2>The cases</h2>
+  <p class="jj-intro">Five cases, from your first <code>SELECT</code> to finding the one row that isn't there. Each new clause arrives on a card from the Lieutenant's notebook, with a query and what it returns. These are the cards.</p>
+  <ol class="jj-cases">${cases}
+  </ol>
+</section>
+
+<section class="jj-section jj-real" id="real">
+  <h2>It's real SQL</h2>
+  <p>The chips only spell text. What runs is the SQL you can read on the page, through a SQL engine written for the game, and it answers the way SQLite does: the same rows, the same column names, and the same errors, word for word. On every change to the game, a script takes every query that every page of the notebook can spell, about fifteen thousand of them, runs each one through the real SQLite, and fails if the game disagrees on a single row or message.</p>
+  <p>There is one place the game is stricter than SQLite, on purpose. Ask for a column beside a <code>COUNT(*)</code> without grouping by it, and SQLite will answer with a value from whichever row it likes. PostgreSQL and most other databases refuse, and so does Doris, in PostgreSQL's words. The same script checks that SQLite really would have let it through.</p>
+  <figure><img class="jj-shot" src="${img}error.png" alt="A printout: WHERE COUNT(*) > 2 refused with SQLite's error, misuse of aggregate: COUNT(), and the Lieutenant's note that a test on a count goes in HAVING" width="960" height="540" loading="lazy"></figure>
+  <p class="jj-fine">SQL was first described in 1974, as SEQUEL, by two researchers at IBM. The game is set that year. The department got its copy early.</p>
+</section>
+
+<section class="jj-section" id="cast">
+  <h2>Homicide, and the people it calls on</h2>
+  <ul class="jj-cast">${cast}</ul>
+  <img class="jj-shot" src="${img}freeze.png" alt="The end of a case, frozen: the Lieutenant thinking, Mrs. Harrow caught" width="960" height="540" loading="lazy">
+</section>
+
+<section class="jj-section" id="next">
+  <h2>Act II: the paper trail</h2>
+  <p class="jj-intro">Designed, not built yet. More cases, and more of the language:</p>
+  <ul class="jj-next">${next}</ul>
+</section>
+
+<section class="jj-section" id="controls">
+  <h2>How to play</h2>
+  <ul class="jj-keys">
+    <li><b>Keyboard</b> <span>Arrows or A/D to walk, E to talk or to look at a record. In the notebook, arrows move between chips, Space picks one, Enter calls Records.</span></li>
+    <li><b>Phone</b> <span>Hold it sideways. Arrows on the left, TALK on the right; in the notebook, tap the chips.</span></li>
+    <li><b>Gamepad</b> <span>D-pad or stick to walk, X to talk, A to pick a chip, Y to call Records.</span></li>
+  </ul>
+  <p class="jj-fine">Just One More JOIN is an homage to a certain rumpled television detective and the mysteries that showed you the murder first. The names, cases, art and music are its own, and it isn't affiliated with or endorsed by anyone who made them.</p>
+</section>
+`;
+  return jjPage(body, prefix);
+}
+
+function jjPage(body: string, prefix: string): string {
+  const title = "Just One More JOIN · Dunder Quest";
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${esc(JJ_DESC)}">
+${headTags(title, JJ_DESC, "lieutenant/", "lieutenant.png", JJ_ALT)}
+<link rel="icon" href="${prefix}static/img/lieutenant/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Caprasimo&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${prefix}static/lieutenant.css">
+</head>
+<body class="jj">
+<a class="skip" href="#main">Skip to content</a>
+<header class="jj-bar">
+  <a class="jj-brand" href="./">Just One More JOIN</a>
+  <nav aria-label="Just One More JOIN"><a href="#how">How it plays</a><a href="#cases">The cases</a><a href="#real">Real SQL</a><a href="${prefix}">All games</a></nav>
+  <a class="jj-btn jj-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="jj-foot">
+  <p>Just One More JOIN. One lieutenant, one basset hound, and a records desk that takes you at your exact word.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
+</footer>
+</body>
 </html>
 `;
 }
@@ -2674,6 +2848,7 @@ function main(): void {
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
     "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage, "--prince": tagPrincePage,
+    "--lieutenant": tagLieutenantPage,
   };
   if (args[0] in tag) {
     tag[args[0]](args[1]);
@@ -2695,7 +2870,7 @@ function main(): void {
   mkdirSync(join(statics, "fonts"), { recursive: true });
   for (const [name, src] of Object.entries(FONTS)) copyFileSync(join(QUEST, src), join(statics, "fonts", name));
   copyFileSync(join(CURB, "assets", "fonts", "LibreFranklin.ttf"), join(statics, "fonts", "LibreFranklin.ttf"));
-  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"]]) { // their icons, for the brand kit and the tab
+  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }
 
@@ -2715,6 +2890,7 @@ function main(): void {
   write(join(out, "flatmates", "index.html"), buildFlatmates("../"));
   write(join(out, "curb", "index.html"), buildCurb("../"));
   write(join(out, "prince", "index.html"), buildPrince("../"));
+  write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));

@@ -2,8 +2,9 @@
 # Builds the website into build/site, with Dunder Quest (games/dunder-quest/) in build/site/play
 # Flatmates.js (games/flatmates/) in build/site/flatmates/play,
 # beside its page in build/site/flatmates, and Curb Your Oxidation
-# (games/curb/) in build/site/curb/play, and Prince of Versions
-# (games/prince/) in build/site/prince/play.
+# (games/curb/) in build/site/curb/play, Prince of Versions
+# (games/prince/) in build/site/prince/play, and Just One More JOIN
+# (games/lieutenant/) in build/site/lieutenant/play.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -12,6 +13,7 @@ QUEST="${ROOT}/games/dunder-quest"
 FLATMATES="${ROOT}/games/flatmates"
 CURB="${ROOT}/games/curb"
 PRINCE="${ROOT}/games/prince"
+LIEUTENANT="${ROOT}/games/lieutenant"
 source "${ROOT}/scripts/godot_setup.sh"
 
 rm -rf build/site
@@ -38,3 +40,9 @@ mkdir -p build/site/prince/play
 "$GODOT" --headless --path "$PRINCE" --export-release "Web" "${ROOT}/build/site/prince/play/index.html"
 bun "${ROOT}/site/build.ts" --prince "${ROOT}/build/site/prince/play/index.html"
 bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/prince/play"
+
+mkdir -p build/site/lieutenant/play
+"$GODOT" --headless --path "$LIEUTENANT" --import
+"$GODOT" --headless --path "$LIEUTENANT" --export-release "Web" "${ROOT}/build/site/lieutenant/play/index.html"
+bun "${ROOT}/site/build.ts" --lieutenant "${ROOT}/build/site/lieutenant/play/index.html"
+bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/lieutenant/play"
