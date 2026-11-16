@@ -10,6 +10,8 @@ const FADE := 0.4
 var _player: AudioStreamPlayer
 var _source: AudioStream
 var _tween: Tween
+## How far under VOLUME_DB the music sits right now.
+var _ducked: float = 0.0
 
 
 func _ready() -> void:
@@ -42,14 +44,16 @@ func stop() -> void:
 	_player.stop()
 
 
-## Drops the music under an interruption, and brings it back after.
-func duck(on: bool) -> void:
+## Drops the music under an interruption (or a voice, by `depth` decibels),
+## and brings it back after. A track that starts while ducked starts ducked.
+func duck(on: bool, depth: float = 14.0) -> void:
+	_ducked = depth if on else 0.0
 	if _player == null or not _player.playing:
 		return
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween()
-	_tween.tween_property(_player, "volume_db", VOLUME_DB - 14.0 if on else VOLUME_DB, 0.25)
+	_tween.tween_property(_player, "volume_db", VOLUME_DB - _ducked, 0.25)
 
 
 func _start(stream: AudioStream) -> void:
@@ -59,7 +63,7 @@ func _start(stream: AudioStream) -> void:
 	if _tween != null:
 		_tween.kill()
 	_tween = create_tween()
-	_tween.tween_property(_player, "volume_db", VOLUME_DB, FADE)
+	_tween.tween_property(_player, "volume_db", VOLUME_DB - _ducked, FADE)
 
 
 func _looping_copy(stream: AudioStream) -> AudioStream:

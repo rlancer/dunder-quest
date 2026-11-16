@@ -44,6 +44,8 @@ A first run (Start with no save, or New game) opens with a short prologue, `ui/i
 
 The ledger on screen is a real `GitRepo`, so its ids and output lines are Git's own. Any key or tap turns the page, Skip or Esc goes straight to the room, and left alone it plays itself. Keep the lines short: one or two sentences a beat. The bot turns every page and checks both ledgers; the trailer's run skips it.
 
+It is read aloud, for players who'd rather listen than read: a narrator tells the story and reads each beat's Git word after it, and the Princess and the Vizier speak their own lines. The text types in step with the voice, and a beat holds until its words are said. The clips are ElevenLabs voices (George narrates, Lily is the Princess, Callum the Vizier) made by `tools/voice.py` through OpenRouter, with the same key as the art and music. It asks the game for its lines (`Intro.lines()`, via `tools/intro_lines.tscn`) and names each clip for its words, so after editing a line just run it again (`--prune` drops the old clip); the bot fails if a line has no clip. In play, a line with no clip is simply not read aloud. Under it plays `music_intro` (a quiet storybook cue, in `tools/music.py`, ducked a little under the voice), the boss theme for the Vizier's two beats, then `music_intro` again.
+
 ## Curriculum
 
 The order follows what a newcomer needs, and what someone building with an AI needs first: save your work, undo what broke, try things safely, combine them.

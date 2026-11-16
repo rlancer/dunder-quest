@@ -9,16 +9,32 @@ extends Control
 ## ids and the output lines are the ones the real git would give; the last
 ## beats seal a torch and fall on the spikes with the same model the rooms
 ## use. Any key or tap moves on; Skip (or Esc) goes straight to the room.
+##
+## Every line is read aloud: the story by a narrator (or whoever speaks it),
+## then the Git word for it. The clips are made by tools/voice.py and named
+## for what they say (`voice_key`), so a line that changes goes quiet until
+## its clip is made again, rather than reading out the old words.
 
 const VIEW := Vector2(480, 270)
 ## Where the cast stands, and where the text panel starts.
 const FLOOR := 190.0
 const PANEL := 196.0
 const BAR := 22.0
-## Letters a second.
-const TYPE := 46.0
+## Letters a second, when there is no voice to keep pace with.
+const TYPE := 30.0
 const VIZIER := preload("res://assets/sprites/vizier.png")
 const PRINCESS := preload("res://assets/sprites/princess.png")
+
+const VOICE_DIR := "res://assets/voice/"
+## Seconds of quiet before a line is read, between the line and its Git word,
+## and after the last word before the page turns by itself.
+const LEAD := 0.7
+const GAP := 0.6
+const AFTER := 2.0
+## How far the music drops under the voice, in decibels.
+const UNDER := 6.0
+## How long the sands take to run back.
+const REWIND := 1.0
 
 ## The hall beat's clock: light a torch, seal it, light another, fall, reset.
 const HALL_FLOOR := 172.0
@@ -26,11 +42,11 @@ const HALL_START := 20.0
 const HALL_TORCH_1 := 140.0
 const HALL_TORCH_2 := 262.0
 const HALL_PIT := 376.0
-const T_TORCH_1 := 1.2
-const T_SEAL := 2.3
-const T_RUN := 3.6
-const T_DIE := 5.0
-const T_RESET := 6.6
+const T_TORCH_1 := 1.8
+const T_SEAL := 3.3
+const T_RUN := 5.0
+const T_DIE := 6.8
+const T_RESET := 8.8
 const T_TORCH_2 := T_RUN + (T_DIE - T_RUN) * (HALL_TORCH_2 - HALL_TORCH_1) / (HALL_PIT - HALL_TORCH_1)
 
 ## The room to open afterwards; 0 goes back to the title.
@@ -57,11 +73,23 @@ var _who: Label
 var _body: Label
 var _git: Label
 var _skip: Button
+var _music: String = "music_intro"
+## This beat's two clips (either may be null), when each starts, and whether
+## it has been started yet.
+var _voice: AudioStreamPlayer
+var _say: AudioStream
+var _say_git: AudioStream
+var _say_at: float = 0.0
+var _git_at: float = -1.0
+var _said: int = 0
+var _hurried: bool = false
 
 
 func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(StageAudio.new())
+	_voice = AudioStreamPlayer.new()
+	add_child(_voice)
 	for name in ["title", "hall", "gate", "dungeon"]:
 		var path := "res://assets/backgrounds/%s.png" % name
 		if ResourceLoader.exists(path):
@@ -84,8 +112,12 @@ func _ready() -> void:
 	_skip.pressed.connect(finish)
 	add_child(_skip)
 	Sfx.warm()
-	Sfx.music(self, "music_title")
+	MusicDirector.duck(true, UNDER)
 	_show(0)
+
+
+func _exit_tree() -> void:
+	MusicDirector.duck(false)
 
 
 func _label(size: int, font: Font, color: Color) -> Label:
@@ -101,44 +133,47 @@ func _label(size: int, font: Font, color: Color) -> Label:
 
 # --- the story ---------------------------------------------------------------
 
-## One beat: a backdrop, who is on stage, a line (spoken, if `who`), the Git
-## word for it, and what happens when (`events`: seconds, then a call).
-## `poster` is the moment the screenshots take.
+## One beat: a backdrop, who is on stage, a line (spoken by `who`, or else
+## told by the narrator), the Git word for it, and what happens when
+## (`events`: seconds, then a call). `say_git` is how the Git word is read
+## aloud, where that differs from how it is written. `poster` is the moment
+## the screenshots take.
 func _script() -> Array:
 	var rooms := ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"]
 	var count: String = rooms[Story.count()] if Story.count() < rooms.size() else str(Story.count())
 	return [
-		{"stage": "palace", "bg": "title",
+		{"stage": "palace", "bg": "title", "music": "music_intro",
 			"text": "In the palace of the Sultan of Main, nothing was ever forgotten."},
-		{"stage": "ledger", "bg": "hall", "trail": true, "poster": 4.6,
+		{"stage": "ledger", "bg": "hall", "trail": true, "poster": 6.6,
 			"text": "Princess Shirin kept the palace ledger. Each time something changed, she sealed the moment in a grain of sand.",
 			"git": "a sealed moment is a commit: a snapshot of every file",
 			"events": [
-				[1.2, _seal.bind(ledger, {"east_torch": "lit"}, "Light the east torch", "princess")],
-				[2.6, _seal.bind(ledger, {"garden_gate": "open"}, "Open the garden gate", "princess")],
-				[4.0, _seal.bind(ledger, {"bridge": "down"}, "Lower the bridge", "princess")],
+				[2.0, _seal.bind(ledger, {"east_torch": "lit"}, "Light the east torch", "princess")],
+				[4.0, _seal.bind(ledger, {"garden_gate": "open"}, "Open the garden gate", "princess")],
+				[6.0, _seal.bind(ledger, {"bridge": "down"}, "Lower the bridge", "princess")],
 			]},
 		{"stage": "ledger", "bg": "hall", "trail": true,
 			"text": "Grain by grain, the sand kept the whole story: what changed, who changed it, and the way back. Out in the world, people who write code keep the same ledger.",
 			"git": "they call it Git: it remembers every version of your work"},
 		{"stage": "vizier", "bg": "gate", "trail": true, "music": "music_boss", "shake": 0.5, "sound": "vizier",
 			"text": "Grand Vizier Rebasir hated the ledger. Nobody can lie about a history that anyone can read."},
-		{"stage": "vizier", "bg": "gate", "trail": true, "casting": true, "who": "vizier", "poster": 3.4,
+		{"stage": "vizier", "bg": "gate", "trail": true, "casting": true, "who": "vizier", "poster": 4.6,
 			"text": "\"Then I shall write some history of my own. Guards! The Princess, to the tower!\"",
 			"git": "anyone can commit, and the log shows who did",
 			"events": [
-				[1.4, _seal.bind(ledger, {"spikes": "armed"}, "Arm the spikes", "vizier")],
-				[2.8, _seal.bind(ledger, {"tower_door": "barred"}, "Bar the tower door", "vizier")],
+				[2.0, _seal.bind(ledger, {"spikes": "armed"}, "Arm the spikes", "vizier")],
+				[4.0, _seal.bind(ledger, {"tower_door": "barred"}, "Bar the tower door", "vizier")],
 			]},
-		{"stage": "tower", "bg": "dungeon", "who": "princess", "sound": "draw", "give": true,
+		{"stage": "tower", "bg": "dungeon", "who": "princess", "sound": "draw", "give": true, "music": "music_intro",
 			"text": "\"Take the Dagger of HEAD. It turns the palace back to any moment that was sealed.\"",
 			"git": "HEAD is Git's name for the commit you are on"},
 		{"stage": "tower", "bg": "dungeon", "who": "princess",
 			"text": "\"But only to a sealed one. What nobody sealed, the sand never knew.\"",
 			"git": "work you never committed can't be brought back"},
-		{"stage": "hall", "bg": "hall", "trail": true, "hold": T_RESET + 2.6, "poster": T_RESET + 1.2,
+		{"stage": "hall", "bg": "hall", "trail": true, "hold": T_RESET + 3.0, "poster": T_RESET + 1.2,
 			"text": "So seal your work as you go. Then a fall only costs you what you hadn't sealed.",
 			"git": "git commit seals it · git reset --hard goes back to it",
+			"say_git": "git commit seals it. git reset, hard, goes back to it.",
 			"events": [
 				[T_TORCH_1, _write.bind(hall, "torch_1", "lit", "torch")],
 				[T_SEAL, _seal.bind(hall, {}, "Light the first torch", "prince")],
@@ -148,8 +183,79 @@ func _script() -> Array:
 			]},
 		{"stage": "hourglass", "bg": "dungeon",
 			"text": "The Vizier has turned his hourglass. %s rooms stand between you and the tower." % count,
-			"git": "seal often · turn back the sands"},
+			"git": "seal often · turn back the sands",
+			"say_git": "Seal often. Turn back the sands."},
 	]
+
+
+# --- the voice ---------------------------------------------------------------
+
+## Who reads a beat's line: the one speaking it, or the narrator.
+static func reader(beat: Dictionary) -> String:
+	var who: String = beat.get("who", "")
+	return who if who != "" else "narrator"
+
+
+## A line as it is read aloud: no quote marks, HEAD as a word rather than
+## four letters, a capital to start and a stop to end.
+static func spoken(text: String) -> String:
+	var out := text.replace("\"", "").replace(" · ", ". ").replace("HEAD", "Head").strip_edges()
+	if out == "":
+		return out
+	if not out.right(1) in [".", "!", "?"]:
+		out += "."
+	return out.left(1).to_upper() + out.substr(1)
+
+
+## The clip's name for a line read by `voice`: it changes with the words, so
+## an old clip is never played for a new line.
+static func voice_key(voice: String, text: String) -> String:
+	return "intro_%s_%s" % [voice, (voice + "|" + text).md5_text().left(10)]
+
+
+## Every line the prologue reads aloud, for tools/voice.py: the clip's name,
+## whose voice, and the words.
+func lines() -> Array:
+	var out: Array = []
+	for beat: Dictionary in (_beats if not _beats.is_empty() else _script()):
+		var say := spoken(beat.text)
+		out.append({"key": voice_key(reader(beat), say), "voice": reader(beat), "text": say})
+		if beat.get("git", "") != "":
+			var said: String = beat.get("say_git", spoken(beat.git))
+			out.append({"key": voice_key("narrator", said), "voice": "narrator", "text": said})
+	return out
+
+
+static func _clip(voice: String, text: String) -> AudioStream:
+	var path := VOICE_DIR + voice_key(voice, text) + ".ogg"
+	return load(path) as AudioStream if ResourceLoader.exists(path) else null
+
+
+## Whether the prologue should read aloud now: not for the bot, and not in a
+## browser that hasn't had its first tap yet.
+func _voiced() -> bool:
+	return not driven and not Room.test_fast and (not OS.has_feature("web") or StageAudio.web_audio_unlocked)
+
+
+## When this beat's words are done being read, or -1 with no voice.
+func _said_by() -> float:
+	if _say_git != null:
+		return _git_at + _say_git.get_length()
+	if _say != null:
+		return _say_at + _say.get_length()
+	return -1.0
+
+
+## Starts each clip as its moment comes.
+func _speak() -> void:
+	if _said == 0 and _say != null and _t >= _say_at:
+		_said = 1
+		_voice.stream = _say
+		_voice.play()
+	if _said < 2 and _say_git != null and _t >= _git_at:
+		_said = 2
+		_voice.stream = _say_git
+		_voice.play()
 
 
 func _sound(name: String) -> void:
@@ -173,7 +279,7 @@ func _seal(repo: GitRepo, files: Dictionary, message: String, author: String) ->
 
 func _turn_back() -> void:
 	hall.reset_hard("HEAD")
-	_rewind = 0.7
+	_rewind = REWIND
 	_sound("rewind")
 
 
@@ -195,9 +301,21 @@ func _show(index: int) -> void:
 	var now: Dictionary = _beats[index]
 	_shake = float(now.get("shake", 0.0))
 	if now.has("music"):
-		Sfx.music(self, now.music)
+		_music = now.music
+		Sfx.music(self, _music)
 	if now.has("sound"):
 		_sound(now.sound)
+	_voice.stop()
+	_said = 0
+	_hurried = false
+	_say = null
+	_say_git = null
+	if _voiced():
+		_say = _clip(reader(now), spoken(now.text))
+		if now.get("git", "") != "":
+			_say_git = _clip("narrator", now.get("say_git", spoken(now.git)))
+	_say_at = LEAD
+	_git_at = (_say_at + _say.get_length() if _say != null else LEAD) + GAP
 	var who: String = now.get("who", "")
 	_who.text = Story.data().cast[who].full if who != "" else ""
 	_who.add_theme_color_override(&"font_color", Palette.VIOLET.lightened(0.3) if who == "vizier" else Palette.GREEN)
@@ -220,12 +338,30 @@ func _typed() -> bool:
 	return _body.visible_characters < 0 or _body.visible_characters >= _body.text.length()
 
 
-## How long the beat holds once it's on screen, if nobody presses anything.
+## How long the beat holds once it's on screen, if nobody presses anything:
+## until its words have been read aloud, or long enough to read them.
 func _hold() -> float:
 	var now: Dictionary = _beats[_index]
+	var said := _said_by()
+	if said >= 0.0:
+		return maxf(said + AFTER, float(now.get("hold", 0.0)))
 	var text: String = now.text
-	var read := text.length() / TYPE + 3.2 + text.length() * 0.05
+	var read := text.length() / TYPE + 3.6 + text.length() * 0.05
 	return maxf(read, float(now.get("hold", 0.0)))
+
+
+## Letters showing by now: in step with the voice, or at TYPE without one.
+func _letters() -> int:
+	var length := _body.text.length()
+	if _say == null:
+		return mini(length, int(_t * TYPE))
+	return int(length * clampf((_t - _say_at) / (_say.get_length() * 0.92), 0.0, 1.0))
+
+
+## Whether the Git word should be showing: once the line is up, and when the
+## narrator gets to it, if he will.
+func _git_due() -> bool:
+	return _typed() and (_say_git == null or _hurried or _t >= _git_at)
 
 
 ## The beat as its screenshot wants it: everything due has happened, quietly.
@@ -266,6 +402,7 @@ func finish() -> void:
 	_skip.hide()
 	var tween := create_tween()
 	tween.tween_property(self, "_black", 1.0, 0.35)
+	tween.parallel().tween_property(_voice, "volume_db", -40.0, 0.35)
 	tween.tween_callback(func() -> void:
 		if then > 0:
 			Main.play(get_tree(), then)
@@ -280,7 +417,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if OS.has_feature("web") and not StageAudio.web_audio_unlocked:
 		StageAudio.web_audio_unlocked = true
-		Sfx.music(self, _beats[_index].get("music", "music_title"))
+		Sfx.music(self, _music)
 	if event.is_action(&"pause"):
 		finish()
 		return
@@ -292,6 +429,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		advance()
 	else:
 		_body.visible_characters = -1
+		_hurried = true
 
 
 func _process(delta: float) -> void:
@@ -299,14 +437,15 @@ func _process(delta: float) -> void:
 	_shake = maxf(0.0, _shake - delta)
 	_rewind = maxf(0.0, _rewind - delta)
 	if not _leaving:
-		_black = maxf(0.0, _black - delta * 3.0)
+		_black = maxf(0.0, _black - delta * 2.0)
 	if not driven and not _leaving:
 		_t += delta
 		_run_events()
+		_speak()
 		if not _typed():
-			_body.visible_characters = mini(_body.text.length(), int(_t * TYPE))
-		else:
-			_git.modulate.a = minf(1.0, _git.modulate.a + delta * 3.0)
+			_body.visible_characters = _letters()
+		if _git_due():
+			_git.modulate.a = minf(1.0, _git.modulate.a + delta * 2.0)
 		if _t > _hold():
 			advance()
 	_place()
@@ -453,7 +592,7 @@ func _stage_tower(now: Dictionary) -> void:
 		for col in 3:
 			_tile("gate", 122 + col * 32, FLOOR - 96 + row * 32, Color(1, 1, 1, 0.8))
 	# The dagger passes through them to the Prince.
-	var reach := clampf(_t / 1.2, 0.0, 1.0) if now.get("give", false) else 1.0
+	var reach := clampf(_t / 2.0, 0.0, 1.0) if now.get("give", false) else 1.0
 	var grain := Vector2(196, 150).lerp(Vector2(296, 140), reach)
 	if reach < 1.0:
 		_glow(grain, 8.0, Palette.SAND)
@@ -492,7 +631,7 @@ func _stage_hall(_now: Dictionary) -> void:
 		x = lerpf(HALL_START, HALL_TORCH_1, _t / T_TORCH_1)
 		frame = _stride(x - HALL_START)
 	elif _t < T_RUN:
-		if _t >= T_SEAL and _t < T_SEAL + 0.9:
+		if _t >= T_SEAL and _t < T_SEAL + 1.2:
 			frame = Prince.F_DAGGER
 	elif _t < T_DIE:
 		x = lerpf(HALL_TORCH_1, HALL_PIT, (_t - T_RUN) / (T_DIE - T_RUN))
@@ -516,7 +655,7 @@ func _hall_wash() -> void:
 	if _t >= T_DIE and _t < T_RESET:
 		draw_rect(field, Color(0.45, 0.3, 0.12, 0.38))
 	if _rewind > 0.0:
-		var t := _rewind / 0.7
+		var t := _rewind / REWIND
 		draw_rect(field, Color(0.93, 0.78, 0.42, 0.55 * sin(t * PI)))
 		for i in 14:
 			var y := fmod(i * 37.0 + _clock * 90.0, VIEW.y)
