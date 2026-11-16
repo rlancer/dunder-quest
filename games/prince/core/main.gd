@@ -21,3 +21,10 @@ static func play(tree: SceneTree, id: int) -> void:
 static func title(tree: SceneTree) -> void:
 	tree.paused = false
 	tree.change_scene_to_file(TITLE)
+
+
+## The prologue, then room `then` (or the title, for 0).
+static func intro(tree: SceneTree, then: int = 1) -> void:
+	Intro.then = then
+	tree.paused = false
+	tree.change_scene_to_node(Intro.new())

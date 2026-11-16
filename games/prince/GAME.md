@@ -28,6 +28,22 @@ The commit ids on screen are real. The game's Git model (`git/repo.gd`) hashes b
 
 The dagger is the **Dagger of HEAD**; its sand is the **Sands of HEAD**. The sand trail along the top of the screen is the commit graph, always visible: one grain per commit, branch names as banners, `HEAD` as the glint of the dagger.
 
+## The prologue
+
+A first run (Start with no save, or New game) opens with a short prologue, `ui/intro.gd`, before room 1; the title's Story button replays it. It tells the story and answers "what is Git?" for someone who has never used it. Nine beats, each a line of story with the Git word for it underneath:
+
+1. The palace of the Sultan of Main, where nothing is forgotten.
+2. Princess Shirin keeps the ledger and seals three moments (a commit is a snapshot of every file).
+3. The sand keeps what changed, who changed it and the way back; people who write code call that ledger Git.
+4. Grand Vizier Rebasir hates a history anyone can read.
+5. He sends the Princess to the tower and commits two changes of his own (the log shows who).
+6. Through the bars she hands the Prince the Dagger of HEAD (HEAD is the commit you are on).
+7. It only goes back to a sealed moment (uncommitted work is gone).
+8. The first room's lesson played once: light a torch, seal it, light another, fall on the spikes, reset, and only the sealed torch still burns.
+9. The Vizier turns his hourglass.
+
+The ledger on screen is a real `GitRepo`, so its ids and output lines are Git's own. Any key or tap turns the page, Skip or Esc goes straight to the room, and left alone it plays itself. Keep the lines short: one or two sentences a beat. The bot turns every page and checks both ledgers; the trailer's run skips it.
+
 ## Curriculum
 
 The order follows what a newcomer needs, and what someone building with an AI needs first: save your work, undo what broke, try things safely, combine them.

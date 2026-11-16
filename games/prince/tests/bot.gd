@@ -28,6 +28,8 @@ var press_frames := 2
 var hold_frames := 2
 ## Fast-forwards cards, speeches and the rewind. The trailer's run turns it off.
 var fast := true
+## Turns the pages of the prologue before the rooms. The trailer's run skips it.
+var with_intro := true
 
 var _fails: PackedStringArray = []
 var room: Room
@@ -50,6 +52,8 @@ func _run() -> void:
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("room="):
 			only = int(arg.get_slice("=", 1))
+	if with_intro and only == 0:
+		await _intro()
 	for id in range(1, Story.count() + 1):
 		if only == 0 or only == id:
 			await _play(id)
@@ -57,6 +61,34 @@ func _run() -> void:
 	_finish()
 	tree.quit(0 if _fails.is_empty() else 1)
 
+
+## The prologue: every beat, then on into the first room. Its ledger is the
+## same Git model the rooms use, so check what it says happened.
+func _intro() -> void:
+	_id = 0
+	Main.intro(get_tree(), 1)
+	if not await wait_until(func() -> bool: return get_tree().current_scene is Intro, 300):
+		_fail("the prologue didn't load")
+		return
+	var intro := get_tree().current_scene as Intro
+	intro.driven = true
+	var beats := intro.beat_count()
+	for index in beats:
+		_expect(intro.beat() == index, "the prologue is on beat %d, not %d" % [intro.beat(), index])
+		intro.pose()
+		await moment("0_intro_%d" % (index + 1))
+		intro.advance()
+	var ledger := intro.ledger
+	_expect(ledger.is_clean() and ledger.history().size() == 6, "the prologue's ledger should hold six commits")
+	_expect(ledger.commits[ledger.head_sha()].author == "vizier", "the Vizier should have the ledger's last word")
+	var hall := intro.hall
+	_expect(hall.value("torch_1") == "lit", "the sealed torch should survive the reset")
+	_expect(hall.value("torch_2") == "dark", "the unsealed torch should be lost to the reset")
+	_expect(hall.subject(hall.head_sha()) == "Light the first torch" and hall.is_clean(), "the hall should end on its one seal, clean")
+	if not await wait_until(func() -> bool: return get_tree().current_scene is Room, 300):
+		_fail("the prologue never reached the first room")
+		return
+	print("prologue: %d beats, then room %d" % [beats, (get_tree().current_scene as Room).level_id])
 
 func _finish() -> void:
 	pass

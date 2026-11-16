@@ -27,7 +27,9 @@ func _ready() -> void:
 	column.custom_minimum_size = Vector2(120, 0)
 	column.add_theme_constant_override(&"separation", 4)
 	add_child(column)
-	_start = _button(column, "Carry on" if Progress.has_progress() else "Start", func() -> void: _go(Progress.next_room()))
+	# A first run opens with the prologue.
+	_start = _button(column, "Carry on" if Progress.has_progress() else "Start", func() -> void:
+		_go(Progress.next_room(), not Progress.has_progress()))
 	_new = _button(column, "New game", _on_new)
 	_new.visible = Progress.has_progress()
 	_button(column, "Full screen", _toggle_fullscreen).visible = not OS.has_feature("web_ios")
@@ -38,6 +40,12 @@ func _ready() -> void:
 	_rooms.position = Vector2(36, 236)
 	_rooms.add_theme_constant_override(&"separation", 4)
 	add_child(_rooms)
+	var story := Button.new()
+	story.text = "Story"
+	story.custom_minimum_size = Vector2(0, 20)
+	story.tooltip_text = "Watch the prologue again"
+	story.pressed.connect(_go.bind(0, true))
+	_rooms.add_child(story)
 	for id in range(1, Story.count() + 1):
 		var button := Button.new()
 		button.text = str(id)
@@ -106,13 +114,19 @@ func _unhandled_input(event: InputEvent) -> void:
 		_toggle_fullscreen()
 
 
-func _go(id: int) -> void:
+## Leaves for room `id`, by way of the prologue if `story` (which comes back
+## here when `id` is 0).
+func _go(id: int, story: bool = false) -> void:
 	if _leaving:
 		return
 	_leaving = true
 	var tween := create_tween()
 	tween.tween_property(_fade, "color:a", 1.0, 0.35)
-	tween.tween_callback(func() -> void: Main.play(get_tree(), id))
+	tween.tween_callback(func() -> void:
+		if story:
+			Main.intro(get_tree(), id)
+		else:
+			Main.play(get_tree(), id))
 
 
 func _on_new() -> void:
@@ -122,7 +136,7 @@ func _on_new() -> void:
 		_new.add_theme_color_override(&"font_color", Palette.CRIMSON.lightened(0.3))
 		return
 	Progress.reset()
-	_go(1)
+	_go(1, true)
 
 
 func _cancel_reset() -> void:
