@@ -9,8 +9,10 @@ extends Control
 ##
 ## The table on screen is the first case's real guest book, and the query
 ## that gets typed is run by the game's own SQL engine (sql/sql.gd), so the
-## rows that light up are the rows SQLite would return. Any key or tap turns
-## the page, Skip (or Esc) goes straight on, and left alone it plays itself.
+## rows that light up are the rows SQLite would return. The right arrow (or
+## any other key, or a tap) turns the page, the left arrow (or a tap on the
+## left of the screen) turns back one to watch it again, Skip (or Esc) goes
+## straight on, and left alone it plays itself.
 
 const VIEW := Vector2(480, 270)
 const FLOOR := 188.0
@@ -147,6 +149,8 @@ func _go(index: int) -> void:
 	_desk.visible = not outside
 	for suspect in _lineup:
 		suspect.visible = stage == "lineup"
+		# Back in the dark, for the lineup seen again.
+		suspect.strike(Person.Pose.IDLE, 0.0)
 	var with_lt := stage in ["arrive", "think", "door"]
 	_lt.visible = with_lt
 	_dog.visible = with_lt
@@ -157,13 +161,24 @@ func _go(index: int) -> void:
 			_lt.walk_to(250)
 		"think":
 			_lt.position.x = 250
+			_lt.walk_to(250)
 			_lt.facing = 1
 			_lt.strike(Person.Pose.ONE, 600.0)
 		"door":
+			# From where "think" left him, even when turned back to.
+			_lt.position.x = 250
+			_lt.facing = 1
 			_lt.strike(Person.Pose.IDLE, 0.0)
 			_lt.walk_to(404)
-	if beat.has("music") and str(beat.music) != _music:
-		_music = str(beat.music)
+	# The tune of the last page that set one, so a page turned back to has
+	# the music it had the first time.
+	var music := ""
+	for i in range(index, -1, -1):
+		if _beats[i].has("music"):
+			music = str(_beats[i].music)
+			break
+	if music != _music:
+		_music = music
 		var path := "res://assets/audio/music_%s.ogg" % _music
 		if ResourceLoader.exists(path):
 			MusicDirector.play(load(path) as AudioStream)
@@ -215,7 +230,10 @@ func _input(event: InputEvent) -> void:
 	var pad: bool = event is InputEventJoypadButton and event.pressed
 	if tap or key or pad:
 		get_viewport().set_input_as_handled()
-		turn()
+		if event.is_action(&"move_left") or (tap and event.position.x < get_viewport_rect().size.x * 0.25):
+			back()
+		else:
+			turn()
 
 
 ## Jumps to the end of this page's animation (the layout test looks at
@@ -231,6 +249,13 @@ func turn() -> void:
 		_t = text.length() / TYPE + 0.01
 	else:
 		_go(_index + 1)
+
+
+## Turns back to the start of the page before (or this one again, on the
+## first), to watch it again.
+func back() -> void:
+	if not _leaving:
+		_go(maxi(_index - 1, 0))
 
 
 func _finish() -> void:
@@ -282,7 +307,10 @@ func _draw_page() -> void:
 		c.draw_rect(Rect2(20, 250, 2, 11), Color(Palette.EMBER, fade))
 		Fit.text(c, mono, Vector2(28, 259), word, 16, Color(Palette.EMBER, fade))
 	if done and Fit.blink(int(_clock * 3.0) % 2 == 0):
-		Fit.text(c, mono, Vector2(462, 262), "v", 16, Palette.EMBER)
+		Fit.text(c, mono, Vector2(462, 262), ">", 16, Palette.EMBER)
+	# The way back, in the margin, from the second page on.
+	if _index > 0:
+		Fit.text(c, mono, Vector2(6, 262), "<", 16, Color(Palette.EMBER, 0.5))
 	Fit.end()
 	if _black > 0.0:
 		c.draw_rect(Rect2(Vector2.ZERO, VIEW), Color(0, 0, 0, _black))

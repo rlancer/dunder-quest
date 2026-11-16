@@ -28,7 +28,7 @@ A first run (Start with no save, or New game) opens with a short prologue, `ui/i
 8. He's almost out of the door, and turns round (`JOIN` puts two tables side by side).
 9. The five case files land on the desk.
 
-The table on screen is case 1's real guest book and the query is run by the game's own engine, so the lit rows are the ones SQLite returns. Any key or tap turns the page, Skip or Esc goes straight on, and left alone it plays itself. Keep the lines short: one or two sentences a page. The bot turns every page and checks the query. It has no voice-over yet (Prince of Versions' prologue is read aloud; this one was built in a session with no key for the voice generator).
+The table on screen is case 1's real guest book and the query is run by the game's own engine, so the lit rows are the ones SQLite returns. The right arrow (or any key, or a tap) turns the page, the left arrow (or a tap on the left quarter of the screen) turns back one to watch it again, Skip or Esc goes straight on, and left alone it plays itself. Keep the lines short: one or two sentences a page. The bot turns every page, goes back to the first and forward again, and checks the query. It has no voice-over yet (Prince of Versions' prologue is read aloud; this one was built in a session with no key for the voice generator).
 
 ## The cases
 

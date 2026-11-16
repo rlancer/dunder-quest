@@ -8,7 +8,9 @@ extends Control
 ## The ledger on screen is a real GitRepo (git/repo.gd), so the grains, the
 ## ids and the output lines are the ones the real git would give; the last
 ## beats seal a torch and fall on the spikes with the same model the rooms
-## use. Any key or tap moves on; Skip (or Esc) goes straight to the room.
+## use. The right arrow (or any other key, or a tap) moves on, the left arrow
+## (or a tap on the left of the screen) goes back a beat to watch it again,
+## and Skip (or Esc) goes straight to the room.
 ##
 ## Every line is read aloud: the story by a narrator (or whoever speaks it),
 ## then the Git word for it. The clips are made by tools/voice.py and named
@@ -94,12 +96,7 @@ func _ready() -> void:
 		var path := "res://assets/backgrounds/%s.png" % name
 		if ResourceLoader.exists(path):
 			_art[name] = load(path)
-	ledger = GitRepo.new()
-	ledger.init({"east_torch": "dark", "garden_gate": "shut", "bridge": "up", "spikes": "safe", "tower_door": "open"},
-		"The palace as it stood", "palace")
-	hall = GitRepo.new()
-	hall.init({"torch_1": "dark", "torch_2": "dark"}, "The hall as it stood", "palace")
-	_beats = _script()
+	_fresh()
 	_who = _label(11, Palette.pixel(), Palette.GREEN)
 	_body = _label(11, Palette.pixel(), Palette.PAPER)
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -114,6 +111,17 @@ func _ready() -> void:
 	Sfx.warm()
 	MusicDirector.duck(true, UNDER)
 	_show(0)
+
+
+## The ledger and the hall as they stood before the story, and the beats that
+## write to them.
+func _fresh() -> void:
+	ledger = GitRepo.new()
+	ledger.init({"east_torch": "dark", "garden_gate": "shut", "bridge": "up", "spikes": "safe", "tower_door": "open"},
+		"The palace as it stood", "palace")
+	hall = GitRepo.new()
+	hall.init({"torch_1": "dark", "torch_2": "dark"}, "The hall as it stood", "palace")
+	_beats = _script()
 
 
 func _exit_tree() -> void:
@@ -300,9 +308,13 @@ func _show(index: int) -> void:
 	_black = 1.0
 	var now: Dictionary = _beats[index]
 	_shake = float(now.get("shake", 0.0))
-	if now.has("music"):
-		_music = now.music
-		Sfx.music(self, _music)
+	# The tune of the last beat that set one, so a beat watched again after
+	# going back has the music it had the first time.
+	for i in range(index, -1, -1):
+		if _beats[i].has("music"):
+			_music = _beats[i].music
+			break
+	Sfx.music(self, _music)
 	if now.has("sound"):
 		_sound(now.sound)
 	_voice.stop()
@@ -395,6 +407,24 @@ func advance() -> void:
 		_show(_index + 1)
 
 
+## Back to the start of the beat before this one (or this one again, on the
+## first), to watch it again. The ledger and the hall are made afresh and
+## every beat before it is played through quietly, so they stand as they did
+## when that beat first began.
+func back() -> void:
+	if _leaving:
+		return
+	var to := maxi(_index - 1, 0)
+	_fresh()
+	_quiet = true
+	for i in to:
+		for event: Array in _beats[i].get("events", []):
+			(event[1] as Callable).call()
+	_quiet = false
+	_rewind = 0.0
+	_show(to)
+
+
 func finish() -> void:
 	if _leaving:
 		return
@@ -425,7 +455,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if _clock - _pressed_at < 0.2:
 		return
 	_pressed_at = _clock
-	if _typed():
+	var tap := event is InputEventMouseButton or event is InputEventScreenTouch
+	if event.is_action(&"move_left") or (tap and event.position.x < _full().x * 0.25):
+		back()
+	elif _typed():
 		advance()
 	else:
 		_body.visible_characters = -1
@@ -499,7 +532,9 @@ func _draw() -> void:
 	if now.get("trail", false):
 		_paint_ledger(hall if now.stage == "hall" else ledger)
 	if _typed() and not driven and int(_clock * 2.0) % 2 == 0:
-		draw_string(Palette.pixel(), Vector2(0, 266), "tap" if TouchControls.active else "press any key", HORIZONTAL_ALIGNMENT_RIGHT, 472, 8, Color(Palette.PAPER, 0.5))
+		draw_string(Palette.pixel(), Vector2(0, 266), "tap >" if TouchControls.active else "any key >", HORIZONTAL_ALIGNMENT_RIGHT, 472, 8, Color(Palette.PAPER, 0.5))
+	if _index > 0 and not driven:
+		draw_string(Palette.pixel(), Vector2(8, 266), "< tap here: back" if TouchControls.active else "< left: back", HORIZONTAL_ALIGNMENT_LEFT, -1, 8, Color(Palette.PAPER, 0.35))
 	draw_set_transform(Vector2.ZERO)
 	if _black > 0.0:
 		draw_rect(Rect2(Vector2.ZERO, _full()), Color(0, 0, 0, _black))
