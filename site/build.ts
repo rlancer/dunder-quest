@@ -51,7 +51,7 @@ const CURB_TRAILER_ID = "QZsFLN5z7R4";
 // on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /prince/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
-const PRINCE_TRAILER_ID = "sm25tC3CK9g";
+const PRINCE_TRAILER_ID = "BGxekAJEUNA";
 // Just One More JOIN's trailer (games/lieutenant/tools/make_trailer.py), on
 // YouTube. Empty leaves the trailer off the
 // /lieutenant/ page and shows the thumbnail alone on the brand kit.

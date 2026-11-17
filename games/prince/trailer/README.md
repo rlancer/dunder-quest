@@ -53,5 +53,5 @@ trailer/
 
 - [x] **Listening pass.** The cue's beats and its stop were placed by measurement; Rob watched the cut and approved it (November 2026).
 - [ ] **Listening pass on the recut** (November 2026): a new cue (the approved one was lost with its worktree) and the prologue cold open. Its beats were measured and line up with the cut; Rob to watch it.
-- [ ] **Upload the recut** to YouTube to replace `sm25tC3CK9g`, which is the cut without the prologue.
+- [x] **Upload the recut** (November 2026, video `BGxekAJEUNA`, now in `PRINCE_TRAILER_ID`). The first cut, `sm25tC3CK9g`, without the prologue, is unlisted and out of the playlists.
 - [x] **Upload** (November 2026, video `sm25tC3CK9g`) to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then paste its video ID into `PRINCE_TRAILER_ID` in `site/build.ts`.

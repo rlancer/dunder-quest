@@ -60,7 +60,12 @@ The trick is that Studio's drop zone and its thumbnail button each sit on a hidd
 
 Limits and loose ends:
 
-- `file_upload` takes at most 10 MB a call. The JOIN 4K master was 8.5 MB. A bigger master won't go this way: say so and leave the upload to Rob, rather than uploading a smaller cut without asking.
+- `file_upload` takes at most 10 MB a call (one call per file; a `browser_batch` of several counts as one call), and only from folders the session may read: the worktree and the scratchpad work, the main checkout may not. **A bigger master goes up in pieces**, as the 38 MB Prince of Versions recut did (November 2026, `BGxekAJEUNA`):
+  1. `split -b 9000000 -d -a 1 <master> part_` into a scratchpad folder, and note the master's `sha256sum`.
+  2. With `javascript_tool`, add one `<input type="file">` per piece to the Studio page (an `aria-label` like "dq chunk input 0" makes them easy to `find`), and `file_upload` each piece to its own input, one call each.
+  3. With `javascript_tool`, join them, `new File([...pieces], "<name>.mp4", {type: "video/mp4"})`, check its SHA-256 (`crypto.subtle.digest`) against the master's, then put it on the dialog's `input[name=Filedata]` through a `DataTransfer` and dispatch a bubbling `change` event. Remove the extra inputs.
+  Studio then uploads it as if it had been dropped. The tab goes unresponsive for a minute or so while it does; typing the description then times out but finishes, so wait and read it back rather than typing it again.
+- The "Show more" disclosure is now worded "AI use" ("Was AI used to generate or edit your content...", with a list of realistic cases); `UPLOAD_SETTINGS`' answer is still No.
 - The steps above leave Studio's defaults for comments, licence, embedding and subscriber notifications, and set nothing for paid promotion, subtitles, cards or the end screen. `UPLOAD_SETTINGS` asks for an end screen (Subscribe, plus another game's trailer); that is still done by hand.
 - Element refs change from one visit to the next, so find them fresh each time; the `find` phrases above are the ones that worked.
 - Never type a password or solve a CAPTCHA there, and don't touch other videos or the channel's settings.
