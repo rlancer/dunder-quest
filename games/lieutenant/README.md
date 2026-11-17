@@ -85,6 +85,8 @@ All of it is made by scripts in `tools/`, with no key and no network:
 - `tools/audio.py` synthesizes the effects and the three music loops (an original minor blues for bass, vibraphone, electric piano and brushes) with numpy.
 - `tools/site_art.py` copies the page's screenshots out of `tests/shots/` and paints the social card.
 
+The trailer is the exception: `tools/trailer_audio.py` generates its music cue and effects through OpenRouter (the key in the repo's `.env`), and `tools/make_trailer.py` cuts it from captures of the bot (`tests/trailer_run.gd`, recorded by `trailer/capture.sh`). See [trailer/README.md](trailer/README.md).
+
 The other games' rooms and music are generated (`tools/scenery.py` and `tools/music.py` there go through OpenRouter). This game was built in a session without that key, so its rooms and music are stand-ins made in code; generated ones can replace them file for file. Fonts are Caprasimo (the titles), Pixelify Sans and VT323, all OFL.
 
 ## Export

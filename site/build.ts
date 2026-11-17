@@ -52,6 +52,10 @@ const CURB_TRAILER_ID = "QZsFLN5z7R4";
 // /prince/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
 const PRINCE_TRAILER_ID = "sm25tC3CK9g";
+// Just One More JOIN's trailer (games/lieutenant/tools/make_trailer.py), on
+// YouTube. Empty leaves the trailer off the
+// /lieutenant/ page and shows the thumbnail alone on the brand kit.
+const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -906,6 +910,44 @@ An homage to a certain palace-run platformer and its time-rewinding sequel. The 
 #git #learngit #github #indiegame #pixelart #godot #codinggame`;
 const PV_YOUTUBE_TAGS = "learn git, git for beginners, git tutorial, version control, git commit, merge conflict, coding game, "
   + "educational game, pixel art, indie game, godot, platformer, prince of versions, dunder quest";
+// Just One More JOIN's trailer (games/lieutenant/trailer/). Its chapters are
+// the ones `python tools/make_trailer.py` prints (CHAPTER m:ss ...).
+const JJ_THUMB_ALT = "Just One More JOIN trailer thumbnail: the Lieutenant with a finger raised and Mrs. Harrow with her arms folded, under 'Learn SQL' and SELECT name FROM guests WHERE arrived > '21:00'";
+const JJ_TRAILER_FACTS = [
+  ["Length", "60 seconds"],
+  ["Music", "An original cue for walking bass, brushes, vibraphone and a wry bassoon, 120 BPM; every cut lands on a beat"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the notebook and the printouts are sharp; 4K is ×2"],
+];
+const JJ_CHAPTERS = "0:00 Every case opens on the murder\n0:14 Ask Records, in SQL\n0:27 One more question\n0:39 Real SQL, real errors";
+const JJ_YOUTUBE_TITLE = "Just One More JOIN – Learn SQL as a Rumpled Homicide Detective | Official Trailer";
+const JJ_YOUTUBE_DESCRIPTION = `Every case shows you the murder first. So the puzzle is never who did it. It's the query that proves it.
+
+Just One More JOIN is a free pixel-art detective game that teaches SQL. Lieutenant Colonna, Homicide, looks like he slept in his raincoat and usually knows who did it inside five minutes. Knowing isn't proof. The city writes everything down, Doris in Records has typed it all into the department's new machine, and the machine only takes questions in SQL. Walk him round the room, find the records, and spell the one question that gives the alibi away.
+
+▶ Play free in your browser: ${SITE_URL}lieutenant/play/
+▶ The five cases and what each one teaches: ${SITE_URL}lieutenant/
+▶ More games that teach code (Rust, Git, Python, JavaScript): ${SITE_URL}
+
+What's inside
+• 5 cases, from your first SELECT to the one row that isn't there: SELECT, WHERE, LIKE, AND and OR, ORDER BY, LIMIT, JOIN, COUNT, GROUP BY, HAVING, LEFT JOIN and IS NULL
+• Real SQL: the game answers the way SQLite does, with the same rows and the same errors, word for word
+• About fifteen thousand queries, every one the notebook can spell, checked against the real SQLite on every change
+• Never seen SQL? A short prologue says what a database, a table and a query are
+• No typing: you build each query from chips, and the SQL you can read is all that runs
+• Keyboard, gamepad or touch. No signup.
+
+How it was made
+Claude built the game: every line of Godot code, a SQL engine written in GDScript, the cast and the rooms painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. A music model made the trailer's cue. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/lieutenant
+
+${JJ_CHAPTERS}
+
+An homage to a certain rumpled television detective and the mysteries that showed you the murder first. The names, cases, art and music are original; it isn't affiliated with or endorsed by anyone who made them.
+
+#sql #learnsql #database #indiegame #pixelart #godot #codinggame`;
+const JJ_YOUTUBE_TAGS = "learn sql, sql for beginners, sql tutorial, sql join, left join, group by, sqlite, database, coding game, "
+  + "educational game, pixel art, indie game, godot, detective game, just one more join, dunder quest";
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
@@ -941,6 +983,7 @@ const CHANNEL_PLAYLISTS = [
   ["Flatmates.js", "The JavaScript game: its trailer, and later its Short."],
   ["Curb Your Oxidation", "The Rust game: its trailer, and later its Short."],
   ["Prince of Versions", "The Git game: its trailer, and later its Short."],
+  ["Just One More JOIN", "The SQL game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
 const UPLOAD_SETTINGS = [
@@ -1675,6 +1718,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="fine">How it's made: <a href="${REPO}/blob/main/games/prince/trailer/README.md">games/prince/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="jj-trailer-h">
+  <p class="kicker">lieutenant.__trailer__</p>
+  <h2 id="jj-trailer-h">Just One More JOIN</h2>
+  <p class="lede">Cut to an original cue for a small jazz band: a cold open, the Lieutenant and his dog, a query spelled from chips and read to Records, and then the false exit in one take, with the bubble landing on the music's stop. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(JOIN_TRAILER_ID, `${img}lieutenant/trailer.png`, JJ_THUMB_ALT, "Just One More JOIN")}
+  <dl class="facts">${JJ_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/lieutenant/trailer/README.md">games/lieutenant/trailer/README.md</a>.</p>
+</section>
+
 <section class="section kit">
   <p>Uploading them? The titles, descriptions and thumbnails are on <a href="${prefix}brand/youtube/">the YouTube page</a>.</p>
 </section>`;
@@ -1725,7 +1777,10 @@ function buildBrandYoutube(prefix: string): string {
       "games/curb/trailer/out/curb_trailer_4k.mp4")
     + uploadKit("Prince of Versions", PRINCE_TRAILER_ID, `${img}prince/trailer.png`, "prince_thumbnail.png",
       PV_YOUTUBE_TITLE, PV_YOUTUBE_DESCRIPTION, PV_YOUTUBE_TAGS, "Prince of Versions",
-      "games/prince/trailer/out/prince_trailer_4k.mp4");
+      "games/prince/trailer/out/prince_trailer_4k.mp4")
+    + uploadKit("Just One More JOIN", JOIN_TRAILER_ID, `${img}lieutenant/trailer.png`, "join_thumbnail.png",
+      JJ_YOUTUBE_TITLE, JJ_YOUTUBE_DESCRIPTION, JJ_YOUTUBE_TAGS, "Just One More JOIN",
+      "games/lieutenant/trailer/out/join_trailer_4k.mp4");
   const body = `
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
@@ -1770,7 +1825,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code> or <code>PRINCE_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code> or <code>JOIN_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -2741,6 +2796,14 @@ function buildLieutenant(prefix: string): string {
   const regulars = ["lt", "null", "doris"];
   const cast = Object.entries(data.cast).map(([id, p]: [string, Json]) =>
     `<li><b>${esc(p.full)}</b> <span>${esc(p.role)}${regulars.includes(id) ? "" : " (a suspect)"}</span></li>`).join("");
+  // No trailer yet: the section appears once JOIN_TRAILER_ID is set.
+  const trailer = !JOIN_TRAILER_ID ? "" : `
+<section class="jj-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(JOIN_TRAILER_ID, `${img}trailer.png`, JJ_THUMB_ALT, "Just One More JOIN")}
+  <p class="jj-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
   const next = JJ_NEXT.map(([what, about]) => `<li><code>${esc(what)}</code> <span>${esc(about)}</span></li>`).join("");
   const body = `
 <section class="jj-hero">
@@ -2753,7 +2816,7 @@ function buildLieutenant(prefix: string): string {
   </div>
   <img class="jj-shot" src="${img}title.png" alt="${esc(JJ_ALT)}" width="960" height="540">
 </section>
-
+${trailer}
 <section class="jj-section" id="how">
   <h2>How it plays</h2>
   <ol class="jj-steps">${stepHtml}</ol>
@@ -2838,6 +2901,7 @@ ${body}
   <p>Just One More JOIN. One lieutenant, one basset hound, and a records desk that takes you at your exact word.</p>
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
 </footer>
+${JOIN_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 </body>
 </html>
 `;
