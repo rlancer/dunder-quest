@@ -28,6 +28,29 @@ See [README.md](README.md). The site is built by `site/build.ts`. Each game has 
 - **Trailers are YouTube-first.** The 4K master and the YouTube thumbnail are primary. Steam is deferred, so keep the 1080p master Steam-compatible.
 - **One YouTube channel for every game:** [@dunderquest](https://www.youtube.com/@dunderquest). Channel art, copy and each video's upload form live on /brand/youtube/ (`buildBrandYoutube` in `site/build.ts`). Link that channel, not any other.
 
+## Uploading a trailer to YouTube
+
+An agent can do the whole upload, with nothing dragged and dropped. Rob asked for this to be written down after the Just One More JOIN trailer went up this way (November 2026, video `ojUvSRr5Uq8`). It needs the **Claude in Chrome** tools (`mcp__claude-in-chrome__*`), which drive Rob's own Chrome, where he is already signed in to the channel. The app's built-in browser has no file-upload tool, so it can't do this.
+
+The trick is that Studio's drop zone and its thumbnail button each sit on a hidden `<input type="file">`, and `file_upload` hands a file straight to one of those. Never click "Select files" or the thumbnail's "Upload file": they open the operating system's file picker, which the tools can't drive.
+
+1. **Get the form's text.** Build the site to a scratch folder (`bun site/build.ts <scratch>`) and take the title, tags and description from `<scratch>/brand/youtube/index.html`, so chapters and links are the built ones. The page escapes apostrophes as `&#x27;`; type a plain `'`.
+2. **Open Studio** in a new tab (studio.youtube.com) and check the dashboard is Dunder Quest's before going on. If it's another channel or a sign-in page, stop and ask Rob.
+3. **The video.** Click Create, then "Upload videos". `find` "file input for video upload" returns the dialog's hidden file input; pass its ref to `file_upload` with the 4K master's path. The Details form and the video's link appear in a few seconds.
+4. **Title and description.** Select all in the title box and type over the default (the file's name). Click the description box and type the whole description in one go, with `\n` for line breaks. Read both back with `javascript_tool` (`ytcp-uploads-dialog #textbox`).
+5. **The thumbnail.** `find` "thumbnail image file input (hidden)" returns the input with id `file-loader` inside the thumbnail uploader; `file_upload` the PNG to it.
+6. **Playlists.** Open "Select playlists", tick Trailers and the game's own. A new game's playlist is made there: "New playlist", its name, Public, Create.
+7. **The rest of the form**, from `UPLOAD_SETTINGS` in `site/build.ts`: "No, it's not made for kids"; then "Show more": altered or synthetic content No, the tags typed with a comma after every one (the last too), video language English, category Gaming. Typing doesn't filter the language list: `find` the English option, scroll to it and click it.
+8. **Publish.** Next three times, choose Public, re-read the title, thumbnail and visibility on screen, then Publish.
+9. **Check and wire it in.** Open the watch URL and confirm the title and that it's public, then put the ID in that game's `..._TRAILER_ID` in `site/build.ts` and tick the Upload item in the trailer's README.
+
+Limits and loose ends:
+
+- `file_upload` takes at most 10 MB a call. The JOIN 4K master was 8.5 MB. A bigger master won't go this way: say so and leave the upload to Rob, rather than uploading a smaller cut without asking.
+- The steps above leave Studio's defaults for comments, licence, embedding and subscriber notifications, and set nothing for paid promotion, subtitles, cards or the end screen. `UPLOAD_SETTINGS` asks for an end screen (Subscribe, plus another game's trailer); that is still done by hand.
+- Element refs change from one visit to the next, so find them fresh each time; the `find` phrases above are the ones that worked.
+- Never type a password or solve a CAPTCHA there, and don't touch other videos or the channel's settings.
+
 ## Why it's a learning game
 
 Rob is dyslexic and was failing his spelling tests until his dad wrote him a spelling game in BASIC; after that he got 100 on every one. His kids are 5 and 2 (as of October 2026), too young for Python, "but maybe some day". He offered this for launch copy. Use only these facts and don't embellish them (no made-up computer, age or names).
