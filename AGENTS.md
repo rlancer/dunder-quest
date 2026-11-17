@@ -32,6 +32,16 @@ See [README.md](README.md). The site is built by `site/build.ts`. Each game has 
 - **Trailers are YouTube-first.** The 4K master and the YouTube thumbnail are primary. Steam is deferred, so keep the 1080p master Steam-compatible.
 - **One YouTube channel for every game:** [@dunderquest](https://www.youtube.com/@dunderquest). Channel art, copy and each video's upload form live on /brand/youtube/ (`buildBrandYoutube` in `site/build.ts`). Link that channel, not any other.
 
+## Making a trailer, and keeping it
+
+Each game's trailer is cut by its own `tools/make_trailer.py` from captures of its bot, to a generated music cue; the steps are in that game's `trailer/README.md`. In outline, run from the game's folder: `python tools/trailer_audio.py` (the cue and the effects, through OpenRouter), `bash trailer/capture.sh` (the bot's run at 1920×1080; Prince of Versions also captures its prologue with `bash trailer/capture.sh intro`), then `python tools/make_trailer.py` (`--stills` first, to check the cut). Python comes from mise (`mise exec -- python ...`).
+
+Everything a trailer is made of is git-ignored: `trailer/audio/` (the cue), `trailer/captures/` and `trailer/out/` (the masters and the thumbnail). So it vanishes when a worktree is removed, and the cue can't be made again: generating it twice gives two different pieces of music, and the cut is timed to the one it has. That's how the Prince of Versions trailer was lost in November 2026, cue and all, with only the YouTube copy left. So:
+
+- **After rendering a trailer in a worktree, copy `trailer/out/` and `trailer/audio/` into the main checkout** (`D:\src\dunder-quest\games\<game>\trailer\`), where Curb's and Just One More JOIN's already are. The captures (several GB) can stay behind: they can be made again from the repo.
+- **To re-cut a trailer, copy its `audio/` back from there first**, rather than generating a new cue, unless the music is meant to change.
+- Uploading to YouTube is not a backup: what comes back down is YouTube's re-encode, not the master.
+
 ## Uploading a trailer to YouTube
 
 An agent can do the whole upload, with nothing dragged and dropped. Rob asked for this to be written down after the Just One More JOIN trailer went up this way (November 2026, video `ojUvSRr5Uq8`). It needs the **Claude in Chrome** tools (`mcp__claude-in-chrome__*`), which drive Rob's own Chrome, where he is already signed in to the channel. The app's built-in browser has no file-upload tool, so it can't do this.

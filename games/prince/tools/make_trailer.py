@@ -1,7 +1,9 @@
 """Cut the Prince of Versions trailer from a Movie Maker capture of the bot.
 
-A fast run of highlights on the beat of one original cue (oud, santur, ney,
-frame drums): the title screen, then a card at a time ("A dagger that turns
+A cold open from the prologue (Princess Shirin sealing moments in the
+ledger, the Vizier's commits, the Dagger of HEAD), read aloud with its own
+music, then a fast run of highlights on the beat of one original cue (oud,
+santur, ney, frame drums): the title screen, then a card at a time ("A dagger that turns
 back time." ...) between the moments that teach: a commit and Git's reply, a
 death with a torch uncommitted and the sands running back, the Vizier's
 sabotage commit, a reset past HEAD, a revert, the palace guard refusing
@@ -15,17 +17,19 @@ whole-number nearest-neighbor scales. The mixing and encoding helpers come
 from the Dunder Quest trailer (../../dunder-quest/tools/make_trailer.py).
 
 The cue (`trailer/audio/cue_prince.wav`, from tools/trailer_audio.py) was
-measured at 120 BPM: beats at 0.055 s + k/2, bars of four from there. It
-drops out at bar 16 (32 s) with a hit on the next beat and a reversed swell
-back in at bar 18, and its last hit is bar 30 (60 s). It plays from the
-first frame; every cut lands on a beat or a bar, and the game's own sound
-sits under it.
+measured at 120 BPM: beats at CUE_BAR0 + k/2, bars of four from there. It
+drops out at bar 16 with a hit on the next beat and a reversed swell back in
+at bar 18, and its last hit is bar 30. It starts where the cold open ends
+(`cue_start()`); every cut after that lands on a beat or a bar, and the
+game's own sound sits under it. The cold open has no cue: its sound is the
+prologue's own (the voices and its music).
 
-Shots find their capture frames by name in the run's MARK log
-(`trailer/captures/run.log`), so a fresh capture needs no renumbering.
-Needs ffmpeg on the PATH.
+Shots find their capture frames by name in the MARK logs
+(`trailer/captures/run.log` and `intro.log`), so a fresh capture needs no
+renumbering. Needs ffmpeg on the PATH.
 
     bash trailer/capture.sh                 # -> trailer/captures/run/ + run.log, at 1920x1080
+    bash trailer/capture.sh intro           # the prologue -> trailer/captures/intro/ + intro.log
     python tools/make_trailer.py            # -> trailer/out/prince_trailer_{1080p,4k}.mp4 + prince_thumbnail.png
     python tools/make_trailer.py --stills   # one frame per shot, for checking the cut
     python tools/make_trailer.py --at 3 12.5   # frames at those trailer times
@@ -59,6 +63,8 @@ from make_trailer import flash, font  # noqa: E402
 _NAME = sys.argv[sys.argv.index("--capture") + 1] if "--capture" in sys.argv else "run"
 CAPTURE = ROOT / "trailer" / "captures" / _NAME
 LOG = ROOT / "trailer" / "captures" / f"{_NAME}.log"
+INTRO = ROOT / "trailer" / "captures" / "intro"
+INTRO_LOG = ROOT / "trailer" / "captures" / "intro.log"
 AUDIO = ROOT / "trailer" / "audio"
 OUT = ROOT / "trailer" / "out"
 SITE_THUMB = REPO / "site" / "static" / "img" / "prince" / "trailer.png"
@@ -90,19 +96,64 @@ WHITE = (255, 255, 255)
 
 CUE = "cue_prince"
 BEAT = 0.5
-## The cue's first beat, in cue time; the cue starts at trailer time 0.
+## The cue's first beat, in cue time; the cue starts at trailer time cue_start().
 CUE_BAR0 = 0.055
-## Its last hit (bar 30), and where its tail has rung out.
-LAST_HIT = CUE_BAR0 + 30 * 4 * BEAT
+## Where its tail has rung out, in cue time.
 CUE_END = 63.5
 
 
 def bar(n: float) -> float:
-    return CUE_BAR0 + n * 4 * BEAT
+    return cue_start() + CUE_BAR0 + n * 4 * BEAT
 
 
 def beat(k: float) -> float:
-    return CUE_BAR0 + k * BEAT
+    return cue_start() + CUE_BAR0 + k * BEAT
+
+
+def last_hit() -> float:
+    """The cue's last hit (bar 30)."""
+    return bar(30)
+
+
+# --- The cold open ---------------------------------------------------------------
+
+## The prologue beats the trailer opens on (1-based, as intro.log numbers
+## them), with the seconds skipped at the start of each and how long it runs
+## on past its line: the ledger, the Vizier sending the Princess to the tower
+## with his two commits, and the Princess handing over the Dagger of HEAD.
+## The Git word read after each line is left out: the cards say it.
+PROLOGUE = ((2, "the ledger", 0.0, 0.4), (5, "the vizier", 0.25, 0.4), (6, "the dagger", 0.25, 0.5))
+## Seconds into a beat before its line is read (Intro.LEAD).
+LEAD = 0.7
+
+
+@lru_cache(maxsize=None)
+def intro_beats() -> dict[int, tuple[int, float]]:
+    """Beat number -> (capture frame it starts on, its line's clip length)."""
+    out = {}
+    for line in INTRO_LOG.read_text(encoding="utf-8", errors="replace").splitlines():
+        m = re.match(r"MARK (\d+) beat (\d+) ([\d.]+)", line)
+        if m:
+            out[int(m.group(2))] = (int(m.group(1)), float(m.group(3)))
+    return out
+
+
+def prologue() -> list[tuple[int, float, str]]:
+    """(first capture frame, length in seconds, label) for each cold-open shot."""
+    shots = []
+    for n, label, skip, after in PROLOGUE:
+        if n not in intro_beats():
+            sys.exit(f"no beat {n} in {INTRO_LOG.name}: run bash trailer/capture.sh intro")
+        frame, say = intro_beats()[n]
+        length = round((LEAD + say + after - skip) * FPS) / FPS
+        shots.append((frame + round(skip * FPS), length, label))
+    return shots
+
+
+@lru_cache(maxsize=1)
+def cue_start() -> float:
+    """Trailer time the cue starts: the end of the cold open."""
+    return sum(length for _, length, _ in prologue())
 
 
 # --- The capture's MARK log ---------------------------------------------------
@@ -253,8 +304,8 @@ def end_card(at: float):
 # --- Gameplay source ------------------------------------------------------------
 
 @lru_cache(maxsize=48)
-def capture(frame: int) -> Image.Image:
-    path = CAPTURE / f"f{frame:08d}.png"
+def capture(frame: int, folder: Path = CAPTURE) -> Image.Image:
+    path = folder / f"f{frame:08d}.png"
     if not path.exists():
         return Image.new("RGB", (CW, CH), INK)
     img = Image.open(path).convert("RGB")
@@ -275,6 +326,9 @@ class Shot:
     fx: list[Callable[[Image.Image, float], Image.Image]] = field(default_factory=list)
     audio: float = 1.0
     label: str = ""
+    ## Which capture `src` is in: the run, or INTRO (the prologue's, whose
+    ## sound goes in clean, with soft edges).
+    cap: Path = CAPTURE
 
     def frame_at(self, t: float) -> int:
         return int(self.src + round((t - self.start) * FPS * self.speed))
@@ -302,8 +356,14 @@ def edit() -> list[Shot]:
         shots.append(shot)
         return shot
 
+    # The cold open: the prologue, read aloud, with its own music.
+    t = 0.0
+    for src, length, label in prologue():
+        add(t, t + length, src=src, cap=INTRO, label=label)
+        t += length
+
     # The title screen on the cue's first hit.
-    add(0.0, bar(1.5), src=mark("title") + 6, label="title", audio=0.0)
+    add(cue_start(), bar(1.5), src=mark("title") + 6, label="title", audio=0.0)
     add(bar(1.5), bar(2.5), draw=card(["A dagger that", "turns back time."]), label="card dagger")
 
     # Room 1: a torch, a commit and Git's reply.
@@ -354,14 +414,15 @@ def edit() -> list[Shot]:
         add(at, at + BEAT, src=f + 2, label=f"rewind {k}", fx=[sand_wipe(at, 0.3)])
     add(bar(27), bar(28), draw=card(["Five rooms.", "Your first commit to", "your first merge conflict."], size=20), label="card five")
     # Back to the title, timed so the cue's last hit lands on the end card.
-    add(bar(28), LAST_HIT, src=mark("title") + 30, speed=0.5, audio=0.0, label="title again")
-    add(LAST_HIT, LAST_HIT + END_HOLD, draw=end_card(LAST_HIT), label="end card", fx=[flash_fx(LAST_HIT, 5, 0.7)])
+    add(bar(28), last_hit(), src=mark("title") + 30, speed=0.5, audio=0.0, label="title again")
+    add(last_hit(), last_hit() + END_HOLD, draw=end_card(last_hit()), label="end card", fx=[flash_fx(last_hit(), 5, 0.7)])
     return shots
 
 
 def chapters() -> list[tuple[float, str]]:
     """YouTube chapters (each at least 10 s long), for the video description."""
-    return [(0.0, "The dagger turns back time"), (bar(8.5), "The Vizier commits too"),
+    return [(0.0, "The Princess and the ledger"), (cue_start(), "The dagger turns back time"),
+            (bar(8.5), "The Vizier commits too"),
             (bar(16), "The merge conflict"), (bar(24), "Five rooms of real Git")]
 
 
@@ -371,7 +432,7 @@ def cues() -> list[tuple[str, float, float]]:
            ("rewind", bar(6.5) + 50 / FPS - 0.05, 0.8),
            ("boom", beat(65) - 0.02, 0.8),
            ("rewind", bar(25) - 0.1, 0.6),
-           ("sting", LAST_HIT, 0.9)]
+           ("sting", last_hit(), 0.9)]
     return out
 
 
@@ -382,7 +443,7 @@ def render_frame(shots: list[Shot], t: float) -> Image.Image:
     if shot.draw is not None:
         img = shot.draw(t)
     else:
-        img = zoomed(capture(shot.frame_at(t)), shot.zoom, shot.focus).copy()
+        img = zoomed(capture(shot.frame_at(t), shot.cap), shot.zoom, shot.focus).copy()
     for fx in shot.fx:
         img = fx(img, t)
     return img
@@ -408,12 +469,27 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     score = dq.load_wav(AUDIO / f"{CUE}.wav")[:int(CUE_END * RATE)].copy()
     tail = int(1.5 * RATE)
     score[-tail:] *= np.linspace(1, 0, tail)[:, None]
-    dq.place(music, score, 0.0, 1.0)
+    dq.place(music, score, cue_start(), 1.0)
+    # The cold open's sound: the prologue's voices and music, as the game
+    # plays them, with soft edges so its music doesn't click at the cuts.
+    story = np.zeros((n, 2), np.float32)
+    told = dq.load_wav(INTRO / "f.wav")
+    soft = int(0.15 * RATE)
+    for shot in shots:
+        if shot.cap != INTRO:
+            continue
+        a = int(shot.src / FPS * RATE)
+        clip = told[a:a + int((shot.end - shot.start) * RATE)].copy()
+        if len(clip) > 2 * soft:
+            ramp = np.linspace(0, 1, soft)[:, None]
+            clip[:soft] *= ramp
+            clip[-soft:] *= ramp[::-1]
+        dq.place(story, clip, shot.start, 1.0)
     game = np.zeros((n, 2), np.float32)
     source = dq.load_wav(CAPTURE / "f.wav")
     fade = int(0.01 * RATE)
     for shot in shots:
-        if shot.src is None or shot.audio <= 0 or shot.speed != 1.0:
+        if shot.src is None or shot.cap != CAPTURE or shot.audio <= 0 or shot.speed != 1.0:
             continue
         a = int(shot.src / FPS * RATE)
         clip = source[a:a + int((shot.end - shot.start) * RATE)].copy()
@@ -429,7 +505,7 @@ def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     env = np.convolve(hits, np.ones(2400) / 2400, mode="same")
     duck = 1.0 - np.clip(env * 2.0, 0.0, 0.35)
     game = 0.6 * np.tanh(game * 2.5 / 0.6)
-    mix = music * 0.7 * duck[:, None] + game + sfx * 0.8
+    mix = music * 0.7 * duck[:, None] + game + sfx * 0.8 + story * 0.9
     end = int(1.0 * RATE)
     mix[-end:] *= np.linspace(1, 0, end)[:, None]
     peak = np.abs(mix).max()
