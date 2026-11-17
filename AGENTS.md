@@ -71,6 +71,14 @@ Limits and loose ends:
 - Element refs change from one visit to the next, so find them fresh each time; the `find` phrases above are the ones that worked.
 - Never type a password or solve a CAPTCHA there, and don't touch other videos or the channel's settings.
 
+## Drafting a LinkedIn post with a video
+
+An agent can set up a post in Rob's Chrome, video and all, and leave it for him to press Post. That's how the Git + SQL post was drafted (November 2026). **Never press Post, or anything that publishes, without Rob's approval.**
+
+LinkedIn's composer has no file input until you ask for one: its Media button makes one and opens the system file picker at once, which the tools can't drive. So before clicking Media, use `javascript_tool` to override `HTMLInputElement.prototype.click` (and `showPicker`) so that a click on a file input gives it an `aria-label` like "dq captured file input" and attaches it to the page, without opening the picker. Then click Media, `find` that label, and `file_upload` the video to it (10 MB at most, as with YouTube). In the editor that follows, Thumbnail has a real hidden `image/*` input, which `file_upload` fills directly. Click Next to get back to the text, and restore the original `click` and `showPicker` when you're done.
+
+Type the text after the video is attached, so the links in it don't turn into a link preview. To tag someone, type `@` and part of their name, then pick them from the list: the mention shows bold, and is a span with `data-entity-id`, not plain text.
+
 ## Why it's a learning game
 
 Rob is dyslexic and was failing his spelling tests until his dad wrote him a spelling game in BASIC; after that he got 100 on every one. His kids are 5 and 2 (as of October 2026), too young for Python, "but maybe some day". He offered this for launch copy. Use only these facts and don't embellish them (no made-up computer, age or names).
