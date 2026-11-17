@@ -24,6 +24,9 @@ var pace: float = 0.05
 var printout_frames: int = 2
 ## How long the bot looks at each page of the prologue before turning it.
 var page_frames: int = 4
+## Frames between one chip picked and the next (the trailer capture raises
+## this so a query can be watched being spelled).
+var chip_frames: int = 2
 ## Extra wrong pages to call in, by beat id, after the bot's own (the
 ## screenshot run uses these to catch particular errors on camera).
 var extra_tries: Dictionary = {}
@@ -234,7 +237,7 @@ func write_page(name: String, picks: Dictionary, by_mouse: bool) -> bool:
 				await press(&"move_right")
 				guard += 1
 			await press(&"pick")
-		await _frames(2)
+		await _frames(chip_frames)
 	if Query.compose(notebook.picks) != Query.compose(want):
 		_fail("%s: picked by %s, the page says [%s], not [%s]" % [name, "mouse" if by_mouse else "keys", notebook.sql().replace("\n", " "), Query.compose(want).replace("\n", " ")])
 		return false
