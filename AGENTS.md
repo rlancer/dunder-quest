@@ -10,6 +10,10 @@ End with the PR link and a reminder that the preview will be on dev.dunderquest.
 
 Anything worth remembering between sessions (decisions, preferences, context) goes in this file, in a PR like any other change, so it can be seen and edited. Don't save it to an agent's private memory store.
 
+## Browse in Rob's Chrome
+
+For anything done in a browser (LinkedIn, YouTube Studio, checking the site), use Rob's own Chrome through the Claude extension (the **Claude in Chrome** tools, `mcp__claude-in-chrome__*`), not the Claude desktop app's built-in browser. Rob asked for this in November 2026: his Chrome is where he's already signed in. Never publish, post or send anything there without his approval.
+
 ## Layout
 
 See [README.md](README.md). The site is built by `site/build.ts`. Each game has its own art and trailer tools under `games/<game>/tools/`, run from that game's folder.
