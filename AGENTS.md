@@ -39,7 +39,7 @@ Each game's trailer is cut by its own `tools/make_trailer.py` from captures of i
 Everything a trailer is made of is git-ignored: `trailer/audio/` (the cue), `trailer/captures/` and `trailer/out/` (the masters and the thumbnail). So it vanishes when a worktree is removed, and the cue can't be made again: generating it twice gives two different pieces of music, and the cut is timed to the one it has. That's how the Prince of Versions trailer was lost in November 2026, cue and all, with only the YouTube copy left. So:
 
 - **After rendering a trailer in a worktree, copy `trailer/out/` and `trailer/audio/` into the main checkout** (`D:\src\dunder-quest\games\<game>\trailer\`), where Curb's and Just One More JOIN's already are. The captures (several GB) can stay behind: they can be made again from the repo.
-- **The combined Git + SQL trailer** (`site/combo_trailer.py`, for a single post about Prince of Versions and Just One More JOIN, November 2026) is cut from those two 1080p masters, so it needs no cue of its own: run it with `--masters D:\src\dunder-quest` from a worktree, and keep its output in `D:\src\dunder-questbuild\combo_trailer\`.
+- **The combined Git + SQL trailer** (`site/combo_trailer.py`, for a single post about Prince of Versions and Just One More JOIN, November 2026) is cut from those two 1080p masters, so it needs no cue of its own: run it with `--masters D:\src\dunder-quest` from a worktree, and keep its output in `D:\src\dunder-quest\build\combo_trailer\`.
 - **To re-cut a trailer, copy its `audio/` back from there first**, rather than generating a new cue, unless the music is meant to change.
 - Uploading to YouTube is not a backup: what comes back down is YouTube's re-encode, not the master.
 
