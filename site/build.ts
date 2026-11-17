@@ -51,7 +51,7 @@ const CURB_TRAILER_ID = "QZsFLN5z7R4";
 // on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /prince/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
-const PRINCE_TRAILER_ID = "sm25tC3CK9g";
+const PRINCE_TRAILER_ID = "BGxekAJEUNA";
 // Just One More JOIN's trailer (games/lieutenant/tools/make_trailer.py), on
 // YouTube. Empty leaves the trailer off the
 // /lieutenant/ page and shows the thumbnail alone on the brand kit.
@@ -764,13 +764,13 @@ const TRAILER_CUTS = [
   ["GIF loops", "3–6 s of the bridge and a duel", "Social posts (coming)"],
 ];
 const PV_TRAILER_FACTS = [
-  ["Length", "66 seconds"],
-  ["Music", "An original cue on oud, santur, ney and frame drums, 120 BPM; every cut lands on a beat"],
+  ["Length", "84 seconds, opening cold on the prologue"],
+  ["Music", "The prologue's own, read aloud; then an original cue on oud, santur, ney and frame drums, 120 BPM; every cut lands on a beat"],
   ["Loudness", "−14 LUFS, YouTube's target"],
   ["Pixels", "Captured at 1920×1080 so the console's text is sharp; 4K is ×2"],
 ];
 // Its YouTube chapters: `python tools/make_trailer.py` prints them (CHAPTER m:ss ...).
-const PV_CHAPTERS = "0:00 The dagger turns back time\n0:17 The Vizier commits too\n0:32 The merge conflict\n0:48 Five rooms of real Git";
+const PV_CHAPTERS = "0:00 The Princess and the ledger\n0:18 The dagger turns back time\n0:35 The Vizier commits too\n0:50 The merge conflict\n1:06 Five rooms of real Git";
 const FM_TRAILER_FACTS = [
   ["Length", "66 seconds, with a cold open"],
   ["Music", "A sitcom band cue, 123 BPM, with a piano breakdown for the awkward bit"],
@@ -900,7 +900,7 @@ What's inside
 • Keyboard, gamepad or touch. No signup.
 
 How it was made
-Opus 5.5 built the game: every line of Godot code, a Git model written in GDScript, the sprites painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image and music models made the backdrops and soundtrack. My part was prompting and playtesting.
+Claude Opus 5.5 and Claude Fable 5.2 built the game together: every line of Godot code, a Git model written in GDScript, the sprites painted from Python scripts, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. Image, music and voice models made the backdrops, the soundtrack and the prologue's narration. My part was prompting and playtesting.
 Source: ${REPO}/tree/main/games/prince
 
 ${PV_CHAPTERS}

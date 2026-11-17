@@ -6,6 +6,7 @@
 #
 #   bash trailer/capture.sh             # -> trailer/captures/run/ + run.log
 #   bash trailer/capture.sh r5 room=5   # -> trailer/captures/r5/ + r5.log
+#   bash trailer/capture.sh intro       # the prologue alone -> trailer/captures/intro/ + intro.log
 set -euo pipefail
 cd "$(dirname "$0")/.."
 name="${1:-run}"
@@ -14,4 +15,6 @@ printf '[display]\n\nwindow/size/window_width_override=1920\nwindow/size/window_
 trap 'rm -f override.cfg' EXIT
 rm -rf "trailer/captures/$name"
 mkdir -p "trailer/captures/$name"
-godot --path . --write-movie "trailer/captures/$name/f.png" --fixed-fps 60 res://tests/trailer_run.tscn -- "$@" > "trailer/captures/$name.log"
+scene=res://tests/trailer_run.tscn
+[ "$name" = intro ] && scene=res://tests/trailer_intro.tscn
+godot --path . --write-movie "trailer/captures/$name/f.png" --fixed-fps 60 "$scene" -- "$@" > "trailer/captures/$name.log"

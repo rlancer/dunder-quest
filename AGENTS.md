@@ -10,6 +10,10 @@ End with the PR link and a reminder that the preview will be on dev.dunderquest.
 
 Anything worth remembering between sessions (decisions, preferences, context) goes in this file, in a PR like any other change, so it can be seen and edited. Don't save it to an agent's private memory store.
 
+## Browse in Rob's Chrome
+
+For anything done in a browser (LinkedIn, YouTube Studio, checking the site), use Rob's own Chrome through the Claude extension (the **Claude in Chrome** tools, `mcp__claude-in-chrome__*`), not the Claude desktop app's built-in browser. Rob asked for this in November 2026: his Chrome is where he's already signed in. Never publish, post or send anything there without his approval.
+
 ## Layout
 
 See [README.md](README.md). The site is built by `site/build.ts`. Each game has its own art and trailer tools under `games/<game>/tools/`, run from that game's folder.
@@ -27,6 +31,17 @@ See [README.md](README.md). The site is built by `site/build.ts`. Each game has 
 - **The home page is a splash of every game, and Curb leads it.** Rob expects Curb Your Oxidation to be the hit, so it gets the big title card (trailer, Play button) at the top of `/`, and the bar's Play button goes to it; Dunder Quest, Flatmates.js, Prince of Versions and Just One More JOIN follow as cards. Dunder Quest's own page is `/dunder-quest/` (`buildHome`); its game stays at `/play/` and its lessons at `/lessons/`.
 - **Trailers are YouTube-first.** The 4K master and the YouTube thumbnail are primary. Steam is deferred, so keep the 1080p master Steam-compatible.
 - **One YouTube channel for every game:** [@dunderquest](https://www.youtube.com/@dunderquest). Channel art, copy and each video's upload form live on /brand/youtube/ (`buildBrandYoutube` in `site/build.ts`). Link that channel, not any other.
+
+## Making a trailer, and keeping it
+
+Each game's trailer is cut by its own `tools/make_trailer.py` from captures of its bot, to a generated music cue; the steps are in that game's `trailer/README.md`. In outline, run from the game's folder: `python tools/trailer_audio.py` (the cue and the effects, through OpenRouter), `bash trailer/capture.sh` (the bot's run at 1920×1080; Prince of Versions also captures its prologue with `bash trailer/capture.sh intro`), then `python tools/make_trailer.py` (`--stills` first, to check the cut). Python comes from mise (`mise exec -- python ...`).
+
+Everything a trailer is made of is git-ignored: `trailer/audio/` (the cue), `trailer/captures/` and `trailer/out/` (the masters and the thumbnail). So it vanishes when a worktree is removed, and the cue can't be made again: generating it twice gives two different pieces of music, and the cut is timed to the one it has. That's how the Prince of Versions trailer was lost in November 2026, cue and all, with only the YouTube copy left. So:
+
+- **After rendering a trailer in a worktree, copy `trailer/out/` and `trailer/audio/` into the main checkout** (`D:\src\dunder-quest\games\<game>\trailer\`), where Curb's and Just One More JOIN's already are. The captures (several GB) can stay behind: they can be made again from the repo.
+- **The combined Git + SQL trailer** (`site/combo_trailer.py`, for a single post about Prince of Versions and Just One More JOIN, November 2026) is cut from those two 1080p masters, so it needs no cue of its own: run it with `--masters D:\src\dunder-quest` from a worktree, and keep its output in `D:\src\dunder-quest\build\combo_trailer\`.
+- **To re-cut a trailer, copy its `audio/` back from there first**, rather than generating a new cue, unless the music is meant to change.
+- Uploading to YouTube is not a backup: what comes back down is YouTube's re-encode, not the master.
 
 ## Uploading a trailer to YouTube
 
@@ -46,10 +61,23 @@ The trick is that Studio's drop zone and its thumbnail button each sit on a hidd
 
 Limits and loose ends:
 
-- `file_upload` takes at most 10 MB a call. The JOIN 4K master was 8.5 MB. A bigger master won't go this way: say so and leave the upload to Rob, rather than uploading a smaller cut without asking.
+- `file_upload` takes at most 10 MB a call (one call per file; a `browser_batch` of several counts as one call), and only from folders the session may read: the worktree and the scratchpad work, the main checkout may not. **A bigger master goes up in pieces**, as the 38 MB Prince of Versions recut did (November 2026, `BGxekAJEUNA`):
+  1. `split -b 9000000 -d -a 1 <master> part_` into a scratchpad folder, and note the master's `sha256sum`.
+  2. With `javascript_tool`, add one `<input type="file">` per piece to the Studio page (an `aria-label` like "dq chunk input 0" makes them easy to `find`), and `file_upload` each piece to its own input, one call each.
+  3. With `javascript_tool`, join them, `new File([...pieces], "<name>.mp4", {type: "video/mp4"})`, check its SHA-256 (`crypto.subtle.digest`) against the master's, then put it on the dialog's `input[name=Filedata]` through a `DataTransfer` and dispatch a bubbling `change` event. Remove the extra inputs.
+  Studio then uploads it as if it had been dropped. The tab goes unresponsive for a minute or so while it does; typing the description then times out but finishes, so wait and read it back rather than typing it again.
+- The "Show more" disclosure is now worded "AI use" ("Was AI used to generate or edit your content...", with a list of realistic cases); `UPLOAD_SETTINGS`' answer is still No.
 - The steps above leave Studio's defaults for comments, licence, embedding and subscriber notifications, and set nothing for paid promotion, subtitles, cards or the end screen. `UPLOAD_SETTINGS` asks for an end screen (Subscribe, plus another game's trailer); that is still done by hand.
 - Element refs change from one visit to the next, so find them fresh each time; the `find` phrases above are the ones that worked.
 - Never type a password or solve a CAPTCHA there, and don't touch other videos or the channel's settings.
+
+## Drafting a LinkedIn post with a video
+
+An agent can set up a post in Rob's Chrome, video and all, and leave it for him to press Post. That's how the Git + SQL post was drafted (November 2026). **Never press Post, or anything that publishes, without Rob's approval.**
+
+LinkedIn's composer has no file input until you ask for one: its Media button makes one and opens the system file picker at once, which the tools can't drive. So before clicking Media, use `javascript_tool` to override `HTMLInputElement.prototype.click` (and `showPicker`) so that a click on a file input gives it an `aria-label` like "dq captured file input" and attaches it to the page, without opening the picker. Then click Media, `find` that label, and `file_upload` the video to it (10 MB at most, as with YouTube). In the editor that follows, Thumbnail has a real hidden `image/*` input, which `file_upload` fills directly. Click Next to get back to the text, and restore the original `click` and `showPicker` when you're done.
+
+Type the text after the video is attached, so the links in it don't turn into a link preview. To tag someone, type `@` and part of their name, then pick them from the list: the mention shows bold, and is a span with `data-entity-id`, not plain text.
 
 ## Why it's a learning game
 
