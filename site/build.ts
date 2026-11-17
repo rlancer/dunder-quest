@@ -951,20 +951,21 @@ const JJ_YOUTUBE_TAGS = "learn sql, sql for beginners, sql tutorial, sql join, l
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a very silly quest for the Grail: slice a list to lay a bridge, loop a lift up a cave wall, and answer the Bridgekeeper's questions... four. Flatmates.js teaches JavaScript in a very small Croydon flat: write the to-do list your flatmate runs, then live with what he does. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git in a palace at night, with a dagger that turns back time, but only to a commit.
+Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it.
 
-Opus 5.5 built every game here end to end: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
+Opus 5.5 built every game here: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
 Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wrote me a spelling game in BASIC. After that I got 100 on every one. My kids are 5 and 2. Maybe some day these games are theirs.
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
   ["Play Curb Your Oxidation", `${SITE_URL}curb/play/`],
   ["Play Prince of Versions", `${SITE_URL}prince/play/`],
+  ["Play Just One More JOIN", `${SITE_URL}lieutenant/play/`],
   ["Source on GitHub", REPO],
 ];
 // [file, name, size YouTube asks for, where it goes, alt]
