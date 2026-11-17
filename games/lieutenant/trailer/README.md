@@ -49,5 +49,5 @@ trailer/
 ## Backlog
 
 - [x] **Listening pass.** The cue's beats, its stop and its last hit were placed by measurement, and the take was chosen by its shape (three were made), not by ear; Rob watched the cut and said the music works (November 2026).
-- [ ] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then paste its video ID into `JOIN_TRAILER_ID` in `site/build.ts`.
+- [x] **Upload** (November 2026, video `ojUvSRr5Uq8`) to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/), then paste its video ID into `JOIN_TRAILER_ID` in `site/build.ts`.
 - [ ] The game's rooms and in-game music are still the stand-ins made in code (see the game's README). If generated ones replace them, capture again.

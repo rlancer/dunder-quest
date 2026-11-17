@@ -52,10 +52,10 @@ const CURB_TRAILER_ID = "QZsFLN5z7R4";
 // /prince/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
 const PRINCE_TRAILER_ID = "sm25tC3CK9g";
-// Just One More JOIN's trailer (games/lieutenant/tools/make_trailer.py), once
-// it's on YouTube: paste its video ID here. Empty leaves the trailer off the
+// Just One More JOIN's trailer (games/lieutenant/tools/make_trailer.py), on
+// YouTube. Empty leaves the trailer off the
 // /lieutenant/ page and shows the thumbnail alone on the brand kit.
-const JOIN_TRAILER_ID = "";
+const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
