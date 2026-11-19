@@ -6,7 +6,7 @@
 import { GAMES, ORDER, bestLine, formatTime, summarize } from "../../site/static/social/games.js";
 import { icon, linkedInCertUrl, shareButtons } from "../../site/static/social/share.js";
 import { certJson, certsOf, leaderboard, publicPlayer, savesOf } from "./api";
-import { type CardGame, certificatePng, longDate, profilePng } from "./cards";
+import { CERT_DESIGN, type CardGame, certificatePng, longDate, profilePng } from "./cards";
 import type { CertRow, Env, PlayerRow, ShotRow } from "./db";
 
 type Game = keyof typeof GAMES;
@@ -103,10 +103,11 @@ async function certificate(env: Env, id: string): Promise<CertRow | null> {
 }
 
 async function certImage(env: Env, row: CertRow, host: string): Promise<Uint8Array> {
-  const cached = await env.DB.prepare("SELECT png FROM certificates WHERE id = ?").bind(row.id).first<{ png: ArrayBuffer | number[] | null }>();
-  if (cached?.png) return new Uint8Array(cached.png);
+  const cached = await env.DB.prepare("SELECT png, png_design FROM certificates WHERE id = ?").bind(row.id)
+    .first<{ png: ArrayBuffer | number[] | null; png_design: number | null }>();
+  if (cached?.png && cached.png_design === CERT_DESIGN) return new Uint8Array(cached.png);
   const bytes = await certificatePng(certJson(row) as never, host);
-  await env.DB.prepare("UPDATE certificates SET png = ? WHERE id = ?").bind(bytes, row.id).run();
+  await env.DB.prepare("UPDATE certificates SET png = ?, png_design = ? WHERE id = ?").bind(bytes, CERT_DESIGN, row.id).run();
   return bytes;
 }
 
@@ -116,7 +117,7 @@ export async function certPage(env: Env, url: URL, id: string): Promise<Response
   const c = certJson(row);
   const game = c.game as Game;
   const def = GAMES[game];
-  const v = await version(`${c.name}|${row.stats}`);
+  const v = await version(`${c.name}|${row.stats}|${CERT_DESIGN}`);
   const pageUrl = `${url.origin}/c/${c.id}`;
   const image = `${url.origin}/c/${c.id}.png?v=${v}`;
   const lessons = def.levels.map((l) => l.lesson);
@@ -257,7 +258,7 @@ export async function shotPage(env: Env, url: URL, id: string): Promise<Response
 }
 
 export async function shotImage(env: Env, id: string): Promise<Response> {
-  const row = await env.DB.prepare("SELECT type, image FROM shots WHERE id = ? AND hidden = 0").bind(id).first<{ type: string; image: ArrayBuffer | number[] }>();
+  const row = await env.DB.prepare("SELECT s.type, s.image FROM shots s JOIN players p ON p.id = s.player_id WHERE s.id = ? AND s.hidden = 0 AND p.hidden = 0").bind(id).first<{ type: string; image: ArrayBuffer | number[] }>();
   if (!row) return new Response("Not found", { status: 404 });
   // D1 has handed blobs back both as ArrayBuffers and as arrays of numbers.
   return new Response(new Uint8Array(row.image), { headers: { "Content-Type": row.type, "Cache-Control": "public, max-age=31536000, immutable" } });

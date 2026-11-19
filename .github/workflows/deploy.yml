@@ -68,6 +68,12 @@ jobs:
         working-directory: deploy
         run: bun install --frozen-lockfile
 
+      # The social layer's Worker (deploy/src): players, saves, leaderboards,
+      # certificates, screenshots and Google sign-in, against bun:sqlite.
+      - name: Test the social API
+        working-directory: deploy
+        run: bun test test
+
       - name: Check the build
         if: github.event_name == 'pull_request'
         working-directory: deploy

@@ -40,6 +40,9 @@ function corner(p: Pixels, x: number, y: number, dx: number, dy: number, hex: st
   p.rect(Math.min(x + dx * 4, x + dx * 6), Math.min(y + dy * 4, y + dy * 6), 3, 3, jewel);
 }
 
+/** Bump when the certificate's design changes, so images cached in D1 are drawn again. */
+export const CERT_DESIGN = 2;
+
 export type CertData = { id: string; game: string; name: string; issued: number; stats: { levels: number; time: number; tries: number; collected: number; collectMax: number } };
 
 export async function certificatePng(cert: CertData, host: string): Promise<Uint8Array> {
@@ -65,7 +68,10 @@ export async function certificatePng(cert: CertData, host: string): Promise<Uint
   p.text(cert.name, W / 2, nameY, t.ink, nameScale, "center");
   p.rect(W / 2 - 170, 174, 340, 1, t.accent);
   const unit = def.unit[1];
-  p.text(`finished all ${def.levels.length} ${unit} of`, W / 2, 180, t.muted, 1, "center");
+  // In words: at this size the pixel font's 5 reads as an S.
+  const words = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve"];
+  const n = def.levels.length;
+  p.text(`finished all ${words[n] || n} ${unit} of`, W / 2, 180, t.muted, 1, "center");
   p.text(def.name, W / 2, 196, t.title, p.fit(def.name, 440, 2), "center");
   const facts: string[] = [`learning ${def.lang}`];
   const s = cert.stats;

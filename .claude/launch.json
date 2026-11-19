@@ -15,6 +15,12 @@
         "build/site"
       ],
       "port": 8123
+    },
+    {
+      "name": "social",
+      "runtimeExecutable": "bun",
+      "runtimeArgs": ["deploy/dev.ts", "--port", "8788"],
+      "port": 8788
     }
   ]
 }

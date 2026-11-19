@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Social="*res://common/social.gd"
 GameProgression="*res://common/game_progression.gd"
 MusicDirector="*res://common/music_director.gd"
 Telemetry="*res://common/telemetry.gd"

@@ -257,15 +257,22 @@ function headTags(title: string, description: string, path: string | null, image
     url ? `<link rel="canonical" href="${url}">` : "",
     '<meta property="og:type" content="website">',
     '<meta property="og:site_name" content="Dunder Quest">',
+    '<meta property="og:locale" content="en_US">',
     `<meta property="og:title" content="${esc(title)}">`,
     `<meta property="og:description" content="${esc(description)}">`,
     url ? `<meta property="og:url" content="${url}">` : "",
     `<meta property="og:image" content="${SITE_URL}static/img/og/${image}">`,
+    `<meta property="og:image:secure_url" content="${SITE_URL}static/img/og/${image}">`,
+    '<meta property="og:image:type" content="image/png">',
     '<meta property="og:image:width" content="1200">',
     '<meta property="og:image:height" content="630">',
     `<meta property="og:image:alt" content="${esc(alt)}">`,
     `<meta property="og:logo" content="${SITE_URL}static/img/og/logo.png">`,
     '<meta name="twitter:card" content="summary_large_image">',
+    `<meta name="twitter:title" content="${esc(title)}">`,
+    `<meta name="twitter:description" content="${esc(description)}">`,
+    `<meta name="twitter:image" content="${SITE_URL}static/img/og/${image}">`,
+    `<meta name="twitter:image:alt" content="${esc(alt)}">`,
     '<meta name="theme-color" content="#15122a">',
   ];
   if (CF_ANALYTICS_TOKEN) {
@@ -284,11 +291,12 @@ const HOME_ALT = "Dunder Quest title art: a squire clapping coconut halves looks
 type PageOptions = {
   active?: string; description?: string; scripts?: string; path?: string | null; image?: string; imageAlt?: string;
   nav?: [string, string][]; brand?: string; play?: string; fonts?: string; fullTitle?: string; foot?: string;
+  social?: boolean;
 };
 
 function page(title: string, body: string, prefix: string, {
   active = "", description = "", scripts = "", path = null, image = "home.png", imageAlt = HOME_ALT,
-  nav = NAV, brand = QUEST_PAGE, play = "play/", fonts = "", fullTitle = "", foot = "",
+  nav = NAV, brand = QUEST_PAGE, play = "play/", fonts = "", fullTitle = "", foot = "", social = false,
 }: PageOptions = {}): string {
   const links = nav.map(([href, label]) => {
     const current = active === href ? ' aria-current="page"' : "";
@@ -308,7 +316,7 @@ ${headTags(fullTitle, desc, path, image, imageAlt)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400${fonts}&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="${prefix}static/style.css">
+<link rel="stylesheet" href="${prefix}static/style.css">${social ? "\n" + SOCIAL_CSS : ""}
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
@@ -323,10 +331,10 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your profile</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
-${scripts}
+${scripts}${social ? "\n" + SOCIAL_JS : ""}
 </body>
 </html>
 `;
@@ -515,6 +523,14 @@ function buildSplash(prefix = ""): string {
   </ul>
   <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git and SQLite. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
+
+<section class="section" aria-labelledby="board-h">
+  <p class="kicker">Leaderboard</p>
+  <h2 id="board-h">Top of the class</h2>
+  <p class="lede">Every level you clear in any game earns XP and puts you on the boards, with no sign-up. Finish a game and you get a certificate with your name on it, ready for LinkedIn.</p>
+  <div class="dq-mini" id="dq-mini-board"></div>
+  <div class="cta"><a class="btn btn-small" href="${prefix}leaderboards/">Every leaderboard</a><a class="btn btn-small btn-ghost" href="${prefix}me/" data-dq-me>Your profile</a></div>
+</section>
 `;
   // Links to the old home's sections (in trailer descriptions, for one) now
   // belong to Dunder Quest's page.
@@ -523,7 +539,42 @@ function buildSplash(prefix = ""): string {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
     foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git and SQL.",
-    scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`,
+    scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`, social: true,
+  });
+}
+
+const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions and Just One More JOIN: "
+  + "free pixel-art games that teach Rust, Python, JavaScript, Git and SQL. Clear a level and you're on the board.";
+
+/** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
+function buildLeaderboards(prefix: string): string {
+  const body = `
+<section class="section page-head">
+  <p class="kicker">Leaderboards</p>
+  <h1>Who's learning fastest</h1>
+  <p class="lede">Clear a level in any game and you're on the board, under a silly name you can change. No sign-up: your progress saves to the cloud as you play. Finish a game for a certificate with your name on it.</p>
+  <div id="dq-boards"><noscript>The leaderboards need JavaScript.</noscript></div>
+</section>
+<section class="section">
+  <h2>Latest certificates</h2>
+  <div class="dq-feed" id="dq-feed"></div>
+  <div class="cta"><a class="btn btn-small btn-ghost" href="${prefix}me/" data-dq-me>Your profile</a></div>
+</section>`;
+  return page("Leaderboards", body, prefix, {
+    description: BOARDS_DESC, path: "leaderboards/", nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
+  });
+}
+
+/** /me/: your player, progress, certificates, screenshots, sign-in and save key (site/static/social/me.js). */
+function buildMe(prefix: string): string {
+  const body = `
+<section class="section page-head dq-page">
+  <p class="kicker">Your profile</p>
+  <div id="dq-me"><noscript>Your profile needs JavaScript.</noscript></div>
+</section>`;
+  return page("Your profile", body, prefix, {
+    description: "Your progress, certificates and screenshots across every Dunder Quest game.", path: "me/",
+    nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
   });
 }
 
@@ -1923,17 +1974,33 @@ function write(path: string, text: string): void {
 /** Give a game's exported page the same preview and analytics tags as the
  * site. Godot (or Vite) writes the page after this script builds the site,
  * so `scripts/export_web.sh` runs this as a second step. */
-function tagGamePage(index: string, title: string, desc: string, path: string, image: string, alt: string): void {
+function tagGamePage(index: string, title: string, desc: string, path: string, image: string, alt: string, game = ""): void {
   const text = read(index);
   if (text.includes('property="og:title"')) return;
-  const tags = `<meta name="description" content="${esc(desc)}">\n${headTags(title, desc, path, image, alt)}\n`;
+  const tags = `<meta name="description" content="${esc(desc)}">\n${headTags(title, desc, path, image, alt)}\n${game ? socialPlayTags(game) : ""}`;
   write(index, text.replace("</head>", () => tags + "</head>"));
   console.log(`tagged ${index}`);
 }
 
+// The social layer (site/static/social/, served by deploy/src): the
+// leaderboards, cloud saves, certificates and screenshot sharing. Its paths
+// are absolute, since the API only exists on the real host anyway.
+const SOCIAL_CSS = '<link rel="stylesheet" href="/static/social/social.css">';
+const SOCIAL_JS = '<script type="module" src="/static/social/site.js"></script>';
+
+/** What a play page needs for the social layer. The first script asks WebGL to
+ * keep each frame, so the screenshot button can read the canvas; it has to run
+ * before Godot makes its context. play.js is the toolbar and the bridge the
+ * game's Social autoload calls. */
+function socialPlayTags(game: string): string {
+  const keep = "(function(){var g=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(t,o){"
+    + "if(t==='webgl2'||t==='webgl'){o=Object.assign({},o,{preserveDrawingBuffer:true});}return g.call(this,t,o);};})();";
+  return `<script>${keep}</script>\n${SOCIAL_CSS}\n<script type="module" src="/static/social/play.js?game=${game}"></script>\n`;
+}
+
 function tagPlayPage(index: string): void {
   const desc = "Play Dunder Quest, a pixel-art platformer that teaches Python, right in your browser.";
-  tagGamePage(index, "Play Dunder Quest", desc, "play/", "home.png", HOME_ALT);
+  tagGamePage(index, "Play Dunder Quest", desc, "play/", "home.png", HOME_ALT, "dunder-quest");
 }
 
 const FLATMATES_ALT = "Flatmates.js title art: two flatmates by their front door on a Croydon tower block landing at dusk.";
@@ -1944,7 +2011,7 @@ const FLATMATES_DESC = "Flatmates.js, a Dunder Quest game: two mismatched flatma
  * which Godot exports to flatmates/play/index.html. */
 function tagFlatmatesPage(index: string): void {
   const desc = "Play Flatmates.js, the Dunder Quest game that teaches JavaScript, right in your browser.";
-  tagGamePage(index, "Play Flatmates.js · Dunder Quest", desc, "flatmates/play/", "flatmates.png", FLATMATES_ALT);
+  tagGamePage(index, "Play Flatmates.js · Dunder Quest", desc, "flatmates/play/", "flatmates.png", FLATMATES_ALT, "flatmates");
 }
 
 type FmStop = {
@@ -2235,7 +2302,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2252,7 +2319,7 @@ const CURB_DESC = "Curb Your Oxidation, a Dunder Quest game that teaches Rust: t
  * Godot exports to curb/play/index.html. */
 function tagCurbPage(index: string): void {
   const desc = "Play Curb Your Oxidation, the Dunder Quest game that teaches Rust, right in your browser.";
-  tagGamePage(index, "Play Curb Your Oxidation · Dunder Quest", desc, "curb/play/", "curb.png", CURB_ALT);
+  tagGamePage(index, "Play Curb Your Oxidation · Dunder Quest", desc, "curb/play/", "curb.png", CURB_ALT, "curb");
 }
 
 // Curb Your Oxidation's own page at /curb/: black title cards in heavy Franklin Gothic
@@ -2565,7 +2632,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2593,7 +2660,7 @@ const PV_NEXT: [string, string][] = [["git stash", "put a change down, switch ti
  * Godot exports to prince/play/index.html. */
 function tagPrincePage(index: string): void {
   const desc = "Play Prince of Versions, the Dunder Quest game that teaches Git, right in your browser.";
-  tagGamePage(index, "Play Prince of Versions · Dunder Quest", desc, "prince/play/", "prince.png", PV_ALT);
+  tagGamePage(index, "Play Prince of Versions · Dunder Quest", desc, "prince/play/", "prince.png", PV_ALT, "prince");
 }
 
 /** A lesson card's lines: commands in sand, comments dimmed. */
@@ -2724,7 +2791,7 @@ ${body}
 </main>
 <footer class="pv-foot">
   <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
 </footer>
 ${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
 ` : ""}</body>
@@ -2751,7 +2818,7 @@ const JJ_NEXT: [string, string][] = [["subqueries", "a question inside a questio
  * Godot exports to lieutenant/play/index.html. */
 function tagLieutenantPage(index: string): void {
   const desc = "Play Just One More JOIN, the Dunder Quest game that teaches SQL, right in your browser.";
-  tagGamePage(index, "Play Just One More JOIN · Dunder Quest", desc, "lieutenant/play/", "lieutenant.png", JJ_ALT);
+  tagGamePage(index, "Play Just One More JOIN · Dunder Quest", desc, "lieutenant/play/", "lieutenant.png", JJ_ALT, "lieutenant");
 }
 
 /** A lesson card's SQL: keywords and strings picked out. */
@@ -2900,7 +2967,7 @@ ${body}
 </main>
 <footer class="jj-foot">
   <p>Just One More JOIN. One lieutenant, one basset hound, and a records desk that takes you at your exact word.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
 </footer>
 ${JOIN_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 </body>
@@ -2956,6 +3023,8 @@ function main(): void {
   write(join(out, "curb", "index.html"), buildCurb("../"));
   write(join(out, "prince", "index.html"), buildPrince("../"));
   write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
+  write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
+  write(join(out, "me", "index.html"), buildMe("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));

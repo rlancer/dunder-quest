@@ -56,6 +56,7 @@ const SCHEMA = [
     issued_at INTEGER NOT NULL,
     stats TEXT NOT NULL,
     png BLOB,
+    png_design INTEGER,
     UNIQUE (player_id, game)
   )`,
   `CREATE TABLE IF NOT EXISTS shots (
