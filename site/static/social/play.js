@@ -12,8 +12,9 @@
 // Progress is merged, never replaced: a save from another device adds its
 // cleared levels and best times to this one's (see games.js).
 
-import { GAMES, merge, normalize, summarize } from "./games.js";
-import { api, cachedPlayer, ensurePlayer, googleButton, onPlayer, profileUrl, rename, token } from "./client.js";
+import { GAMES, ORDER, merge, normalize, summarize } from "./games.js";
+import { avatarSvg } from "./avatar.js";
+import { api, cachedPlayer, ensurePlayer, googleButton, me, onPlayer, rename, setPlayer, token } from "./client.js";
 import { openComposer } from "./composer.js";
 import { icon } from "./share.js";
 import { dialog, h, plural, toast } from "./ui.js";
@@ -166,11 +167,17 @@ function saved(_game, text) {
   }
   clearTimeout(uploadTimer);
   uploadTimer = setTimeout(() => {
-    uploading = uploading.then(() => upload(text)).catch(() => {});
+    uploading = uploading.then(() => upload(text)).catch(() => {
+      // Offline: still say well done.
+      if (heldClear) celebrate(...heldClear, true);
+      heldClear = null;
+    });
   }, fresh.length ? 200 : 2500);
 }
 
 let welcomed = false;
+// A first clear's toast, held back so the welcome can say both in one toast.
+let heldClear = null;
 
 async function upload(text) {
   const firstTime = !token();
@@ -178,20 +185,28 @@ async function upload(text) {
   const res = await api("PUT", `/api/saves/${game}`, { data: text });
   uploadedText = text;
   cloud = { data: res.data, summary: res.summary };
-  updateChip(res.player);
+  setPlayer(res.player); // keeps the cached XP current, and redraws the chip
   if (res.certificate?.fresh) certificateEarned(res.certificate);
   else if (firstTime && !welcomed && res.summary.count) {
     welcomed = true;
-    toast(`You're on the leaderboard as ${res.player.name}${res.rank ? `, #${res.rank} in ${def.short}` : ""}.`, {
-      timeout: 9000,
+    const level = heldClear && def.levels.find((l) => l.id === heldClear[0]);
+    toast(`${level ? `Cleared “${level.name}”! ` : ""}You're on the leaderboard as ${res.player.name}${res.rank ? `, #${res.rank} in ${def.short}` : ""}. No sign-up needed.`, {
+      kind: level ? "win" : "",
+      timeout: 10000,
       actions: [["Change name", () => openAccount()], ["See the board", () => openBoard()]],
     });
-  }
+  } else if (heldClear) celebrate(...heldClear, true);
+  heldClear = null;
 }
 
-function celebrate(id, now) {
+function celebrate(id, now, held = false) {
   const level = def.levels.find((l) => l.id === id);
   if (!level || now.complete) return; // a finished game gets the certificate instead
+  // No player yet: this clear makes one, and the welcome toast says both.
+  if (!held && !token() && !welcomed) {
+    heldClear = [id, now];
+    return;
+  }
   toast(`Cleared “${level.name}”: ${level.lesson}. ${now.count} of ${now.total} ${def.unit[1]}.`, {
     kind: "win",
     timeout: 8000,
@@ -225,6 +240,30 @@ function certificateEarned(cert) {
       h("a.dq-btn.dq-primary", { href: url, target: "_blank" }, "View and share it"),
       h("button.dq-btn", { type: "button", onclick: close }, "Keep playing")),
   );
+  // Then the next game: the first after this one, in the site's order, not finished yet.
+  const actions = body.querySelector(".dq-actions");
+  me().then((data) => {
+    const done = (k) => k === game || data?.saves?.[k]?.complete;
+    const from = ORDER.indexOf(game);
+    const next = [...ORDER.slice(from + 1), ...ORDER.slice(0, from)].find((k) => !done(k));
+    if (!next) return;
+    const n = GAMES[next];
+    actions.append(h("a.dq-btn", { href: n.play }, `Next: learn ${n.lang} in ${n.name}`));
+  }).catch(() => {});
+  // The moment it's most worth keeping: offer Google to anyone who isn't signed in.
+  if (!cachedPlayer()?.google) {
+    const google = h("div.dq-google");
+    const keep = h("div.dq-cert-keep", {},
+      h("p.dq-fine", {}, "Its link works for good. Sign in with Google to keep your progress, and the right to edit this certificate, if this browser's data is ever cleared. We keep no email, name or picture."),
+      google);
+    body.append(keep);
+    googleButton(google, {
+      onSignIn: () => keep.replaceChildren(h("p.dq-status", {}, "Signed in. Your progress and certificate are safe.")),
+      onError: (err) => (status.textContent = err.message),
+    }).then((ok) => {
+      if (!ok) keep.remove();
+    }).catch(() => keep.remove());
+  }
 }
 
 // ---- The toolbar ----
@@ -233,8 +272,10 @@ let chip;
 
 function updateChip(player) {
   if (!chip) return;
-  chip.querySelector(".dq-chip-name").textContent = player ? player.name : "Sign in";
-  chip.title = player ? `${player.name} · ${player.xp} XP` : "Sign in to keep your progress";
+  chip.querySelector(".dq-chip-face").innerHTML = player ? avatarSvg(player.id, 20) : icon("user");
+  chip.querySelector(".dq-chip-name").textContent = player ? player.name : "Guest";
+  chip.title = player ? `${player.name} · ${player.xp} XP` : "Playing as a guest: nothing to sign up for";
+  chip.setAttribute("aria-label", player ? `You: ${player.name}` : "You, playing as a guest");
 }
 
 function canvas() {
@@ -267,15 +308,18 @@ async function openBoard() {
       body.append(h("p", {}, `Nobody's on the board yet. Clear a ${def.unit[0]} and it's yours.`));
     } else {
       const me = cachedPlayer();
-      body.append(h("ol.dq-board", {}, board.rows.map((r) => h(`li${me && r.id === me.id ? ".dq-me" : ""}`, {},
+      const row = (r, mine) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
         h("span.dq-rank", {}, `#${r.rank}`),
-        h("a.dq-name", { href: `/u/${r.id}`, target: "_blank" }, r.name),
+        h("a.dq-name", { href: `/u/${r.id}`, target: "_blank" }, h("span", { html: avatarSvg(r.id, 18) }), r.name),
         h("span.dq-progress", {}, `${r.count}/${r.total}`),
-        h("span.dq-line", {}, r.complete ? `★ ${r.line}` : r.line)))));
-      if (board.me && !board.rows.some((r) => r.id === board.me.id)) {
-        body.append(h("p.dq-mine", {}, `You're #${board.me.rank} of ${board.players}.`));
-      }
+        h("span.dq-line", {}, r.complete ? `★ ${r.line}` : r.line));
+      // You, under a gap, when you're further down than the top ten.
+      const below = board.me && !board.rows.some((r) => r.id === board.me.id);
+      body.append(h("ol.dq-board", {}, board.rows.map((r) => row(r)),
+        below ? h("li.dq-gap", { "aria-hidden": "true" }, "⋯") : null,
+        below ? row(board.me, true) : null));
     }
+    if (board.rows.length && !board.me) body.append(h("p.dq-fine", {}, `Clear a ${def.unit[0]} and you're on it, under a silly name you can change.`));
     body.append(h("p", {}, h("a", { href: `/leaderboards/#${game}`, target: "_blank" }, "Every leaderboard")));
   } catch (err) {
     body.textContent = err.message;
@@ -284,13 +328,16 @@ async function openBoard() {
 
 async function openAccount() {
   const player = cachedPlayer();
-  const { body, close } = dialog(player ? "You" : "Keep your progress", { onClose: focusGame });
+  const { body, close } = dialog(player ? player.name : "Playing as a guest", { onClose: focusGame });
   const status = h("p.dq-status", { role: "status" });
   const name = h("input", { value: player?.name || "", maxlength: 32, minlength: 2, placeholder: "Your name on the boards", "aria-label": "Your name" });
   body.append(
-    h("p", {}, player
-      ? `${player.xp} XP so far. Your progress is saved to the cloud as you play.`
-      : `Your progress saves to this browser as you play, and to the cloud from your first clear, with a silly name you can change. Nothing to sign up for.`),
+    player
+      ? h("div.dq-who", {}, h("span", { html: avatarSvg(player.id, 44) }),
+        h("p", {}, `${player.xp.toLocaleString()} XP so far. `, player.google
+          ? "You're signed in with Google, so your progress follows you to any device."
+          : "Your progress is backed up as you play, under this name."))
+      : h("p", {}, `Nothing to sign up for. Your progress saves to this browser as you play, and from your first clear you're on the leaderboard under a silly name you can change here.`),
     h("form.dq-inline", {
       onsubmit: async (e) => {
         e.preventDefault();
@@ -307,7 +354,9 @@ async function openAccount() {
   );
   const google = h("div.dq-google");
   if (!player?.google) {
-    body.append(h("p.dq-fine", {}, "Sign in with Google to play on another device and keep your progress. We keep no email or name from Google."), google);
+    body.append(h("p.dq-fine", {}, player
+      ? "This browser is the only place that knows it's you. Sign in with Google to keep your progress if it's cleared, and to play on other devices. We keep no email, name or picture from Google."
+      : "Played before on another device? Sign in with Google to pick up where you left off. We keep no email, name or picture from Google."), google);
     googleButton(google, {
       onSignIn: (p) => {
         updateChip(p);
@@ -319,14 +368,14 @@ async function openAccount() {
     }).catch(() => google.remove());
   }
   body.append(h("div.dq-actions", {},
-    h("a.dq-btn", { href: profileUrl(player), target: "_blank" }, "Your profile"),
-    h("a.dq-btn", { href: "/me/", target: "_blank" }, "Settings"),
+    h("a.dq-btn", { href: "/me/", target: "_blank" }, player ? "Your progress" : "Use a save key"),
+    player ? h("a.dq-btn", { href: `/u/${player.id}`, target: "_blank" }, "Public profile") : null,
     h("button.dq-btn", { type: "button", onclick: close }, "Back to the game")));
 }
 
 function toolbar() {
-  chip = h("button.dq-tool.dq-chip", { type: "button", onclick: openAccount }, h("span", { html: icon("user") }), h("span.dq-chip-name", {}, "Sign in"));
-  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Share and leaderboards" },
+  chip = h("button.dq-tool.dq-chip", { type: "button", onclick: openAccount }, h("span.dq-chip-face", { html: icon("user") }), h("span.dq-chip-name", {}, "Guest"));
+  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Screenshot, leaderboard and you" },
     h("button.dq-tool", { type: "button", title: "Screenshot (F9)", "aria-label": "Take a screenshot to share", onclick: screenshot }, h("span", { html: icon("camera") })),
     h("button.dq-tool", { type: "button", title: "Leaderboard", "aria-label": "Leaderboard", onclick: openBoard }, h("span", { html: icon("trophy") })),
     chip);

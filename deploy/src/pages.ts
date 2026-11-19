@@ -4,6 +4,7 @@
 // borrow the site's stylesheet and bar, so they look like the rest of it.
 
 import { GAMES, ORDER, bestLine, formatTime, summarize } from "../../site/static/social/games.js";
+import { avatarSvg } from "../../site/static/social/avatar.js";
 import { icon, linkedInCertUrl, shareButtons } from "../../site/static/social/share.js";
 import { certJson, certsOf, leaderboard, publicPlayer, savesOf } from "./api";
 import { CERT_DESIGN, type CardGame, certificatePng, longDate, profilePng } from "./cards";
@@ -56,7 +57,7 @@ function shell(origin: string, meta: Meta, body: string, data: Record<string, st
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
   <a class="brand" href="/"><img src="/static/img/squire.png" alt="" width="16" height="24"><span class="wordmark"><span class="sr">Dunder Quest</span><span aria-hidden="true"><i>__</i>dunder_<wbr>quest<i>__</i></span></span></a>
-  <nav aria-label="Site"><a href="/leaderboards/">Leaderboards</a><a href="/me/" data-dq-me>Your profile</a></nav>
+  <nav aria-label="Site"><a href="/curb/">Curb Your Oxidation</a><a href="/dunder-quest/">Dunder Quest</a><a href="/flatmates/">Flatmates.js</a><a href="/prince/">Prince of Versions</a><a href="/lieutenant/">Just One More JOIN</a><a href="/leaderboards/">Leaderboards</a></nav>
   <a class="btn btn-small" href="/curb/play/">Play</a>
 </header>
 <main id="main">
@@ -64,7 +65,7 @@ ${body}
 </main>
 <footer class="foot">
   <p>Dunder Quest: free pixel-art games that teach real programming, in your browser.</p>
-  <p><a href="/">All games</a> · <a href="/curb/">Curb Your Oxidation</a> · <a href="/dunder-quest/">Dunder Quest</a> · <a href="/flatmates/">Flatmates.js</a> · <a href="/prince/">Prince of Versions</a> · <a href="/lieutenant/">Just One More JOIN</a> · <a href="/leaderboards/">Leaderboards</a></p>
+  <p><a href="/">All games</a> · <a href="/curb/">Curb Your Oxidation</a> · <a href="/dunder-quest/">Dunder Quest</a> · <a href="/flatmates/">Flatmates.js</a> · <a href="/prince/">Prince of Versions</a> · <a href="/lieutenant/">Just One More JOIN</a> · <a href="/leaderboards/">Leaderboards</a> · <a href="/me/">Your progress</a> · <a href="/privacy/">Privacy</a></p>
 </footer>
 <script type="module" src="/static/social/site.js"></script>
 </body>
@@ -148,7 +149,7 @@ export async function certPage(env: Env, url: URL, id: string): Promise<Response
   </form>
   <h2>What this covers</h2>
   <ol class="dq-lessons">${def.levels.map((l) => `<li><b>${esc(l.name)}</b> <span>${esc(l.lesson)}</span></li>`).join("")}</ol>
-  <p class="dq-fine">Issued by <a href="/">dunderquest.com</a> when the game's own save showed every ${esc(def.unit[0])} cleared. <a href="/u/${esc(row.player_id)}">See ${esc(c.name)}'s profile</a>.</p>
+  <p class="dq-fine">Issued by <a href="/">dunderquest.com</a> when the game's own save showed every ${esc(def.unit[0])} cleared. <a class="dq-by" href="/u/${esc(row.player_id)}">${avatarSvg(row.player_id, 18)}See their profile</a>.</p>
   <div class="cta">${playButton(game, `Play ${esc(def.name)}`)}</div>
 </section>`;
   return html(shell(url.origin, { title, description, url: pageUrl, image, imageAlt: `A pixel-art certificate: ${c.name} finished ${def.name}` }, body, { owner: row.player_id, page: "certificate" }));
@@ -198,10 +199,10 @@ export async function profilePage(env: Env, url: URL, id: string): Promise<Respo
   const body = `
 <section class="section dq-profile">
   <p class="kicker">Player${rank ? ` · #${rank} overall` : ""}</p>
-  <h1>${esc(p.name)}</h1>
+  <div class="dq-me-head">${avatarSvg(p.id, 64)}<h1>${esc(p.name)}</h1></div>
   <p class="dq-stats"><b>${p.xp.toLocaleString("en-US")}</b> XP · <b>${p.levels}</b> of ${total} levels · <b>${p.completed}</b> ${p.completed === 1 ? "game" : "games"} finished</p>
   ${shareButtons(`My progress learning to code on Dunder Quest: ${p.xp.toLocaleString("en-US")} XP so far.`, pageUrl)}
-  <p class="dq-owner" hidden><a class="btn btn-small" href="/me/">Edit your profile</a></p>
+  <p class="dq-owner" hidden>This is you, as everyone else sees you. <a class="btn btn-small" href="/me/">Your progress and settings</a></p>
   <div class="dq-games">${games}</div>
   ${certs.length ? `<h2>Certificates</h2><div class="dq-cert-grid">${certs.map((c) => `<a href="/c/${c.id}"><img src="/c/${c.id}.png" alt="${esc(`${GAMES[c.game as Game].name} certificate`)}" width="600" height="315" loading="lazy"></a>`).join("")}</div>` : ""}
   <p class="dq-fine">Playing since ${longDate(pub.since)}. <a href="/leaderboards/">See the leaderboards</a>.</p>
@@ -246,7 +247,7 @@ export async function shotPage(env: Env, url: URL, id: string): Promise<Response
 <section class="section dq-shot-page">
   <p class="kicker"><a href="${def.page}">${esc(def.name)}</a> · ${esc(def.lang)}</p>
   <figure class="dq-shot"><img src="/s/${s.id}.${ext}" alt="${esc(caption)}" width="${s.width}" height="${s.height}">
-    <figcaption>${esc(caption)}<span>Shared by <a href="/u/${esc(s.player_id)}">${esc(s.name)}</a> · ${longDate(s.created_at)}</span></figcaption></figure>
+    <figcaption>${esc(caption)}<span>Shared by <a class="dq-by" href="/u/${esc(s.player_id)}">${avatarSvg(s.player_id, 18)}${esc(s.name)}</a> · ${longDate(s.created_at)}</span></figcaption></figure>
   ${shareButtons(caption, pageUrl)}
   <p class="dq-owner" hidden><button type="button" class="btn btn-small btn-ghost" data-dq-delete-shot="${esc(s.id)}">Delete this screenshot</button></p>
   <div class="cta">${playButton(game)}</div>

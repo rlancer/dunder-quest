@@ -2,16 +2,22 @@
 // overall one, in tabs, plus the latest certificates. The home page's small
 // board (#dq-mini-board) is the overall top five.
 
+import { avatarSvg } from "./avatar.js";
 import { GAMES, ORDER } from "./games.js";
 import { api, cachedPlayer } from "./client.js";
 import { h } from "./ui.js";
 
+/** The board's rows, and yours under them when you're further down. */
 function rows(board, me) {
-  return h("ol.dq-board", {}, board.rows.map((r) => h(`li${me && r.id === me.id ? ".dq-me" : ""}`, {},
+  const row = (r, mine) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
     h("span.dq-rank", {}, `#${r.rank}`),
-    h("a.dq-name", { href: `/u/${r.id}` }, r.name),
+    h("a.dq-name", { href: `/u/${r.id}` }, h("span", { html: avatarSvg(r.id, 18) }), r.name),
     h("span.dq-progress", { title: `${r.count} of ${r.total} levels` }, board.game === "all" ? `${r.xp.toLocaleString()} XP` : `${r.count}/${r.total}`),
-    h("span.dq-line", {}, board.game === "all" ? `${r.count}/${r.total}` : `${r.complete ? "★ " : ""}${r.line}`))));
+    h("span.dq-line", {}, board.game === "all" ? `${r.count}/${r.total}` : `${r.complete ? "★ " : ""}${r.line}`));
+  const below = board.me && !board.rows.some((r) => r.id === board.me.id);
+  return h("ol.dq-board", {}, board.rows.map((r) => row(r)),
+    below ? h("li.dq-gap", { "aria-hidden": "true" }, "⋯") : null,
+    below ? row(board.me, true) : null);
 }
 
 async function renderBoard(panel, game) {
@@ -28,9 +34,6 @@ async function renderBoard(panel, game) {
       kids.push(h("p", { style: { padding: "0 10px" } }, "Nobody here yet. ", h("a", { href: game === "all" ? "/" : def.play }, "Play"), " and it's yours."));
     } else {
       kids.push(rows(board, me));
-    }
-    if (board.me && !board.rows.some((r) => r.id === board.me.id)) {
-      kids.push(h("p.dq-mine", { style: { padding: "0 10px" } }, `You: #${board.me.rank} of ${board.players}.`));
     }
     if (game !== "all") kids.push(h("p", { style: { padding: "0 10px" } }, h("a.btn.btn-small", { href: def.play }, `Play ${def.name}`)));
     panel.replaceChildren(...kids);

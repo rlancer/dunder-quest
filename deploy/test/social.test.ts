@@ -119,6 +119,8 @@ describe("saves", () => {
     await call("PATCH", "/api/me", { token, body: { name: "Columbo Junior" } });
     const me = await call("GET", "/api/me", { token });
     expect(me.body.certificates[0].name).toBe("Columbo Junior");
+    // Each save says when it was last played, for "continue where you left off".
+    expect(Object.values(me.body.saves).every((s) => typeof (s as { played: unknown }).played === "number")).toBe(true);
     expect((await call("PATCH", `/api/certificates/${id}`, { token, body: { name: "R. Lancer" } })).body.name).toBe("R. Lancer");
     const other = await newPlayer();
     expect((await call("PATCH", `/api/certificates/${id}`, { token: other.token, body: { name: "Thief" } })).status).toBe(404);
