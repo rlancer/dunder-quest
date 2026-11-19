@@ -11,7 +11,7 @@ Pixel-art games that teach programming, playable at [dunderquest.com](https://du
 | `games/lieutenant/` | Just One More JOIN, the SQL game (Godot 4.7). Plays at `/lieutenant/play/`. See its [README](games/lieutenant/README.md). |
 | `site/` | `build.ts` (run with Bun) writes the static site: the games splash at the root, Dunder Quest's page at `/dunder-quest/`, lessons, guide, brand, and the Flatmates.js, Curb Your Oxidation, Prince of Versions and Just One More JOIN pages. |
 | `scripts/` | `export_web.sh` builds the site and the web games into `build/site`; `export_desktop.sh` builds Dunder Quest's desktop downloads. |
-| `deploy/` | Cloudflare deploy of `build/site`. |
+| `deploy/` | Cloudflare deploy of `build/site`, and the Worker behind the social layer (leaderboards, cloud saves, certificates, screenshot links). See its [README](deploy/README.md). |
 | `stats/` | The play-stats dashboard and its D1 database. See its [README](stats/README.md). |
 
 Each game is its own Godot project: open `games/<game>/project.godot`. Their art, music and trailer tools live in each game's `tools/` and run from that game's folder (`python tools/...`). Flatmates.js and Curb Your Oxidation reuse Dunder Quest's generators. The OpenRouter key for those tools goes in `.env` at the repo root (copy `.env.example`). To generate images through the Grok CLI instead, run `grok login` and set `IMAGE_PROVIDER=grok`.
