@@ -331,7 +331,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your profile</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your profile</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}${social ? "\n" + SOCIAL_JS : ""}
@@ -575,6 +575,31 @@ function buildMe(prefix: string): string {
   return page("Your profile", body, prefix, {
     description: "Your progress, certificates and screenshots across every Dunder Quest game.", path: "me/",
     nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
+  });
+}
+
+/** /privacy/: what the site and the social layer (deploy/src/) keep. Google's consent screen links here. */
+function buildPrivacy(prefix: string): string {
+  const body = `
+<section class="section page-head">
+  <p class="kicker">Privacy</p>
+  <h1>What Dunder Quest keeps</h1>
+  <p class="lede">As little as it can. There's no sign-up, no email address and no advertising.</p>
+  <h2>Playing</h2>
+  <p>The games run in your browser. The first time you clear a level, the site makes you an anonymous player with a silly name you can change. Your browser keeps that player's key in its local storage; the server keeps only a scrambled copy of the key (its SHA-256), so it can recognise you but can't hand the key out.</p>
+  <p>For each game the server keeps your save (the levels you've cleared, your best time, tries and collectibles), your experience points and your place on the leaderboards, the certificates you've earned with the name on them, and any screenshots you choose to upload with their captions. Your player name, scores, certificates and uploaded screenshots are public: that's what the leaderboards, certificate links and screenshot links are for.</p>
+  <h2>Signing in with Google</h2>
+  <p>Signing in with Google is optional; it lets your progress follow you to another device. When you do, Google tells the site who you are, and the site keeps only your Google account number. It doesn't keep your email address, name or picture, and it never sees your Google password.</p>
+  <h2>Analytics and videos</h2>
+  <p>The site counts visits with Cloudflare Web Analytics, which doesn't use cookies or follow you across sites. Trailers are YouTube videos embedded from youtube-nocookie.com, and the pages use Google Fonts.</p>
+  <h2>Deleting it all</h2>
+  <p>Your <a href="${prefix}me/">profile page</a> has a button that deletes your player and everything that belongs to it: saves, certificates and screenshots. Clearing your browser's storage forgets the key on that device.</p>
+  <h2>Questions</h2>
+  <p>Dunder Quest is open source: <a href="${REPO}">open an issue on GitHub</a>.</p>
+</section>`;
+  return page("Privacy", body, prefix, {
+    description: "What Dunder Quest keeps about players, and how to delete it.", path: "privacy/",
+    nav: HOME_NAV, brand: "", play: "curb/play/",
   });
 }
 
@@ -3025,6 +3050,7 @@ function main(): void {
   write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
   write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
   write(join(out, "me", "index.html"), buildMe("../"));
+  write(join(out, "privacy", "index.html"), buildPrivacy("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));

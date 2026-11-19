@@ -8,7 +8,7 @@ const accountId = "3315bb3e7d2e3556bfea6fb3947a890e";
  * as JavaScript origins). It isn't secret. Empty hides the Google button and
  * everything else still works, with players anonymous by default.
  */
-const GOOGLE_CLIENT_ID = "";
+const GOOGLE_CLIENT_ID = "907567662959-8egdjo19gucnb8pbidnod3epmcuo2mqt.apps.googleusercontent.com";
 
 export default defineConfig(({ mode }) => {
   const dev = mode === "dev";
