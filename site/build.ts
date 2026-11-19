@@ -246,7 +246,7 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
 const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
-  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"]];
+  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["leaderboards/", "Leaderboards"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -331,7 +331,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your profile</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your progress</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}${social ? "\n" + SOCIAL_JS : ""}
@@ -529,7 +529,7 @@ function buildSplash(prefix = ""): string {
   <h2 id="board-h">Top of the class</h2>
   <p class="lede">Every level you clear in any game earns XP and puts you on the boards, with no sign-up. Finish a game and you get a certificate with your name on it, ready for LinkedIn.</p>
   <div class="dq-mini" id="dq-mini-board"></div>
-  <div class="cta"><a class="btn btn-small" href="${prefix}leaderboards/">Every leaderboard</a><a class="btn btn-small btn-ghost" href="${prefix}me/" data-dq-me>Your profile</a></div>
+  <div class="cta"><a class="btn btn-small" href="${prefix}leaderboards/">Every leaderboard</a><a class="btn btn-small btn-ghost" href="${prefix}me/">Your progress</a></div>
 </section>
 `;
   // Links to the old home's sections (in trailer descriptions, for one) now
@@ -558,10 +558,9 @@ function buildLeaderboards(prefix: string): string {
 <section class="section">
   <h2>Latest certificates</h2>
   <div class="dq-feed" id="dq-feed"></div>
-  <div class="cta"><a class="btn btn-small btn-ghost" href="${prefix}me/" data-dq-me>Your profile</a></div>
 </section>`;
   return page("Leaderboards", body, prefix, {
-    description: BOARDS_DESC, path: "leaderboards/", nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
+    description: BOARDS_DESC, path: "leaderboards/", nav: HOME_NAV, active: "leaderboards/", brand: "", play: "curb/play/", social: true,
   });
 }
 
@@ -569,10 +568,10 @@ function buildLeaderboards(prefix: string): string {
 function buildMe(prefix: string): string {
   const body = `
 <section class="section page-head dq-page">
-  <p class="kicker">Your profile</p>
-  <div id="dq-me"><noscript>Your profile needs JavaScript.</noscript></div>
+  <p class="kicker">Your progress</p>
+  <div id="dq-me"><noscript>This page needs JavaScript.</noscript></div>
 </section>`;
-  return page("Your profile", body, prefix, {
+  return page("Your progress", body, prefix, {
     description: "Your progress, certificates and screenshots across every Dunder Quest game.", path: "me/",
     nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
   });

@@ -31,6 +31,31 @@ h1, h2, h3, .kicker, [class*="dq-"], [class*="dq-"] * { font-variant-ligatures: 
 .dq-icon { display: inline-block; vertical-align: -3px; flex: none; }
 .dq-icon-wrap { display: inline-flex; }
 
+/* A player's avatar (avatar.js): a pixel sprite from their id. */
+.dq-avatar { display: inline-block; vertical-align: middle; flex: none; image-rendering: pixelated; }
+
+/* You, in the site bar (site.js), once there's a player. */
+.dq-you {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 200px; padding: 3px 12px 3px 4px;
+  border: 1px solid var(--dq-line); border-radius: 999px; color: var(--dq-text); text-decoration: none;
+  font: 600 15px/1.2 var(--dq-font);
+}
+.dq-you:hover, .dq-you:focus-visible, .dq-you[aria-current] { border-color: var(--dq-gold); color: var(--dq-gold); }
+.dq-you-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  .bar .dq-you { margin-left: auto; padding: 3px; }
+  .bar .dq-you + .btn-small { margin-left: 0; }
+  .dq-you-name { display: none; }
+}
+.dq-by { display: inline-flex; align-items: center; gap: 6px; }
+
+/* The top of /me/ and of a profile: the avatar beside the name. */
+.dq-me-head { display: flex; align-items: center; gap: 16px; }
+.dq-me-head h1 { margin: 0; }
+.dq-me-head .dq-stats { margin: 6px 0 0; }
+.dq-keep.dq-card { margin-bottom: 34px; border-color: var(--dq-gold); }
+.dq-keep.dq-card h2 { margin-top: 0; }
+
 /* ---- The toolbar on a play page ---- */
 
 .dq-toolbar {
@@ -48,6 +73,10 @@ h1, h2, h3, .kicker, [class*="dq-"], [class*="dq-"] * { font-variant-ligatures: 
 }
 .dq-tool:hover, .dq-tool:focus-visible { background: rgba(255, 255, 255, 0.14); color: var(--dq-gold); outline: none; }
 .dq-chip { max-width: 190px; padding-right: 13px; }
+.dq-chip-face { display: inline-flex; }
+.dq-who { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; }
+.dq-who p { margin: 0; }
+.dq-cert-keep { margin-top: 12px; padding-top: 4px; border-top: 1px solid var(--dq-line); }
 .dq-chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px), (max-height: 420px) {
   .dq-chip-name { display: none; }
@@ -158,6 +187,7 @@ h1, h2, h3, .kicker, [class*="dq-"], [class*="dq-"] * { font-variant-ligatures: 
 .dq-board li:nth-child(3) .dq-rank { color: #e8a87c; }
 .dq-board li.dq-me { background: rgba(242, 181, 68, 0.13); border-radius: 8px; }
 .dq-rank { font: 700 1.05rem/1 var(--dq-display); color: var(--dq-dim); }
+.dq-name .dq-avatar { margin: -2px 8px 0 0; }
 .dq-name { color: var(--dq-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; font-weight: 700; }
 .dq-name:hover { color: var(--dq-gold); text-decoration: underline; }
 .dq-progress { font: 1rem/1 var(--dq-display); color: var(--dq-gold); }

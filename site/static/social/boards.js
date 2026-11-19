@@ -2,6 +2,7 @@
 // overall one, in tabs, plus the latest certificates. The home page's small
 // board (#dq-mini-board) is the overall top five.
 
+import { avatarSvg } from "./avatar.js";
 import { GAMES, ORDER } from "./games.js";
 import { api, cachedPlayer } from "./client.js";
 import { h } from "./ui.js";
@@ -9,7 +10,7 @@ import { h } from "./ui.js";
 function rows(board, me) {
   return h("ol.dq-board", {}, board.rows.map((r) => h(`li${me && r.id === me.id ? ".dq-me" : ""}`, {},
     h("span.dq-rank", {}, `#${r.rank}`),
-    h("a.dq-name", { href: `/u/${r.id}` }, r.name),
+    h("a.dq-name", { href: `/u/${r.id}` }, h("span", { html: avatarSvg(r.id, 18) }), r.name),
     h("span.dq-progress", { title: `${r.count} of ${r.total} levels` }, board.game === "all" ? `${r.xp.toLocaleString()} XP` : `${r.count}/${r.total}`),
     h("span.dq-line", {}, board.game === "all" ? `${r.count}/${r.total}` : `${r.complete ? "★ " : ""}${r.line}`))));
 }

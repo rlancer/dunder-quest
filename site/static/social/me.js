@@ -2,6 +2,7 @@
 // screenshots, Google sign-in, your save key (to move to another device
 // without Google), and deleting it all.
 
+import { avatarSvg } from "./avatar.js";
 import { GAMES, ORDER, bestLine } from "./games.js";
 import { api, deleteAccount, googleButton, me, rename, signOut, token, useKey } from "./client.js";
 import { icon, linkedInCertUrl } from "./share.js";
@@ -46,8 +47,11 @@ function signInBlock(player, status) {
   const wrap = h("div", {},
     h("p", {}, player?.google
       ? "You're signed in with Google, so this progress follows you to any device where you sign in."
-      : "Sign in with Google to keep this progress on any device. If that account already has progress, the two are merged. We keep no email, name or picture from Google, only an anonymous account number."),
-    player?.google ? null : box);
+      : player
+        ? "Right now only this browser knows it's you: clear its data and your progress is stranded. Sign in with Google to keep it, and to play on any device. If that account already has progress, the two are merged. We keep no email, name or picture from Google, only an anonymous account number."
+        : "Sign in with Google to pick up your progress from another device. We keep no email, name or picture from Google, only an anonymous account number."),
+    player?.google ? h("div.dq-actions", {},
+      h("button.btn.btn-small.btn-ghost", { type: "button", onclick: async () => { await signOut(); render("Signed out on this browser."); } }, "Sign out here")) : box);
   if (!player?.google) {
     googleButton(box, {
       onSignIn: () => render("Signed in with Google."),
@@ -65,7 +69,7 @@ function keyBlock(status, hasKey = true) {
   const shown = h("p.dq-key", { hidden: true }, link);
   const input = h("input", { placeholder: "Paste a save key or link", "aria-label": "Save key" });
   return h("div", {},
-    hasKey ? h("p", {}, "Your save key is a private link that signs any browser in as you, no account needed. Keep it like a password: anyone with it can play as you.") : null,
+    hasKey ? h("p", {}, "Your save key does the same without Google: a private link that signs any browser in as you. Keep it like a password: anyone with it can play as you.") : null,
     hasKey ? h("div.dq-actions", {},
       h("button.btn.btn-small.btn-ghost", { type: "button", onclick: () => { shown.hidden = !shown.hidden; } }, "Show my save key"),
       h("button.btn.btn-small.btn-ghost", { type: "button", onclick: async () => { await copyText(link); status.textContent = "Save key link copied. Open it on your other device."; } }, "Copy it")) : null,
@@ -149,20 +153,27 @@ async function render(message = "") {
     return;
   }
   const { player, saves, certificates, shots } = data;
-  root.replaceChildren(
-    h("h1", {}, player.name),
-    h("p.dq-stats", {}, h("b", {}, player.xp.toLocaleString()), " XP · ", h("b", {}, String(player.levels)), " levels · ",
-      h("b", {}, String(player.completed)), ` ${player.completed === 1 ? "game" : "games"} finished · `, h("a", { href: `/u/${player.id}` }, "Your public profile")),
+  // Not signed in, the sign-in and save key come first: it's the one thing
+  // that can lose a player's progress. Signed in, it's a setting at the end.
+  const keep = section(player.google ? "Your devices" : "Keep your progress", signInBlock(player, status), keyBlock(status));
+  if (!player.google) keep.classList.add("dq-card", "dq-keep");
+  root.replaceChildren(...[
+    h("div.dq-me-head", {}, h("span", { html: avatarSvg(player.id, 64) }),
+      h("div", {}, h("h1", {}, player.name),
+        h("p.dq-stats", {}, h("b", {}, player.xp.toLocaleString()), " XP · ", h("b", {}, String(player.levels)), " levels · ",
+          h("b", {}, String(player.completed)), ` ${player.completed === 1 ? "game" : "games"} finished`))),
+    h("p.dq-fine", {}, "Only you see this page. Others see ", h("a", { href: `/u/${player.id}` }, "your public profile"),
+      ": your name, progress and certificates."),
     status,
-    section("Name", nameForm(player, status)),
+    player.google ? null : keep,
     section("Your games", gamesBlock(saves)),
     section("Certificates", certsBlock(certificates)),
     section("Screenshots", shotsBlock(shots)),
-    section("Other devices", signInBlock(player, status), keyBlock(status)),
-    section("Leave",
+    section("Your name", nameForm(player, status)),
+    player.google ? keep : null,
+    section("Delete your player",
       h("p", {}, plural(player.levels, ["level", "levels"]) + " and everything else here can go. Your progress stays in each game on this browser either way."),
       h("div.dq-actions", {},
-        player.google ? h("button.btn.btn-small.btn-ghost", { type: "button", onclick: async () => { await signOut(); render("Signed out on this browser."); } }, "Sign out here") : null,
         h("button.btn.btn-small.btn-ghost.dq-danger", {
           type: "button",
           onclick: async () => {
@@ -171,7 +182,7 @@ async function render(message = "") {
             render("Deleted. Everything's gone from the server.");
           },
         }, "Delete everything"))),
-  );
+  ].filter(Boolean));
 }
 
 fromHash().then((msg) => render(msg || ""));

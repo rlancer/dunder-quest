@@ -1,20 +1,37 @@
 // The social layer on the site's own pages: share buttons, the bits only a
-// page's owner sees (rename a certificate, delete a screenshot), the
-// "Your profile" link, and the /me/ and /leaderboards/ pages, which load
-// their own modules.
+// page's owner sees (rename a certificate, delete a screenshot), you in the
+// site bar, and the /me/ and /leaderboards/ pages, which load their own
+// modules.
 
+import { avatarSvg } from "./avatar.js";
 import { api, cachedPlayer, onPlayer } from "./client.js";
-import { wireShareRows } from "./ui.js";
+import { h, wireShareRows } from "./ui.js";
 
 wireShareRows();
 
-function profileLinks(player) {
-  for (const a of document.querySelectorAll("a[data-dq-me]")) {
-    a.href = player ? `/u/${player.id}` : "/me/";
+// You, in the site bar: your avatar and name, linking to /me/. Only once
+// there's a player; before that nobody needs reminding they haven't got one.
+const bar = document.querySelector("header.bar");
+let you = null;
+function showYou(player) {
+  if (!bar) return;
+  if (!player) {
+    you?.remove();
+    you = null;
+    return;
   }
+  if (!you) {
+    you = h("a.dq-you", { href: "/me/" });
+    bar.querySelector(":scope > .btn") ? bar.querySelector(":scope > .btn").before(you) : bar.append(you);
+  }
+  if (location.pathname === "/me/") you.setAttribute("aria-current", "page");
+  you.title = `${player.name}: your progress`;
+  you.setAttribute("aria-label", `You: ${player.name}. Your progress`);
+  you.innerHTML = `${avatarSvg(player.id, 24)}<span class="dq-you-name"></span>`;
+  you.querySelector(".dq-you-name").textContent = player.name;
 }
-profileLinks(cachedPlayer());
-onPlayer(profileLinks);
+showYou(cachedPlayer());
+onPlayer(showYou);
 
 // Owner-only controls on a certificate, profile or screenshot page.
 const owner = document.body.dataset.owner;
