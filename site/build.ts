@@ -383,6 +383,7 @@ function buildHome(bank: Json, prefix = ""): string {
       <a class="btn btn-ghost" href="#download">Download for desktop</a>
       <a class="btn btn-ghost" href="#trailer">Watch the trailer</a>
     </div>
+    ${resumePanel("dunder-quest", "btn btn-small")}
     <p class="fine">Keyboard, gamepad or touch. On a phone, turn it sideways and use the on-screen buttons.</p>
   </div>
 </section>
@@ -446,7 +447,8 @@ function buildHome(bank: Json, prefix = ""): string {
 </section>
 ${downloadsSection(prefix)}
 `;
-  return page("", body, prefix, { scripts: `<script src="${prefix}static/trailer.js"></script>`, path: QUEST_PAGE });
+  return page("", body, prefix, { scripts: `<script src="${prefix}static/trailer.js"></script>
+${RESUME_JS}`, path: QUEST_PAGE });
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
@@ -495,6 +497,7 @@ function buildSplash(prefix = ""): string {
   <p class="prompt" aria-hidden="true">&gt;&gt;&gt; help(games)</p>
   <h1>${WORDMARK}</h1>
   <p class="tag">Pixel-art games that teach real programming. Free, in your browser.</p>
+  ${resumePanel("any")}
 </section>
 
 <section class="feature" aria-labelledby="cy-h">
@@ -2011,6 +2014,12 @@ function tagGamePage(index: string, title: string, desc: string, path: string, i
 // are absolute, since the API only exists on the real host anyway.
 const SOCIAL_CSS = '<link rel="stylesheet" href="/static/social/social.css">';
 const SOCIAL_JS = '<script type="module" src="/static/social/site.js"></script>';
+/** "Welcome back": a returning player's place in a game (or, with "any", their last game) and a button to carry on.
+ * Hidden until site/static/social/resume.js fills it; `btn` is the page's own button class. */
+function resumePanel(game: string, btn = "btn"): string {
+  return `<div data-dq-resume="${game}" data-dq-btn="${btn}" hidden></div>`;
+}
+const RESUME_JS = '<script type="module" src="/static/social/resume.js"></script>';
 
 /** What a play page needs for the social layer. The first script asks WebGL to
  * keep each frame, so the screenshot button can read the canvas; it has to run
@@ -2235,6 +2244,7 @@ function buildFlatmates(prefix: string): string {
       <a class="btn" href="play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#line">See the six stops</a>
     </div>
+    ${resumePanel("flatmates", "btn btn-small")}
     <p class="fine">Free, no signup. Keyboard, gamepad or touch.</p>
   </div>
 </section>
@@ -2330,6 +2340,7 @@ ${body}
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
+${RESUME_JS}
 </body>
 </html>
 `;
@@ -2562,6 +2573,7 @@ function buildCurb(prefix: string): string {
       <a class="btn" href="play/">Play in your browser</a>
       <a class="btn btn-ghost" href="#season">See the ten episodes</a>
     </div>
+    ${resumePanel("curb", "btn btn-small")}
     <p class="fine">Free, no signup. Keyboard, gamepad or touch.</p>
   </div>
   <img class="cy-strip" src="${img}title.png" alt="Pixel art of a palm-lined Westside street at sunset, a silver hybrid parked at the curb" width="480" height="270">
@@ -2660,6 +2672,7 @@ ${body}
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
+${RESUME_JS}
 </body>
 </html>
 `;
@@ -2737,6 +2750,7 @@ function buildPrince(prefix: string): string {
     <h1><span>Prince of</span> Versions</h1>
     <p class="pv-lede">The Vizier has the Princess, the hourglass is running, and all you have is a dagger full of sand. It turns back time, but only to a moment you sealed. A seal is a <code>git commit</code>.</p>
     <p class="pv-actions"><a class="pv-btn" href="play/">Play in your browser</a><a class="pv-more" href="#rooms">The five rooms →</a></p>
+    ${resumePanel("prince", "pv-btn pv-btn-small")}
     <p class="pv-fine">Free. Works on a phone held sideways, or with a keyboard or gamepad. Act I is playable now.</p>
   </div>
   <img class="pv-shot" src="${img}title.png" alt="${esc(PV_ALT)}" width="960" height="540">
@@ -2818,7 +2832,8 @@ ${body}
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
 </footer>
 ${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
-` : ""}</body>
+` : ""}${RESUME_JS}
+</body>
 </html>
 `;
 }
@@ -2904,6 +2919,7 @@ function buildLieutenant(prefix: string): string {
     <h1><span>Just One More</span> JOIN</h1>
     <p class="jj-lede">He knows who did it inside five minutes. Knowing isn't proof. Proof is one question, asked exactly right, and the department's new machine only takes questions in <code>SQL</code>.</p>
     <p class="jj-actions"><a class="jj-btn" href="play/">Play in your browser</a><a class="jj-more" href="#cases">The five cases →</a></p>
+    ${resumePanel("lieutenant", "jj-btn jj-btn-small")}
     <p class="jj-fine">Free. Works on a phone held sideways, or with a keyboard or gamepad. No typing: you build each query from chips.</p>
   </div>
   <img class="jj-shot" src="${img}title.png" alt="${esc(JJ_ALT)}" width="960" height="540">
@@ -2994,6 +3010,7 @@ ${body}
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
 </footer>
 ${JOIN_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
+${RESUME_JS}
 </body>
 </html>
 `;

@@ -56,6 +56,14 @@ And one face: a **pixel avatar** drawn from the player's id (a mirrored 5×5 spr
 - **`/me/` order**: header (avatar, name, stats), "Only you see this page. Others see your public profile"; for a guest, a highlighted **Keep your progress** card (Google, save key) comes next; then Your games, Certificates, Screenshots, Your name; for a Google player, **Your devices** (with Sign out) comes here instead; last **Delete your player**.
 - The play page's cached player now refreshes after every upload, so the chip's XP is current.
 
+## For engagement: the return loop
+
+Rob then asked for whatever would help engagement most. Most visits land on the home page or a game's own page (the trailers link there), and neither knew a returning player. So:
+
+- **Welcome back** (`site/static/social/resume.js`): on the home page and on every game's page, a returning player sees their avatar, "Welcome back, Sleepy Prince 649.", where they are ("1 of 5 rooms of Prince of Versions cleared. Next up: The Vizier's Seal (git reset).") and one button to carry on, in the page's own button style. The home page picks the game they played last (`/api/me` now says when each save was last played); a finished game points at its certificate and the next game. Their overall rank shows only when it's encouraging (top ten, or the top half). Newcomers see nothing.
+- **Your row on every board**: when you're below the top ten (in a game) or the top five or fifty (the home page and `/leaderboards/`), your row appears under a gap, avatar and all, instead of a line of text.
+- **The next game, straight after a certificate**: the certificate dialog adds "Next: learn SQL in Just One More JOIN", the next game in the site's order that isn't finished.
+
 ## Left for Rob
 
 These are bigger or a matter of taste:
@@ -66,4 +74,4 @@ These are bigger or a matter of taste:
 4. **The game pages' own bars** (`/curb/`, `/prince/` …) still have no Leaderboards or "you". They don't load the social script and each bar is themed; adding the chip means loading `site.js` there.
 5. **The play toolbar on phones** sits over the game's top-right corner. In landscape on a small phone it can cover game UI. Worth checking each game in its real export; if it clashes, move it to the top-left for that game, or collapse it into a single avatar button that opens a small menu.
 6. **Sign out for a guest.** There's none on purpose (it would strand the player), but a shared computer has no way to leave without deleting. A "Forget me on this browser (copy your save key first)" button would cover it.
-7. **A board row for "you" when you're not in the top 10/50.** The page says "You: #63 of 200"; it could show your row, avatar and all, under a divider.
+7. ~~A board row for "you" when you're not in the top 10/50.~~ Done, see above.

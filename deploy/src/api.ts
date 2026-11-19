@@ -310,7 +310,7 @@ export async function handleApi(request: Request, env: Env, url: URL): Promise<R
       const saves = await savesOf(env, me.id);
       return json({
         player: { ...publicPlayer(me), google: Boolean(me.google_sub) },
-        saves: Object.fromEntries(saves.map((r) => [r.game, summaryOf(r)])),
+        saves: Object.fromEntries(saves.map((r) => [r.game, { ...summaryOf(r), played: r.updated_at }])),
         certificates: (await certsOf(env, me.id)).map(certJson),
         shots: (await shotsOf(env, me.id)).map(shotJson),
       });

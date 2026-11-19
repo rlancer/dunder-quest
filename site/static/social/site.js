@@ -67,3 +67,4 @@ document.querySelector("[data-dq-print]")?.addEventListener("click", () => print
 
 if (document.getElementById("dq-me")) import("./me.js");
 if (document.getElementById("dq-boards") || document.getElementById("dq-mini-board")) import("./boards.js");
+if (document.querySelector("[data-dq-resume]")) import("./resume.js");

@@ -185,6 +185,7 @@ h1, h2, h3, .kicker, [class*="dq-"], [class*="dq-"] * { font-variant-ligatures: 
 .dq-board li:nth-child(1) .dq-rank { color: #ffd84d; }
 .dq-board li:nth-child(2) .dq-rank { color: #d9e2ec; }
 .dq-board li:nth-child(3) .dq-rank { color: #e8a87c; }
+.dq-board li.dq-gap { display: block; padding: 0 10px; border: 0; color: var(--dq-dim); text-align: center; line-height: 1; }
 .dq-board li.dq-me { background: rgba(242, 181, 68, 0.13); border-radius: 8px; }
 .dq-rank { font: 700 1.05rem/1 var(--dq-display); color: var(--dq-dim); }
 .dq-name .dq-avatar { margin: -2px 8px 0 0; }
