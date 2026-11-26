@@ -121,10 +121,33 @@ export const GAMES = {
       { id: 5, name: "Left for Dead", lesson: "LEFT JOIN, IS NULL" },
     ],
   },
+  greedy: {
+    name: "The Good, the Bad and the Greedy",
+    short: "Good, Bad & Greedy",
+    lang: "Regex",
+    page: "/greedy/",
+    play: "/greedy/play/",
+    og: "greedy.png",
+    unit: ["job", "jobs"],
+    accent: "#e8a13a",
+    ink: "#2a1710",
+    tag: "#LearnRegex",
+    // Fewest draws is the tiebreak: the game counts a try each time a poster is drawn.
+    best: "tries",
+    // A star for every poster written in par, the fewest chips it can be done in.
+    collectible: ["star", "stars"],
+    levels: [
+      { id: 1, name: "A Town Called Hobson", lesson: "Letters, the dot, [sets] and \\d", max: 4 },
+      { id: 2, name: "The Toll Gate", lesson: "Anchors ^ and $, and \\b", max: 4 },
+      { id: 3, name: "Beans", lesson: "Quantifiers +, *, ? and {3}", max: 4 },
+      { id: 4, name: "The Greedy and the Lazy", lesson: "Greedy .*, lazy .*?, ( ) and |", max: 4 },
+      { id: 5, name: "Showdown at Backslash Ridge", lesson: "Everything at once, and \\1", max: 3 },
+    ],
+  },
 };
 
 /** Game keys in the order the site shows them (Curb leads, as on the home page). */
-export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant"];
+export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant", "greedy"];
 
 /** XP: a level is worth 100, finishing a game 400 more, a collectible 10. */
 export const XP = { level: 100, complete: 400, collectible: 10 };
@@ -254,6 +277,18 @@ export function normalize(game, raw) {
         tries: keyed(idNumbers(game, save.tries, true)),
         cards: strings(save.cards),
       };
+    case "greedy": {
+      // The Lieutenant's shape, plus a star count per job, capped at its posters.
+      const stars = idNumbers(game, save.stars, true);
+      for (const l of GAMES[game].levels) if (stars[l.id] > l.max) stars[l.id] = l.max;
+      return {
+        current_job: clampId(game, save.current_job),
+        cleared: sorted(idSet(game, save.cleared)),
+        tries: keyed(idNumbers(game, save.tries, true)),
+        stars: keyed(stars),
+        cards: strings(save.cards),
+      };
+    }
     case "prince": {
       // Prince keeps {room: best seconds}; a room is cleared if it's there at all.
       const out = {};
@@ -322,6 +357,14 @@ export function merge(game, a, b) {
         tries: bestOf(x.tries, y.tries, true),
         cards: [...x.cards, ...y.cards],
       });
+    case "greedy":
+      return normalize(game, {
+        current_job: ahead.current_job,
+        cleared: [...x.cleared, ...y.cleared],
+        tries: bestOf(x.tries, y.tries, true),
+        stars: bestOf(x.stars, y.stars, false),
+        cards: [...x.cards, ...y.cards],
+      });
     case "prince": {
       // A time of 0 means "cleared, untimed"; any real time beats it.
       const out = { ...x.cleared };
@@ -365,6 +408,11 @@ export function summarize(game, raw) {
     case "lieutenant":
       cleared = save.cleared;
       for (const id of cleared) tries += save.tries[String(id)] || 0;
+      break;
+    case "greedy":
+      cleared = save.cleared;
+      for (const id of cleared) tries += save.tries[String(id)] || 0;
+      for (const v of Object.values(save.stars)) collected += v;
       break;
     case "prince":
       cleared = Object.keys(save.cleared).map(Number).sort((a, b) => a - b);
@@ -414,7 +462,7 @@ export function bestLine(game, s) {
 const FIRST = ["Brave", "Plucky", "Rumpled", "Squinting", "Sleepy", "Dapper", "Curious", "Peckish", "Nimble", "Gallant",
   "Jaunty", "Wily", "Earnest", "Dashing", "Humble", "Mighty", "Sly", "Valiant", "Zesty", "Bold"];
 const SECOND = ["Squire", "Rustacean", "Pythonista", "Flatmate", "Lieutenant", "Prince", "Coder", "Hacker", "Knight",
-  "Detective", "Enchanter", "Committer", "Borrower", "Debugger", "Scribe", "Wizard", "Basset", "Merger", "Shrubber", "Joiner"];
+  "Detective", "Enchanter", "Committer", "Borrower", "Debugger", "Scribe", "Wizard", "Basset", "Merger", "Shrubber", "Joiner", "Deputy", "Wrangler"];
 
 export function randomName(rand = Math.random) {
   const pick = (list) => list[Math.floor(rand() * list.length)];

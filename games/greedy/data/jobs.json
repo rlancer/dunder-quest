@@ -1,0 +1,632 @@
+{
+	"cast": {
+		"narrator": {"name": "", "full": "The old-timer"},
+		"sheriff": {"name": "Sheriff Exley", "full": "Sheriff Reg Exley"},
+		"kid": {"name": "The Lazy Kid", "full": "The Lazy Kid, deputy"},
+		"dot": {"name": "Dot Starr", "full": "Dot Starr, the greediest gun in the West"},
+		"mayor": {"name": "Mayor Hobson", "full": "Mayor Hobson"},
+		"gibber": {"name": "Gibber Hobson", "full": "Gibber Hobson"},
+		"backtrack": {"name": "Big Backtrack", "full": "Big Backtrack"}
+	},
+	"jobs": [
+		{
+			"id": 1,
+			"title": "A Town Called Hobson",
+			"lesson": "Plain letters, the dot, [sets] and \\d",
+			"place": "street",
+			"music": "town",
+			"intro": [
+				{"who": "mayor", "text": "Sheriff Exley! Welcome to Backslash Ridge. I'm Mayor Hobson. This is Doc Hobson, the Widow Hobson, and Hobson from the bank. No relation."},
+				{"who": "sheriff", "text": "Everybody in this town is named Hobson?"},
+				{"who": "mayor", "text": "It keeps the stationery simple."},
+				{"who": "gibber", "text": "Rassa-frassin' ^\\w+ consarn [a-z]{3} dadgum \\d\\b!", "say": "[cackling, shouting] Rassa frassin', caret backslash doubleyou plus! Consarn it! Dadgum backslash dee, backslash bee!"},
+				{"who": "mayor", "text": "Gibber Hobson. Thirty years, and nobody has understood a word."},
+				{"who": "kid", "text": "Stick around, Sheriff. By the end of the week you'll read him like a menu."},
+				{"who": "kid", "text": "I'm your deputy. They call me the Lazy Kid. Here's the law in this town: nobody shoots anybody. We put up a wanted poster."},
+				{"who": "kid", "text": "And a poster catches whatever fits what's written on it. Not who you meant. What you wrote."}
+			],
+			"posters": [
+				{
+					"id": "1a",
+					"card": "literal",
+					"brief": {"who": "kid", "text": "Slim's boys held up the feed store. Catch every Slim, and mind the Hobsons who aren't."},
+					"chips": ["Slim", "Hobson", "S", "im", "Old"],
+					"solution": ["Slim"],
+					"hint": "One chip does it: the name itself.",
+					"lines": [
+						{"text": "Slim Hobson", "want": true},
+						{"text": "Howard Hobson", "want": false},
+						{"text": "Slim Jim Hobson", "want": true},
+						{"text": "Sam Hobson", "want": false},
+						{"text": "Old Slim", "want": true},
+						{"text": "Olsen Hobson", "want": false}
+					],
+					"after": {"who": "kid", "text": "One word, three Slims. Notice it didn't care where in the line he was standing."}
+				},
+				{
+					"id": "1b",
+					"card": "dot",
+					"brief": {"who": "kid", "text": "The fella who robbed the stage signs the hotel book a new way every night. Hank. Honk. Hunk. Hink."},
+					"chips": ["H", ".", "nk", "a", "o", "Hobson"],
+					"solution": ["H", ".", "nk"],
+					"hint": "H, then any one character, then nk.",
+					"lines": [
+						{"text": "Hank Hobson", "want": true},
+						{"text": "Honk Hobson", "want": true},
+						{"text": "Frank Hobson", "want": false},
+						{"text": "Hunk Hobson", "want": true},
+						{"text": "Shank Hobson", "want": false},
+						{"text": "Hink Hobson", "want": true},
+						{"text": "Hobson Hobson", "want": false}
+					],
+					"after": {"who": "kid", "text": "A dot stands for any one character. Exactly one. It isn't fussy which."}
+				},
+				{
+					"id": "1c",
+					"card": "set",
+					"brief": {"who": "mayor", "text": "Sheriff! You've arrested Hunk and Hink. They're the church organists! It's only Hank and Honk we want."},
+					"chips": ["H", ".", "[ao]", "[iu]", "nk", "a"],
+					"solution": ["H", "[ao]", "nk"],
+					"hint": "Swap the dot for a set that only lets a or o through.",
+					"lines": [
+						{"text": "Hank Hobson", "want": true},
+						{"text": "Honk Hobson", "want": true},
+						{"text": "Hunk Hobson", "want": false},
+						{"text": "Hink Hobson", "want": false},
+						{"text": "Shank Hobson", "want": false},
+						{"text": "Hobson Hobson", "want": false}
+					],
+					"after": {"who": "kid", "text": "Square brackets: still one character, but only one off the list."}
+				},
+				{
+					"id": "1d",
+					"card": "digit",
+					"brief": {"who": "kid", "text": "Six men walked out of Yonder county jail still wearing their numbers. Catch anybody with a digit on him."},
+					"chips": ["\\d", ".", "No", "Hobson", "[ao]"],
+					"solution": ["\\d"],
+					"hint": "There's one chip that means any digit.",
+					"lines": [
+						{"text": "Hobson 41", "want": true},
+						{"text": "Seven Hobson", "want": false},
+						{"text": "No. 6 Hobson", "want": true},
+						{"text": "Hobson, No. Five", "want": false},
+						{"text": "Convict 3 Hobson", "want": true},
+						{"text": "Howard Hobson", "want": false}
+					],
+					"after": {"who": "kid", "text": "Backslash d: any digit at all. The backslash is what gives that d its badge."}
+				}
+			],
+			"outro": [
+				{"who": "mayor", "text": "Four posters and not one shot fired! The last sheriff just hollered."},
+				{"who": "kid", "text": "Don't get comfortable. That was the shallow end of the alphabet."}
+			]
+		},
+		{
+			"id": 2,
+			"title": "The Toll Gate",
+			"lesson": "Anchors: ^ and $, and the word edge \\b",
+			"place": "desert",
+			"music": "town",
+			"intro": [
+				{"who": "kid", "text": "Dot Starr's boys put up a toll gate. Out here. In the middle of ten thousand square miles of nothing."},
+				{"who": "sheriff", "text": "Why doesn't everybody just ride around it?"},
+				{"who": "kid", "text": "Nobody's thought of it yet. Keep your voice down.", "say": "Nobody's thought of it yet. [whispering] Keep your voice down."},
+				{"who": "kid", "text": "A poster's got the same trouble as that gate. It matches anywhere on the line, so trouble walks right round the end of it. Unless you nail it down."}
+			],
+			"posters": [
+				{
+					"id": "2a",
+					"card": "anchors",
+					"brief": {"who": "kid", "text": "We've got the gang's telegrams. Every one of theirs starts with the word DOT. Starts with it, mind."},
+					"chips": ["^", "$", "DOT", "STOP", "."],
+					"solution": ["^", "DOT"],
+					"hint": "Put the hat first: ^ nails the pattern to the start.",
+					"lines": [
+						{"text": "DOT SAYS RIDE AT DAWN", "want": true},
+						{"text": "POLKA DOT DRESS ARRIVED STOP", "want": false},
+						{"text": "DOT WANTS THE BANK STOP", "want": true},
+						{"text": "AUNT DOT SENDS LOVE STOP", "want": false},
+						{"text": "DOT IS NOT PAYING FOR THIS", "want": true},
+						{"text": "CONNECT THE DOTS STOP", "want": false}
+					],
+					"after": {"who": "kid", "text": "That little hat is a caret. It nails the pattern to the front of the line. No hat, and trouble walks around."}
+				},
+				{
+					"id": "2b",
+					"brief": {"who": "kid", "text": "Now the ones that end with the word NOON. That's when they ride. Honest folk end a telegram with STOP."},
+					"chips": ["^", "$", "NOON", "STOP", "."],
+					"solution": ["NOON", "$"],
+					"hint": "The dollar goes last: $ nails the pattern to the end.",
+					"lines": [
+						{"text": "MEET AT THE GATE AT NOON", "want": true},
+						{"text": "NOON TRAIN IS LATE STOP", "want": false},
+						{"text": "BRING DYNAMITE NOON", "want": true},
+						{"text": "HIGH NOON IS A FINE HOUR STOP", "want": false},
+						{"text": "WE HIT THE BANK AT NOON", "want": true},
+						{"text": "NOONE CAME TO MY PARTY STOP", "want": false}
+					],
+					"after": {"who": "kid", "text": "Dollar sign nails it to the end. Don't ask me why it's a dollar. Lawyers, probably."}
+				},
+				{
+					"id": "2c",
+					"brief": {"who": "kid", "text": "Dot's lookouts are cheap. They wire four letters and not one thing more. RIDE. HIDE. WAIT."},
+					"chips": ["^", "$", ".", "RIDE", "IDE"],
+					"solution": ["^", ".", ".", ".", ".", "$"],
+					"hint": "Nail down both ends, with exactly four of anything in between.",
+					"lines": [
+						{"text": "RIDE", "want": true},
+						{"text": "BRIDE ARRIVES TUESDAY", "want": false},
+						{"text": "HIDE", "want": true},
+						{"text": "HIDEOUT FOUND", "want": false},
+						{"text": "WAIT", "want": true},
+						{"text": "WAIT FOR ME", "want": false},
+						{"text": "GO", "want": false}
+					],
+					"after": {"who": "kid", "text": "Nailed down at both ends, it's the whole line or nothing."}
+				},
+				{
+					"id": "2d",
+					"card": "boundary",
+					"brief": {"who": "kid", "text": "Last one. Every outlaw called Kid. The Bandana Kid, Kid Sarsaparilla. Not me, I'm retired. And not poor Kidney Hobson."},
+					"chips": ["\\b", "Kid", "^", "$", "."],
+					"solution": ["\\b", "Kid", "\\b"],
+					"hint": "Put a word edge on each side of Kid.",
+					"lines": [
+						{"text": "the Bandana Kid", "want": true},
+						{"text": "Kidney Hobson", "want": false},
+						{"text": "Kid Sarsaparilla", "want": true},
+						{"text": "McKid Hobson", "want": false},
+						{"text": "the Kid from Yonder", "want": true},
+						{"text": "Kidd the barber", "want": false}
+					],
+					"after": {"who": "kid", "text": "Backslash b is the edge of a word. It doesn't catch a letter. It catches the gap."}
+				}
+			],
+			"outro": [
+				{"who": "sheriff", "text": "What happened to the toll gate?"},
+				{"who": "kid", "text": "Still there. They can't make change for a dollar, so now they're stuck behind it."}
+			]
+		},
+		{
+			"id": 3,
+			"title": "Beans",
+			"lesson": "How many: +, *, ? and {3}",
+			"place": "camp",
+			"music": "town",
+			"intro": [
+				{"who": "kid", "text": "Starr gang's camped up the canyon. Twelve men, one pot of beans, and not a green vegetable between them."},
+				{"who": "sheriff", "text": "It's pitch dark. How do we tell who's who?"},
+				{"who": "kid", "text": "Hush a second, Sheriff.", "say": "[whispering] Hush a second, Sheriff.", "sound": "toot"},
+				{"who": "kid", "text": "The beans are doing the talking. Trouble is, no two of 'em say it the same length. For that you need something that counts."}
+			],
+			"posters": [
+				{
+					"id": "3a",
+					"card": "plus",
+					"brief": {"who": "kid", "text": "Everybody who had the beans. One f or twenty, it's the same offence."},
+					"chips": ["p", "f", "t", "+", ".", "s"],
+					"solution": ["p", "f", "+", "t"],
+					"hint": "p, then f one or more times, then t.",
+					"lines": [
+						{"text": "pft", "want": true},
+						{"text": "pt", "want": false},
+						{"text": "pfft", "want": true},
+						{"text": "psst", "want": false},
+						{"text": "pffffffft", "want": true},
+						{"text": "pfui", "want": false},
+						{"text": "oft", "want": false}
+					],
+					"after": {"who": "kid", "text": "Plus means one or more of whatever's right in front of it. Only the f. The p and the t mind their own business."}
+				},
+				{
+					"id": "3b",
+					"card": "star",
+					"brief": {"who": "kid", "text": "They're getting sneaky. Some of 'em are holding it in. Catch the quiet ones too."},
+					"chips": ["p", "f", "t", "+", "*", "."],
+					"solution": ["p", "f", "*", "t"],
+					"hint": "Same poster, but the f can show up zero times.",
+					"sound": "toot",
+					"lines": [
+						{"text": "pt", "want": true},
+						{"text": "pft", "want": true},
+						{"text": "psst", "want": false},
+						{"text": "pffffft", "want": true},
+						{"text": "pfui", "want": false},
+						{"text": "pat", "want": false}
+					],
+					"after": {"who": "kid", "text": "Star is zero or more. Zero counts. That's the part folks forget."}
+				},
+				{
+					"id": "3c",
+					"card": "optional",
+					"brief": {"who": "kid", "text": "The gang meets at the saloon tonight. Half of 'em spell it salon. Catch both, and leave the fish supper be."},
+					"chips": ["sal", "o", "on", "?", "+", "*", "."],
+					"solution": ["sal", "o", "?", "on"],
+					"hint": "Make one o optional: o followed by ?",
+					"lines": [
+						{"text": "saloon at nine", "want": true},
+						{"text": "salmon at nine", "want": false},
+						{"text": "salon at nine", "want": true},
+						{"text": "saloooon at nine", "want": false},
+						{"text": "back room of the saloon", "want": true},
+						{"text": "salt on the table", "want": false}
+					],
+					"after": {"who": "kid", "text": "Question mark: the thing in front is optional. There or not there. Once at most."}
+				},
+				{
+					"id": "3d",
+					"card": "braces",
+					"brief": {"who": "kid", "text": "Dot's put prices on heads. I want the three-figure ones. Cheaper than that is a joke, and the four-figure one is me."},
+					"chips": ["\\$", "\\d", "{3}", "$", "^", "+", "."],
+					"solution": ["\\$", "\\d", "{3}", "$"],
+					"hint": "A real dollar, a digit three times, then the end of the line.",
+					"lines": [
+						{"text": "$500", "want": true},
+						{"text": "$50", "want": false},
+						{"text": "$250", "want": true},
+						{"text": "$5000", "want": false},
+						{"text": "$999", "want": true},
+						{"text": "500 head of cattle", "want": false},
+						{"text": "$5 and a mule", "want": false}
+					],
+					"after": {"who": "kid", "text": "Braces say exactly how many. And the backslash in front of that dollar? That's an escaped dollar. Still spends the same."}
+				}
+			],
+			"outro": [
+				{"who": "sheriff", "text": "That's the lot of them.", "sound": "toot"},
+				{"who": "kid", "text": "For the record, that one was the horse."}
+			]
+		},
+		{
+			"id": 4,
+			"title": "The Greedy and the Lazy",
+			"lesson": "Greedy .* and lazy .*?, groups ( ) and | for or",
+			"place": "saloon",
+			"music": "showdown",
+			"intro": [
+				{"who": "dot", "text": "Evening, Sheriff. Dot Starr. Dot, as in any one thing at all. Star, as in as many as I please.", "sound": "sting"},
+				{"who": "dot", "text": "I don't take a little. I take everything on the line, right up to the last place I can stop. They call it greedy. I call it thorough."},
+				{"who": "kid", "text": "Me, I'm the other kind. I stop the first chance I get. Hang a question mark after her star and she'll work like I do. Lazy."},
+				{"who": "kid", "text": "From here on it ain't only who you catch, Sheriff. It's how much of the line you take. The judge wants the part underlined in red: no more, no less."}
+			],
+			"posters": [
+				{
+					"id": "4a",
+					"card": "greedy",
+					"brief": {"who": "kid", "text": "Witness statements. Take everything that got said: first quote mark through to the last one."},
+					"chips": ["\"", ".", "*", "?", "\\w", "+"],
+					"solution": ["\"", ".", "*", "\""],
+					"hint": "A quote, then anything as many times as it likes, then a quote.",
+					"lines": [
+						{"text": "she said \"reach\" and \"skyward\"", "want": true, "take": "\"reach\" and \"skyward\""},
+						{"text": "nobody said a thing", "want": false},
+						{"text": "\"hands up\" then \"please\" I think", "want": true, "take": "\"hands up\" then \"please\""},
+						{"text": "he hollered \"beans\" and ran", "want": true, "take": "\"beans\""}
+					],
+					"after": {"who": "dot", "text": "See that? Hand me a dot and a star and I run clear to the last quote on the line."}
+				},
+				{
+					"id": "4b",
+					"card": "lazy",
+					"brief": {"who": "kid", "text": "Now only the first thing each of 'em said. Rein her in."},
+					"chips": ["\"", ".", "*", "?", "\\w", "+"],
+					"solution": ["\"", ".", "*", "?", "\""],
+					"hint": "Same poster with a ? after the star, so it stops at the first quote it can.",
+					"lines": [
+						{"text": "she said \"reach\" and \"skyward\"", "want": true, "take": "\"reach\""},
+						{"text": "nobody said a thing", "want": false},
+						{"text": "\"hands up\" then \"please\" I think", "want": true, "take": "\"hands up\""},
+						{"text": "he hollered \"beans\" and ran", "want": true, "take": "\"beans\""}
+					],
+					"after": {"who": "kid", "text": "Star, question mark. Same pattern, but it quits as early as it can. My kind of work."}
+				},
+				{
+					"id": "4c",
+					"card": "group",
+					"group": 1,
+					"brief": {"who": "mayor", "text": "The bank needs the reward amounts, Sheriff. Only the number! They say the dollar sign upsets the adding machine."},
+					"chips": ["\\$", "\\d", "+", "(", ")", ".", "reward"],
+					"solution": ["\\$", "(", "\\d", "+", ")"],
+					"hint": "Match the dollar and the digits, but put ( ) round the digits only.",
+					"lines": [
+						{"text": "Starr gang: $500 reward", "want": true, "take": "500"},
+						{"text": "Gibber Hobson: 3 chickens", "want": false},
+						{"text": "Two-Time Hobson: $75 reward", "want": true, "take": "75"},
+						{"text": "Big Backtrack: $1200 reward", "want": true, "take": "1200"},
+						{"text": "Lost: 1 hat", "want": false}
+					],
+					"after": {"who": "kid", "text": "Parentheses round up part of the catch. Whatever's inside comes back on its own. That's group one."}
+				},
+				{
+					"id": "4d",
+					"card": "or",
+					"group": 1,
+					"brief": {"who": "kid", "text": "Dot's printing her own posters now. Catch the ones that want somebody dead or alive, and round up which it is. Not the advert for a piano player."},
+					"chips": ["WANTED: ", "DEAD", "ALIVE", "|", "(", ")", "."],
+					"solution": ["WANTED: ", "(", "DEAD", "|", "ALIVE", ")"],
+					"hint": "WANTED: and then a group holding DEAD or ALIVE.",
+					"lines": [
+						{"text": "WANTED: DEAD", "want": true, "take": "DEAD"},
+						{"text": "WANTED: PIANO PLAYER", "want": false},
+						{"text": "WANTED: ALIVE", "want": true, "take": "ALIVE"},
+						{"text": "STILL ALIVE AND WELL STOP", "want": false},
+						{"text": "WANTED: DEAD OR ALIVE", "want": true, "take": "DEAD"},
+						{"text": "DEAD TIRED OF BEANS", "want": false},
+						{"text": "WANTED: A GOOD COOK", "want": false}
+					],
+					"after": {"who": "kid", "text": "The bar means or. And the parentheses keep that or from splitting the whole poster in two."}
+				}
+			],
+			"outro": [
+				{"who": "dot", "text": "Parentheses. Adorable. There's a gentleman outside who has been dying to meet you, Sheriff. Take your time. He does.", "sound": "sting"}
+			]
+		},
+		{
+			"id": 5,
+			"title": "Showdown at Backslash Ridge",
+			"lesson": "Everything at once, and \\1 for the same again",
+			"place": "decoy",
+			"music": "showdown",
+			"intro": [
+				{"who": "kid", "text": "Dot's hiring. Every no-account in the territory is lined up outside her tent with references."},
+				{"who": "sheriff", "text": "And where do we catch that many?"},
+				{"who": "kid", "text": "We built a second Backslash Ridge over the hill. Plywood. Took the Hobsons one night. Every poster you write goes up there, and the gang rides straight into it."},
+				{"who": "mayor", "text": "We even painted a fake me! He's polling better."}
+			],
+			"posters": [
+				{
+					"id": "5a",
+					"brief": {"who": "kid", "text": "The job applications. Dot only hires experience. Catch anybody with ten years or more at it."},
+					"chips": ["\\d", "{2}", "+", ".", "years", ", "],
+					"solution": ["\\d", "{2}"],
+					"hint": "Ten or more has two digits side by side.",
+					"lines": [
+						{"text": "rustling, 12 years", "want": true},
+						{"text": "arson, 3 years", "want": false},
+						{"text": "train robbery, 25 years", "want": true},
+						{"text": "dentistry, 7 years", "want": false},
+						{"text": "spitting indoors, 40 years", "want": true},
+						{"text": "poetry, 1 year", "want": false}
+					],
+					"after": {"who": "kid", "text": "Two digits, side by side. You're getting quick. I'd be worried for my job if I did any of it."}
+				},
+				{
+					"id": "5b",
+					"card": "backref",
+					"brief": {"who": "kid", "text": "Now her worst crew, the Two-Timers. So mean their mothers named each one twice."},
+					"chips": ["(", ")", "\\w", "+", " ", "\\1", "."],
+					"solution": ["(", "\\w", "+", ")", " ", "\\1"],
+					"hint": "Capture a word in ( ), then a space, then \\1 for that same word again.",
+					"lines": [
+						{"text": "Bang Bang Hobson", "want": true},
+						{"text": "Bing Bang Hobson", "want": false},
+						{"text": "Tom Tom Hobson", "want": true},
+						{"text": "Tommy Tim Hobson", "want": false},
+						{"text": "Walla Walla Hobson", "want": true},
+						{"text": "Hobson and Hobson", "want": false}
+					],
+					"after": {"who": "kid", "text": "Backslash one: whatever group one caught, word for word, a second time."},
+					"then": [
+						{"who": "backtrack", "text": "Backtrack try every way. Then Backtrack go back. Try every other way.", "sound": "thud"},
+						{"who": "kid", "text": "Telegram for Big Backtrack!"},
+						{"who": "backtrack", "text": "For Backtrack? Hmm. a... a... a... a... a... a...", "say": "[slow, puzzled] For Backtrack? Hmmm. Ay... ay... ay... ay... ay... ay..."},
+						{"card": "catastrophic"},
+						{"who": "kid", "text": "He'll be at that till Thursday. Come on."}
+					]
+				},
+				{
+					"id": "5c",
+					"brief": {"who": "kid", "text": "It's her, wearing every name she owns. Starts with a D, ends in Starr, and Lord knows what in between. Use her own greed on her."},
+					"chips": ["^", "$", "D", ".", "*", " Starr", "\\w", "+"],
+					"solution": ["^", "D", ".", "*", " Starr", "$"],
+					"hint": "Start of line, D, dot star for the middle, then Starr and the end of the line.",
+					"lines": [
+						{"text": "Dot Starr", "want": true},
+						{"text": "Not Dot Starr", "want": false},
+						{"text": "D. Starr", "want": true},
+						{"text": "Dan Starrbuck", "want": false},
+						{"text": "Dorothea Starr", "want": true},
+						{"text": "Dot Matrix", "want": false},
+						{"text": "Daisy Hobson", "want": false}
+					],
+					"after": {"who": "dot", "text": "You can't hold me, Sheriff. I match everything!"},
+					"then": [
+						{"who": "kid", "text": "Not with a hat on one end of you and a dollar on the other, you don't."}
+					]
+				}
+			],
+			"outro": [
+				{"who": "narrator", "text": "The brawl that followed went out through the saloon doors, down the main street, and clean through the wall of the game next door.", "sound": "crash"},
+				{"who": "narrator", "text": "A lieutenant in a raincoat asked whether anybody had seen his dog. Nobody had."},
+				{"who": "gibber", "text": "^Thank.+Sheriff$", "say": "[shouting happily] Caret! Thank! Dot, plus! Sheriff! Dollar!"},
+				{"who": "sheriff", "text": "You're welcome, Gibber."},
+				{"who": "mayor", "text": "He understood him! Thirty years!"},
+				{"who": "narrator", "text": "The Sheriff and the Lazy Kid rode off into the sunset. At the edge of the backdrop they climbed down, thanked the horses, and hailed a cab.", "place": "sunset"}
+			]
+		}
+	],
+	"cards": {
+		"literal": {
+			"title": "A poster is a pattern",
+			"text": "Plain letters match themselves, in that order, anywhere on the line. Capitals count: Slim is not slim.",
+			"say": "A poster is a pattern. Plain letters match themselves, in that order, anywhere on the line. And capitals count.",
+			"chips": [["Slim", "the letters S, l, i, m, in that order"]],
+			"demo": {"pattern": "Slim", "lines": ["Slim Hobson", "Old Slim", "slim chance"]}
+		},
+		"dot": {
+			"title": "The dot",
+			"text": "A dot stands in for any one character: a letter, a digit, even a space. Exactly one.",
+			"say": "The dot. It stands in for any one character. A letter, a digit, even a space. But exactly one.",
+			"chips": [[".", "any one character"]],
+			"demo": {"pattern": "H.nk", "lines": ["Hank", "Honk", "Hnk", "Hoonk"]}
+		},
+		"set": {
+			"title": "Square brackets",
+			"text": "[ao] is one character too, but only one off the list inside the brackets.",
+			"say": "Square brackets. Still one character, but only one off the list inside the brackets.",
+			"chips": [["[ao]", "one character: a or o"]],
+			"demo": {"pattern": "H[ao]nk", "lines": ["Hank", "Honk", "Hunk"]}
+		},
+		"digit": {
+			"title": "Backslash letters",
+			"text": "A backslash gives the letter after it a special job. \\d is any one digit, 0 to 9. (\\w is any letter or digit. \\s is a space.)",
+			"say": "A backslash gives the letter after it a special job. Backslash d is any one digit, zero to nine.",
+			"chips": [["\\d", "any one digit, 0 to 9"]],
+			"demo": {"pattern": "\\d", "lines": ["Hobson 41", "Seven Hobson"]}
+		},
+		"anchors": {
+			"title": "Nail it down",
+			"text": "A pattern matches anywhere on the line unless you nail it down. ^ is the start of the line and $ is the end. They match a place, not a character.",
+			"say": "A pattern matches anywhere on the line, unless you nail it down. The caret is the start of the line. The dollar is the end. They match a place, not a character.",
+			"chips": [["^", "the start of the line"], ["$", "the end of the line"]],
+			"demo": {"pattern": "^DOT", "lines": ["DOT SAYS RIDE", "POLKA DOT DRESS"]}
+		},
+		"boundary": {
+			"title": "The word edge",
+			"text": "\\b is the edge of a word: the gap between a letter and something that isn't one. It catches no characters at all.",
+			"say": "Backslash b is the edge of a word. The gap between a letter and something that isn't one. It catches no characters at all.",
+			"chips": [["\\b", "a word edge"]],
+			"demo": {"pattern": "\\bKid\\b", "lines": ["the Kid", "Kidney Hobson", "McKid"]}
+		},
+		"plus": {
+			"title": "One or more",
+			"text": "A quantifier says how many of the thing just before it. + means one or more.",
+			"say": "A quantifier says how many of the thing just before it. Plus means one or more.",
+			"chips": [["+", "one or more of the thing before it"]],
+			"demo": {"pattern": "pf+t", "lines": ["pft", "pffffft", "pt"]}
+		},
+		"star": {
+			"title": "Zero or more",
+			"text": "* means zero or more of the thing before it. Zero counts, so it also matches when there's none at all.",
+			"say": "Star means zero or more of the thing before it. Zero counts. So it also matches when there's none at all.",
+			"chips": [["*", "zero or more of the thing before it"]],
+			"demo": {"pattern": "pf*t", "lines": ["pt", "pft", "pffffft"]}
+		},
+		"optional": {
+			"title": "Maybe",
+			"text": "? means the thing before it is optional: zero or one of it.",
+			"say": "A question mark means the thing before it is optional. Zero, or one.",
+			"chips": [["?", "the thing before it, or nothing"]],
+			"demo": {"pattern": "salo?on", "lines": ["salon", "saloon", "saloooon"]}
+		},
+		"braces": {
+			"title": "Exactly so many",
+			"text": "{3} means exactly three of the thing before it. And since $ already means the end of the line, a real dollar sign is written \\$. That's called escaping it.",
+			"say": "Braces say exactly how many. And since a dollar already means the end of the line, a real dollar sign is written backslash dollar. That's called escaping it.",
+			"chips": [["{3}", "exactly three of the thing before it"], ["\\$", "an actual dollar sign"]],
+			"demo": {"pattern": "\\$\\d{3}$", "lines": ["$500", "$50", "$5000"]}
+		},
+		"greedy": {
+			"title": "Greedy",
+			"text": ".* is any character, as many as it can get. It runs to the end of the line, then gives back only what it must. That's called greedy, and it's how every quantifier works unless told otherwise.",
+			"say": "Dot star is any character, as many as it can get. It runs to the end of the line, then gives back only what it must. That's called greedy. Every quantifier works that way, unless told otherwise.",
+			"chips": [[".*", "anything, as much as possible"]],
+			"demo": {"pattern": "\".*\"", "lines": ["a \"b\" c \"d\" e"]}
+		},
+		"lazy": {
+			"title": "Lazy",
+			"text": "Put ? after a quantifier and it turns lazy: it takes as little as it can, and stops at the first chance it gets.",
+			"say": "Put a question mark after a quantifier and it turns lazy. It takes as little as it can, and stops at the first chance it gets.",
+			"chips": [[".*?", "anything, as little as possible"]],
+			"demo": {"pattern": "\".*?\"", "lines": ["a \"b\" c \"d\" e"]}
+		},
+		"group": {
+			"title": "Round 'em up",
+			"text": "( ) make a group. The whole pattern still decides what matches, but the part inside the parentheses is captured: you get it back on its own, as group 1.",
+			"say": "Parentheses make a group. The whole pattern still decides what matches. But the part inside the parentheses is captured. You get it back on its own, as group one.",
+			"chips": [["( )", "capture what's inside, as group 1"]],
+			"demo": {"pattern": "\\$(\\d+)", "group": 1, "lines": ["bounty $500 paid", "3 chickens"]}
+		},
+		"or": {
+			"title": "Dead or alive",
+			"text": "| means or. On its own it splits the whole pattern in two, so wrap the choices in ( ) to keep it to one spot.",
+			"say": "The upright bar means or. On its own it splits the whole pattern in two. So wrap the choices in parentheses, to keep it to one spot.",
+			"chips": [["|", "or"]],
+			"demo": {"pattern": "gr(a|e)y", "lines": ["gray mare", "grey mare", "gravy"]}
+		},
+		"backref": {
+			"title": "The same again",
+			"text": "\\1 means the very same text that group 1 caught, a second time. Not the same pattern: the same letters.",
+			"say": "Backslash one means the very same text that group one caught, a second time. Not the same pattern. The same letters.",
+			"chips": [["\\1", "what group 1 caught, again"]],
+			"demo": {"pattern": "(\\w+) \\1", "lines": ["Bang Bang", "Bing Bang"]}
+		},
+		"catastrophic": {
+			"title": "Big Backtrack's problem",
+			"text": "The pattern (a+)+$ can split a row of a's in a huge number of ways, and when the line ends in b it tries every one before it gives up. One more a, about twice the work. It's called catastrophic backtracking, and it has taken real websites down. Don't nest one quantifier inside another.",
+			"say": "Here's Big Backtrack's problem. A pattern with one quantifier nested inside another can split that row of ays in a huge number of ways. And when the line doesn't fit, it tries every single one before it gives up. One more ay, about twice the work. It's called catastrophic backtracking, and it has taken real websites down.",
+			"chips": [["(a+)+$", "a quantifier inside a quantifier: trouble"]],
+			"count": "aaaaaaaaaaaaaaaaaaaaaaaab"
+		}
+	},
+	"glossary": {
+		".": "any one character",
+		"*": "zero or more of the thing before it",
+		"+": "one or more of the thing before it",
+		"?": "the thing before it is optional",
+		"lazy": "...but as few as it can get away with",
+		"^": "the start of the line",
+		"$": "the end of the line",
+		"\\b": "a word edge",
+		"\\d": "any one digit, 0 to 9",
+		"\\w": "any one letter, digit or underscore",
+		"\\s": "any one space",
+		"\\$": "an actual dollar sign",
+		"\\.": "an actual full stop",
+		"(": "start a group, and capture what it catches",
+		")": "end of the group",
+		"|": "or",
+		"\\1": "the same text group 1 caught, again",
+		"\"": "a quote mark",
+		" ": "a space"
+	},
+	"stock": {
+		"walks": [
+			"\"{text}\" walks free. Nothing on your poster fits that line.",
+			"You missed \"{text}\". Read the poster against that one, letter by letter.",
+			"\"{text}\" just tipped his hat and rode on by. The poster doesn't fit him."
+		],
+		"innocent": [
+			"You've arrested \"{text}\". Your poster fits \"{got}\" in there.",
+			"That's \"{text}\" in irons, and he's innocent. The poster found \"{got}\".",
+			"The Widow Hobson is furious. You hauled in \"{text}\" for having \"{got}\" on the line."
+		],
+		"more": [
+			"Too greedy on that one: you took {got}. The judge wants {take}.",
+			"You grabbed {got}. That's more than the judge asked for: {take}."
+		],
+		"less": [
+			"Not enough: you took {got}. The judge wants all of {take}.",
+			"You only got {got}. The judge wants {take}."
+		],
+		"wrong": [
+			"You took {got}. The judge wants {take}.",
+			"Wrong piece of the line: {got}. The judge wants {take}."
+		],
+		"nogroup": [
+			"Nothing's rounded up yet. Put ( ) around the part the judge wants.",
+			"The poster matches, but group 1 is empty. Wrap the judge's part in ( )."
+		],
+		"empty": [
+			"A blank poster catches everybody. Put something on it first."
+		],
+		"par": [
+			"Clean as a whistle. Couldn't be written shorter.",
+			"That's the shortest poster there is. I'm almost impressed.",
+			"Not a wasted chip. You sure you need a deputy?"
+		],
+		"over": [
+			"It works. Longer than it needs to be, but it works.",
+			"That'll hold. There's a shorter way, if you ever feel like showing off."
+		]
+	},
+	"errors": {
+		"repeat_start": "A {token} needs something in front of it to count.",
+		"repeat_place": "A {token} can't count a place. Put a character in front of it.",
+		"repeat_twice": "Two counters in a row. One thing, one count.",
+		"lazy_twice": "It's already lazy. One question mark does it.",
+		"close": "There's a ) with no ( before it.",
+		"open": "There's a ( that's never closed.",
+		"ref_early": "\\1 has nothing to repeat yet. Group 1 has to be closed first."
+	}
+}

@@ -14,6 +14,7 @@ const THEMES: Record<Game, { bg: string; panel: string; ink: string; title: stri
   flatmates: { bg: "#17161f", panel: "#f5ebd6", ink: "#17161f", title: "#17161f", muted: "#6b6a80", accent: "#f7de1f", seal: "#fa6b61", sealInk: "#17161f" },
   prince: { bg: "#171c33", panel: "#f5ebcc", ink: "#120d1a", title: "#242b4a", muted: "#6e6a80", accent: "#e9b949", seal: "#6ec8cc", sealInk: "#120d1a" },
   lieutenant: { bg: "#211a20", panel: "#f5edd6", ink: "#17120f", title: "#2a2019", muted: "#7a6a58", accent: "#f08033", seal: "#99bbdb", sealInk: "#17120f" },
+  greedy: { bg: "#3b1f4a", panel: "#ecd9a6", ink: "#2a1710", title: "#2a1710", muted: "#7a5f45", accent: "#e8a13a", seal: "#a3271c", sealInk: "#ecd9a6" },
 };
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -104,11 +105,13 @@ export async function profilePng(player: CardPlayer, games: CardGame[], host: st
   const total = ORDER.reduce((n, g) => n + GAMES[g as Game].levels.length, 0);
   const line = `${player.xp.toLocaleString("en-US")} XP  •  ${player.levels} of ${total} levels  •  ${player.completed} ${player.completed === 1 ? "game" : "games"} finished`;
   p.text(line, 32, 106, "#f2b544", p.fit(line, 536, 2));
-  let y = 150;
+  // One row per game, closer together as games are added, clear of the address line at 276.
+  const step = Math.min(24, Math.floor(126 / ORDER.length));
+  let y = 140;
   for (const key of ORDER) {
     const def = GAMES[key as Game];
     const g = games.find((x) => x.game === key) ?? { game: key, count: 0, total: def.levels.length, complete: false };
-    p.text(def.name, 32, y, "#f4e4c4", 1);
+    p.text(p.measure(def.name, 1) > 160 ? def.short : def.name, 32, y, "#f4e4c4", 1);
     p.text(def.lang, 200, y, "#b0a9d0", 1);
     const bx = 270;
     const bw = 230;
@@ -116,7 +119,7 @@ export async function profilePng(player: CardPlayer, games: CardGame[], host: st
     if (g.count) p.rect(bx, y + 3, Math.max(4, Math.round((bw * g.count) / g.total)), 10, g.complete ? "#7be08a" : def.accent);
     if (g.complete) star(p, 518, y + 8, "#7be08a");
     p.text(g.complete ? "done" : `${g.count}/${g.total}`, g.complete ? 528 : 512, y, g.complete ? "#7be08a" : "#b0a9d0", 1);
-    y += 24;
+    y += step;
   }
   p.text(`${host}  •  free games that teach you to code`, 300, 276, "#b0a9d0", 1, "center");
   return p.png(2);

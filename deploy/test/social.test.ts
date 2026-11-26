@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assets, d1 } from "../dev";
 import worker, { type Env } from "../src/worker";
+import { bestLine, merge, normalize, summarize } from "../../site/static/social/games.js";
 
 const CLIENT_ID = "test-client.apps.googleusercontent.com";
 let site: string;
@@ -87,6 +88,39 @@ describe("saves", () => {
     const saves = await call("GET", "/api/saves", { token });
     expect(saves.body.saves.curb.summary.tries).toBe(13);
     expect(res.body.player.xp).toBe(300);
+  });
+
+  test("a greedy save keeps the fewest draws and the most stars", async () => {
+    const one = { current_job: 2, cleared: [1, 2], tries: { 1: 3, 2: 5 }, stars: { 1: 4, 2: 1 }, cards: ["literal", "dot"] };
+    const two = { current_job: 4, cleared: [1, 3, 9], tries: { 1: 6, 3: 2, 9: 1 }, stars: { 1: 2, 2: 3, 3: 9 }, cards: ["dot", "plus"], junk: 1 };
+    // Unknown jobs, out-of-range stars and stray fields are dropped.
+    expect(normalize("greedy", two)).toEqual({ current_job: 4, cleared: [1, 3], tries: { 1: 6, 3: 2 }, stars: { 1: 2, 2: 3, 3: 4 }, cards: ["dot", "plus"] });
+    expect(normalize("greedy", { current_job: 7 })).toEqual({ current_job: 1, cleared: [], tries: {}, stars: {}, cards: [] });
+    const both = merge("greedy", JSON.stringify(one), two);
+    // Both have two jobs cleared, so the first save says where to carry on.
+    expect(both).toEqual({ current_job: 2, cleared: [1, 2, 3], tries: { 1: 3, 2: 5, 3: 2 }, stars: { 1: 4, 2: 3, 3: 4 }, cards: ["literal", "dot", "plus"] });
+    const s = summarize("greedy", both);
+    expect(s.count).toBe(3);
+    expect(s.tries).toBe(10);
+    expect(s.collected).toBe(11);
+    expect(s.collectMax).toBe(19);
+    expect(s.xp).toBe(3 * 100 + 11 * 10);
+    expect(bestLine("greedy", s)).toBe("10 tries");
+
+    // And through the API, from two devices.
+    const { token } = await newPlayer();
+    let res = await call("PUT", "/api/saves/greedy", { token, body: { data: JSON.stringify(one) } });
+    expect(res.status).toBe(200);
+    res = await call("PUT", "/api/saves/greedy", { token, body: { data: JSON.stringify(two) } });
+    expect(JSON.parse(res.body.data)).toEqual(both);
+    expect(res.body.summary.tries).toBe(10);
+    // Clearing all five issues the certificate.
+    const all = { current_job: 5, cleared: [1, 2, 3, 4, 5], tries: { 4: 2, 5: 4 }, stars: { 5: 3 }, cards: [] };
+    res = await call("PUT", "/api/saves/greedy", { token, body: { data: JSON.stringify(all) } });
+    expect(res.body.summary.complete).toBe(true);
+    expect(res.body.certificate.fresh).toBe(true);
+    const png = await call("GET", `/c/${res.body.certificate.id}.png`);
+    expect(png.type).toBe("image/png");
   });
 
   test("garbage isn't a save", async () => {
