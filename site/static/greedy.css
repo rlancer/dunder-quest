@@ -165,3 +165,10 @@ body.gr { margin: 0; color: var(--paper); font: 1.0625rem/1.6 var(--body);
 /* The foot */
 .gr-foot { border-top: 3px solid var(--gold); margin-top: 32px; padding: 28px var(--gutter) 40px; text-align: center; color: var(--dim); font-size: 0.95rem; background: var(--wood); }
 .gr-foot p { max-width: 60em; margin: 0 auto 8px; }
+
+/* The trailer (static/trailer.js): its thumbnail until clicked, then the player */
+.gr .trailer { position: relative; display: block; margin: 20px 0 12px; aspect-ratio: 16 / 9; border: 3px solid var(--line); background: var(--night); }
+.gr .trailer img, .gr .trailer iframe { display: block; width: 100%; height: 100%; border: 0; image-rendering: pixelated; }
+.gr .trailer-play { position: absolute; left: 50%; top: 50%; width: 88px; height: 62px; transform: translate(-50%, -50%); background: var(--gold); box-shadow: 0 5px 0 #8a5a14; }
+.gr .trailer-play::after { content: ""; position: absolute; left: 50%; top: 50%; transform: translate(-35%, -50%); border-style: solid; border-width: 14px 0 14px 24px; border-color: transparent transparent transparent var(--night); }
+.gr .trailer:hover .trailer-play, .gr .trailer:focus-visible .trailer-play { background: var(--paper); }
