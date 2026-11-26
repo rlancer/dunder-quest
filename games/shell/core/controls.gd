@@ -1,0 +1,69 @@
+extends Node
+
+## Registers every input action at startup, so project.godot carries no
+## hand-serialized InputEvents. Keys go by physical position.
+
+const KEYS: Dictionary = {
+	&"move_left": [KEY_LEFT],
+	&"move_right": [KEY_RIGHT],
+	&"move_up": [KEY_UP],
+	&"move_down": [KEY_DOWN],
+	## Put the chip down, press the button, turn the page.
+	&"confirm": [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER],
+	## Take back the chip before the caret.
+	&"erase": [KEY_BACKSPACE, KEY_DELETE],
+	## Move the caret along the line.
+	&"caret_left": [KEY_COMMA, KEY_HOME],
+	&"caret_right": [KEY_PERIOD, KEY_END],
+	## Turn the rail to the kitchen's next file.
+	&"next_file": [KEY_TAB],
+	## Fire: send the line, and have the pass checked against the ticket.
+	&"fire": [KEY_F],
+	&"pause": [KEY_ESCAPE],
+}
+const BUTTONS: Dictionary = {
+	&"move_left": [JOY_BUTTON_DPAD_LEFT],
+	&"move_right": [JOY_BUTTON_DPAD_RIGHT],
+	&"move_up": [JOY_BUTTON_DPAD_UP],
+	&"move_down": [JOY_BUTTON_DPAD_DOWN],
+	&"confirm": [JOY_BUTTON_A],
+	&"erase": [JOY_BUTTON_X],
+	&"caret_left": [JOY_BUTTON_LEFT_SHOULDER],
+	&"caret_right": [JOY_BUTTON_RIGHT_SHOULDER],
+	&"next_file": [JOY_BUTTON_BACK],
+	&"fire": [JOY_BUTTON_Y],
+	&"pause": [JOY_BUTTON_START],
+}
+const AXES: Dictionary = {
+	&"move_left": [JOY_AXIS_LEFT_X, -1.0],
+	&"move_right": [JOY_AXIS_LEFT_X, 1.0],
+	&"move_up": [JOY_AXIS_LEFT_Y, -1.0],
+	&"move_down": [JOY_AXIS_LEFT_Y, 1.0],
+}
+
+
+func _init() -> void:
+	for action: StringName in KEYS:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action, 0.5)
+		for key: Key in KEYS[action]:
+			var event := InputEventKey.new()
+			event.physical_keycode = key
+			InputMap.action_add_event(action, event)
+	for action: StringName in BUTTONS:
+		for button: JoyButton in BUTTONS[action]:
+			var event := InputEventJoypadButton.new()
+			event.button_index = button
+			InputMap.action_add_event(action, event)
+	for action: StringName in AXES:
+		var event := InputEventJoypadMotion.new()
+		event.axis = AXES[action][0]
+		event.axis_value = AXES[action][1]
+		InputMap.action_add_event(action, event)
+
+
+## "Enter", "A" or "Tap": how prompts name the go-on button on this device.
+static func go_key() -> String:
+	if TouchControls.active:
+		return "Tap"
+	return "A" if not Input.get_connected_joypads().is_empty() else "Enter"

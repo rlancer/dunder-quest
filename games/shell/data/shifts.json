@@ -1,0 +1,1505 @@
+{
+	"cast": {
+		"narrator": {
+			"name": "",
+			"full": "The narrator"
+		},
+		"chef": {
+			"name": "Chef Bourne",
+			"full": "Ash Bourne, the new chef"
+		},
+		"shell": {
+			"name": "Shell",
+			"full": "Michelle \"Shell\" Tee, who runs the pass"
+		},
+		"awk": {
+			"name": "Uncle Awk",
+			"full": "Uncle Awk, front of house"
+		},
+		"dev": {
+			"name": "Dev Null",
+			"full": "Dev Null, in the dish pit"
+		},
+		"root": {
+			"name": "Regina Root",
+			"full": "Regina Root, of the Lakeside Ledger"
+		}
+	},
+	"files": {
+		"orders.txt": [
+			"beef dip hot",
+			"turkey club",
+			"beef dip sweet",
+			"veggie melt",
+			"beef combo hot",
+			"turkey melt",
+			"tuna melt"
+		],
+		"menu.txt": [
+			"beef dip 9",
+			"beef combo 12",
+			"turkey club 10",
+			"turkey melt 10",
+			"veggie melt 8",
+			"tuna melt 9",
+			"fries 4"
+		],
+		"notes.txt": [
+			"86 the tuna",
+			"HOT pans on six",
+			"table 4 wants hot",
+			"no heat table 2",
+			"Hot oil, corner",
+			"86 the fries"
+		],
+		"tabs.txt": [
+			"9 tuna melt",
+			"12 beef combo",
+			"100 catering",
+			"27 family table",
+			"8 veggie melt"
+		],
+		"sold.txt": [
+			"beef",
+			"turkey",
+			"beef",
+			"tuna",
+			"beef",
+			"turkey",
+			"veggie"
+		],
+		"tickets.csv": [
+			"6,beef dip,hot",
+			"2,turkey club,cold",
+			"6,veggie melt,hot",
+			"9,beef dip,sweet",
+			"2,tuna melt,hot",
+			"6,beef combo,hot"
+		],
+		"specials.txt": [
+			"pipe-ing hot soup",
+			"the beef sudo-wich",
+			"cat-fish and chips"
+		],
+		"flood.csv": [
+			"101,fries",
+			"102,beef dip",
+			"103,fries",
+			"104,tuna melt",
+			"105,beef dip",
+			"106,fries",
+			"107,turkey club",
+			"108,beef dip",
+			"109,fries",
+			"110,veggie melt",
+			"111,beef dip",
+			"112,fries"
+		]
+	},
+	"shifts": [
+		{
+			"id": 1,
+			"title": "Family Meal",
+			"lesson": "Commands: ls, cat, head and wc",
+			"place": "kitchen",
+			"music": "prep",
+			"intro": [
+				{
+					"who": "awk",
+					"text": "Look who's back! Ash Bourne, out of the fanciest kitchen in the country, come home to save the family sandwich shop."
+				},
+				{
+					"who": "chef",
+					"text": "I'm here to cook, Uncle Awk. Where are tonight's orders?"
+				},
+				{
+					"who": "awk",
+					"text": "In my head! Where they have been for thirty years!"
+				},
+				{
+					"who": "shell",
+					"text": "They're in a file, Chef. I've been typing them up behind his back. Michelle Tee, I run the pass. Everybody calls me Shell."
+				},
+				{
+					"who": "shell",
+					"text": "Here's how this kitchen talks now. You say a command. The kitchen does exactly that and nothing else. It doesn't guess."
+				},
+				{
+					"who": "chef",
+					"text": "Yes, Shell."
+				}
+			],
+			"tickets": [
+				{
+					"id": "1a",
+					"card": "command",
+					"brief": {
+						"who": "shell",
+						"text": "Start in the walk-in. Ask what files we've got. One word does it."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"ls",
+						"cat",
+						"orders.txt",
+						"menu.txt"
+					],
+					"solution": [
+						"ls"
+					],
+					"hint": "One chip: ls lists what's there.",
+					"want": [
+						"menu.txt",
+						"orders.txt"
+					],
+					"after": {
+						"who": "shell",
+						"text": "ls. Short for list. Two files: the menu, and tonight's orders."
+					}
+				},
+				{
+					"id": "1b",
+					"card": "cat",
+					"brief": {
+						"who": "shell",
+						"text": "Now read me tonight's orders. All of them, top to bottom."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"cat",
+						"ls",
+						"orders.txt",
+						"menu.txt",
+						"head"
+					],
+					"solution": [
+						"cat",
+						"orders.txt"
+					],
+					"hint": "cat, then the file you want read out.",
+					"want": [
+						"beef dip hot",
+						"turkey club",
+						"beef dip sweet",
+						"veggie melt",
+						"beef combo hot",
+						"turkey melt",
+						"tuna melt"
+					],
+					"after": {
+						"who": "shell",
+						"text": "A command, then what to work on. cat is short for concatenate. Nobody has said the long word since 1971."
+					}
+				},
+				{
+					"id": "1c",
+					"card": "head",
+					"brief": {
+						"who": "shell",
+						"text": "The first three are getting cold. Read me those. Only those."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"head",
+						"tail",
+						"-n 3",
+						"-n 2",
+						"orders.txt",
+						"cat"
+					],
+					"solution": [
+						"head",
+						"-n 3",
+						"orders.txt"
+					],
+					"hint": "head, then -n 3 to say how many, then the file.",
+					"want": [
+						"beef dip hot",
+						"turkey club",
+						"beef dip sweet"
+					],
+					"after": {
+						"who": "shell",
+						"text": "That -n 3 is an option. A dash and a letter, and the command does its one job a little differently."
+					}
+				},
+				{
+					"id": "1d",
+					"card": "wc",
+					"brief": {
+						"who": "shell",
+						"text": "Family meal's in ten and I need a count. How many orders on the rail? Don't read them to me. I want a number."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"wc",
+						"-l",
+						"-w",
+						"orders.txt",
+						"cat",
+						"head"
+					],
+					"solution": [
+						"wc",
+						"-l",
+						"orders.txt"
+					],
+					"hint": "wc counts. -l tells it to count lines.",
+					"want": [
+						"7 orders.txt"
+					],
+					"after": {
+						"who": "shell",
+						"text": "wc, for word count. With -l it counts lines. Seven orders, and it even says whose."
+					}
+				}
+			],
+			"outro": [
+				{
+					"who": "awk",
+					"text": "Seven! I could have told you seven!"
+				},
+				{
+					"who": "shell",
+					"text": "You said eleven, Chef."
+				},
+				{
+					"who": "awk",
+					"text": "I rounded!"
+				}
+			]
+		},
+		{
+			"id": 2,
+			"title": "The Rail",
+			"lesson": "grep: keep only the lines you want",
+			"place": "pass",
+			"music": "service",
+			"intro": [
+				{
+					"who": "shell",
+					"text": "Dinner. The rail's full, and you don't want to read all of it every time somebody shouts."
+				},
+				{
+					"who": "chef",
+					"text": "I want the beef. Just the beef."
+				},
+				{
+					"who": "shell",
+					"text": "Then you want grep. Give it a word, and it hands back only the lines with that word on them."
+				},
+				{
+					"who": "awk",
+					"text": "Grep! What kind of a word is grep?"
+				},
+				{
+					"who": "shell",
+					"text": "A real one, Chef. It's older than the wiring in this building."
+				}
+			],
+			"tickets": [
+				{
+					"id": "2a",
+					"card": "grep",
+					"brief": {
+						"who": "shell",
+						"text": "Beef station wants to know what it owes. Every order with beef on it."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"grep",
+						"beef",
+						"turkey",
+						"orders.txt",
+						"menu.txt",
+						"cat"
+					],
+					"solution": [
+						"grep",
+						"beef",
+						"orders.txt"
+					],
+					"hint": "grep, the word to look for, then the file.",
+					"want": [
+						"beef dip hot",
+						"beef dip sweet",
+						"beef combo hot"
+					],
+					"after": {
+						"who": "shell",
+						"text": "The word first, then the file. Swap them round and it goes looking for a file called beef."
+					}
+				},
+				{
+					"id": "2b",
+					"card": "grep_options",
+					"brief": {
+						"who": "shell",
+						"text": "The flat-top just died. No melts till Dev fixes it. Read me everything that ISN'T a melt."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"grep",
+						"-v",
+						"melt",
+						"beef",
+						"orders.txt",
+						"cat"
+					],
+					"solution": [
+						"grep",
+						"-v",
+						"melt",
+						"orders.txt"
+					],
+					"hint": "-v turns grep inside out: the lines without the word.",
+					"want": [
+						"beef dip hot",
+						"turkey club",
+						"beef dip sweet",
+						"beef combo hot"
+					],
+					"after": {
+						"who": "dev",
+						"text": "Flat-top's fixed. Don't ask what was in it."
+					}
+				},
+				{
+					"id": "2c",
+					"brief": {
+						"who": "shell",
+						"text": "Uncle Awk writes his notes at whatever volume he's feeling. Find every note that says hot, loud or quiet."
+					},
+					"files": [
+						"notes.txt",
+						"orders.txt"
+					],
+					"chips": [
+						"grep",
+						"-i",
+						"-v",
+						"hot",
+						"six",
+						"notes.txt"
+					],
+					"solution": [
+						"grep",
+						"-i",
+						"hot",
+						"notes.txt"
+					],
+					"hint": "-i tells grep not to care about capitals.",
+					"want": [
+						"HOT pans on six",
+						"table 4 wants hot",
+						"Hot oil, corner"
+					],
+					"after": {
+						"who": "awk",
+						"text": "I write loud so people LISTEN!"
+					}
+				},
+				{
+					"id": "2d",
+					"brief": {
+						"who": "shell",
+						"text": "Last call on beef. How many beef orders? Don't read them to me. Count them."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt"
+					],
+					"chips": [
+						"grep",
+						"-c",
+						"-v",
+						"beef",
+						"orders.txt",
+						"wc -l"
+					],
+					"solution": [
+						"grep",
+						"-c",
+						"beef",
+						"orders.txt"
+					],
+					"hint": "-c makes grep count the lines instead of printing them.",
+					"want": [
+						"3"
+					],
+					"after": {
+						"who": "shell",
+						"text": "Three. Same command, one small option, a different answer. That's most of what there is to know about options."
+					}
+				}
+			],
+			"outro": [
+				{
+					"who": "chef",
+					"text": "It's quiet. Why is it quiet?"
+				},
+				{
+					"who": "shell",
+					"text": "Because nobody is shouting the rail across the room, Chef."
+				},
+				{
+					"who": "awk",
+					"text": "I miss it already."
+				}
+			]
+		},
+		{
+			"id": 3,
+			"title": "The Pass",
+			"lesson": "The pipe: |",
+			"place": "pass",
+			"music": "service",
+			"intro": [
+				{
+					"who": "shell",
+					"text": "Here's the part your fancy kitchen was built on, Chef. The pass."
+				},
+				{
+					"who": "chef",
+					"text": "One station plates. The next one picks it up."
+				},
+				{
+					"who": "shell",
+					"text": "On the line it's this bar: a pipe. Whatever the command on its left prints, the command on its right is handed, instead of a file."
+				},
+				{
+					"who": "awk",
+					"text": "So nobody talks to anybody?"
+				},
+				{
+					"who": "shell",
+					"text": "Everybody does one thing and passes it down, Chef. It's the quietest way there is to get a lot done."
+				}
+			],
+			"tickets": [
+				{
+					"id": "3a",
+					"card": "pipe",
+					"brief": {
+						"who": "shell",
+						"text": "The health inspector wants to know how many files are in the walk-in. ls lists them. wc -l counts lines. Put the pass between."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt",
+						"notes.txt"
+					],
+					"chips": [
+						"ls",
+						"|",
+						"wc",
+						"-l",
+						"cat",
+						"orders.txt"
+					],
+					"solution": [
+						"ls",
+						"|",
+						"wc",
+						"-l"
+					],
+					"hint": "ls, then the pipe, then wc -l to count what ls printed.",
+					"want": [
+						"3"
+					],
+					"after": {
+						"who": "shell",
+						"text": "ls never knew anybody was counting. wc never knew where the lines came from. That's the whole idea."
+					}
+				},
+				{
+					"id": "3b",
+					"brief": {
+						"who": "shell",
+						"text": "Two beef, on the fly! The first two beef orders on the rail, and nothing after them."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt",
+						"notes.txt"
+					],
+					"chips": [
+						"grep",
+						"beef",
+						"orders.txt",
+						"|",
+						"head",
+						"-n 2"
+					],
+					"solution": [
+						"grep",
+						"beef",
+						"orders.txt",
+						"|",
+						"head",
+						"-n 2"
+					],
+					"hint": "grep the beef out of the file, then pipe that into head -n 2.",
+					"want": [
+						"beef dip hot",
+						"beef dip sweet"
+					],
+					"after": {
+						"who": "shell",
+						"text": "See what head didn't get? A file. It took what grep handed it."
+					}
+				},
+				{
+					"id": "3c",
+					"brief": {
+						"who": "dev",
+						"text": "Somebody circled the fifth thing on the menu and wrote NO. I need to know what I'm not washing up after. Just that one line."
+					},
+					"files": [
+						"menu.txt",
+						"orders.txt",
+						"notes.txt"
+					],
+					"chips": [
+						"head",
+						"tail",
+						"-n 5",
+						"-n 1",
+						"menu.txt",
+						"|"
+					],
+					"solution": [
+						"head",
+						"-n 5",
+						"menu.txt",
+						"|",
+						"tail",
+						"-n 1"
+					],
+					"hint": "Take the first five lines, then pipe them on and keep only the last.",
+					"want": [
+						"veggie melt 8"
+					],
+					"after": {
+						"who": "shell",
+						"text": "The first five, then the last of those. Two small tools, and you've built one that fetches line five."
+					}
+				},
+				{
+					"id": "3d",
+					"brief": {
+						"who": "shell",
+						"text": "Three stations now. How many melts on the rail that aren't turkey? A number, Chef."
+					},
+					"files": [
+						"orders.txt",
+						"menu.txt",
+						"notes.txt"
+					],
+					"chips": [
+						"grep melt orders.txt",
+						"|",
+						"grep -v turkey",
+						"wc -l",
+						"grep turkey",
+						"head -n 2"
+					],
+					"solution": [
+						"grep melt orders.txt",
+						"|",
+						"grep -v turkey",
+						"|",
+						"wc -l"
+					],
+					"hint": "Melts first, then drop the turkey, then count what's left. A pipe between each.",
+					"want": [
+						"2"
+					],
+					"after": {
+						"who": "shell",
+						"text": "As many stations as you like. Each one only ever sees what the one before it plated."
+					}
+				}
+			],
+			"outro": [
+				{
+					"who": "awk",
+					"text": "Fine. FINE. It's a good pass."
+				},
+				{
+					"who": "chef",
+					"text": "Thank you, Chef."
+				},
+				{
+					"who": "awk",
+					"text": "Don't you Chef me, I taught you to hold a knife. ...Chef."
+				}
+			]
+		},
+		{
+			"id": 4,
+			"title": "Mise en Place",
+			"lesson": "sort and uniq",
+			"place": "walkin",
+			"music": "prep",
+			"intro": [
+				{
+					"who": "shell",
+					"text": "Mise en place, Chef. Everything in its place before service. That goes for lines of text too."
+				},
+				{
+					"who": "dev",
+					"text": "I put things in order. Nobody notices until I don't."
+				},
+				{
+					"who": "shell",
+					"text": "sort puts lines in order. uniq throws out repeats. There's a catch in each one, which is why we're doing this before the rush."
+				}
+			],
+			"tickets": [
+				{
+					"id": "4a",
+					"card": "sort",
+					"brief": {
+						"who": "shell",
+						"text": "Tonight's tabs. Put them in order, smallest first. And look out: sort reads like a dictionary unless you tell it these are numbers."
+					},
+					"files": [
+						"tabs.txt",
+						"sold.txt"
+					],
+					"chips": [
+						"sort",
+						"-n",
+						"-r",
+						"tabs.txt",
+						"cat",
+						"head"
+					],
+					"solution": [
+						"sort",
+						"-n",
+						"tabs.txt"
+					],
+					"hint": "sort alone puts 100 before 12. -n makes it read the numbers.",
+					"want": [
+						"8 veggie melt",
+						"9 tuna melt",
+						"12 beef combo",
+						"27 family table",
+						"100 catering"
+					],
+					"after": {
+						"who": "shell",
+						"text": "Without -n it goes letter by letter, and the letter 1 comes before the letter 8. So a hundred lands on top. It has caught everybody once."
+					}
+				},
+				{
+					"id": "4b",
+					"brief": {
+						"who": "awk",
+						"text": "Smallest first? Who cares about the small ones! Show me the big spenders! Biggest at the top!"
+					},
+					"files": [
+						"tabs.txt",
+						"sold.txt"
+					],
+					"chips": [
+						"sort",
+						"-n",
+						"-r",
+						"tabs.txt",
+						"tail",
+						"|"
+					],
+					"solution": [
+						"sort",
+						"-n",
+						"-r",
+						"tabs.txt"
+					],
+					"hint": "Keep -n, and add -r to turn the order round.",
+					"want": [
+						"100 catering",
+						"27 family table",
+						"12 beef combo",
+						"9 tuna melt",
+						"8 veggie melt"
+					],
+					"after": {
+						"who": "shell",
+						"text": "-r for reverse. You can stack options like that, or squash them into one: -rn. Same thing."
+					}
+				},
+				{
+					"id": "4c",
+					"card": "uniq",
+					"brief": {
+						"who": "shell",
+						"text": "What did we actually sell tonight? Each thing once. Mind the catch: uniq only notices a repeat when it's right behind the one before."
+					},
+					"files": [
+						"sold.txt",
+						"tabs.txt"
+					],
+					"chips": [
+						"sort",
+						"uniq",
+						"sold.txt",
+						"|",
+						"-r",
+						"cat"
+					],
+					"solution": [
+						"sort",
+						"sold.txt",
+						"|",
+						"uniq"
+					],
+					"hint": "Sort first, so the repeats stand together. Then pipe into uniq.",
+					"want": [
+						"beef",
+						"tuna",
+						"turkey",
+						"veggie"
+					],
+					"after": {
+						"who": "dev",
+						"text": "Line them up first. Then you can see which ones are the same. I do it with forks."
+					}
+				},
+				{
+					"id": "4d",
+					"brief": {
+						"who": "shell",
+						"text": "Now the one the owner asks every night: how many of each? uniq can count the repeats as it drops them."
+					},
+					"files": [
+						"sold.txt",
+						"tabs.txt"
+					],
+					"chips": [
+						"sort",
+						"uniq",
+						"-c",
+						"sold.txt",
+						"|",
+						"-n"
+					],
+					"solution": [
+						"sort",
+						"sold.txt",
+						"|",
+						"uniq",
+						"-c"
+					],
+					"hint": "The same line as before, with -c on uniq.",
+					"want": [
+						"      3 beef",
+						"      1 tuna",
+						"      2 turkey",
+						"      1 veggie"
+					],
+					"after": {
+						"who": "shell",
+						"text": "sort, then uniq -c. Remember that pair, Chef. You'll be using it for the rest of your life."
+					}
+				}
+			],
+			"outro": [
+				{
+					"who": "dev",
+					"text": "Everything's labelled. Everything's in order."
+				},
+				{
+					"who": "chef",
+					"text": "It's beautiful."
+				},
+				{
+					"who": "dev",
+					"text": "Don't touch it."
+				}
+			]
+		},
+		{
+			"id": 5,
+			"title": "The Critic",
+			"lesson": "cut, tr, > and the whole line",
+			"place": "dining",
+			"music": "critic",
+			"intro": [
+				{
+					"who": "awk",
+					"text": "She's here! Table one! Regina Root, from the Lakeside Ledger!"
+				},
+				{
+					"who": "shell",
+					"text": "What Root asks for, Root gets, Chef. Nobody in this town says no to Root."
+				},
+				{
+					"who": "root",
+					"text": "I'm told this is the kitchen where nobody shouts. We shall see."
+				},
+				{
+					"who": "shell",
+					"text": "Tickets come off the machine with commas in them now: table, dish, how they want it. You're going to need a knife.",
+					"place": "pass"
+				}
+			],
+			"tickets": [
+				{
+					"id": "5a",
+					"card": "cut",
+					"brief": {
+						"who": "shell",
+						"text": "Just the dishes, Chef: the second thing on every ticket. cut slices each line where you tell it to."
+					},
+					"files": [
+						"tickets.csv"
+					],
+					"chips": [
+						"cut",
+						"-d,",
+						"-f2",
+						"-f1",
+						"tickets.csv",
+						"cat"
+					],
+					"solution": [
+						"cut",
+						"-d,",
+						"-f2",
+						"tickets.csv"
+					],
+					"hint": "cut, then -d, to split at the commas, then -f2 for the second piece.",
+					"want": [
+						"beef dip",
+						"turkey club",
+						"veggie melt",
+						"beef dip",
+						"tuna melt",
+						"beef combo"
+					],
+					"after": {
+						"who": "shell",
+						"text": "-d is the delimiter: where to cut. -f is the field: which slice to keep."
+					}
+				},
+				{
+					"id": "5b",
+					"card": "tr",
+					"brief": {
+						"who": "awk",
+						"text": "My specials board! A new pun every day for thirty years! Put it in capitals. She's a critic, she respects capitals!"
+					},
+					"files": [
+						"specials.txt",
+						"tickets.csv"
+					],
+					"chips": [
+						"cat",
+						"tr",
+						"a-z",
+						"A-Z",
+						"specials.txt",
+						"|"
+					],
+					"solution": [
+						"cat",
+						"specials.txt",
+						"|",
+						"tr",
+						"a-z",
+						"A-Z"
+					],
+					"hint": "tr never opens a file. cat the board, and pipe it in.",
+					"want": [
+						"PIPE-ING HOT SOUP",
+						"THE BEEF SUDO-WICH",
+						"CAT-FISH AND CHIPS"
+					],
+					"after": {
+						"who": "shell",
+						"text": "tr swaps each character in the first list for its partner in the second. It only takes what comes down the pass, which is what cat is for."
+					}
+				},
+				{
+					"id": "5c",
+					"card": "redirect",
+					"brief": {
+						"who": "dev",
+						"text": "We're out of two things and she's about to order. Put every 86 on the board for me. On the board. Not out loud."
+					},
+					"files": [
+						"notes.txt",
+						"tickets.csv"
+					],
+					"chips": [
+						"grep",
+						"86",
+						"notes.txt",
+						"> board.txt",
+						"| wc -l",
+						"cat"
+					],
+					"solution": [
+						"grep",
+						"86",
+						"notes.txt",
+						"> board.txt"
+					],
+					"hint": "grep the 86s, then send them into the file with >.",
+					"want_file": "board.txt",
+					"want": [
+						"86 the tuna",
+						"86 the fries"
+					],
+					"after": {
+						"who": "dev",
+						"text": "On the board. Nothing said out loud. That's how I like it."
+					},
+					"then": [
+						{
+							"who": "shell",
+							"text": "That arrow sends what a command prints into a file instead of to the pass. It wipes the file first, so mind where you point it."
+						},
+						{
+							"who": "awk",
+							"text": "The machine! The to-go machine! It won't stop printing!",
+							"sound": "printer"
+						},
+						{
+							"who": "shell",
+							"text": "Twelve tickets and climbing. Don't read them, Chef. Build a line."
+						},
+						{
+							"who": "root",
+							"text": "One question, Chef, and I'll have the answer on one line.",
+							"place": "dining"
+						}
+					]
+				},
+				{
+					"id": "5d",
+					"brief": {
+						"who": "root",
+						"text": "Out of everything this kitchen has sent tonight: what do you sell the most of, and how many?"
+					},
+					"files": [
+						"flood.csv"
+					],
+					"chips": [
+						"cut -d, -f2 flood.csv",
+						"| sort",
+						"| uniq -c",
+						"| sort -rn",
+						"| head -n 1",
+						"| uniq",
+						"| tail -n 1",
+						"| wc -l"
+					],
+					"solution": [
+						"cut -d, -f2 flood.csv",
+						"| sort",
+						"| uniq -c",
+						"| sort -rn",
+						"| head -n 1"
+					],
+					"hint": "Slice out the dishes, sort them, count each, sort the counts biggest first, keep the top line.",
+					"want": [
+						"      5 fries"
+					],
+					"after": {
+						"who": "root",
+						"text": "Fries. Five stations, not one raised voice, and the answer is fries."
+					}
+				}
+			],
+			"outro": [
+				{
+					"who": "root",
+					"text": "I have eaten in kitchens with forty cooks who could not have told me that."
+				},
+				{
+					"who": "root",
+					"text": "The Standard Inn. Small tools, kept sharp, each doing one thing. I'll be back on Tuesday."
+				},
+				{
+					"who": "awk",
+					"text": "She's coming back! SHE'S COMING BACK!"
+				},
+				{
+					"who": "shell",
+					"text": "Inside voice, Chef."
+				},
+				{
+					"who": "awk",
+					"text": "...Yes, Shell."
+				}
+			]
+		}
+	],
+	"cards": {
+		"command": {
+			"title": "A command",
+			"text": "A command is one short word that tells the kitchen to do one job. This one lists the files it has.",
+			"chips": [
+				[
+					"ls",
+					"list the files here"
+				]
+			],
+			"demo": {
+				"line": "ls",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					],
+					"tabs.txt": [
+						"9 tuna melt",
+						"100 catering",
+						"12 beef combo"
+					]
+				},
+				"out": [
+					"specials.txt",
+					"tabs.txt"
+				]
+			}
+		},
+		"cat": {
+			"title": "Command, then file",
+			"text": "Most commands need to know what to work on. Put the file's name after the command, with a space between.",
+			"chips": [
+				[
+					"cat",
+					"read a file out, top to bottom"
+				]
+			],
+			"demo": {
+				"line": "cat specials.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"pipe-ing hot soup",
+					"the beef sudo-wich",
+					"cat-fish and chips"
+				]
+			}
+		},
+		"head": {
+			"title": "Options",
+			"text": "An option is a dash and a letter after the command. It changes how the command does its job. Some take a value.",
+			"chips": [
+				[
+					"head",
+					"the first lines of a file (ten, unless told)"
+				],
+				[
+					"-n 2",
+					"...only this many"
+				],
+				[
+					"tail",
+					"the same, from the end"
+				]
+			],
+			"demo": {
+				"line": "head -n 2 specials.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"pipe-ing hot soup",
+					"the beef sudo-wich"
+				]
+			}
+		},
+		"wc": {
+			"title": "wc counts",
+			"text": "wc counts what's in a file: its lines, its words and its characters. An option picks just one of them.",
+			"chips": [
+				[
+					"wc",
+					"count lines, words and characters"
+				],
+				[
+					"-l",
+					"only the lines"
+				]
+			],
+			"demo": {
+				"line": "wc -l specials.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"3 specials.txt"
+				]
+			}
+		},
+		"grep": {
+			"title": "grep",
+			"text": "grep keeps the lines that have your word on them and drops the rest. The word comes first, then the file. Capitals count.",
+			"chips": [
+				[
+					"grep",
+					"keep only the lines that match"
+				]
+			],
+			"demo": {
+				"line": "grep beef specials.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"the beef sudo-wich"
+				]
+			}
+		},
+		"grep_options": {
+			"title": "Three ways to grep",
+			"text": "The same search, done three other ways.",
+			"chips": [
+				[
+					"-v",
+					"the lines that DON'T match"
+				],
+				[
+					"-i",
+					"ignore capitals"
+				],
+				[
+					"-c",
+					"count the matches instead"
+				]
+			],
+			"demo": {
+				"line": "grep -v beef specials.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"pipe-ing hot soup",
+					"cat-fish and chips"
+				]
+			}
+		},
+		"pipe": {
+			"title": "The pipe",
+			"text": "A pipe joins two commands. What the left one prints goes to the right one as its input, instead of to the screen.",
+			"chips": [
+				[
+					"|",
+					"pass it down the line"
+				]
+			],
+			"demo": {
+				"line": "cat specials.txt | wc -l",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"3"
+				]
+			}
+		},
+		"sort": {
+			"title": "sort",
+			"text": "sort puts lines in order. On its own it sorts like a dictionary, so 100 comes before 12.",
+			"chips": [
+				[
+					"sort",
+					"put the lines in order"
+				],
+				[
+					"-n",
+					"read the numbers as numbers"
+				],
+				[
+					"-r",
+					"reverse the order"
+				]
+			],
+			"demo": {
+				"line": "sort -n tabs.txt",
+				"files": {
+					"tabs.txt": [
+						"9 tuna melt",
+						"100 catering",
+						"12 beef combo"
+					]
+				},
+				"out": [
+					"9 tuna melt",
+					"12 beef combo",
+					"100 catering"
+				]
+			}
+		},
+		"uniq": {
+			"title": "uniq",
+			"text": "uniq drops a line that repeats the line just before it. Only just before: so sort first, and the repeats stand together.",
+			"chips": [
+				[
+					"uniq",
+					"drop repeats that sit together"
+				],
+				[
+					"-c",
+					"...and count them"
+				]
+			],
+			"demo": {
+				"line": "sort sold.txt | uniq -c",
+				"files": {
+					"sold.txt": [
+						"beef",
+						"fries",
+						"beef"
+					]
+				},
+				"out": [
+					"      2 beef",
+					"      1 fries"
+				]
+			}
+		},
+		"cut": {
+			"title": "cut",
+			"text": "cut keeps one slice of every line. Tell it where the lines split, and which piece you want.",
+			"chips": [
+				[
+					"cut",
+					"keep part of each line"
+				],
+				[
+					"-d,",
+					"the lines split at commas"
+				],
+				[
+					"-f2",
+					"keep the second piece"
+				]
+			],
+			"demo": {
+				"line": "cut -d, -f2 tickets.csv",
+				"files": {
+					"tickets.csv": [
+						"6,beef dip,hot",
+						"2,tuna melt,cold"
+					]
+				},
+				"out": [
+					"beef dip",
+					"tuna melt"
+				]
+			}
+		},
+		"tr": {
+			"title": "tr",
+			"text": "tr swaps characters: each one in the first list becomes its partner in the second. It reads only what's piped in.",
+			"chips": [
+				[
+					"tr",
+					"swap characters for others"
+				],
+				[
+					"a-z",
+					"every small letter, a to z"
+				]
+			],
+			"demo": {
+				"line": "cat specials.txt | tr a-z A-Z",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"out": [
+					"PIPE-ING HOT SOUP",
+					"THE BEEF SUDO-WICH",
+					"CAT-FISH AND CHIPS"
+				]
+			}
+		},
+		"redirect": {
+			"title": "Into a file",
+			"text": "> sends what a command prints into a file instead of to the screen. The file is wiped, then written.",
+			"chips": [
+				[
+					"> board.txt",
+					"write the output into board.txt"
+				]
+			],
+			"demo": {
+				"line": "grep beef specials.txt > board.txt",
+				"files": {
+					"specials.txt": [
+						"pipe-ing hot soup",
+						"the beef sudo-wich",
+						"cat-fish and chips"
+					]
+				},
+				"into": "board.txt",
+				"out": [
+					"the beef sudo-wich"
+				]
+			}
+		}
+	},
+	"glossary": {
+		"ls": "list the files in the kitchen",
+		"cat": "read files out, top to bottom",
+		"head": "the first lines (ten, unless told)",
+		"tail": "the last lines (ten, unless told)",
+		"wc": "count lines, words and characters",
+		"grep": "keep the lines that match a word",
+		"sort": "put the lines in order",
+		"uniq": "drop repeats that sit together",
+		"cut": "keep one slice of every line",
+		"tr": "swap characters for others",
+		"|": "pass the output to the next command",
+		"-l": "count only the lines",
+		"-w": "count only the words",
+		"-v": "the lines that don't match",
+		"-i": "ignore capitals",
+		"-c": "count them",
+		"grep -c": "count the matches instead",
+		"uniq -c": "count each repeat",
+		"wc -c": "count only the characters",
+		"-n": "by number, not letter by letter",
+		"-r": "in reverse",
+		"-rn": "by number, biggest first",
+		"-d,": "the lines split at commas",
+		"-f1": "keep the first piece",
+		"-f2": "keep the second piece",
+		"a-z": "every small letter, a to z",
+		"A-Z": "every capital, A to Z",
+		"-n N": "this many lines",
+		"file": "a file",
+		"word": "a word to look for",
+		"> file": "write the output into this file",
+		"wc -l": "count the lines",
+		"grep melt orders.txt": "the orders with melt on them",
+		"grep -v turkey": "drop the lines with turkey",
+		"grep turkey": "keep the lines with turkey",
+		"head -n 2": "the first two lines",
+		"| wc -l": "then count the lines",
+		"cut -d, -f2 flood.csv": "the dish off every ticket",
+		"| sort": "then put them in order",
+		"| uniq -c": "then count each repeat",
+		"| sort -rn": "then biggest number first",
+		"| head -n 1": "then keep the top line",
+		"| uniq": "then drop the repeats",
+		"| tail -n 1": "then keep the last line"
+	},
+	"stock": {
+		"nothing": [
+			"Nothing reached the pass, Chef. The ticket starts with \"{want}\".",
+			"The pass is empty. I'm looking for \"{want}\"."
+		],
+		"order": [
+			"Right plates, wrong order. I got \"{got}\" where the ticket says \"{want}\".",
+			"It's all there, Chef, just not in that order. \"{want}\" goes where \"{got}\" is."
+		],
+		"extra": [
+			"Too much food. \"{got}\" isn't on the ticket.",
+			"You sent \"{got}\". Nobody ordered that."
+		],
+		"short": [
+			"You're short, Chef. Where's \"{want}\"?",
+			"The ticket says \"{want}\" too. It never reached the pass."
+		],
+		"wrong": [
+			"Line {n}: you sent \"{got}\". The ticket says \"{want}\".",
+			"I've got \"{got}\" on the pass. The ticket wants \"{want}\"."
+		],
+		"tofile": [
+			"That came out loud, Chef. The ticket wants it written into {file}.",
+			"It's on the pass. It should be in {file}."
+		],
+		"infile": [
+			"Nothing reached the pass: it all went into {file}. This ticket wants it out here.",
+			"You wrote it down in {file}, Chef. I need it on the pass."
+		],
+		"par": [
+			"Clean. Not a wasted word on that line.",
+			"That's the shortest line there is. Yes, Chef.",
+			"Tight. I couldn't take a chip off that."
+		],
+		"over": [
+			"It works. There's a shorter line, if you ever want to show off.",
+			"That'll do. Longer than it needs to be, but the plate's right."
+		]
+	},
+	"errors": {
+		"empty": "Nothing on the line, Chef. I can't fire nothing.",
+		"notfound": "The first word has to be a command, and the shell doesn't know one called {token}.",
+		"nofile": "There's no file called {token} in this kitchen.",
+		"waiting": "{token} is standing at its station with nothing coming down the line. Give it a file, or pipe something in.",
+		"pipe_start": "A pipe needs a command on its left to take from.",
+		"pipe_end": "A pipe needs a command on its right to hand to.",
+		"redirect": "That arrow needs a file to point at.",
+		"option": "That command has no option {token}.",
+		"needs_value": "{token} wants a value after it.",
+		"number": "That wants a number of lines, and {token} isn't one.",
+		"usage": "grep needs to be told what to look for.",
+		"extra": "One thing too many on that command: {token}.",
+		"nolist": "cut needs to know which piece to keep. Give it an -f.",
+		"delimiter": "cut can only split at one single character.",
+		"list": "That isn't a piece cut can count to.",
+		"range": "That range runs backwards.",
+		"tr_operand": "tr swaps one list of characters for another. It needs both lists.",
+		"tr_extra": "tr never opens a file, so {token} is one word too many. Pipe the file in.",
+		"unsupported": "That's real shell, but nobody has taught it in this kitchen yet. Stick to the cards, Chef.",
+		"clobber": "That line reads a file while it's writing over it. Don't, Chef. It ends in tears."
+	}
+}

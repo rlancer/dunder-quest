@@ -15,6 +15,7 @@ const THEMES: Record<Game, { bg: string; panel: string; ink: string; title: stri
   prince: { bg: "#171c33", panel: "#f5ebcc", ink: "#120d1a", title: "#242b4a", muted: "#6e6a80", accent: "#e9b949", seal: "#6ec8cc", sealInk: "#120d1a" },
   lieutenant: { bg: "#211a20", panel: "#f5edd6", ink: "#17120f", title: "#2a2019", muted: "#7a6a58", accent: "#f08033", seal: "#99bbdb", sealInk: "#17120f" },
   greedy: { bg: "#3b1f4a", panel: "#ecd9a6", ink: "#2a1710", title: "#2a1710", muted: "#7a5f45", accent: "#e8a13a", seal: "#a3271c", sealInk: "#ecd9a6" },
+  shell: { bg: "#1a2540", panel: "#f2f0e6", ink: "#12161c", title: "#12161c", muted: "#5f6873", accent: "#f59e2e", seal: "#c22c22", sealInk: "#f2f0e6" },
 };
 
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];

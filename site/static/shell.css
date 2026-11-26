@@ -1,0 +1,157 @@
+/* Yes, Shell!, standalone: the Standard Inn's kitchen at night. Stainless
+   steel, white ticket paper, the amber of the heat lamps, green tape and a
+   terminal's black, with the game's own faces from shell/assets/fonts (the
+   build copies them to static/fonts): Bebas Neue for headings, VT323 for
+   commands, Pixelify Sans for buttons. Body text stays in Atkinson
+   Hyperlegible. */
+
+@font-face { font-family: "Bebas Neue"; src: url("fonts/BebasNeue.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "VT323"; src: url("fonts/VT323.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Pixelify Sans"; src: url("fonts/PixelifySans.ttf") format("truetype"); font-weight: 400 700; font-display: swap; }
+
+:root {
+  color-scheme: dark;
+  --wood: #12161c;
+  --dusk: #1a2540;
+  --night: #0b0e14;
+  --panel: #1c232d;
+  --line: #3d4856;
+  --gold: #f59e2e;
+  --sunset: #ffd16b;
+  --parchment: #f2f0e6;
+  --paper: #eef0ee;
+  --red: #c22c22;
+  --dim: #a9b2bd;
+  --sage: #78de91;
+  --term: #0a0f12;
+  --gutter: 16px;
+  --display: "Bebas Neue", "Arial Narrow", Impact, sans-serif;
+  --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+  --mono: "VT323", ui-monospace, Consolas, monospace;
+  --button: "Pixelify Sans", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+body.ys { margin: 0; color: var(--paper); font: 1.0625rem/1.6 var(--body);
+  background: linear-gradient(180deg, var(--dusk) 0, var(--night) 720px) var(--night); }
+.ys img { max-width: 100%; height: auto; display: block; }
+.ys a { color: var(--gold); }
+.ys a:hover { color: var(--parchment); }
+.ys :focus-visible { outline: 3px solid var(--parchment); outline-offset: 2px; }
+.ys h1, .ys h2, .ys h3 { font-family: var(--display); font-weight: 400; line-height: 1.1; margin: 0 0 0.5em; }
+.ys h2 { font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: 0.02em; color: var(--gold); }
+.ys h3 { font-size: 1.6rem; letter-spacing: 0.02em; color: var(--parchment); }
+.ys code { font-family: var(--mono); font-size: 1.25em; line-height: 1; color: var(--parchment); }
+
+.skip { position: absolute; left: -999px; top: 8px; background: var(--gold); color: var(--wood); padding: 8px 12px; z-index: 10; }
+.skip:focus { left: 8px; }
+
+/* The bar */
+.ys-bar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px; padding: 10px var(--gutter);
+  background: rgba(18, 22, 28, 0.94); border-bottom: 3px solid var(--gold); backdrop-filter: blur(6px); }
+.ys-brand { font: 400 1.4rem var(--display); letter-spacing: 0.04em; color: var(--parchment) !important; text-decoration: none; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ys-bar nav { display: flex; gap: 16px; margin-left: auto; overflow-x: auto; }
+.ys-bar nav a { color: var(--dim); text-decoration: none; white-space: nowrap; font-size: 0.95rem; }
+.ys-bar nav a:hover { color: var(--paper); }
+@media (max-width: 760px) { .ys-bar nav { display: none; } .ys-bar .ys-btn { margin-left: auto; } }
+
+/* Buttons: a strip of amber under the heat lamps */
+.ys-btn { display: inline-block; font: 600 1.25rem var(--button); color: var(--wood) !important; background: var(--gold);
+  text-decoration: none; padding: 11px 22px; border: 2px solid var(--parchment); box-shadow: 0 4px 0 #8a4f0c; }
+.ys-btn:hover { background: var(--parchment); }
+.ys-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #8a4f0c; }
+.ys-btn-small { padding: 4px 14px; font-size: 1rem; box-shadow: none; white-space: nowrap; }
+.ys-more { margin-left: 18px; font: 400 1.3rem var(--display); letter-spacing: 0.03em; white-space: nowrap; }
+
+/* The hero */
+.ys-hero { max-width: 1100px; margin: 0 auto; padding: clamp(32px, 6vw, 72px) var(--gutter) 24px;
+  display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(20px, 4vw, 48px); align-items: center; }
+.ys-kicker { font: 700 0.8rem/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sunset); margin: 0 0 16px; }
+.ys-hero h1 { font-size: clamp(4rem, 12vw, 7.5rem); letter-spacing: 0.01em; color: var(--gold); margin-bottom: 0.3em; text-shadow: 0 4px 0 var(--red); }
+.ys-hero h1 span { display: block; font-size: 0.26em; letter-spacing: 0.06em; color: var(--parchment); text-shadow: none; margin-bottom: 0.2em; }
+.ys-lede { font-size: clamp(1.1rem, 2.2vw, 1.25rem); margin: 0 0 24px; }
+.ys-actions { margin: 0 0 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 0; }
+.ys-fine { color: var(--dim); font-size: 0.9rem; margin: 0; }
+.ys-shot { border: 3px solid var(--line); width: 100%; image-rendering: pixelated; }
+@media (max-width: 860px) { .ys-hero { grid-template-columns: 1fr; } }
+
+/* Sections */
+.ys-section { max-width: 1100px; margin: 0 auto; padding: 44px var(--gutter); }
+.ys-section > p { max-width: 46em; }
+.ys-intro { color: var(--dim); }
+.ys-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
+@media (max-width: 860px) { .ys-pair { grid-template-columns: 1fr; } }
+
+/* The example ticket: the rail's file, the line on a terminal, and what reaches the pass */
+.ys-ticket { margin: 28px 0 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ys-ticket > div { min-width: 0; border: 3px solid var(--line); }
+.ys-ticket h3 { font: 600 0.8rem/1 var(--button); letter-spacing: 0.08em; text-transform: uppercase; margin: 0; padding: 7px 10px; color: var(--parchment); }
+.ys-ticket pre { margin: 0; padding: 10px 12px; font: 1.35rem/1.15 var(--mono); overflow-x: auto; }
+.ys-rail { background: var(--parchment); color: var(--wood); }
+.ys-rail h3 { background: #23804f; }
+.ys-pass { background: var(--term); color: #d1edd6; }
+.ys-pass h3 { background: var(--line); }
+.ys-want { background: var(--parchment); color: var(--wood); }
+.ys-want h3 { background: var(--red); }
+.ys-prompt { grid-column: 1 / -1; background: var(--term); padding: 12px 14px; }
+.ys-prompt code { font-size: clamp(1.4rem, 4vw, 2.2rem); }
+.ys-chips { grid-column: 1 / -1; border: 0 !important; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.ys-chip { font: 1.5rem/1 var(--mono); padding: 6px 12px; background: var(--parchment); border: 2px solid var(--line); color: var(--wood); }
+.ys-chip-on { box-shadow: 0 0 0 3px var(--gold); }
+.ys-caption { color: var(--dim); font-size: 0.92rem; margin: 12px 0 0; }
+@media (max-width: 760px) { .ys-ticket { grid-template-columns: 1fr; } }
+
+/* A line's words: commands, options, files, the pipe */
+.ys .c { color: var(--sunset); }
+.ys .o { color: #f76b54; }
+.ys .f { color: var(--sage); }
+.ys .p { color: #ffffff; }
+.ys .d { color: var(--sage); }
+.ys-chip .c, .ys-toks .c { color: #274a8f; }
+.ys-chip .o, .ys-toks .o { color: var(--red); }
+.ys-chip .f, .ys-toks .f { color: #23804f; }
+.ys-chip .p, .ys-toks .p { color: var(--wood); }
+
+/* The steps */
+.ys-steps { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.ys-steps li { background: var(--panel); border: 2px solid var(--line); padding: 16px; position: relative; }
+.ys-step { display: inline-grid; place-items: center; width: 2em; height: 2em; margin-bottom: 8px; border-radius: 50%;
+  background: var(--gold); color: var(--wood); font: 400 1.2rem var(--display); }
+.ys-steps p { margin: 0; color: var(--dim); font-size: 0.98rem; }
+@media (max-width: 960px) { .ys-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) { .ys-steps { grid-template-columns: 1fr; } }
+
+/* The shifts: a screenshot each, its lesson cards on ticket paper */
+.ys-shifts { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 28px; }
+.ys-shift { background: var(--panel); border: 2px solid var(--line); border-top: 6px solid var(--gold); padding: 20px; min-width: 0;
+  display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .ys-shift { grid-template-columns: 1fr; } }
+.ys-num { font: 700 0.75rem/1 var(--body); letter-spacing: 0.16em; text-transform: uppercase; color: var(--sunset); margin: 0 0 8px; }
+.ys-shift h3 { margin-bottom: 4px; font-size: 2rem; }
+.ys-lesson { margin: 0 0 14px; color: var(--dim); }
+.ys-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
+.ys-card { margin: 0; background: var(--parchment); color: var(--wood); border: 1px solid #b9b7aa; min-width: 0; }
+.ys-card figcaption { font: 400 1.25rem var(--display); letter-spacing: 0.03em; color: var(--parchment); background: var(--wood); padding: 7px 12px; }
+.ys-card code { color: var(--wood); }
+.ys-toks { list-style: none; margin: 0; padding: 10px 12px 0; }
+.ys-toks li { display: flex; gap: 10px; align-items: baseline; }
+.ys-toks code { font-size: 1.5rem; min-width: 2.2em; white-space: nowrap; }
+.ys-toks li > span { font-size: 0.9rem; }
+.ys-demo { margin: 10px 12px 0; padding: 8px 10px; background: var(--term); overflow-x: auto; }
+.ys-demo pre { margin: 0; font: 1.3rem/1.2 var(--mono); color: #d1edd6; }
+.ys-demo code { color: #d1edd6; font-size: 1em; }
+.ys-demo .ys-note { color: #6b8578; }
+.ys-card > p { margin: 0; padding: 10px 12px 12px; font-size: 0.92rem; line-height: 1.5; }
+
+/* The cast */
+.ys-cast { list-style: none; padding: 0; margin: 20px 0 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 16px; }
+.ys-cast li { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; background: var(--panel); border: 2px solid var(--line); padding: 12px; }
+.ys-cast img { width: 96px; height: 96px; image-rendering: pixelated; background: var(--dusk); border: 2px solid var(--line); }
+.ys-cast b { font: 400 1.4rem var(--display); letter-spacing: 0.03em; color: var(--gold); }
+.ys-cast p { margin: 4px 0 0; color: var(--dim); font-size: 0.95rem; }
+
+/* The foot */
+.ys-foot { border-top: 3px solid var(--gold); margin-top: 32px; padding: 28px var(--gutter) 40px; text-align: center; color: var(--dim); font-size: 0.95rem; background: var(--wood); }
+.ys-foot p { max-width: 60em; margin: 0 auto 8px; }

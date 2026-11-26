@@ -57,7 +57,7 @@ function shell(origin: string, meta: Meta, body: string, data: Record<string, st
 <a class="skip" href="#main">Skip to content</a>
 <header class="bar">
   <a class="brand" href="/"><img src="/static/img/squire.png" alt="" width="16" height="24"><span class="wordmark"><span class="sr">Dunder Quest</span><span aria-hidden="true"><i>__</i>dunder_<wbr>quest<i>__</i></span></span></a>
-  <nav aria-label="Site"><a href="/curb/">Curb Your Oxidation</a><a href="/dunder-quest/">Dunder Quest</a><a href="/flatmates/">Flatmates.js</a><a href="/prince/">Prince of Versions</a><a href="/lieutenant/">Just One More JOIN</a><a href="/greedy/">The Good, the Bad and the Greedy</a><a href="/leaderboards/">Leaderboards</a></nav>
+  <nav aria-label="Site"><a href="/curb/">Curb Your Oxidation</a><a href="/dunder-quest/">Dunder Quest</a><a href="/flatmates/">Flatmates.js</a><a href="/prince/">Prince of Versions</a><a href="/lieutenant/">Just One More JOIN</a><a href="/greedy/">The Good, the Bad and the Greedy</a><a href="/shell/">Yes, Shell!</a><a href="/leaderboards/">Leaderboards</a></nav>
   <a class="btn btn-small" href="/curb/play/">Play</a>
 </header>
 <main id="main">
@@ -65,7 +65,7 @@ ${body}
 </main>
 <footer class="foot">
   <p>Dunder Quest: free pixel-art games that teach real programming, in your browser.</p>
-  <p><a href="/">All games</a> · <a href="/curb/">Curb Your Oxidation</a> · <a href="/dunder-quest/">Dunder Quest</a> · <a href="/flatmates/">Flatmates.js</a> · <a href="/prince/">Prince of Versions</a> · <a href="/lieutenant/">Just One More JOIN</a> · <a href="/greedy/">The Good, the Bad and the Greedy</a> · <a href="/leaderboards/">Leaderboards</a> · <a href="/me/">Your progress</a> · <a href="/privacy/">Privacy</a></p>
+  <p><a href="/">All games</a> · <a href="/curb/">Curb Your Oxidation</a> · <a href="/dunder-quest/">Dunder Quest</a> · <a href="/flatmates/">Flatmates.js</a> · <a href="/prince/">Prince of Versions</a> · <a href="/lieutenant/">Just One More JOIN</a> · <a href="/greedy/">The Good, the Bad and the Greedy</a> · <a href="/shell/">Yes, Shell!</a> · <a href="/leaderboards/">Leaderboards</a> · <a href="/me/">Your progress</a> · <a href="/privacy/">Privacy</a></p>
 </footer>
 <script type="module" src="/static/social/site.js"></script>
 </body>
