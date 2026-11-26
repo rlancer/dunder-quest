@@ -123,6 +123,39 @@ describe("saves", () => {
     expect(png.type).toBe("image/png");
   });
 
+  test("a shell save keeps the fewest fires and the most stars", async () => {
+    const one = { current_shift: 2, cleared: [1, 2], tries: { 1: 3, 2: 5 }, stars: { 1: 4, 2: 1 }, cards: ["command", "cat"] };
+    const two = { current_shift: 4, cleared: [1, 3, 9], tries: { 1: 6, 3: 2, 9: 1 }, stars: { 1: 2, 2: 3, 3: 9 }, cards: ["cat", "pipe"], junk: 1 };
+    // Unknown shifts, out-of-range stars and stray fields are dropped.
+    expect(normalize("shell", two)).toEqual({ current_shift: 4, cleared: [1, 3], tries: { 1: 6, 3: 2 }, stars: { 1: 2, 2: 3, 3: 4 }, cards: ["cat", "pipe"] });
+    expect(normalize("shell", { current_shift: 7 })).toEqual({ current_shift: 1, cleared: [], tries: {}, stars: {}, cards: [] });
+    const both = merge("shell", JSON.stringify(one), two);
+    // Both have two shifts cleared, so the first save says where to carry on.
+    expect(both).toEqual({ current_shift: 2, cleared: [1, 2, 3], tries: { 1: 3, 2: 5, 3: 2 }, stars: { 1: 4, 2: 3, 3: 4 }, cards: ["command", "cat", "pipe"] });
+    const s = summarize("shell", both);
+    expect(s.count).toBe(3);
+    expect(s.tries).toBe(10);
+    expect(s.collected).toBe(11);
+    expect(s.collectMax).toBe(20);
+    expect(s.xp).toBe(3 * 100 + 11 * 10);
+    expect(bestLine("shell", s)).toBe("10 tries");
+
+    // And through the API, from two devices.
+    const { token } = await newPlayer();
+    let res = await call("PUT", "/api/saves/shell", { token, body: { data: JSON.stringify(one) } });
+    expect(res.status).toBe(200);
+    res = await call("PUT", "/api/saves/shell", { token, body: { data: JSON.stringify(two) } });
+    expect(JSON.parse(res.body.data)).toEqual(both);
+    expect(res.body.summary.tries).toBe(10);
+    // Clearing all five issues the certificate.
+    const all = { current_shift: 5, cleared: [1, 2, 3, 4, 5], tries: { 4: 2, 5: 4 }, stars: { 5: 4 }, cards: [] };
+    res = await call("PUT", "/api/saves/shell", { token, body: { data: JSON.stringify(all) } });
+    expect(res.body.summary.complete).toBe(true);
+    expect(res.body.certificate.fresh).toBe(true);
+    const png = await call("GET", `/c/${res.body.certificate.id}.png`);
+    expect(png.type).toBe("image/png");
+  });
+
   test("garbage isn't a save", async () => {
     const { token } = await newPlayer();
     expect((await call("PUT", "/api/saves/curb", { token, body: { data: "{nope" } })).status).toBe(400);

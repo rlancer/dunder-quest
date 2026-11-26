@@ -60,4 +60,4 @@ trailer/
 ## Backlog
 
 - [ ] **Listening pass.** The cue's beats, its stop and its last hit were placed by measurement, and the frames were checked by eye, but nobody has listened to the mix: Rob to watch it.
-- [ ] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/) (the steps are in AGENTS.md), then paste its video ID into `GREEDY_TRAILER_ID` in `site/build.ts`.
+- [x] **Upload** to [@dunderquest](https://www.youtube.com/@dunderquest) using the upload form on [dunderquest.com/brand/youtube/](https://dunderquest.com/brand/youtube/) (the steps are in AGENTS.md), then paste its video ID into `GREEDY_TRAILER_ID` in `site/build.ts`.

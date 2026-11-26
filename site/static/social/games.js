@@ -144,10 +144,33 @@ export const GAMES = {
       { id: 5, name: "Showdown at Backslash Ridge", lesson: "Everything at once, and \\1", max: 3 },
     ],
   },
+  shell: {
+    name: "Yes, Shell!",
+    short: "Yes, Shell!",
+    lang: "Bash",
+    page: "/shell/",
+    play: "/shell/play/",
+    og: "shell.png",
+    unit: ["shift", "shifts"],
+    accent: "#f59e2e",
+    ink: "#12161c",
+    tag: "#LearnBash",
+    // Fewest fires is the tiebreak: the game counts a try each time a line is fired.
+    best: "tries",
+    // A star for every ticket sent in par, the fewest chips it can be done in.
+    collectible: ["star", "stars"],
+    levels: [
+      { id: 1, name: "Family Meal", lesson: "Commands: ls, cat, head and wc", max: 4 },
+      { id: 2, name: "The Rail", lesson: "grep, and -v, -i and -c", max: 4 },
+      { id: 3, name: "The Pass", lesson: "The pipe: |", max: 4 },
+      { id: 4, name: "Mise en Place", lesson: "sort and uniq", max: 4 },
+      { id: 5, name: "The Critic", lesson: "cut, tr, > and a five-command line", max: 4 },
+    ],
+  },
 };
 
 /** Game keys in the order the site shows them (Curb leads, as on the home page). */
-export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant", "greedy"];
+export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant", "greedy", "shell"];
 
 /** XP: a level is worth 100, finishing a game 400 more, a collectible 10. */
 export const XP = { level: 100, complete: 400, collectible: 10 };
@@ -277,12 +300,15 @@ export function normalize(game, raw) {
         tries: keyed(idNumbers(game, save.tries, true)),
         cards: strings(save.cards),
       };
-    case "greedy": {
+    case "greedy":
+    case "shell": {
       // The Lieutenant's shape, plus a star count per job, capped at its posters.
+      // (Yes, Shell! keeps the same save, with shifts for jobs.)
+      const at = game === "shell" ? "current_shift" : "current_job";
       const stars = idNumbers(game, save.stars, true);
       for (const l of GAMES[game].levels) if (stars[l.id] > l.max) stars[l.id] = l.max;
       return {
-        current_job: clampId(game, save.current_job),
+        [at]: clampId(game, save[at]),
         cleared: sorted(idSet(game, save.cleared)),
         tries: keyed(idNumbers(game, save.tries, true)),
         stars: keyed(stars),
@@ -358,8 +384,9 @@ export function merge(game, a, b) {
         cards: [...x.cards, ...y.cards],
       });
     case "greedy":
+    case "shell":
       return normalize(game, {
-        current_job: ahead.current_job,
+        [game === "shell" ? "current_shift" : "current_job"]: ahead[game === "shell" ? "current_shift" : "current_job"],
         cleared: [...x.cleared, ...y.cleared],
         tries: bestOf(x.tries, y.tries, true),
         stars: bestOf(x.stars, y.stars, false),
@@ -410,6 +437,7 @@ export function summarize(game, raw) {
       for (const id of cleared) tries += save.tries[String(id)] || 0;
       break;
     case "greedy":
+    case "shell":
       cleared = save.cleared;
       for (const id of cleared) tries += save.tries[String(id)] || 0;
       for (const v of Object.values(save.stars)) collected += v;
@@ -462,7 +490,7 @@ export function bestLine(game, s) {
 const FIRST = ["Brave", "Plucky", "Rumpled", "Squinting", "Sleepy", "Dapper", "Curious", "Peckish", "Nimble", "Gallant",
   "Jaunty", "Wily", "Earnest", "Dashing", "Humble", "Mighty", "Sly", "Valiant", "Zesty", "Bold"];
 const SECOND = ["Squire", "Rustacean", "Pythonista", "Flatmate", "Lieutenant", "Prince", "Coder", "Hacker", "Knight",
-  "Detective", "Enchanter", "Committer", "Borrower", "Debugger", "Scribe", "Wizard", "Basset", "Merger", "Shrubber", "Joiner", "Deputy", "Wrangler"];
+  "Detective", "Enchanter", "Committer", "Borrower", "Debugger", "Scribe", "Wizard", "Basset", "Merger", "Shrubber", "Joiner", "Deputy", "Wrangler", "Expediter", "Saucier"];
 
 export function randomName(rand = Math.random) {
   const pick = (list) => list[Math.floor(rand() * list.length)];

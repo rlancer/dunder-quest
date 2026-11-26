@@ -11,8 +11,9 @@
  * `curb/` and `curb/play/`. Prince of Versions, the Git
  * game, is in `prince/` and `prince/play/`, with a card of its own, and
  * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`,
- * and The Good, the Bad and the Greedy, the regex game, in `greedy/` and
- * `greedy/play/`.
+ * The Good, the Bad and the Greedy, the regex game, in `greedy/` and
+ * `greedy/play/`, and Yes, Shell!, the shell game, in `shell/` and
+ * `shell/play/`.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
@@ -21,6 +22,7 @@
  *     bun site/build.ts --prince build/site/prince/play/index.html
  *     bun site/build.ts --lieutenant build/site/lieutenant/play/index.html
  *     bun site/build.ts --greedy build/site/greedy/play/index.html
+ *     bun site/build.ts --shell build/site/shell/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -34,6 +36,7 @@ const CURB = join(ROOT, "games", "curb");
 const PRINCE = join(ROOT, "games", "prince");
 const LIEUTENANT = join(ROOT, "games", "lieutenant");
 const GREEDY = join(ROOT, "games", "greedy");
+const SHELL = join(ROOT, "games", "shell");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -64,7 +67,7 @@ const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
 // once it's on YouTube: paste its video ID here. Empty leaves the trailer off
 // the /greedy/ page and the splash's card, and shows the thumbnail alone on
 // the brand kit.
-const GREEDY_TRAILER_ID = "";
+const GREEDY_TRAILER_ID = "zsXZ5G07tcc";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -255,7 +258,7 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
 const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
-  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["greedy/", "The Good, the Bad and the Greedy"], ["leaderboards/", "Leaderboards"]];
+  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["greedy/", "The Good, the Bad and the Greedy"], ["shell/", "Yes, Shell!"], ["leaderboards/", "Leaderboards"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -461,7 +464,7 @@ ${RESUME_JS}`, path: QUEST_PAGE });
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
-  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN and regular expressions in The Good, the Bad and the Greedy. Play them in your browser.";
+  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN, regular expressions in The Good, the Bad and the Greedy and the command line in Yes, Shell! Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -489,10 +492,14 @@ function buildSplash(prefix = ""): string {
       "A rumpled homicide lieutenant, and five people who thought of everything. You watch each of them do it. "
       + "Then you write the query that proves it, a clause at a time, from SELECT to LEFT JOIN.",
       "Meet the Lieutenant"],
-    ["game-gr", "New · Learn regex", GR_NAME, `${prefix}greedy/`, `${prefix}greedy/play/`, "greedy.png", GR_ALT,
+    ["game-gr", "Learn regex", GR_NAME, `${prefix}greedy/`, `${prefix}greedy/play/`, "greedy.png", GR_ALT,
       "A town where everybody is named Hobson, and the law is the wanted poster. Write each one as a regular expression, "
       + "from a plain word to greedy and lazy, groups and the same word twice, and catch only who it says.",
       "Meet the Sheriff"],
+    ["game-ys", "New · Learn the shell", YS_NAME, `${prefix}shell/`, `${prefix}shell/play/`, "shell.png", YS_ALT,
+      "A sandwich shop that ran on shouting, and a chef who came home with a system. Every station is a command and the "
+      + "pass is a pipe: build each line from chips, from ls and grep to sort, uniq and a five-command pipeline.",
+      "Meet the kitchen"],
   ];
   // The cards that link their trailer, once it's up.
   const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID };
@@ -556,13 +563,13 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL and regex.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL, regex and the shell.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`, social: true,
   });
 }
 
-const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN and "
-  + "The Good, the Bad and the Greedy: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL and regex. Clear a level and you're on the board.";
+const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN, "
+  + "The Good, the Bad and the Greedy and Yes, Shell!: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex and the shell. Clear a level and you're on the board.";
 
 /** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
 function buildLeaderboards(prefix: string): string {
@@ -1083,7 +1090,7 @@ const GR_YOUTUBE_TAGS = "learn regex, regex tutorial, regular expressions, regex
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster.
+Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster. Yes, Shell! teaches the command line in a sandwich shop's kitchen, where every station is a command and the pass is a pipe.
 
 Opus 5.5 built every game here: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -1091,7 +1098,7 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions" "learn bash" "command line" "yes shell"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
@@ -1099,6 +1106,7 @@ const CHANNEL_LINKS = [
   ["Play Prince of Versions", `${SITE_URL}prince/play/`],
   ["Play Just One More JOIN", `${SITE_URL}lieutenant/play/`],
   ["Play The Good, the Bad and the Greedy", `${SITE_URL}greedy/play/`],
+  ["Play Yes, Shell!", `${SITE_URL}shell/play/`],
   ["Source on GitHub", REPO],
 ];
 // [file, name, size YouTube asks for, where it goes, alt]
@@ -3321,12 +3329,206 @@ ${RESUME_JS}
 `;
 }
 
+// Yes, Shell!'s page at /shell/, the shell game: the Standard Inn's kitchen
+// at night, in stainless steel, ticket paper, heat-lamp amber and a
+// terminal's black, with the game's own tall capitals (Bebas Neue) for
+// headings. The shifts, the lesson cards, the example ticket and what every
+// line prints all come from `shell/data/shifts.json`, the data the game
+// plays and `shell/tests/verify_shell.ts` holds to the real bash: nothing on
+// this page is run here, so every line of output on it is one bash printed.
+const YS_NAME = "Yes, Shell!";
+const YS_ALT = "Yes, Shell!: a small brick sandwich shop at night under the elevated train tracks, its window lit amber, with the city across the water.";
+const YS_DESC = "Yes, Shell!, a Dunder Quest game that teaches the Unix command line: in the kitchen of the Standard Inn every "
+  + "station is a command, the pass is a pipe, and the kitchen does exactly what you say. Play it free in your browser.";
+// Each shift's screenshot, by shift id.
+const YS_SHOTS: Record<number, [string, string]> = {
+  1: ["family.png", "The first shift's pass: orders.txt on the rail, the line head -n 3 orders.txt on a terminal, and the first three orders printed between them"],
+  2: ["rail.png", "The second shift: a line that printed every order when the ticket only wanted the ones that aren't melts, and Shell saying which line was too much"],
+  3: ["pass.png", "The third shift: grep melt orders.txt, piped into grep -v turkey, piped into wc -l, printing 2"],
+  4: ["mise.png", "The fourth shift: sort sold.txt piped into uniq -c, every line of the ticket ticked, and the order-up banner"],
+  5: ["critic.png", "The last ticket: five commands joined by pipes, cut, sort, uniq -c, sort -rn and head -n 1, printing 5 fries"],
+};
+// The cast, in the order the page shows them, with their portraits.
+const YS_CAST: [string, string, string][] = [
+  ["chef", "Ash Bourne", "You. Home from the finest kitchen in the country with a roll of green tape, a marker and a system. Says very little, and most of it is “Yes, Shell.”"],
+  ["shell", "Shell", "Michelle Tee, who runs the pass, and has been typing the orders up behind Uncle Awk's back. She teaches every command. She never guesses, and neither does the kitchen."],
+  ["awk", "Uncle Awk", "Front of house for thirty years. Ran the window with a pencil and his voice, and would like it noted that it worked."],
+  ["dev", "Dev Null", "The dish pit. Whatever you hand him, you never see again. Keeps everything in order, and nobody notices until he doesn't."],
+  ["root", "Regina Root", "The critic from the Lakeside Ledger, with a table for one on Friday. What Root asks for, Root gets."],
+];
+
+/** The same tags for Yes, Shell!, the shell game in shell/, which Godot
+ * exports to shell/play/index.html. */
+function tagShellPage(index: string): void {
+  const desc = "Play Yes, Shell!, the Dunder Quest game that teaches the Unix command line, right in your browser.";
+  tagGamePage(index, `Play ${YS_NAME} · Dunder Quest`, desc, "shell/play/", "shell.png", YS_ALT, "shell");
+}
+
+/** A line of shell with each word marked for what it is: a command, an option, a file, a pipe. */
+function ysLine(line: string): string {
+  const commands = ["ls", "cat", "head", "tail", "wc", "grep", "sort", "uniq", "cut", "tr"];
+  return line.split(" ").map((w) => {
+    const e = esc(w);
+    if (w === "|" || w === ">" || w === "<") return `<span class="p">${e}</span>`;
+    if (commands.includes(w)) return `<span class="c">${e}</span>`;
+    if (/^-./.test(w)) return `<span class="o">${e}</span>`;
+    if (w.includes(".")) return `<span class="f">${e}</span>`;
+    return e;
+  }).join(" ");
+}
+
+function buildShell(prefix: string): string {
+  const data = JSON.parse(read(join(SHELL, "data", "shifts.json")));
+  const img = `${prefix}static/img/shell/`;
+  const tickets: Json[] = data.shifts.flatMap((s: Json) => s.tickets);
+  // The example ticket: two beef, on the fly.
+  const ex: Json = tickets.find((t) => t.id === "3b") ?? tickets[0];
+  const exLine = ex.solution.join(" ");
+  const exFile: string = ex.files[0];
+  const exShift = data.shifts.find((s: Json) => s.tickets.includes(ex));
+  const pre = (lines: string[]) => lines.map((l) => esc(l)).join("\n");
+  const chips = ex.chips.map((c: string) =>
+    `<span class="ys-chip${ex.solution.includes(c) ? " ys-chip-on" : ""}">${ysLine(c)}</span>`).join("");
+
+  const steps = [
+    ["Read the ticket", "Every ticket says exactly what has to reach the pass: these lines, in this order. The kitchen's files are on the rail beside it."],
+    ["Build the line", "Put chips on the command line: a command, an option, a file, a pipe. No typing, and nothing runs but the text on the line."],
+    ["Watch the pass", "The line runs as you build it. The pass shows what it prints, or the shell's own error, word for word, when it won't run."],
+    ["Fire!", "Send it. If the pass matches the ticket, order up. Fewer fires is better, and a line with the fewest chips it can be done in earns a star."],
+  ];
+  const stepHtml = steps.map(([h, p], i) => `<li><span class="ys-step">${i + 1}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
+
+  const shifts = data.shifts.map((j: Json) => {
+    const ids: string[] = [];
+    for (const t of j.tickets) if (t.card && !ids.includes(t.card)) ids.push(t.card);
+    const cards = ids.map((id) => {
+      const card = data.cards[id];
+      const toks = (card.chips ?? []).map(([t, what]: [string, string]) =>
+        `<li><code>${ysLine(t)}</code> <span>${esc(what)}</span></li>`).join("");
+      const note = card.demo.into ? `<span class="ys-note">(nothing printed: it's in ${esc(card.demo.into)})</span>\n` : "";
+      const demo = `<div class="ys-demo"><pre><span class="d">$</span> <code>${ysLine(card.demo.line)}</code>\n${note}${pre(card.demo.out)}</pre></div>`;
+      return `<figure class="ys-card"><figcaption>${esc(card.title)}</figcaption><ul class="ys-toks">${toks}</ul>${demo}<p>${esc(card.text)}</p></figure>`;
+    }).join("");
+    const [shot, alt] = YS_SHOTS[j.id] ?? ["title.png", YS_ALT];
+    return `
+    <li class="ys-shift">
+      <img class="ys-shot" src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy">
+      <div class="ys-shift-copy">
+        <p class="ys-num">Shift ${j.id} · ${j.tickets.length} tickets</p>
+        <h3>${esc(j.title)}</h3>
+        <p class="ys-lesson">${esc(j.lesson)}</p>
+        <div class="ys-cards">${cards}</div>
+      </div>
+    </li>`;
+  }).join("");
+
+  const cast = YS_CAST.map(([id, name, about]) =>
+    `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
+  const last: Json = tickets[tickets.length - 1];
+
+  const body = `
+<section class="ys-hero">
+  <div class="ys-hero-copy">
+    <p class="ys-kicker">a dunder_quest game · learn the command line</p>
+    <h1><span>The Standard Inn presents</span> Yes, Shell!</h1>
+    <p class="ys-lede">The Standard Inn ran on shouting for forty years. Then the chef came home with a roll of green tape and a system: every station does one thing, does it well, and passes it down the line. That is also, word for word, how the Unix shell works.</p>
+    <p class="ys-actions"><a class="ys-btn" href="play/">Play in your browser</a><a class="ys-more" href="#shifts">The five shifts →</a></p>
+    ${resumePanel("shell", "ys-btn ys-btn-small")}
+    <p class="ys-fine">Free. No typing: you build every line from chips, and it runs exactly as written.</p>
+  </div>
+  <img class="ys-shot" src="${img}title.png" alt="${esc(YS_ALT)}" width="960" height="540">
+</section>
+
+<section class="ys-section" id="how">
+  <h2>How it plays</h2>
+  <p>You're the new chef, Ash Bourne. Each shift is a handful of tickets, and each ticket is answered with one line of <b>shell</b>: the commands people type into a terminal to list, search, sort, count and slice text. Every station in the kitchen is a command. The pass, where one cook's plate becomes the next cook's job, is the pipe.</p>
+  <div class="ys-ticket">
+    <div class="ys-rail"><h3>${esc(exFile)}</h3><pre>${pre(data.files[exFile])}</pre></div>
+    <div class="ys-pass"><h3>The pass</h3><pre>${pre(ex.want)}</pre></div>
+    <div class="ys-want"><h3>The ticket</h3><pre>${pre(ex.want)}</pre></div>
+    <div class="ys-prompt"><code><span class="d">$</span> ${ysLine(exLine)}</code></div>
+    <p class="ys-chips" aria-label="The chips to build it from">${chips}</p>
+  </div>
+  <p class="ys-caption">A ticket from shift ${exShift.id}, ${esc(exShift.title)}: “${esc(ex.brief.text)}” The file is on the left, what the line prints is in the middle, and it matches the ticket.</p>
+  <ol class="ys-steps">${stepHtml}</ol>
+</section>
+
+<section class="ys-section" id="story">
+  <h2>Never opened a terminal? It starts there</h2>
+  <p>A first game opens on a prologue that sets up the kitchen and says what the shell is: a place to type commands, each a small program that does one job, with a way to hand one's output to the next. Every new command arrives on a card, with what it means and a line run in a terminal, and every line of dialogue is voiced.</p>
+  <div class="ys-pair">
+    <img class="ys-shot" src="${img}intro.png" alt="The prologue: Shell at the pass, a file called orders.txt, and under it a terminal where grep beef orders.txt piped into wc -l prints 2" width="960" height="540" loading="lazy">
+    <img class="ys-shot" src="${img}card.png" alt="A lesson card from the game: the pipe, what it means, and cat specials.txt piped into wc -l printing 3" width="960" height="540" loading="lazy">
+  </div>
+</section>
+
+<section class="ys-section" id="shifts">
+  <h2>The shifts</h2>
+  <p class="ys-intro">Five shifts, from one word that lists the files to five commands in a row. These are the cards the game teaches from, and what's printed under each line is what bash prints.</p>
+  <ol class="ys-shifts">${shifts}
+  </ol>
+</section>
+
+<section class="ys-section ys-real" id="real">
+  <h2>It's the real shell</h2>
+  <p>The chips only write text. What runs it in the game is a small shell written for it, and on every change to the game a script runs every line of up to three chips that any ticket's chips can spell, a couple of thousand longer ones, the solutions to all ${tickets.length} tickets, every card's example and a set of harder cases, more than seven thousand lines in all, through the real <code>bash</code> and the GNU tools as well. It fails if the two disagree on a single character of output, on a file written, or on the words of an error: when the game shows you <code>grep: beef: No such file or directory</code>, that is what your own terminal would say.</p>
+  <p>The last ticket is the line people who work in terminals reach for every week, to find the most common thing in a file: <code>${ysLine(last.solution.join(" "))}</code>. By then you can read every word of it.</p>
+</section>
+
+<section class="ys-section" id="cast">
+  <h2>The Standard Inn</h2>
+  <ul class="ys-cast">${cast}</ul>
+</section>
+
+<section class="ys-section" id="small">
+  <p class="ys-fine">Yes, Shell! is an affectionate spoof of the frantic restaurant-kitchen drama. The names, the restaurant, the art and the music are its own, and it isn't affiliated with or endorsed by anyone who made the shows it winks at.</p>
+</section>
+`;
+  return ysPage(body, prefix);
+}
+
+function ysPage(body: string, prefix: string): string {
+  const title = `${YS_NAME} · Dunder Quest`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${esc(YS_DESC)}">
+${headTags(title, YS_DESC, "shell/", "shell.png", YS_ALT)}
+<link rel="icon" href="${prefix}static/img/shell/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${prefix}static/shell.css">
+</head>
+<body class="ys">
+<a class="skip" href="#main">Skip to content</a>
+<header class="ys-bar">
+  <a class="ys-brand" href="./">Yes, Shell!</a>
+  <nav aria-label="${YS_NAME}"><a href="#how">How it plays</a><a href="#shifts">The shifts</a><a href="#real">Real shell</a><a href="${prefix}">All games</a></nav>
+  <a class="ys-btn ys-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="ys-foot">
+  <p>Yes, Shell! One chef, one pass, and a kitchen that does exactly what you say.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
+</footer>
+${RESUME_JS}
+</body>
+</html>
+`;
+}
+
 function main(): void {
   const args = process.argv.slice(2);
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
     "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage, "--prince": tagPrincePage,
-    "--lieutenant": tagLieutenantPage, "--greedy": tagGreedyPage,
+    "--lieutenant": tagLieutenantPage, "--greedy": tagGreedyPage, "--shell": tagShellPage,
   };
   if (args[0] in tag) {
     tag[args[0]](args[1]);
@@ -3351,7 +3553,8 @@ function main(): void {
   for (const font of ["Rye", "VT323", "PixelifySans"]) { // the regex game's faces, for greedy.css
     copyFileSync(join(GREEDY, "assets", "fonts", `${font}.ttf`), join(statics, "fonts", `${font}.ttf`));
   }
-  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"]]) { // their icons, for the brand kit and the tab
+  copyFileSync(join(SHELL, "assets", "fonts", "BebasNeue.ttf"), join(statics, "fonts", "BebasNeue.ttf")); // the shell game's titles, for shell.css
+  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"], [SHELL, "shell"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }
 
@@ -3373,6 +3576,7 @@ function main(): void {
   write(join(out, "prince", "index.html"), buildPrince("../"));
   write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
   write(join(out, "greedy", "index.html"), buildGreedy("../"));
+  write(join(out, "shell", "index.html"), buildShell("../"));
   write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
   write(join(out, "me", "index.html"), buildMe("../"));
   write(join(out, "privacy", "index.html"), buildPrivacy("../"));
