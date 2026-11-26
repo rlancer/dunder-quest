@@ -60,6 +60,8 @@ VOICES = {
     "dana": "jessica",
     # Big, gravelly, delighted by everything.
     "zelnick": "callum",
+    # Clipped and stern: one word, usually.
+    "kasimir": "adam",
     # Smug.
     "vernon": "roger",
     # Older, stern, not amused.

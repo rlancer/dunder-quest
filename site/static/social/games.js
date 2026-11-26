@@ -170,24 +170,24 @@ export const GAMES = {
   nothing: {
     name: "A Game About Nothing",
     short: "Nothing",
-    lang: "JavaScript",
+    lang: "HTTP",
     page: "/nothing/",
     play: "/nothing/play/",
     og: "nothing.png",
     unit: ["episode", "episodes"],
     accent: "#e8b03a",
     ink: "#1c1421",
-    tag: "#LearnJavaScript",
-    // Fewest takes is the tiebreak: the game counts a try each time tape rolls.
+    tag: "#LearnHTTP",
+    // Fewest takes is the tiebreak: the game counts a try each time a slip is sent.
     best: "tries",
-    // A star for every scene played at par, with the fewest cue cards it can be.
+    // A star for every scene done at par, with the fewest cards it can be.
     collectible: ["star", "stars"],
     levels: [
-      { id: 1, name: "The Callback", lesson: "Callbacks and setTimeout", max: 4 },
-      { id: 2, name: "The Wait", lesson: "Timers and delays", max: 4 },
-      { id: 3, name: "The Promise", lesson: "Promises and microtasks", max: 4 },
-      { id: 4, name: "The Chain", lesson: "Promise chains", max: 4 },
-      { id: 5, name: "The Table Read", lesson: "async and await", max: 4 },
+      { id: 1, name: "The Order", lesson: "Requests: GET and POST", max: 4 },
+      { id: 2, name: "The Counter", lesson: "Headers and JSON bodies", max: 4 },
+      { id: 3, name: "The Duplicate", lesson: "PUT, PATCH and DELETE", max: 4 },
+      { id: 4, name: "The Mail", lesson: "Versions: ETags and If-Match", max: 4 },
+      { id: 5, name: "The Table Read", lesson: "Tokens: 401 and 403", max: 4 },
     ],
   },
 };

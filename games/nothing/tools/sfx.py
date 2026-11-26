@@ -3,9 +3,10 @@
     python tools/sfx.py                # -> assets/audio/*.wav (mono, 44.1 kHz, 16-bit)
     python tools/sfx.py sting card     # just these
 
-A sitcom's worth: cue cards slapped down and pulled off, the tape rolling,
-applause, a door flung open by somebody who never knocks, and a slapped
-bass between the scenes (an original riff, made here a note at a time).
+A sitcom's worth: cards slapped on a slip and pulled off, a slip sent over
+the counter, applause, a door flung open by somebody who never knocks, and
+a slapped bass between the scenes (an original riff, made here a note at a
+time).
 """
 
 from __future__ import annotations
@@ -102,13 +103,13 @@ def bell(freq: float, seconds: float) -> np.ndarray:
 
 
 def card() -> np.ndarray:
-    """A cue card slapped down on a script."""
+    """A card slapped down on a slip."""
     x = lowpass(noise(0.05), 2200) * 2.0 + tone(sweep(420, 240, 0.05), 0.05) * 0.4
     return x * env(len(x), 0.001, 0.045) * 0.5
 
 
 def erase() -> np.ndarray:
-    """A cue card pulled back off."""
+    """A card pulled back off."""
     x = highpass(lowpass(noise(0.09), sweep(3000, 900, 0.09)), 400)
     return x * env(len(x), 0.01, 0.07) * 0.5
 
@@ -165,7 +166,7 @@ def miss() -> np.ndarray:
 
 
 def roll() -> np.ndarray:
-    """Roll tape: the deck's latch, then the motor running up."""
+    """A slip sent over the counter: a clunk, then a whoosh."""
     clunk = lowpass(noise(0.06), 700) * env(int(RATE * 0.06), 0.001, 0.05) * 1.4
     motor = tone(sweep(40, 120, 0.5), 0.5, "saw") * 0.12 + highpass(lowpass(noise(0.5), 1500), 300) * 0.1
     motor = motor * env(len(motor), 0.15, 0.2)

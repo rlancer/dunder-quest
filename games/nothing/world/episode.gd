@@ -3,8 +3,8 @@ extends Control
 
 ## One episode, start to finish, from its entry in data/episodes.json: a
 ## title card, the talk that sets it up, then each scene in turn (Stu's set
-## if it has one, the writers' room where its cues go on, and what gets said
-## when it plays), the talk that wraps it up, and the card that says how it
+## if it has one, the counter where its request is made, and what gets said
+## when it works), the talk that wraps it up, and the card that says how it
 ## went. A slap-bass sting between everything, as is traditional.
 
 signal pressed
@@ -15,7 +15,7 @@ const FADE := 0.4
 static var bot: bool = false
 ## How many frames a page of talk stays up when the bot is playing.
 static var bot_frames: int = 2
-## tests/shots.gd sets this, so a take plays at its own pace to be looked at.
+## tests/shots.gd sets this, so a response arrives at its own pace to be looked at.
 static var watch: bool = false
 ## tests/layout.gd puts the scene up without playing it.
 static var still: bool = false
@@ -147,7 +147,7 @@ func _card(id: String) -> void:
 	Progress.read_card(id)
 
 
-## The writers' room, until a take airs the table read.
+## The counter, until a take gets what the scene wants.
 func _build() -> void:
 	state = "build"
 	dialogue.visible = false
@@ -156,11 +156,11 @@ func _build() -> void:
 	var scenes: Array = episode.scenes
 	builder.setup(scene, "Episode %d: %s" % [episode_id, episode.title], "Scene %d of %d" % [scene_index + 1, scenes.size()], takes)
 	while true:
-		var won: bool = await builder.rolled
+		var won: bool = await builder.sent
 		takes = builder.takes
 		if won:
 			break
-	var at_par := builder.cues.size() <= Story.par(scene)
+	var at_par := builder.cards.size() <= Story.par(scene)
 	if at_par:
 		stars += 1
 	var quips := Story.stock("par" if at_par else "over")
@@ -269,7 +269,7 @@ func _draw_won() -> void:
 	_overlay.draw_rect(sheet.grow(-3), Palette.BRICK, false, 2.0)
 	Fit.begin(sheet, "the and-scene banner")
 	Fit.centred(_overlay, Palette.titles(), 240, sheet.position.y + 30, "AND SCENE!", 22, Palette.BRICK)
-	var used := builder.cues.size()
+	var used := builder.cards.size()
 	var par := Story.par(scene)
 	var words := "%d %s. Par is %d." % [used, "card" if used == 1 else "cards", par]
 	var mono := Palette.mono()
@@ -296,11 +296,11 @@ func _draw_end() -> void:
 	Fit.centred(_overlay, Palette.titles(), 240, sheet.position.y + 68, str(episode.get("title", "")), 15, Palette.INK)
 	var scenes := (episode.get("scenes", []) as Array).size()
 	var best := Progress.best_tries(episode_id)
-	var rolled := "You rolled tape %d %s." % [takes, "time" if takes == 1 else "times"]
+	var took := "It took %d %s." % [takes, "take" if takes == 1 else "takes"]
 	if best > 0 and best < takes:
-		rolled += " Your best is %d." % best
-	Fit.centred(_overlay, mono, 240, sheet.position.y + 94, rolled, 16, Palette.INK)
-	# A star for every scene played with the fewest cards.
+		took += " Your best is %d." % best
+	Fit.centred(_overlay, mono, 240, sheet.position.y + 94, took, 16, Palette.INK)
+	# A star for every scene done with the fewest cards.
 	var x := 240.0 - scenes * 9.0 + 9.0
 	for i in scenes:
 		Ui.star(_overlay, Vector2(x + i * 18.0, sheet.position.y + 112), 7, Palette.MUSTARD if i < stars else Palette.PAPER_DARK)

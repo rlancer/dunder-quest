@@ -1,13 +1,14 @@
 extends Node
 
 ## Plays the whole game the way a player does, without a window: the title,
-## every page of the prologue (checking that each script it types plays and
-## logs something), then every episode from the TV guide. On each scene it
-## first rolls tape with no cards down, which never airs the table read, and
-## checks that Stu has something to say about it; then tries a card where it
-## won't go, which must cost nothing; then puts the solution's cards on and
-## rolls. At the end every episode must have aired, with a star for every
-## scene, and no text anywhere may have left its panel (Fit).
+## every page of the prologue (checking that each request it writes out
+## gets an answer), then every episode from the TV guide. On each scene it
+## first sends a slip that the counter answers but that isn't what the scene
+## wants, and checks that Stu has something to say about it; then tries one
+## with no method, which can't go and must cost nothing; then puts the
+## solution's cards on and sends. At the end every episode must have aired,
+## with a star for every scene, and no text anywhere may have left its
+## panel (Fit).
 ##
 ## godot --headless --path . res://tests/bot.tscn
 
@@ -72,8 +73,9 @@ func _prologue(intro: Intro) -> void:
 		await moment("prologue_%d" % index)
 		var demo: Dictionary = intro.beat().get("demo", {})
 		if not demo.is_empty():
-			_expect(intro.demo_lines() == Loop.lines(demo.program, false).size(), "prologue page %d: its script didn't finish typing" % index)
-			_expect(not (Loop.run(demo.program).out as Array).is_empty(), "prologue page %d: its script logs nothing" % index)
+			var take := Intro.demo_take(demo)
+			_expect(take.has("lines"), "prologue page %d: its request can't be sent" % index)
+			_expect(intro.demo_lines() == (take.request as Array).size() + (take.get("lines", []) as Array).size(), "prologue page %d: its request didn't finish" % index)
 	intro._go(intro.beat_count())
 
 
@@ -101,18 +103,16 @@ func _episode(scene: EpisodeScene) -> void:
 						_scenes += 1
 						var id := str(b.scene.id)
 						b.clear()
-						var solution: Dictionary = b.scene.solution
-						for slot: String in solution:
-							var card := _card_for(b, str(solution[slot]))
-							_expect(b.place(card, slot), "%s: its own solution's %s won't go on %s" % [id, solution[slot], slot])
+						for card: String in b.scene.solution:
+							b.toggle(card)
+						_expect(b.cards == b.scene.solution, "%s: its own solution didn't go on the slip as written" % id)
 						await _frames_pass(1 + linger)
-						await moment("%s_cued" % id)
-						b.roll()
+						await moment("%s_slip" % id)
+						b.send()
 						if linger > 0:
-							# Halfway through the take, with the queues full.
-							await _until(func() -> bool: return not b.playing or b.step * 2 >= (b.result.trace as Array).size(), "%s: the take never got going" % id)
-							await moment("%s_rolling" % id)
-						await _until(func() -> bool: return scene.state != "build", "%s: the solution didn't air the table read" % id)
+							await _until(func() -> bool: return b.arrived * 2 >= (b.result.get("lines", []) as Array).size(), "%s: no response came" % id)
+							await moment("%s_sending" % id)
+						await _until(func() -> bool: return scene.state != "build", "%s: the solution didn't get what the scene wants" % id)
 						await _frames_pass(linger)
 						await moment("%s_aired" % id)
 			"talk":
@@ -130,53 +130,50 @@ func _episode(scene: EpisodeScene) -> void:
 		await get_tree().process_frame
 
 
-## The first card on the table that is `cue` and isn't down yet.
-func _card_for(b: Builder, cue: String) -> int:
-	for i in (b.scene.cues as Array).size():
-		if str(b.scene.cues[i]) == cue and not b.used(i):
-			return i
-	return -1
-
-
-## A take with nothing cued, which plays the page top to bottom and never
-## the table read. Stu must say what went wrong. Then a card where it won't
-## go, which costs no take.
+## A slip the counter answers that isn't what the scene wants: the first
+## the cards can make. Stu must say what went wrong. Then one with no
+## method, which can't go and costs no take.
 func _wrong_take(scene: EpisodeScene) -> void:
 	var b := scene.builder
 	var id := str(b.scene.id)
 	await moment("%s_brief" % id)
-	var before := b.takes
-	b.roll()
-	await _until(func() -> bool: return not b.busy, "%s: a take with no cards never finished" % id)
-	_expect(b.takes == before + 1, "%s: a missed take wasn't counted" % id)
-	_expect(b.fails == 1 and b.said != "", "%s: Stu said nothing about a take that missed" % id)
-	_expect(not b.said.contains("{"), "%s: an unfilled blank in \"%s\"" % [id, b.said])
-	await _frames_pass(1 + linger)
-	await moment("%s_missed" % id)
-	# Twice wrong brings the hint; look at that too.
-	b.fails = 2
-	b.note = "Hint: %s" % b.scene.hint
-	await _frames_pass(2)
-	b.fails = 1
-	b.note = ""
-	# A card on a line that has one already won't go, and costs nothing.
-	var slot := str(b.slots[0].id)
-	var first := _card_for(b, str(b.scene.cues[0]))
-	var cue := str(b.scene.cues[0])
-	if Loop.refuse(b.scene.script, slot, cue) == "":
-		_expect(b.place(first, slot), "%s: %s won't go on an empty hook" % [id, cue])
-		var second := -1
-		for i in (b.scene.cues as Array).size():
-			if not b.used(i) and Loop.refuse(b.scene.script, slot, str(b.scene.cues[i])) == "":
-				second = i
-		if second >= 0:
-			_expect(not b.place(second, slot) and b.said != "", "%s: a second card went on a hook that had one" % id)
-	else:
-		_expect(not b.place(first, slot) and b.said != "", "%s: %s went where it can't" % [id, cue])
-	_expect(b.takes == before + 1 and not b.busy, "%s: a card that wouldn't go cost a take" % id)
-	await _frames_pass(2)
-	await moment("%s_refused" % id)
-	b.clear()
+	for cards: Array in Http.slips(b.scene.cards):
+		var take := Judge.judge(b.scene, cards)
+		if take.has("refused") or bool(take.won):
+			continue
+		for card: String in cards:
+			b.toggle(card)
+		var before := b.takes
+		b.send()
+		await _until(func() -> bool: return not b.busy, "%s: sending %s never finished" % [id, cards])
+		_expect(b.takes == before + 1, "%s: a missed take wasn't counted" % id)
+		_expect(b.fails == 1 and b.said != "", "%s: Stu said nothing about %s" % [id, cards])
+		_expect(not b.said.contains("{"), "%s: an unfilled blank in \"%s\"" % [id, b.said])
+		await _frames_pass(1 + linger)
+		await moment("%s_missed" % id)
+		# Twice wrong brings the hint; look at that too.
+		b.fails = 2
+		b.note = "Hint: %s" % b.scene.hint
+		await _frames_pass(2)
+		b.fails = 1
+		b.note = ""
+		# The board, turned back to.
+		b.turn()
+		await _frames_pass(1 + linger)
+		await moment("%s_board" % id)
+		# A slip with no method can't go, and costs nothing.
+		b.clear()
+		for card: String in b.scene.cards:
+			if Http.kind(card) == "path":
+				b.toggle(card)
+				break
+		b.send()
+		_expect(b.takes == before + 1 and not b.busy and b.said != "", "%s: a slip with no method cost a take" % id)
+		await _frames_pass(2)
+		await moment("%s_refused" % id)
+		b.clear()
+		return
+	_expect(false, "%s: every slip the cards make either can't go or wins" % id)
 
 
 ## A named moment, for tests/shots.gd to photograph.

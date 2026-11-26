@@ -8,12 +8,14 @@ const KEYS: Dictionary = {
 	&"move_right": [KEY_RIGHT],
 	&"move_up": [KEY_UP],
 	&"move_down": [KEY_DOWN],
-	## Put the card down, press the button, turn the page.
+	## Put the card on the slip (or take it off), press the button, turn the page.
 	&"confirm": [KEY_SPACE, KEY_ENTER, KEY_KP_ENTER],
-	## Take the card off the line picked.
+	## Take the last card back off the slip.
 	&"erase": [KEY_BACKSPACE, KEY_DELETE],
-	## Roll tape: play the script, and hold it up against the table read.
-	&"roll": [KEY_R],
+	## Send the slip over the counter.
+	&"send": [KEY_S],
+	## Turn the right-hand panel between the counter's board and its response.
+	&"turn": [KEY_TAB],
 	&"pause": [KEY_ESCAPE],
 }
 const BUTTONS: Dictionary = {
@@ -23,7 +25,8 @@ const BUTTONS: Dictionary = {
 	&"move_down": [JOY_BUTTON_DPAD_DOWN],
 	&"confirm": [JOY_BUTTON_A],
 	&"erase": [JOY_BUTTON_X],
-	&"roll": [JOY_BUTTON_Y],
+	&"send": [JOY_BUTTON_Y],
+	&"turn": [JOY_BUTTON_BACK],
 	&"pause": [JOY_BUTTON_START],
 }
 const AXES: Dictionary = {

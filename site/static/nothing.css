@@ -85,30 +85,28 @@ body.an { margin: 0; color: var(--paper); font: 1.0625rem/1.6 var(--body);
 .an-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 24px; }
 @media (max-width: 860px) { .an-pair { grid-template-columns: 1fr; } }
 
-/* The example scene: the locked script, the table read, the cue cards */
+/* The example scene: the request slip, what comes back, the cards */
 .an-scene { margin: 28px 0 0; display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 12px; }
 .an-scene > div { min-width: 0; border: 3px solid var(--line); }
 .an-scene h3 { font: 600 0.8rem/1 var(--button); letter-spacing: 0.08em; text-transform: uppercase; margin: 0; padding: 7px 10px; color: var(--parchment); }
 .an-scene pre { margin: 0; padding: 10px 12px; font: 1.35rem/1.15 var(--mono); overflow-x: auto; }
 .an-script { background: var(--parchment); color: var(--wood); }
 .an-script h3 { background: var(--brick); }
-.an-script .cue { background: rgba(127, 214, 207, 0.4); }
 .an-read { background: var(--parchment); color: var(--wood); }
 .an-read h3 { background: var(--teal); }
 .an-read ol { margin: 0; padding: 10px 12px 12px 2.2em; font: 1.35rem/1.2 var(--mono); }
-.an-cards { grid-column: 1 / -1; border: 0 !important; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.an-table { grid-column: 1 / -1; border: 0 !important; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
 .an-chip { font: 1.5rem/1 var(--mono); padding: 6px 12px 6px 14px; background: var(--parchment); border: 2px solid var(--line);
   border-left: 5px solid var(--teal); color: var(--wood); }
 .an-chip-on { box-shadow: 0 0 0 3px var(--gold); }
+.an-chip-m { border-left-color: var(--brick); }
+.an-chip-p { border-left-color: var(--teal); }
+.an-chip-h { border-left-color: #33529e; }
+.an-chip-b { border-left-color: #99610d; }
+.an-script b, .an-read b { color: var(--brick); }
 .an-caption { color: var(--dim); font-size: 0.92rem; margin: 12px 0 0; }
 @media (max-width: 760px) { .an-scene { grid-template-columns: 1fr; } }
 
-/* JavaScript's words: keywords, calls, strings, numbers */
-.an .k { color: #33529e; }
-.an .c { color: #217f80; }
-.an .s { color: var(--brick); }
-.an .n { color: #99610d; }
-.an-logs .s, .an-logs { color: var(--glass-text); }
 
 /* The steps */
 .an-steps { list-style: none; padding: 0; margin: 32px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
@@ -119,7 +117,7 @@ body.an { margin: 0; color: var(--paper); font: 1.0625rem/1.6 var(--body);
 @media (max-width: 960px) { .an-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 560px) { .an-steps { grid-template-columns: 1fr; } }
 
-/* The episodes: a screenshot each, Stu's sets on script paper */
+/* The episodes: a screenshot each, Stu's sets on slip paper */
 .an-episodes { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 28px; }
 .an-episode { background: var(--panel); border: 2px solid var(--line); border-top: 6px solid var(--gold); padding: 20px; min-width: 0;
   display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 20px; align-items: start; }
@@ -140,7 +138,8 @@ body.an { margin: 0; color: var(--paper); font: 1.0625rem/1.6 var(--body);
 .an-demo pre { margin: 0; padding: 8px 10px; font: 1.3rem/1.2 var(--mono); overflow-x: auto; background: #e9dfc4; color: var(--wood); }
 .an-demo code { font-size: 1em; color: var(--wood); }
 .an-logs { background: var(--term) !important; color: var(--glass-text) !important; min-width: 7em; }
-.an-logs b { display: block; font: 600 0.7rem/1 var(--button); letter-spacing: 0.1em; color: var(--dim); margin-bottom: 4px; }
+.an-logs b { color: var(--sunset); }
+.an-demo { grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)) !important; }
 .an-card > p { margin: 0; padding: 10px 12px 12px; font-size: 0.92rem; line-height: 1.5; }
 
 /* The cast */

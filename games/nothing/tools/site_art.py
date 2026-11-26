@@ -24,11 +24,10 @@ FONTS = ROOT / "assets" / "fonts"
 
 # Part of a screenshot's name -> the name the page uses.
 PAGE = {
-    "_title.png": "title", "prologue_4": "intro", "card_then": "card", "1d_rolling": "callback",
-    "2c_rolling": "wait", "3d_rolling": "promise", "4d_rolling": "chain", "5d_rolling": "tableread",
-    "1a_missed": "missed",
+    "_title.png": "title", "prologue_4": "intro", "card_delete": "card", "1c_sending": "order",
+    "2c_sending": "counter", "3a_sending": "duplicate", "4c_sending": "mail", "5d_sending": "tableread",
 }
-CAST = ["stu", "lenny", "dana", "zelnick", "vernon", "pratt"]
+CAST = ["stu", "lenny", "dana", "zelnick", "kasimir", "vernon", "pratt"]
 
 CREAM = (252, 245, 227)
 MUSTARD = (232, 176, 58)
@@ -69,23 +68,23 @@ def card() -> None:
 
     put((left, 40), "A GAME ABOUT", righteous(54), CREAM)
     put((left - 4, 98), "NOTHING", righteous(112), MUSTARD)
-    put((left, 236), "Cue the lines. Roll tape.", mono, CREAM)
-    words = "Learn the JavaScript event loop"
+    put((left, 236), "Make the slip. Send it.", mono, CREAM)
+    words = "Learn HTTP and REST APIs"
     d.rectangle((left, 292, left + 32 + int(d.textlength(words, font=small)), 338), fill=BRICK)
     d.text((left + 16, 296), words, font=small, fill=CREAM)
     put((left, 362), "a __dunder_quest__ game", small, MUSTARD_LIGHT)
-    # A scrap of script, so the card says what kind of game it is.
+    # A request slip, so the card says what kind of game it is.
     page = (left, 418, 1168, 598)
     d.rectangle(page, fill=PAPER, outline=(168, 156, 140), width=3)
     lines = [
-        [("setTimeout", TEAL), ("(() => {", INK)],
-        [("  log", TEAL), ("(", INK), ('"Zelnick bursts in"', BRICK), (");", INK)],
-        [("}, ", INK), ("0", (153, 97, 13)), (");", INK)],
-        [("log", TEAL), ("(", INK), ('"Stu sits down"', BRICK), (");", INK)],
+        [("POST /orders HTTP/1.1", BRICK)],
+        [("Content-Type: application/json", BLUE)],
+        [('{"item":"toast","table":4}', (153, 97, 13))],
+        [("HTTP/1.1 201 Created", TEAL)],
     ]
-    for row, words in enumerate(lines):
+    for row, words_on in enumerate(lines):
         x = left + 20
-        for word, fill in words:
+        for word, fill in words_on:
             d.text((x, 426 + row * 40), word, font=small, fill=fill)
             x += int(d.textlength(word, font=small))
     # Stu and Lenny, in the doorway.

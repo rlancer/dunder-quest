@@ -7,10 +7,10 @@ extends Node
 ##
 ## It goes further than a play-through does: the title and the TV guide in
 ## every state, each page of the prologue, every line of talk, every one of
-## Stu's sets, and every scene in the writers' room as briefed, with each
-## card under the cursor and each hook picked, every way its cards can go on
-## (at the top and the foot of the page), every step of its solution's take
-## on the event loop, and everything Stu can say about a take or a card;
+## Stu's sets, and every scene at the counter as briefed, with each card
+## under the cursor, every slip its cards can make and what comes back (on
+## the response and the board), a slip partway through sending, and
+## everything Stu can say about a take or a slip that can't go;
 ## then each episode's title card, every and-scene banner and each end card.
 ## All of it by keys and by touch.
 ##
@@ -164,7 +164,7 @@ func _cards() -> void:
 		card.closed.emit()
 
 
-# --- The writers' room -----------------------------------------------------------
+# --- The counter ------------------------------------------------------------------
 
 func _desks() -> void:
 	var holder := Control.new()
@@ -182,73 +182,58 @@ func _desks() -> void:
 		var scenes: Array = e.scenes
 		for i in scenes.size():
 			var s: Dictionary = scenes[i]
-			# As briefed, with takes in three figures.
+			# As briefed, with takes in three figures, and the board.
 			b.setup(s, longest_header, "Scene %d of %d" % [i + 1, scenes.size()], 188)
 			await _look()
-			# Every card under the cursor, and every hook picked.
-			for at in (s.cues as Array).size():
+			# Every card under the cursor, and every button.
+			for at in (s.cards as Array).size():
 				b.focus = at
 				b.queue_redraw()
 				await _look(1)
 			for at in Builder.BUTTONS.size():
-				b.focus = (s.cues as Array).size() + at
+				b.focus = (s.cards as Array).size() + at
 				b.queue_redraw()
 				await _look(1)
-			for at in b.slots.size():
-				b.pick = at
-				b._follow()
+			# Every slip the cards can make, as written, and what came back,
+			# on both of the right-hand panel's pages.
+			for cards: Array in Http.slips(s.cards):
+				b.cards = cards.duplicate()
+				b.result = {}
+				b.said = ""
 				b.queue_redraw()
 				await _look(1)
-			# Every way the cards can go on, each at both ends of the page,
-			# and a few of them rolled, with every line aired.
-			var rolled := 0
-			for cues: Dictionary in Loop.placements(s):
-				b.cues = cues.duplicate()
-				b.cards = {}
-				var k := 0
-				for slot: String in cues:
-					b.cards[slot] = k
-					k += 1
-				b._refresh()
-				for scroll: int in [0, maxi(b.page.size() - Builder.ROWS, 0)]:
-					b.scroll = scroll
+				var take := Judge.judge(s, cards)
+				if take.has("refused"):
+					continue
+				b.result = take
+				b.arrived = (take.lines as Array).size()
+				for page: String in ["response", "board"]:
+					b.page = page
 					b.queue_redraw()
 					await _look(1)
-				if rolled < 3:
-					rolled += 1
-					b.roll()
-					for _f in 400:
-						if not b.busy:
-							break
-						await get_tree().process_frame
-					await _look()
-				b.busy = false
-			# Every step of the solution's take, on the event loop.
-			b.cues = (s.solution as Dictionary).duplicate()
-			b._refresh()
-			b.result = Judge.judge(s, b.cues)
-			b.playing = true
+				b.page = "response"
+			# A slip with only a path on it, and one partway through sending.
+			b.cards = [str(s.solution[1])]
+			b.result = {}
+			b.queue_redraw()
+			await _look(1)
+			b.cards = (s.solution as Array).duplicate()
+			b.send()
 			b.busy = true
-			for at in (b.result.trace as Array).size():
-				b.step = at
-				b.aired = 0
-				for j in at + 1:
-					if str(b.result.trace[j].kind) == "log":
-						b.aired += 1
-				b.queue_redraw()
-				await _look(1)
-			b.playing = false
+			b.arrived = 1
+			b.queue_redraw()
+			await _look(1)
 			b.busy = false
 			# Everything Stu can say about a take, at its longest, with the hint under it.
-			var longest := "W".repeat(18)
-			for why: String in ["miss", "nocue"]:
+			var longest := "000 Precondition Required"
+			for why: String in ["miss", "wrong", "400", "401", "403", "404", "405", "406", "412", "415", "428"]:
 				for template: String in Story.stock(why):
 					b.said = template.replace("{got}", longest).replace("{want}", longest)
 					for note: String in ["", "Hint: %s" % s.hint]:
 						b.note = note
 						b.queue_redraw()
 						await _look(1)
-			# And about a card that won't go.
+			# And about a slip that can't go.
 			b.note = ""
 			for key: String in Story.data().errors:
 				b.said = Story.error_text(key)
@@ -285,10 +270,10 @@ func _overlays() -> void:
 				scene.scene = scenes[i]
 				scene.scene_index = i
 				scene.builder.setup(scenes[i], "Episode", "Scene", 0)
-				scene.builder.cues = (scenes[i].solution as Dictionary).duplicate()
+				scene.builder.cards = (scenes[i].solution as Array).duplicate()
 				for extra: int in [0, 1]:
 					if extra == 1:
-						scene.builder.cues["zz"] = "then"
+						scene.builder.cards.append("Accept: */*")
 					for quip: String in Story.stock("par") + Story.stock("over"):
 						scene._quip = quip
 						scene.state = "won"

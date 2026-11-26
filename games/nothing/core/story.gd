@@ -1,13 +1,13 @@
 class_name Story
 extends RefCounted
 
-## The script of every episode, from data/episodes.json: the cast, each
-## episode's talk, its scenes (a brief, the locked script with its hooks,
-## the cue cards on the table, the table read the lines have to air in, and
-## the cues that get it there), Stu's lesson cards, what each card means in
-## plain words, and the stock lines for a take that misses. tests/replay.gd
-## reads the same file, and tests/verify_loop.ts holds every program it can
-## make to the real JavaScript.
+## The script of every episode, from data/episodes.json: the cast, the
+## counters (each a little REST API), each episode's talk, its scenes (a
+## brief, the counter and the data on it, the cards on the table, what the
+## scene wants back, and the slip that gets it), Stu's lesson cards, what
+## each card means in plain words, and the stock lines for a request that
+## misses. tests/replay.gd reads the same file, and tests/verify_http.ts holds
+## every request it can make to a real HTTP server.
 
 const PATH := "res://data/episodes.json"
 
@@ -56,25 +56,28 @@ static func card(id: String) -> Dictionary:
 	return out
 
 
-## Why a card won't go where it was put.
+## Why a slip can't be sent.
 static func error_text(why: String) -> String:
-	return str((data().get("errors", {}) as Dictionary).get(why, "That card won't go there."))
+	return str((data().get("errors", {}) as Dictionary).get(why, "That slip can't go."))
 
 
-## What a cue card does, in plain words.
-static func meaning(cue: String) -> String:
+## What a card on the table means, in plain words.
+static func meaning(card: String) -> String:
 	var glossary: Dictionary = data().get("glossary", {})
-	if glossary.has(cue):
-		return str(glossary[cue])
-	var parts := cue.split(":")
-	var text := str(glossary.get(parts[0], ""))
-	return text.replace("{ms}", parts[1] if parts.size() > 1 else "")
+	match Http.kind(card):
+		"method":
+			return str(glossary.get(card, ""))
+		"path":
+			return str(glossary.get("path", ""))
+		"body":
+			return str(glossary.get("body", ""))
+	return str(glossary.get(str(Http.split_header(card)[0]), ""))
 
 
 ## The fewest cards a scene can be played with: its written solution's.
-## tests/replay.gd proves nothing with fewer plays.
+## tests/replay.gd proves nothing with fewer works.
 static func par(scene: Dictionary) -> int:
-	return (scene.get("solution", {}) as Dictionary).size()
+	return (scene.get("solution", []) as Array).size()
 
 
 ## Every line of dialogue in the episodes, in order: {"who", "text"}.

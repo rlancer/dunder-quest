@@ -1,10 +1,10 @@
 class_name LessonCard
 extends Control
 
-## Stu's set: a lesson as a stand-up bit at the Rimshot, taped up before the
-## scene that needs it. What the new cards mean in plain words, read aloud
-## by Stu, and a little script with what it logs, played by the game's own
-## event loop (and checked against the real one by tests/verify_loop.ts).
+## Stu's set: a lesson as a stand-up bit at the Rimshot, put up before the
+## scene that needs it, read aloud by Stu, with a request and the response a
+## counter gives it, answered by the game's own HTTP (and held to a real
+## HTTP server by tests/verify_http.ts).
 
 signal closed
 
@@ -109,40 +109,50 @@ func _draw() -> void:
 	Fit.end()
 	Fit.centred(self, Palette.titles(), 240, SHEET.position.y + 42, str(card.get("title", "")), 19, Palette.BRICK)
 	var y := SHEET.position.y + 58
-	y += Fit.para(self, mono, Vector2(left, y), str(card.get("text", "")), 16, Palette.INK, wide, 12) * 12 + 3
-	for pair: Array in card.get("chips", []):
-		var words := str(pair[0])
-		var w := Ui.tag_width(words)
-		Ui.tag(self, Rect2(left, y - 10, w, 16), words)
-		var lines := Fit.para(self, mono, Vector2(left + w + 8, y + 2), str(pair[1]), 16, Palette.INK, wide - w - 8, 12)
-		y += maxi(lines * 12, 16) + 4
+	y += Fit.para(self, mono, Vector2(left, y), str(card.get("text", "")), 16, Palette.INK, wide, 12) * 12 + 2
 	if card.has("demo"):
 		_draw_demo(left, y, wide)
 	Fit.end()
 	Ui.prompt(self, "%s: got it" % Controls.go_key())
 
 
-## The card's script, and beside it what it logs, a line at a time.
+## The card's request on a slip, and under it the response, a line at a time.
 func _draw_demo(left: float, top: float, wide: float) -> void:
-	var program: Array = card.demo
-	var code := Loop.lines(program, false)
-	var ran := Loop.run(program)
-	var out: Array = ran.out
-	var rows := maxi(code.size(), out.size() + 1)
-	var split := wide - 104
-	var page := Rect2(left, top, split - 4, rows * Ui.ROW + 8)
-	draw_rect(page, Palette.PAPER_DARK)
-	Fit.cover(page)
-	Fit.begin(page, "the set's script")
-	for i in code.size():
-		var line: Dictionary = code[i]
-		Ui.code(self, Vector2(page.position.x + 5 + int(line.indent) * 9, page.position.y + 13 + i * Ui.ROW), str(line.text), false)
+	var demo: Dictionary = card.demo
+	var scene := {"counter": demo.counter, "data": demo.data, "versions": demo.get("versions", {}), "goal": {"status": 0}}
+	var take := Judge.judge(scene, demo.request)
+	var mono := Palette.mono()
+	var asked := _wrap(take.request, wide - 10)
+	var slip := Rect2(left, top, wide, asked.size() * Ui.ROW + 8)
+	draw_rect(slip, Palette.PAPER_DARK)
+	Fit.cover(slip)
+	Fit.begin(slip, "the set's request")
+	for i in asked.size():
+		Fit.text(self, mono, Vector2(slip.position.x + 5, slip.position.y + 13 + i * Ui.ROW), str(asked[i]), 16, Palette.BRICK if i == 0 else Palette.INK)
 	Fit.end()
-	var screen := Rect2(left + split, top, wide - split, rows * Ui.ROW + 8)
+	var answered := _wrap(take.get("lines", []), wide - 10)
+	var screen := Rect2(left, slip.end.y + 3, wide, answered.size() * Ui.ROW + 8)
 	Ui.glass(self, screen)
-	Fit.begin(screen, "what the set's script logs")
-	Fit.text(self, Palette.pixel(), Vector2(screen.position.x + 5, screen.position.y + 11), "LOGS", 10, Palette.GLASS_DIM)
-	for i in out.size():
-		var glow := 1.0 if Fit.audit else clampf((_clock - 1.2 - i * 0.6) / 0.3, 0.0, 1.0)
-		Fit.text(self, Palette.mono(), Vector2(screen.position.x + 5, screen.position.y + 13 + (i + 1) * Ui.ROW), str(out[i]), 16, Color(Palette.GLASS_TEXT, glow))
+	Fit.begin(screen, "the set's response")
+	for i in answered.size():
+		var glow := 1.0 if Fit.audit else clampf((_clock - 1.0 - i * 0.25) / 0.3, 0.0, 1.0)
+		var color := Palette.MUSTARD_LIGHT if i == 0 else Palette.GLASS_TEXT
+		Fit.text(self, mono, Vector2(screen.position.x + 5, screen.position.y + 13 + i * Ui.ROW), str(answered[i]), 16, Color(color, glow))
 	Fit.end()
+
+
+## Lines broken to fit `wide`, as they'd carry on in a terminal.
+func _wrap(lines: Array, wide: float) -> Array:
+	var font := Palette.mono()
+	var out: Array = []
+	for line: String in lines:
+		var rest := line
+		if rest == "":
+			out.append("")
+		while rest != "":
+			var cut := rest.length()
+			while cut > 1 and Fit.width(font, rest.left(cut), 16) > wide:
+				cut -= 1
+			out.append(rest.left(cut))
+			rest = rest.substr(cut)
+	return out

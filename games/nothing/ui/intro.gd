@@ -2,16 +2,15 @@ class_name Intro
 extends Control
 
 ## The prologue, before the first episode: four friends on the Upper West
-## Side, a comedian who notices things, a pilot due Friday, and a script
-## nobody is allowed to change. It is also the game's answer to "what is
-## the event loop?" for someone who has never written JavaScript: under the
-## story runs the word for what was just said.
+## Side, a comedian who notices things, and a pilot due Friday. It is also
+## the game's answer to "what is HTTP?" for someone who has never looked
+## under a website: under the story runs the word for what was just said.
 ##
-## The scripts that type themselves here are played by the game's own event
-## loop (loop/engine.gd), so what they log is what JavaScript logs. Enter
-## (or any key, or a tap) turns the page, the left arrow (or a tap on the
-## left edge) turns back one, Skip (or Esc) goes straight on, and left alone
-## it plays itself.
+## The requests that write themselves out here are answered by the game's
+## own HTTP (http/http.gd), so what comes back is what a real server sends.
+## Enter (or any key, or a tap) turns the page, the left arrow (or a tap on
+## the left edge) turns back one, Skip (or Esc) goes straight on, and left
+## alone it plays itself.
 
 const PANEL := Rect2(0, 198, 480, 72)
 const SHEET_X := 236.0
@@ -20,7 +19,7 @@ const TYPE := 40.0
 ## Seconds a finished page waits before it turns by itself.
 const AFTER := 1.4
 ## Seconds between one line of a demonstration landing and the next.
-const LINE_EVERY := 0.5
+const LINE_EVERY := 0.45
 
 ## The episode to open afterwards; 0 goes back to the title.
 static var then: int = 1
@@ -68,12 +67,13 @@ func _ready() -> void:
 
 
 ## The prologue's pages: where it's set, who's there, the line (told by the
-## narrator unless `who` says it), the word for it (`term`), and a script
-## that types itself and plays (`demo`: its statements, when the first line
-## lands).
+## narrator unless `who` says it), the word for it (`term`), and a request
+## that writes itself out and is answered (`demo`: the counter, its data,
+## the cards, and when the first line lands).
 static func script_beats() -> Array:
 	var counts := ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"]
 	var count: String = counts[Story.count()] if Story.count() < counts.size() else str(Story.count())
+	var diner := {"menu": ["coffee", "toast", "tuna on rye"], "orders": [{"id": 7, "item": "toast", "table": 4}]}
 	return [
 		{"bg": "street", "music": "intro",
 			"text": "New York. The Upper West Side. Four friends, one coffee shop, and absolutely nothing going on."},
@@ -82,27 +82,28 @@ static func script_beats() -> Array:
 		{"bg": "apartment", "faces": ["dana", "zelnick"], "sound": "door",
 			"text": "Dana Wexler, his ex, still his friend, mostly out of spite. Zelnick, from across the hall, who has never once knocked."},
 		{"bg": "club", "who": "stu", "faces": ["stu"],
-			"demo": {"program": [{"log": "first"}, {"log": "second"}], "at": 2.6},
-			"text": "\"You ever notice JavaScript only does one thing at a time? One! I've dated people like that.\"",
-			"term": "a script runs one line at a time, top to bottom"},
+			"demo": {"counter": "vics", "data": diner, "request": ["GET", "/menu"], "at": 2.4},
+			"text": "\"You ever notice the whole internet is just people asking for things? Give me the menu. Give me the weather.\"",
+			"term": "a request: a method and a path. GET means give me"},
 		{"bg": "club", "who": "stu", "faces": ["stu"],
-			"demo": {"program": [{"timeout": 0, "body": [{"log": "later"}]}, {"log": "now"}], "at": 1.6},
-			"text": "\"So how does it wait for anything? It doesn't! It hands the job a function to call back later, and keeps going.\"",
-			"term": "a callback: a function handed over, to be called later"},
+			"demo": {"counter": "vics", "data": diner, "request": ["GET", "/orders/9"], "at": 1.4},
+			"text": "\"And it always answers with a number. 200, it's OK. 404, there's nothing there.\"",
+			"term": "a response: a status code, headers, then the body"},
 		{"bg": "diner", "who": "lenny", "faces": ["lenny", "stu"],
-			"text": "\"Later? When's later? Who decides later? I need a time!\"",
-			"say": "[panicking] Later? When's later? Who decides later? I need a time!"},
-		{"bg": "diner", "who": "stu", "faces": ["stu", "lenny"],
-			"text": "\"Later is when nothing else is running. Nothing! The whole thing runs on nothing.\"",
-			"term": "the event loop: when nothing's running, it runs what's waiting"},
+			"text": "\"A number? I don't want a number! I want the soup!\"",
+			"say": "[exasperated] A number? I don't want a number! I want the soup!"},
+		{"bg": "diner", "who": "stu", "faces": ["stu"],
+			"demo": {"counter": "vics", "data": diner, "request": ["POST", "/orders", "Content-Type: application/json", "{\"item\":\"soup\",\"table\":4}"], "at": 1.4},
+			"text": "\"Then you POST an order, and say what it is. 201, Created. That's HTTP. Every app on your phone talks like this.\"",
+			"term": "HTTP: how every website and app asks a server for things"},
 		{"bg": "network", "music": "network", "sound": "sting", "faces": ["pratt"],
-			"text": "And the network wants their pilot by Friday. Mr. Pratt, who runs the network, has never been seen to laugh."},
+			"text": "And on Friday, Stu and Lenny pitch the network a show where four friends run errands and nothing happens. Mr. Pratt has never been seen to laugh."},
 		{"bg": "apartment", "music": "apartment", "who": "lenny", "faces": ["lenny"],
-			"text": "\"And legal locked the pages! We can't move a single line!\"",
-			"say": "[panicking] And legal locked the pages! We can't move a single line!"},
+			"text": "\"So we need material! Errands! Go out there and get something done!\"",
+			"say": "[excited] So we need material! Errands! Go out there and get something done!"},
 		{"bg": "title", "music": "title", "who": "stu", "faces": ["stu", "lenny"],
-			"text": "\"Then we don't move them. We cue them. %s episodes, kid. Read the table read, cue the lines, roll tape.\"" % count,
-			"term": "put cue cards on lines · roll tape · match the table read"},
+			"text": "\"%s counters, kid. Read what the scene wants. Make the slip. Send it.\"" % count,
+			"term": "put cards on the slip · send it · get what the scene wants"},
 	]
 
 
@@ -129,12 +130,19 @@ func beat() -> Dictionary:
 	return _beats[_index] if _index >= 0 and _index < _beats.size() else {}
 
 
-## How many lines of a page's script have landed by now.
+## A page's demonstration: its request's lines and the response's.
+static func demo_take(demo: Dictionary) -> Dictionary:
+	return Judge.judge({"counter": demo.counter, "data": demo.data, "goal": {"status": 0}}, demo.request)
+
+
+## How many lines of a page's demonstration (the request's, then the
+## response's) have landed by now.
 func demo_lines() -> int:
 	var demo: Dictionary = beat().get("demo", {})
 	if demo.is_empty():
 		return 0
-	var total := Loop.lines(demo.program, false).size()
+	var take := demo_take(demo)
+	var total: int = (take.request as Array).size() + (take.get("lines", []) as Array).size()
 	var landed := int(floor((_t - float(demo.get("at", 0.0))) / LINE_EVERY)) + 1
 	return clampi(landed, 0, total)
 
@@ -178,7 +186,7 @@ func _done_at() -> float:
 	var b := beat()
 	var told := maxf(str(b.get("text", "")).length() / TYPE, _voice)
 	var demo: Dictionary = b.get("demo", {})
-	var shown := float(demo.get("at", 0.0)) + Loop.lines(demo.program, false).size() * LINE_EVERY + 2.4 if not demo.is_empty() else 0.0
+	var shown := float(demo.get("at", 0.0)) + 8 * LINE_EVERY + 1.6 if not demo.is_empty() else 0.0
 	return maxf(told, shown)
 
 
@@ -296,29 +304,47 @@ func _draw_page() -> void:
 		_canvas.draw_rect(Rect2(0, 0, 480, 270), Color(0, 0, 0, _black))
 
 
-## The page's script on a sheet, a line landing at a time, and under it
-## what it logs once it's all there.
+## The page's request on a slip, a line landing at a time, and under it the
+## response as it comes back.
 func _draw_demo(demo: Dictionary) -> void:
-	var code := Loop.lines(demo.program, false)
-	var shown := demo_lines() if not Fit.audit else code.size()
-	var sheet := Rect2(SHEET_X, 24, 232, code.size() * Ui.ROW + 22)
+	var take := demo_take(demo)
+	var asked: Array = take.request
+	var answered: Array = take.get("lines", [])
+	var shown := demo_lines() if not Fit.audit else asked.size() + answered.size()
+	var sheet := Rect2(SHEET_X, 22, 232, _rows(asked).size() * Ui.ROW + 22)
 	_canvas.draw_rect(sheet.grow(2), Color(0, 0, 0, 0.35))
 	Ui.paper(_canvas, sheet)
-	Fit.begin(sheet, "the prologue's script")
-	Ui.head(_canvas, sheet, "SCRIPT.JS", Palette.BRICK)
-	for i in shown:
-		var line: Dictionary = code[i]
-		Ui.code(_canvas, Vector2(sheet.position.x + 8 + int(line.indent) * 9, sheet.position.y + 25 + i * Ui.ROW), str(line.text), false)
-	if shown < code.size() and Fit.blink(fmod(_t, 0.7) < 0.45):
-		_canvas.draw_rect(Rect2(sheet.position.x + 8, sheet.position.y + 16 + shown * Ui.ROW, 6, 11), Palette.BRICK)
+	Fit.begin(sheet, "the prologue's request")
+	Ui.head(_canvas, sheet, "REQUEST", Palette.BRICK)
+	var rows := _rows(asked.slice(0, mini(shown, asked.size())))
+	for i in rows.size():
+		Fit.text(_canvas, Palette.mono(), Vector2(sheet.position.x + 6, sheet.position.y + 25 + i * Ui.ROW), str(rows[i]), 16, Palette.BRICK if i == 0 else Palette.INK)
 	Fit.end()
-	var whole := shown == code.size()
-	var out: Array = Loop.run(demo.program).out if whole else []
-	var glass := Rect2(SHEET_X, sheet.end.y + 4, 232, (maxi(out.size(), 1) + 1) * Ui.ROW + 8)
+	if shown <= asked.size():
+		return
+	var back := _rows(answered.slice(0, shown - asked.size()))
+	var glass := Rect2(SHEET_X, sheet.end.y + 4, 232, _rows(answered).size() * Ui.ROW + 22)
 	_canvas.draw_rect(glass.grow(2), Color(0, 0, 0, 0.35))
 	Ui.glass(_canvas, glass)
-	Fit.begin(glass, "what the prologue's script logs")
-	Fit.text(_canvas, Palette.pixel(), Vector2(glass.position.x + 6, glass.position.y + 11), "LOGS", 10, Palette.GLASS_DIM)
-	for i in out.size():
-		Fit.text(_canvas, Palette.mono(), Vector2(glass.position.x + 6, glass.position.y + 13 + (i + 1) * Ui.ROW), str(out[i]), 16, Palette.GLASS_TEXT)
+	Fit.begin(glass, "the prologue's response")
+	Ui.head(_canvas, glass, "RESPONSE", Palette.TEAL)
+	for i in back.size():
+		Fit.text(_canvas, Palette.mono(), Vector2(glass.position.x + 6, glass.position.y + 25 + i * Ui.ROW), str(back[i]), 16, Palette.MUSTARD_LIGHT if i == 0 else Palette.GLASS_TEXT)
 	Fit.end()
+
+
+## Lines broken to fit the demonstration's width.
+func _rows(lines: Array) -> Array:
+	var font := Palette.mono()
+	var out: Array = []
+	for line: String in lines:
+		var rest := line
+		if rest == "":
+			out.append("")
+		while rest != "":
+			var cut := rest.length()
+			while cut > 1 and Fit.width(font, rest.left(cut), 16) > 220:
+				cut -= 1
+			out.append(rest.left(cut))
+			rest = rest.substr(cut)
+	return out

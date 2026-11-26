@@ -1,15 +1,13 @@
 class_name Ui
 extends RefCounted
 
-## The pieces every screen is drawn from: plum panels, script paper, cue
-## cards, JavaScript coloured by what each word is, stars, ticks.
+## The pieces every screen is drawn from: plum panels, slip paper, cards
+## coloured by what they are, a monitor's glass, stars, ticks.
 
 const PORTRAITS := "res://assets/sprites/%s.png"
 ## A row of code or of a list.
 const ROW := 12.0
 
-const KEYWORDS := ["const", "async", "function", "await", "new", "return", "let"]
-const CALLS := ["setTimeout", "queueMicrotask", "Promise", "resolve", "then", "log", "wait", "console"]
 
 static var _portraits: Dictionary = {}
 
@@ -30,7 +28,7 @@ static func panel(canvas: CanvasItem, rect: Rect2) -> void:
 	Fit.cover(rect)
 
 
-## A sheet of script paper.
+## A sheet of paper: a request slip, a lesson card.
 static func paper(canvas: CanvasItem, rect: Rect2) -> void:
 	canvas.draw_rect(rect, Palette.PAPER_LINE)
 	canvas.draw_rect(rect.grow(-1), Palette.PAPER)
@@ -39,7 +37,7 @@ static func paper(canvas: CanvasItem, rect: Rect2) -> void:
 	Fit.cover(rect)
 
 
-## Two brass brads down the left of a script page.
+## Two brass brads down the left of a sheet.
 static func brads(canvas: CanvasItem, rect: Rect2) -> void:
 	for y: float in [rect.position.y + 24.0, rect.end.y - 24.0]:
 		canvas.draw_rect(Rect2(rect.position.x + 3, y - 2, 4, 4), Palette.MUSTARD)
@@ -53,101 +51,35 @@ static func glass(canvas: CanvasItem, rect: Rect2) -> void:
 	Fit.cover(rect)
 
 
-## A cue card: a little white card with a teal edge and its code on it.
-static func chip(canvas: CanvasItem, rect: Rect2, cue: String, lit: bool, used: bool = false) -> void:
+## A card: a little white card with a stripe the colour of what it is
+## (a method, a path, a header or a body) and its words on it.
+static func chip(canvas: CanvasItem, rect: Rect2, card: String, lit: bool, used: bool = false) -> void:
 	var face := Palette.PAPER_DARK if used else Palette.CREAM
 	canvas.draw_rect(rect, Palette.MUSTARD_LIGHT if lit else Palette.PLUM_DARK)
 	canvas.draw_rect(rect.grow(-1), face.lightened(0.25) if lit and not used else face)
-	canvas.draw_rect(Rect2(rect.position.x + 1, rect.position.y + 1, 2, rect.size.y - 2), Palette.PAPER_LINE if used else Palette.TEAL)
-	canvas.draw_rect(Rect2(rect.position.x + 1, rect.end.y - 3, rect.size.x - 2, 2), face.darkened(0.15))
-	var label := Loop.cue_label(cue)
-	var wide := Fit.width(Palette.mono(), label, 16)
-	var at := Vector2(roundf(rect.position.x + 2 + (rect.size.x - 2 - wide) / 2.0), rect.position.y + rect.size.y - 6.0)
-	if used:
-		Fit.text(canvas, Palette.mono(), at, label, 16, Palette.PAPER_LINE)
-	else:
-		code(canvas, at, label, false)
+	canvas.draw_rect(Rect2(rect.position.x + 1, rect.position.y + 1, 3, rect.size.y - 2), kind_color(Http.kind(card), false))
+	canvas.draw_rect(Rect2(rect.position.x + 1, rect.end.y - 2, rect.size.x - 2, 1), face.darkened(0.15))
+	var wide := Fit.width(Palette.mono(), card, 16)
+	var at := Vector2(roundf(rect.position.x + 3 + (rect.size.x - 3 - wide) / 2.0), rect.position.y + rect.size.y - 5.0)
+	Fit.text(canvas, Palette.mono(), at, card, 16, Palette.PAPER_LINE if used else Palette.INK)
 
 
-## A piece of code on a little card, as Stu's notes show them.
-static func tag(canvas: CanvasItem, rect: Rect2, words: String) -> void:
-	canvas.draw_rect(rect, Palette.PAPER_LINE)
-	canvas.draw_rect(rect.grow(-1), Palette.CREAM)
-	canvas.draw_rect(Rect2(rect.position.x + 1, rect.position.y + 1, 2, rect.size.y - 2), Palette.TEAL)
-	code(canvas, Vector2(rect.position.x + 6, rect.end.y - 5), words, false)
+static func chip_width(card: String) -> float:
+	return maxf(20.0, Fit.width(Palette.mono(), card, 16) + 12.0)
 
 
-static func tag_width(words: String) -> float:
-	return Fit.width(Palette.mono(), words, 16) + 10.0
-
-
-static func chip_width(cue: String) -> float:
-	return maxf(18.0, Fit.width(Palette.mono(), Loop.cue_label(cue), 16) + 12.0)
-
-
-## What a piece of JavaScript is, a token at a time: [text, kind], where kind
-## is "keyword", "call", "string", "number" or "plain".
-static func tokens(line: String) -> Array:
-	var out: Array = []
-	var i := 0
-	while i < line.length():
-		var c := line[i]
-		if c == "\"":
-			var j := line.find("\"", i + 1)
-			j = line.length() - 1 if j < 0 else j
-			out.append([line.substr(i, j - i + 1), "string"])
-			i = j + 1
-		elif _is_word(c):
-			var j := i
-			while j < line.length() and (_is_word(line[j]) or line[j].is_valid_int()):
-				j += 1
-			var word := line.substr(i, j - i)
-			out.append([word, "keyword" if KEYWORDS.has(word) else ("call" if CALLS.has(word) else "plain")])
-			i = j
-		elif c.is_valid_int():
-			var j := i
-			while j < line.length() and line[j].is_valid_int():
-				j += 1
-			out.append([line.substr(i, j - i), "number"])
-			i = j
-		else:
-			out.append([c, "plain"])
-			i += 1
-	return out
-
-
-static func _is_word(c: String) -> bool:
-	return c == "_" or (c >= "a" and c <= "z") or (c >= "A" and c <= "Z")
-
-
+## The colour of a kind of card: a method, a path, a header, a body.
 static func kind_color(kind: String, dark: bool) -> Color:
 	match kind:
-		"keyword":
-			return Palette.MUSTARD_LIGHT if dark else Palette.BLUE
-		"call":
-			return Palette.TEAL_LIGHT if dark else Palette.TEAL
-		"string":
+		"method":
 			return Palette.BRICK_LIGHT if dark else Palette.BRICK
-		"number":
+		"path":
+			return Palette.TEAL_LIGHT if dark else Palette.TEAL
+		"header":
+			return Palette.MUSTARD_LIGHT if dark else Palette.BLUE
+		"body":
 			return Palette.MUSTARD if dark else Color(0.6, 0.38, 0.05)
 	return Palette.GLASS_TEXT if dark else Palette.INK
-
-
-## A line of JavaScript with its baseline starting at `at`, each word in the
-## colour of what it is (on dark glass if `dark`). Returns its width.
-## Drawn a word at a time, so it's measured as one piece of text.
-static func code(canvas: CanvasItem, at: Vector2, line: String, dark: bool, tint: float = 1.0) -> float:
-	var font := Palette.mono()
-	var wide := Fit.width(font, line, 16)
-	Fit.measure(canvas, Rect2(at.x, at.y - 16 * Fit.RISE, wide, 16 * (Fit.RISE + Fit.DROP)), line)
-	var x := at.x
-	for token: Array in tokens(line):
-		var piece := str(token[0])
-		var color := kind_color(str(token[1]), dark)
-		color.a *= tint
-		canvas.draw_string(font, Vector2(x, at.y), piece, HORIZONTAL_ALIGNMENT_LEFT, -1, 16, color)
-		x += Fit.width(font, piece, 16)
-	return wide
 
 
 static func star(canvas: CanvasItem, centre: Vector2, radius: float, color: Color) -> void:

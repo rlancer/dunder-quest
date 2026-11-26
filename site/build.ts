@@ -13,8 +13,8 @@
  * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`,
  * The Good, the Bad and the Greedy, the regex game, in `greedy/` and
  * `greedy/play/`, Yes, Shell!, the shell game, in `shell/` and
- * `shell/play/`, and A Game About Nothing, the JavaScript event loop game,
- * in `nothing/` and `nothing/play/`.
+ * `shell/play/`, and A Game About Nothing, the HTTP game, in `nothing/` and
+ * `nothing/play/`.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
@@ -29,6 +29,7 @@
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { type Counter, asked, respond, wire } from "../games/nothing/http/counter.ts";
 
 const SITE = import.meta.dir;
 const ROOT = resolve(SITE, "..");
@@ -467,7 +468,7 @@ ${RESUME_JS}`, path: QUEST_PAGE });
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
-  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN, regular expressions in The Good, the Bad and the Greedy, the command line in Yes, Shell! and the event loop in A Game About Nothing. Play them in your browser.";
+  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN, regular expressions in The Good, the Bad and the Greedy, the command line in Yes, Shell! and HTTP in A Game About Nothing. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -499,9 +500,9 @@ function buildSplash(prefix = ""): string {
       "A town where everybody is named Hobson, and the law is the wanted poster. Write each one as a regular expression, "
       + "from a plain word to greedy and lazy, groups and the same word twice, and catch only who it says.",
       "Meet the Sheriff"],
-    ["game-an", "New · Learn async JavaScript", AN_NAME, `${prefix}nothing/`, `${prefix}nothing/play/`, "nothing.png", AN_ALT,
-      "Four friends, one coffee shop, and a sitcom pilot whose lines are locked. You can't move a line, only cue it, "
-      + "with setTimeout, promises and await, until the scene airs in the right order. The JavaScript event loop, from callbacks to async.",
+    ["game-an", "New · Learn HTTP", AN_NAME, `${prefix}nothing/`, `${prefix}nothing/play/`, "nothing.png", AN_ALT,
+      "Four friends, one coffee shop, and five counters in New York that run on rules. Every one is a web server: make each "
+      + "request from cards, from a GET for the menu to a PATCH with a token and an ETag, and get what the scene wants.",
       "Meet the gang"],
     ["game-ys", "Learn the shell", YS_NAME, `${prefix}shell/`, `${prefix}shell/play/`, "shell.png", YS_ALT,
       "A sandwich shop that ran on shouting, and a chef who came home with a system. Every station is a command and the "
@@ -550,10 +551,10 @@ function buildSplash(prefix = ""): string {
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, JavaScript, Git, SQL, regex or the shell?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, Git, SQL, regex, the shell or HTTP?</h2>
   <ul class="games">${cards}
   </ul>
-  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git, SQLite, JavaScript's RegExp, bash and a real JavaScript engine's event loop. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git, SQLite, JavaScript's RegExp, bash and a real web server. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 
 <section class="section" aria-labelledby="board-h">
@@ -570,13 +571,13 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL, regex, the shell and the event loop.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL, regex, the shell and HTTP.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`, social: true,
   });
 }
 
 const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN, "
-  + "The Good, the Bad and the Greedy, Yes, Shell! and A Game About Nothing: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex, the shell and the event loop. Clear a level and you're on the board.";
+  + "The Good, the Bad and the Greedy, Yes, Shell! and A Game About Nothing: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex, the shell and HTTP. Clear a level and you're on the board.";
 
 /** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
 function buildLeaderboards(prefix: string): string {
@@ -1097,7 +1098,7 @@ const GR_YOUTUBE_TAGS = "learn regex, regex tutorial, regular expressions, regex
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster. Yes, Shell! teaches the command line in a sandwich shop's kitchen, where every station is a command and the pass is a pipe. A Game About Nothing teaches the JavaScript event loop in a sitcom writers' room, where the lines are locked and you can only cue them.
+Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster. Yes, Shell! teaches the command line in a sandwich shop's kitchen, where every station is a command and the pass is a pipe. A Game About Nothing teaches HTTP and REST APIs at five counters in New York, where every errand is a request.
 
 Opus 5.5 built every game here: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -1105,7 +1106,7 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions" "learn bash" "command line" "yes shell" "event loop" "async javascript" "a game about nothing"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions" "learn bash" "command line" "yes shell" "learn http" "rest api" "a game about nothing"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
@@ -3523,7 +3524,7 @@ ${body}
 </main>
 <footer class="ys-foot">
   <p>Yes, Shell! One chef, one pass, and a kitchen that does exactly what you say.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the event loop game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the HTTP game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
 </footer>
 ${RESUME_JS}
 </body>
@@ -3531,121 +3532,80 @@ ${RESUME_JS}
 `;
 }
 
-// A Game About Nothing's page at /nothing/, the event loop game: a 1990s
-// sitcom apartment in plum, teal and mustard, with the game's own rounded
-// capitals (Righteous) for headings. The episodes, Stu's sets, the example
-// scene and what every script logs all come from
-// `nothing/data/episodes.json`, the data the game plays. The scripts are
-// written out here the way loop/engine.gd writes them (anLines below is the
-// same rules), and what each logs is the data's own `out`, which
-// `nothing/tests/replay.gd` holds to the game's event loop and
-// `nothing/tests/verify_loop.ts` holds to a real JavaScript engine.
+// A Game About Nothing's page at /nothing/, the HTTP game: a 1990s sitcom
+// apartment in plum, teal and mustard, with the game's own rounded capitals
+// (Righteous) for headings. The episodes, Stu's sets, the example scene and
+// every response on the page come from `nothing/data/episodes.json`, the
+// data the game plays, answered by `nothing/http/counter.ts`: the same
+// counters `nothing/tests/verify_http.ts` serves from a real HTTP server and
+// holds the game's own (http/http.gd) to.
 const AN_NAME = "A Game About Nothing";
 const AN_ALT = "A Game About Nothing: a corner coffee shop on a New York street at dusk, its window lit, beside brick apartment buildings with fire escapes.";
-const AN_DESC = "A Game About Nothing, a Dunder Quest game that teaches the JavaScript event loop: four friends, a sitcom pilot whose "
-  + "lines are locked, and a stack of cue cards. Cue the lines with setTimeout, promises and await until the scene airs in order. Free in your browser.";
+const AN_DESC = "A Game About Nothing, a Dunder Quest game that teaches HTTP and REST APIs: four friends, five counters in New York that "
+  + "run on rules, and a request slip made from cards. GET, POST, PUT, PATCH, DELETE, headers, status codes and ETags. Free in your browser.";
 // Each episode's screenshot, by episode id.
 const AN_SHOTS: Record<number, [string, string]> = {
-  1: ["callback.png", "The first episode's writers' room: the joke's punchline, laugh and bow each wrapped in setTimeout, airing after the setup"],
-  2: ["wait.png", "The second episode: a timer set inside another timer, Dana's and Lenny's returns cued for 700 and 1500 milliseconds, and the timers waiting on the event loop"],
-  3: ["promise.png", "The third episode: two setTimeout callbacks and two promise callbacks, with the microtask line emptying between the timers"],
-  4: ["chain.png", "The fourth episode: two promise chains taking turns a link at a time, and Lenny's line cued to wait for a timer"],
-  5: ["tableread.png", "The table read: async functions, an await wait(100) and an await in front of a call, with the event loop's clock running"],
+  1: ["order.png", "The first episode at Vic's Diner: a POST to /orders with a JSON body on the request slip, and the 201 Created coming back with its Location"],
+  2: ["counter.png", "The second episode at the broth counter: an order with the right Content-Type and every field, and the counter's response"],
+  3: ["duplicate.png", "The third episode at the Jade Lantern: a PUT, a PATCH or a DELETE to one table's own path"],
+  4: ["mail.png", "The fourth episode at the post office: a request with If-Match and the version on the board, and the answer it gets"],
+  5: ["tableread.png", "The table read: a PATCH with an Authorization token, Content-Type, If-Match and a JSON body, and the network's 200 OK"],
 };
 // The cast, in the order the page shows them, with their portraits.
 const AN_CAST: [string, string, string][] = [
   ["stu", "Stu Lerner", "A stand-up comedian who notices things. He teaches every card, at the Rimshot, between jokes. Small things. Things nobody else bothers to notice."],
-  ["lenny", "Lenny Kaplan", "Stu's oldest friend and co-writer of the pilot. Lies for a living, though nobody has ever paid him for one. Promises are binding, he says. Never pays."],
-  ["dana", "Dana Wexler", "Stu's ex, still his friend, mostly out of spite. Labels her lunch. Dances like nobody is watching, which is the problem."],
-  ["zelnick", "Zelnick", "From across the hall. Has never once knocked. Has a system for everything, including the parking garage."],
-  ["vernon", "Vernon", "A mail carrier. Smug. Was seated at the Jade Lantern in four minutes, and wants you to know."],
-  ["pratt", "Mr. Pratt", "Runs the network. Has never been seen to laugh. Not once. Not even at a wedding."],
+  ["lenny", "Lenny Kaplan", "Stu's oldest friend. Lies for a living, though nobody has ever paid him for one. Books every table twice, to be safe."],
+  ["dana", "Dana Wexler", "Stu's ex, still his friend, mostly out of spite. Knows exactly what she wants, and exactly how to ask for it."],
+  ["zelnick", "Zelnick", "From across the hall. Has never once knocked. Wants to know all his options, every time."],
+  ["kasimir", "Kasimir", "Runs the broth counter on 55th Street. The line goes round the block. Get one rule wrong and he says one word."],
+  ["vernon", "Vernon", "A mail carrier at the post office on 81st Street. Every parcel has a version, and he wants to know which one you saw."],
+  ["pratt", "Mr. Pratt", "Runs the network. Keeps the pilots behind a login. Has never been seen to laugh. Not once. Not even at a wedding."],
 ];
 
-/** The same tags for A Game About Nothing, the event loop game in
- * nothing/, which Godot exports to nothing/play/index.html. */
+/** The same tags for A Game About Nothing, the HTTP game in nothing/, which
+ * Godot exports to nothing/play/index.html. */
 function tagNothingPage(index: string): void {
-  const desc = "Play A Game About Nothing, the Dunder Quest game that teaches the JavaScript event loop, right in your browser.";
+  const desc = "Play A Game About Nothing, the Dunder Quest game that teaches HTTP and REST APIs, right in your browser.";
   tagGamePage(index, `Play ${AN_NAME} · Dunder Quest`, desc, "nothing/play/", "nothing.png", AN_ALT, "nothing");
 }
 
-type AnLine = { text: string; indent: number; cue: boolean };
-
-/** A script with its cues on, written out as loop/engine.gd writes it
- * (Loop.build, then Loop.lines without the header). */
-function anLines(script: Json[], cues: Record<string, string> = {}, indent = 0, out: AnLine[] = []): AnLine[] {
-  const inline = (st: Json): string => ("log" in st ? `log(${JSON.stringify(st.log)})` : "call" in st ? `${st.call}()` : "");
-  const push = (text: string, depth: number, cue = false) => out.push({ text, indent: depth, cue });
-  for (const raw of script) {
-    const cue = raw.slot ? cues[raw.slot] : undefined;
-    const st: Json = { ...raw };
-    if (cue) {
-      const [kind, ms] = cue.split(":");
-      if (kind === "timeout") { push("setTimeout(() => {", indent, true); anLines([{ ...st, slot: undefined }], {}, indent + 1, out); push(`}, ${ms});`, indent, true); continue; }
-      if (kind === "then") { push("Promise.resolve().then(() => {", indent, true); anLines([{ ...st, slot: undefined }], {}, indent + 1, out); push("});", indent, true); continue; }
-      if (kind === "micro") { push("queueMicrotask(() => {", indent, true); anLines([{ ...st, slot: undefined }], {}, indent + 1, out); push("});", indent, true); continue; }
-      if (kind === "wait") { push(`await wait(${ms});`, indent, true); anLines([{ ...st, slot: undefined }], {}, indent, out); continue; }
-      if (kind === "await") { push(`await ${inline(st)};`, indent, true); continue; }
-    }
-    if ("log" in st || "call" in st) push(`${inline(st)};`, indent);
-    else if ("timeout" in st) { push("setTimeout(() => {", indent); anLines(st.body, cues, indent + 1, out); push(`}, ${st.timeout});`, indent); }
-    else if ("then" in st) { push("Promise.resolve().then(() => {", indent); anLines(st.then, cues, indent + 1, out); push("});", indent); }
-    else if ("micro" in st) { push("queueMicrotask(() => {", indent); anLines(st.micro, cues, indent + 1, out); push("});", indent); }
-    else if ("chain" in st) {
-      push("Promise.resolve()", indent);
-      st.chain.forEach((link: Json[], i: number) => {
-        const end = i === st.chain.length - 1 ? ";" : "";
-        const one = link.length === 1 && !link[0].slot ? inline(link[0]) : "";
-        if (one && `.then(() => ${one})${end}`.length <= 32) push(`.then(() => ${one})${end}`, indent + 1);
-        else { push(".then(() => {", indent + 1); anLines(link, cues, indent + 2, out); push(`})${end}`, indent + 1); }
-      });
-    } else if ("async" in st) { push(`async function ${st.async}() {`, indent); anLines(st.body, cues, indent + 1, out); push("}", indent); }
-    else if ("wait" in st) push(`await wait(${st.wait});`, indent);
-    else if ("await" in st) push(`await ${inline(st.await)};`, indent);
-  }
-  return out;
+/** A request and what a counter answers it, a line at a time each, as the game shows them. */
+function anTake(counters: Record<string, Counter>, counter: string, data: Json, versions: Json, cards: string[]): { asked: string[]; answered: string[] } {
+  const c = counters[counter];
+  const req = asked(cards);
+  const a = respond(c, { items: structuredClone(data), v: { ...(versions ?? {}) } }, req);
+  const lines = [`${req.method} ${req.path} HTTP/1.1`, `Host: ${c.host}`, ...cards.filter((x) => x.includes(": ") && !x.startsWith("{"))];
+  if (req.body) lines.push("", req.body);
+  return { asked: lines, answered: wire(a, req.method) };
 }
 
-/** A line of JavaScript with each word marked for what it is. */
-function anCode(line: string): string {
-  const keywords = ["const", "async", "function", "await", "new", "return"];
-  const calls = ["setTimeout", "queueMicrotask", "Promise", "resolve", "then", "log", "wait"];
-  return line.replace(/"[^"]*"|[A-Za-z_]+|\d+|[^A-Za-z_\d"]+/g, (w) => {
-    const e = esc(w);
-    if (w.startsWith('"')) return `<span class="s">${e}</span>`;
-    if (keywords.includes(w)) return `<span class="k">${e}</span>`;
-    if (calls.includes(w)) return `<span class="c">${e}</span>`;
-    if (/^\d+$/.test(w)) return `<span class="n">${e}</span>`;
-    return e;
-  });
+/** Lines of HTTP, the first (the request or status line) set apart. */
+function anPre(lines: string[]): string {
+  return lines.map((l, i) => (i === 0 ? `<b>${esc(l)}</b>` : esc(l))).join("\n");
 }
 
-function anPre(lines: AnLine[]): string {
-  return lines.map((l) => `<span${l.cue ? ' class="cue"' : ""}>${"  ".repeat(l.indent)}${anCode(l.text)}</span>`).join("\n");
-}
-
-/** What a cue card says on its face (Loop.cue_label). */
-function anCue(cue: string): string {
-  const [kind, ms] = cue.split(":");
-  return ({ timeout: `setTimeout(…, ${ms})`, then: "Promise.resolve().then(…)", micro: "queueMicrotask(…)", wait: `await wait(${ms});`, await: "await …" } as Record<string, string>)[kind] ?? cue;
+/** A card on the table, coloured by what it is. */
+function anCard(card: string, on: boolean): string {
+  const kind = /^[A-Z]+$/.test(card) ? "m" : card.startsWith("/") ? "p" : card.startsWith("{") ? "b" : "h";
+  return `<span class="an-chip an-chip-${kind}${on ? " an-chip-on" : ""}">${esc(card)}</span>`;
 }
 
 function buildNothing(prefix: string): string {
   const data = JSON.parse(read(join(NOTHING, "data", "episodes.json")));
+  const counters: Record<string, Counter> = data.counters;
   const img = `${prefix}static/img/nothing/`;
   const scenes: Json[] = data.episodes.flatMap((e: Json) => e.scenes);
-  // The example scene: coffee, toast, soup.
-  const ex: Json = scenes.find((s) => s.id === "3b") ?? scenes[0];
+  // The example scene: a toast for table 4.
+  const ex: Json = scenes.find((s) => s.id === "1c") ?? scenes[0];
   const exEp = data.episodes.find((e: Json) => e.scenes.includes(ex));
-  const used = Object.values(ex.solution) as string[];
-  const cards = (ex.cues as string[]).map((c) =>
-    `<span class="an-chip${used.includes(c) ? " an-chip-on" : ""}">${anCode(anCue(c))}</span>`).join("");
+  const take = anTake(counters, ex.counter, ex.data, ex.versions, ex.solution);
+  const cards = (ex.cards as string[]).map((c) => anCard(c, ex.solution.includes(c))).join("");
 
   const steps = [
-    ["Read the table read", "Every scene says the order its lines have to air in. The script beside it has them in another order, and legal has locked every line."],
-    ["Cue the lines", "You can't move a line, only tell it when. Put cue cards on its hook: setTimeout, a promise's .then, queueMicrotask, await."],
-    ["Roll tape", "The script plays on the event loop, a step at a time: the line that runs lights up, and the microtasks and timers queue and empty."],
-    ["And scene!", "If it airs in the table read's order, it's a keeper. Fewer takes is better, and a scene cued with the fewest cards it can be earns a star."],
+    ["Read what the scene wants", "Every scene has somebody who wants something done at a counter, and the status it should come back with: 200 OK, 201 Created, 204 No Content."],
+    ["Make the slip", "Put cards on the request slip: a method, a path, headers, a body. No typing, and nothing goes over but what's on the slip."],
+    ["Send it", "The counter answers exactly as a real web server would: the status line, the headers that matter, the body. Or a 4xx, and the reason in the body."],
+    ["And scene!", "Every take starts from the same counter, so a miss changes nothing. Fewer takes is better, and a slip with the fewest cards it can be done in earns a star."],
   ];
   const stepHtml = steps.map(([h, p], i) => `<li><span class="an-step">${i + 1}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
 
@@ -3654,17 +3614,16 @@ function buildNothing(prefix: string): string {
     for (const s of e.scenes) if (s.card && !ids.includes(s.card)) ids.push(s.card);
     const sets = ids.map((id) => {
       const card = data.cards[id];
-      const toks = (card.chips ?? []).map(([t, what]: [string, string]) =>
-        `<li><code>${anCode(t)}</code> <span>${esc(what)}</span></li>`).join("");
-      const demo = `<div class="an-demo"><pre><code>${anPre(anLines(card.demo))}</code></pre><pre class="an-logs"><b>LOGS</b>${card.out.map((l: string) => esc(l)).join("\n")}</pre></div>`;
-      return `<figure class="an-card"><figcaption>${esc(card.title)}</figcaption><ul class="an-toks">${toks}</ul>${demo}<p>${esc(card.text)}</p></figure>`;
+      const t = anTake(counters, card.demo.counter, card.demo.data, card.demo.versions, card.demo.request);
+      const demo = `<div class="an-demo"><pre>${anPre(t.asked)}</pre><pre class="an-logs">${anPre(t.answered)}</pre></div>`;
+      return `<figure class="an-card"><figcaption>${esc(card.title)}</figcaption>${demo}<p>${esc(card.text)}</p></figure>`;
     }).join("");
     const [shot, alt] = AN_SHOTS[e.id] ?? ["title.png", AN_ALT];
     return `
     <li class="an-episode">
       <img class="an-shot" src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy">
       <div class="an-episode-copy">
-        <p class="an-num">Episode ${e.id} · ${e.scenes.length} scenes</p>
+        <p class="an-num">Episode ${e.id} · ${e.scenes.length} scenes · ${esc(counters[e.scenes[0].counter].name)}</p>
         <h3>${esc(e.title)}</h3>
         <p class="an-lesson">${esc(e.lesson)}</p>
         <div class="an-cards">${sets}</div>
@@ -3678,48 +3637,48 @@ function buildNothing(prefix: string): string {
   const body = `
 <section class="an-hero">
   <div class="an-hero-copy">
-    <p class="an-kicker">a dunder_quest game · learn the JavaScript event loop</p>
+    <p class="an-kicker">a dunder_quest game · learn HTTP and REST APIs</p>
     <h1><span>A game about</span> Nothing</h1>
-    <p class="an-lede">Four friends, one coffee shop, and a sitcom pilot due on Friday. Legal has locked every line of the script, and every line is in the wrong order. You can't move a line. You can only tell it when.</p>
+    <p class="an-lede">Four friends, one coffee shop, and five counters in New York that run on rules nobody explains. A diner, a broth stand with a line round the block, a restaurant, the post office and a television network. Every one of them is a web server, and every errand is a request.</p>
     <p class="an-actions"><a class="an-btn" href="play/">Play in your browser</a><a class="an-more" href="#episodes">The five episodes →</a></p>
     ${resumePanel("nothing", "an-btn an-btn-small")}
-    <p class="an-fine">Free. No typing: every cue is a card, and the script on the page is exactly what runs.</p>
+    <p class="an-fine">Free. No typing: every request is made from cards, and what's on the slip is exactly what's sent.</p>
   </div>
   <img class="an-shot" src="${img}title.png" alt="${esc(AN_ALT)}" width="960" height="540">
 </section>
 
 <section class="an-section" id="how">
   <h2>How it plays</h2>
-  <p>You're the new writer on Stu and Lenny's pilot. Each scene is a few lines of <b>JavaScript</b>, and each line logs a beat of the story. The table read says the order the beats have to air in. JavaScript runs a script one line at a time, top to bottom, so on the page they're in the wrong order; but anything handed to <code>setTimeout</code>, a promise or <code>await</code> runs later, when nothing else is running. That's the event loop, and it's the whole game.</p>
+  <p>Every app on your phone and every website talks to its servers in <b>HTTP</b>: a request with a method (GET, POST, PUT, PATCH, DELETE) and a path, a few headers, maybe a body, and a response that starts with a status code. A <b>REST</b> API is a server laid out as things at paths: <code>/orders</code> is all the orders, <code>/orders/7</code> is one of them. In the game each counter is one, and you work it by hand.</p>
   <div class="an-scene">
-    <div class="an-script"><h3>script.js, cued</h3><pre>${anPre(anLines(ex.script, ex.solution))}</pre></div>
-    <div class="an-read"><h3>The table read</h3><ol>${ex.want.map((w: string) => `<li>${esc(w)}</li>`).join("")}</ol></div>
-    <p class="an-cards" aria-label="The cue cards on the table">${cards}</p>
+    <div class="an-script"><h3>The request slip</h3><pre>${anPre(take.asked)}</pre></div>
+    <div class="an-read"><h3>What comes back</h3><pre>${anPre(take.answered)}</pre></div>
+    <p class="an-table" aria-label="The cards on the table">${cards}</p>
   </div>
-  <p class="an-caption">A scene from episode ${exEp.id}, ${esc(exEp.title)}: “${esc(ex.brief.text)}” The shaded lines are the cue cards. The promise's callback cuts in ahead of the timer's, even though the timer was set first, so it airs in the table read's order.</p>
+  <p class="an-caption">A scene from episode ${exEp.id}, ${esc(exEp.title)}: “${esc(ex.brief.text)}” The highlighted cards make the slip. Leave off the Content-Type and the counter says 415 Unsupported Media Type; send it to <code>/orders/7</code> and it's 405 Method Not Allowed, with an Allow header saying what that path does take.</p>
   <ol class="an-steps">${stepHtml}</ol>
 </section>
 
 <section class="an-section" id="story">
-  <h2>Never written JavaScript? It starts there</h2>
-  <p>A first game opens on a prologue that meets the gang and says what a script, a callback and the event loop are: JavaScript does one thing at a time, so to wait for anything it hands over a function to be called back later, when nothing else is running. Every new card arrives in one of Stu's stand-up sets, with a little script and what it logs, and every line of dialogue is voiced.</p>
+  <h2>Never looked under a website? It starts there</h2>
+  <p>A first game opens on a prologue that meets the gang and says what a request and a response are, with a few real ones written out as they go over the wire. Every new idea arrives in one of Stu's stand-up sets, with a request and what a counter answers it, and every line of dialogue is voiced.</p>
   <div class="an-pair">
-    <img class="an-shot" src="${img}intro.png" alt="The prologue: Stu on stage at the Rimshot, beside a script with a setTimeout callback that logs later and a line that logs now, and under it the logs: now, then later" width="960" height="540" loading="lazy">
-    <img class="an-shot" src="${img}card.png" alt="One of Stu's sets: Promises, what Promise.resolve().then means, and a script where a promise's callback logs before a timer's" width="960" height="540" loading="lazy">
+    <img class="an-shot" src="${img}intro.png" alt="The prologue: Stu on stage at the Rimshot, beside a GET request for an order that isn't there, and the 404 Not Found that comes back" width="960" height="540" loading="lazy">
+    <img class="an-shot" src="${img}card.png" alt="One of Stu's sets: 204 No Content, a DELETE request and the empty response it gets" width="960" height="540" loading="lazy">
   </div>
 </section>
 
 <section class="an-section" id="episodes">
   <h2>The episodes</h2>
-  <p class="an-intro">Five episodes, from a callback to four async storylines meeting at the end. These are the sets the game teaches from, and what's logged beside each script is what JavaScript logs.</p>
+  <p class="an-intro">Five episodes at five counters, from a GET for the menu to a PATCH with a token, a version and a JSON body. These are the sets the game teaches from, and every response beside them is what the counter answers.</p>
   <ol class="an-episodes">${episodes}
   </ol>
 </section>
 
 <section class="an-section an-real" id="real">
-  <h2>It's the real event loop</h2>
-  <p>The cue cards only write code. What plays it in the game is a small event loop written for it, with a call stack, a microtask line and the timers, and on every change to the game a script plays every way every scene's cards can go onto its hooks, each of Stu's examples and a set of harder cases, about four hundred programs in all, as plain JavaScript files in a real engine as well. It fails if the two disagree on the order of a single line. The game also refuses to set a puzzle whose answer would hang on how fast the computer is: no two timers in it are ever due within a hair of each other.</p>
-  <p>The last scene has two <code>async</code> functions, an <code>await</code> on a timer and an <code>await</code> in front of a call, the shape of nearly every piece of JavaScript that talks to a server. By then you can say exactly when every line of it runs.</p>
+  <h2>It's real HTTP</h2>
+  <p>The cards only write a request. What answers it in the game is a set of counters written for it, and on every change to the game a script sends every request the cards on every table can make, each of Stu's examples and a set of harder cases, about four hundred and fifty in all, to a real web server running the same counters, over a real connection with <code>fetch</code>. It fails if the two disagree on a status, a reason phrase, a header, a single character of a body, or what was left on the counter. It also holds every answer to the rules of HTTP the game teaches: a 201 says where in Location, a 405 says what's allowed, a 401 says how to log in, and a 204, a 304 and an answer to HEAD never have a body.</p>
+  <p>The last scene's slip has a method, a path, an Authorization token, a Content-Type, an If-Match with the version on the board, and a JSON body: the shape of a real request to a real API. By then you can say what every line of it is for.</p>
 </section>
 
 <section class="an-section" id="cast">
@@ -3728,7 +3687,7 @@ function buildNothing(prefix: string): string {
 </section>
 
 <section class="an-section" id="small">
-  <p class="an-fine">A Game About Nothing is an affectionate spoof of the 1990s New York sitcom. The names, the city's coffee shop, the jokes, the art and the music are its own, and it isn't affiliated with or endorsed by anyone who made the shows it winks at.</p>
+  <p class="an-fine">A Game About Nothing is an affectionate spoof of the 1990s New York sitcom. The names, the city's counters, the jokes, the art and the music are its own, and it isn't affiliated with or endorsed by anyone who made the shows it winks at.</p>
 </section>
 `;
   return anPage(body, prefix);
@@ -3754,14 +3713,14 @@ ${headTags(title, AN_DESC, "nothing/", "nothing.png", AN_ALT)}
 <a class="skip" href="#main">Skip to content</a>
 <header class="an-bar">
   <a class="an-brand" href="./">A Game About Nothing</a>
-  <nav aria-label="${AN_NAME}"><a href="#how">How it plays</a><a href="#episodes">The episodes</a><a href="#real">Real JavaScript</a><a href="${prefix}">All games</a></nav>
+  <nav aria-label="${AN_NAME}"><a href="#how">How it plays</a><a href="#episodes">The episodes</a><a href="#real">Real HTTP</a><a href="${prefix}">All games</a></nav>
   <a class="an-btn an-btn-small" href="play/">Play</a>
 </header>
 <main id="main">
 ${body}
 </main>
 <footer class="an-foot">
-  <p>A Game About Nothing. Four friends, one pilot, and a script that runs exactly when you tell it to.</p>
+  <p>A Game About Nothing. Four friends, five counters, and a request for everything.</p>
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}shell/">Yes, Shell!, the shell game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/nothing">Source on GitHub</a></p>
 </footer>
 ${RESUME_JS}
@@ -3801,7 +3760,7 @@ function main(): void {
     copyFileSync(join(GREEDY, "assets", "fonts", `${font}.ttf`), join(statics, "fonts", `${font}.ttf`));
   }
   copyFileSync(join(SHELL, "assets", "fonts", "BebasNeue.ttf"), join(statics, "fonts", "BebasNeue.ttf")); // the shell game's titles, for shell.css
-  copyFileSync(join(NOTHING, "assets", "fonts", "Righteous.ttf"), join(statics, "fonts", "Righteous.ttf")); // the event loop game's titles, for nothing.css
+  copyFileSync(join(NOTHING, "assets", "fonts", "Righteous.ttf"), join(statics, "fonts", "Righteous.ttf")); // the HTTP game's titles, for nothing.css
   for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"], [SHELL, "shell"], [NOTHING, "nothing"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }

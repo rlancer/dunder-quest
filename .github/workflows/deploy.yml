@@ -77,13 +77,13 @@ jobs:
       - name: Check Yes, Shell! against bash
         run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/shell/tests/check.sh
 
-      # Plays every way every scene's cue cards can go on, every lesson card's
-      # script and a set of probes on the game's own event loop, then runs the
-      # same programs as plain JavaScript with bun and demands the same lines
-      # logged in the same order. Then the bot plays the prologue and every
-      # episode, and every screen is checked for text that breaks out of its
-      # panel.
-      - name: Check A Game About Nothing against JavaScript
+      # Sends every request every scene's cards can make, every lesson card's
+      # and a set of probes at every counter, to the game's own HTTP, then to a
+      # real HTTP server (Bun.serve) with real fetch, and demands the same
+      # status, reason, headers, body and data left behind. Then the bot plays
+      # the prologue and every episode, and every screen is checked for text
+      # that breaks out of its panel.
+      - name: Check A Game About Nothing against a real HTTP server
         run: GODOT="$HOME/.cache/godot-web/Godot_v4.7.2-stable_linux.x86_64" bash games/nothing/tests/check.sh
 
       - name: Export the desktop builds

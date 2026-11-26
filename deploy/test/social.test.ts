@@ -157,13 +157,13 @@ describe("saves", () => {
   });
 
   test("a nothing save keeps the fewest takes and the most stars", async () => {
-    const one = { current_episode: 2, cleared: [1, 2], tries: { 1: 8, 2: 9 }, stars: { 1: 4, 2: 2 }, cards: ["callback", "fifo"] };
-    const two = { current_episode: 4, cleared: [1, 3, 8], tries: { 1: 5, 3: 4, 8: 1 }, stars: { 1: 3, 2: 4, 3: 7 }, cards: ["fifo", "then"], junk: 1 };
+    const one = { current_episode: 2, cleared: [1, 2], tries: { 1: 8, 2: 9 }, stars: { 1: 4, 2: 2 }, cards: ["request", "path"] };
+    const two = { current_episode: 4, cleared: [1, 3, 8], tries: { 1: 5, 3: 4, 8: 1 }, stars: { 1: 3, 2: 4, 3: 7 }, cards: ["path", "post"], junk: 1 };
     // Unknown episodes, out-of-range stars and stray fields are dropped.
-    expect(normalize("nothing", two)).toEqual({ current_episode: 4, cleared: [1, 3], tries: { 1: 5, 3: 4 }, stars: { 1: 3, 2: 4, 3: 4 }, cards: ["fifo", "then"] });
+    expect(normalize("nothing", two)).toEqual({ current_episode: 4, cleared: [1, 3], tries: { 1: 5, 3: 4 }, stars: { 1: 3, 2: 4, 3: 4 }, cards: ["path", "post"] });
     expect(normalize("nothing", { current_episode: 9 })).toEqual({ current_episode: 1, cleared: [], tries: {}, stars: {}, cards: [] });
     const both = merge("nothing", JSON.stringify(one), two);
-    expect(both).toEqual({ current_episode: 2, cleared: [1, 2, 3], tries: { 1: 5, 2: 9, 3: 4 }, stars: { 1: 4, 2: 4, 3: 4 }, cards: ["callback", "fifo", "then"] });
+    expect(both).toEqual({ current_episode: 2, cleared: [1, 2, 3], tries: { 1: 5, 2: 9, 3: 4 }, stars: { 1: 4, 2: 4, 3: 4 }, cards: ["request", "path", "post"] });
     const s = summarize("nothing", both);
     expect(s.count).toBe(3);
     expect(s.tries).toBe(18);

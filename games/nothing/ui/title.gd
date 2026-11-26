@@ -84,8 +84,8 @@ func _draw() -> void:
 	# The name, with a drop shadow, as on a title card.
 	Fit.text(self, titles, Vector2(268, 78), "NOTHING", 44, Palette.BRICK)
 	Fit.text(self, titles, Vector2(266, 76), "NOTHING", 44, Palette.MUSTARD)
-	Fit.text(self, mono, Vector2(268, 98), "Cue the lines. Roll tape.", 16, Palette.CREAM)
-	Fit.text(self, mono, Vector2(268, 110), "Learn the JavaScript event loop.", 16, Palette.CREAM)
+	Fit.text(self, mono, Vector2(268, 98), "Make the slip. Send it.", 16, Palette.CREAM)
+	Fit.text(self, mono, Vector2(268, 110), "Learn HTTP and REST APIs.", 16, Palette.CREAM)
 	Fit.text(self, mono, Vector2(268, 130), "a __dunder_quest__ game", 16, Palette.MUSTARD_LIGHT)
 
 

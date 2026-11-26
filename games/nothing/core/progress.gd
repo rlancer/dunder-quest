@@ -1,7 +1,7 @@
 extends Node
 
 ## Which episodes are open and done, how many takes each one took (fewer
-## is better), how many of its scenes were played with the fewest cue cards
+## is better), how many of its scenes were done with the fewest cards
 ## possible (a star each), and which of Stu's lesson cards have been seen.
 ## Saved as JSON in user://, under its own name so it never touches the
 ## other games' saves.

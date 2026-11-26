@@ -2,8 +2,9 @@
 
 Uses the Dunder Quest scenery helpers (the request and the pixel pass) from
 ../../dunder-quest/tools/generate_scenery.py, with this game's prompts. The
-prompts describe an original New York apartment, diner, restaurant, garage,
-network office and comedy club, and an original cast of sitcom types; they
+prompts describe an original New York apartment, diner, soup counter,
+restaurant, post office, network office and comedy club, and an original
+cast of sitcom types; they
 never name or describe any show, its sets or its actors. Raw output lands in
 tools/generated/, pixel art in assets/backgrounds/ and assets/sprites/. Never
 prints the key.
@@ -81,12 +82,18 @@ JOBS: dict[str, tuple[str, str, bool, tuple[int, int], int]] = {
         "glass case of pies and cakes, coffee pots on warmers, a pass-through window to the kitchen, chequered "
         "black and white floor tiles in the lower third. Bright and cosy. No people. "
         + STYLE, "16:9", False, (480, 270), 48),
-    "garage": (
-        "The inside of a big multi-storey concrete parking garage in New York, seen straight-on: rows of "
-        "parked early-1990s cars in many colours, fat concrete pillars painted with big level numbers, a ramp "
-        "going up on one side, buzzing fluorescent tube lights, yellow painted lines on a grey floor in the "
-        "lower third, an exit sign shape with no letters glowing green. Slightly gloomy, a little eerie, still "
-        "comic. No people. " + STYLE, "16:9", False, (480, 270), 48),
+    "counter": (
+        "A tiny takeaway soup counter on a Midtown New York street, seen straight-on from the pavement: a narrow "
+        "shopfront with a steel counter and a sliding window, big steaming soup kettles lined up behind it, a "
+        "chalkboard shape with no writing, a row of paper cups, an awning, and a long waiting line marked out "
+        "by brass posts and a velvet rope along the pavement in the lower third, with nobody in it. Steam, warm "
+        "light, a little stern. No people. " + STYLE, "16:9", False, (480, 270), 48),
+    "post": (
+        "The inside of an old New York neighbourhood post office in the 1990s, seen straight-on: a long wooden "
+        "service counter with brass grilles and three windows, rows of small brass post office boxes on the "
+        "wall, a scale with a parcel on it, stacks of brown paper parcels and canvas mail sacks, a round wall "
+        "clock, a stanchion queue rope, fluorescent ceiling lights, a tiled floor in the lower third. Dusty "
+        "and bureaucratic, faintly comic. No people. " + STYLE, "16:9", False, (480, 270), 48),
     "network": (
         "A television network's conference room high in a Manhattan skyscraper, seen straight-on: a very long "
         "polished dark wood table with leather chairs, water jugs and neat stacks of script pages, a wall of "
@@ -110,6 +117,9 @@ JOBS: dict[str, tuple[str, str, bool, tuple[int, int], int]] = {
     "zelnick": (PORTRAIT + "a tall, lanky, wild-eyed neighbour in his forties with a big shock of upswept grey "
                 "and black hair standing straight up, bushy eyebrows, mouth open in delighted surprise, wearing "
                 "a loud orange and brown 1970s bowling shirt with a wide collar.", "1:1", True, (96, 96), 28),
+    "kasimir": (PORTRAIT + "a stern, rule-bound soup vendor in his sixties, bald on top with a short grey "
+                "fringe, clean-shaven, small round steel-rimmed glasses, thin unsmiling lips, a white chef's "
+                "jacket buttoned to the neck, arms folded, utterly serious.", "1:1", True, (96, 96), 28),
     "vernon": (PORTRAIT + "a smug, portly mail carrier in his forties with a neat black moustache, a round "
                "face and a self-satisfied smile, wearing a light blue uniform shirt with a dark blue patch on "
                "the shoulder and a blue postal cap.", "1:1", True, (96, 96), 28),

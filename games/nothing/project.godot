@@ -12,7 +12,7 @@ config_version=5
 
 config/name="A Game About Nothing"
 config/version="0.1.0"
-config/description="A Game About Nothing: a Dunder Quest game. Four friends, one coffee shop, a pilot due Friday, and a script whose lines are locked: cue them with callbacks, timers, promises and await. Learn the JavaScript event loop."
+config/description="A Game About Nothing: a Dunder Quest game. Four friends, one coffee shop, and five counters in New York that run on rules: make every request from cards. Learn HTTP and REST APIs."
 run/main_scene="res://ui/boot.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"

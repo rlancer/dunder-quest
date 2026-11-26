@@ -11,7 +11,8 @@ Pixel-art games that teach programming, playable at [dunderquest.com](https://du
 | `games/lieutenant/` | Just One More JOIN, the SQL game (Godot 4.7). Plays at `/lieutenant/play/`. See its [README](games/lieutenant/README.md). |
 | `games/greedy/` | The Good, the Bad and the Greedy, the regex game (Godot 4.7). Plays at `/greedy/play/`. |
 | `games/shell/` | Yes, Shell!, the Unix shell game (Godot 4.7). Plays at `/shell/play/`. See its [README](games/shell/README.md). |
-| `site/` | `build.ts` (run with Bun) writes the static site: the games splash at the root, Dunder Quest's page at `/dunder-quest/`, lessons, guide, brand, and the Flatmates.js, Curb Your Oxidation, Prince of Versions, Just One More JOIN, The Good, the Bad and the Greedy and Yes, Shell! pages. |
+| `games/nothing/` | A Game About Nothing, the HTTP and REST game (Godot 4.7). Plays at `/nothing/play/`. See its [README](games/nothing/README.md). |
+| `site/` | `build.ts` (run with Bun) writes the static site: the games splash at the root, Dunder Quest's page at `/dunder-quest/`, lessons, guide, brand, and the Flatmates.js, Curb Your Oxidation, Prince of Versions, Just One More JOIN, The Good, the Bad and the Greedy, Yes, Shell! and A Game About Nothing pages. |
 | `scripts/` | `export_web.sh` builds the site and the web games into `build/site`; `export_desktop.sh` builds Dunder Quest's desktop downloads. |
 | `deploy/` | Cloudflare deploy of `build/site`, and the Worker behind the social layer (leaderboards, cloud saves, certificates, screenshot links). See its [README](deploy/README.md). |
 | `stats/` | The play-stats dashboard and its D1 database. See its [README](stats/README.md). |

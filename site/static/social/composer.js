@@ -169,7 +169,7 @@ function suggestions(game, context) {
     lieutenant: "Just one more question… solving murders with SQL in Just One More JOIN.",
     greedy: "New sheriff in Backslash Ridge, where everybody is named Hobson. Learning regex in The Good, the Bad and the Greedy.",
     shell: "Every station is a command and the pass is a pipe. Learning the command line in Yes, Shell!",
-    nothing: "The lines are locked, so you cue them. Learning the JavaScript event loop in A Game About Nothing.",
+    nothing: "Five counters, one request slip, and a show about nothing. Learning HTTP in A Game About Nothing.",
   }[game];
   out.push(flavour);
   out.push(`Learning ${def.lang} with a free pixel-art game.`);
