@@ -114,7 +114,8 @@
 				},
 				{
 					"who": "awk",
-					"text": "In my head! Where they have been for thirty years!"
+					"text": "In my head! Where they have been for thirty years!",
+					"say": "[shouting, proud] In my head! Where they have been for thirty years!"
 				},
 				{
 					"who": "shell",
@@ -157,7 +158,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "ls. Short for list. Two files: the menu, and tonight's orders."
+						"text": "ls. Short for list. Two files: the menu, and tonight's orders.",
+						"say": "L S. Short for list. Two files: the menu, and tonight's orders."
 					}
 				},
 				{
@@ -229,7 +231,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "That -n 3 is an option. A dash and a letter, and the command does its one job a little differently."
+						"text": "That -n 3 is an option. A dash and a letter, and the command does its one job a little differently.",
+						"say": "That dash N three is an option. A dash and a letter, and the command does its one job a little differently."
 					}
 				},
 				{
@@ -262,7 +265,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "wc, for word count. With -l it counts lines. Seven orders, and it even says whose."
+						"text": "wc, for word count. With -l it counts lines. Seven orders, and it even says whose.",
+						"say": "W C, for word count. With dash L it counts lines. Seven orders, and it even says whose."
 					}
 				}
 			],
@@ -277,7 +281,8 @@
 				},
 				{
 					"who": "awk",
-					"text": "I rounded!"
+					"text": "I rounded!",
+					"say": "[indignant] I rounded!"
 				}
 			]
 		},
@@ -350,7 +355,8 @@
 					"card": "grep_options",
 					"brief": {
 						"who": "shell",
-						"text": "The flat-top just died. No melts till Dev fixes it. Read me everything that ISN'T a melt."
+						"text": "The flat-top just died. No melts till Dev fixes it. Read me everything that ISN'T a melt.",
+						"say": "The flat-top just died. No melts till Dev fixes it. Read me everything that isn't a melt."
 					},
 					"files": [
 						"orders.txt",
@@ -414,7 +420,8 @@
 					],
 					"after": {
 						"who": "awk",
-						"text": "I write loud so people LISTEN!"
+						"text": "I write loud so people LISTEN!",
+						"say": "[shouting] I write loud so people listen!"
 					}
 				},
 				{
@@ -500,7 +507,8 @@
 					"card": "pipe",
 					"brief": {
 						"who": "shell",
-						"text": "The health inspector wants to know how many files are in the walk-in. ls lists them. wc -l counts lines. Put the pass between."
+						"text": "The health inspector wants to know how many files are in the walk-in. ls lists them. wc -l counts lines. Put the pass between.",
+						"say": "The health inspector wants to know how many files are in the walk-in. L S lists them. W C dash L counts lines. Put the pass between."
 					},
 					"files": [
 						"orders.txt",
@@ -527,7 +535,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "ls never knew anybody was counting. wc never knew where the lines came from. That's the whole idea."
+						"text": "ls never knew anybody was counting. wc never knew where the lines came from. That's the whole idea.",
+						"say": "L S never knew anybody was counting. W C never knew where the lines came from. That's the whole idea."
 					}
 				},
 				{
@@ -642,7 +651,8 @@
 			"outro": [
 				{
 					"who": "awk",
-					"text": "Fine. FINE. It's a good pass."
+					"text": "Fine. FINE. It's a good pass.",
+					"say": "Fine. Fine. It's a good pass."
 				},
 				{
 					"who": "chef",
@@ -671,7 +681,8 @@
 				},
 				{
 					"who": "shell",
-					"text": "sort puts lines in order. uniq throws out repeats. There's a catch in each one, which is why we're doing this before the rush."
+					"text": "sort puts lines in order. uniq throws out repeats. There's a catch in each one, which is why we're doing this before the rush.",
+					"say": "sort puts lines in order. unique throws out repeats. There's a catch in each one, which is why we're doing this before the rush."
 				}
 			],
 			"tickets": [
@@ -709,7 +720,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "Without -n it goes letter by letter, and the letter 1 comes before the letter 8. So a hundred lands on top. It has caught everybody once."
+						"text": "Without -n it goes letter by letter, and the letter 1 comes before the letter 8. So a hundred lands on top. It has caught everybody once.",
+						"say": "Without dash N it goes letter by letter, and the letter 1 comes before the letter 8. So a hundred lands on top. It has caught everybody once."
 					}
 				},
 				{
@@ -746,7 +758,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "-r for reverse. You can stack options like that, or squash them into one: -rn. Same thing."
+						"text": "-r for reverse. You can stack options like that, or squash them into one: -rn. Same thing.",
+						"say": "dash R for reverse. You can stack options like that, or squash them into one: dash R N. Same thing."
 					}
 				},
 				{
@@ -754,7 +767,8 @@
 					"card": "uniq",
 					"brief": {
 						"who": "shell",
-						"text": "What did we actually sell tonight? Each thing once. Mind the catch: uniq only notices a repeat when it's right behind the one before."
+						"text": "What did we actually sell tonight? Each thing once. Mind the catch: uniq only notices a repeat when it's right behind the one before.",
+						"say": "What did we actually sell tonight? Each thing once. Mind the catch: unique only notices a repeat when it's right behind the one before."
 					},
 					"files": [
 						"sold.txt",
@@ -790,7 +804,8 @@
 					"id": "4d",
 					"brief": {
 						"who": "shell",
-						"text": "Now the one the owner asks every night: how many of each? uniq can count the repeats as it drops them."
+						"text": "Now the one the owner asks every night: how many of each? uniq can count the repeats as it drops them.",
+						"say": "Now the one the owner asks every night: how many of each? unique can count the repeats as it drops them."
 					},
 					"files": [
 						"sold.txt",
@@ -820,7 +835,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "sort, then uniq -c. Remember that pair, Chef. You'll be using it for the rest of your life."
+						"text": "sort, then uniq -c. Remember that pair, Chef. You'll be using it for the rest of your life.",
+						"say": "sort, then unique dash C. Remember that pair, Chef. You'll be using it for the rest of your life."
 					}
 				}
 			],
@@ -835,7 +851,8 @@
 				},
 				{
 					"who": "dev",
-					"text": "Don't touch it."
+					"text": "Don't touch it.",
+					"say": "[flat] Don't touch it."
 				}
 			]
 		},
@@ -900,7 +917,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "-d is the delimiter: where to cut. -f is the field: which slice to keep."
+						"text": "-d is the delimiter: where to cut. -f is the field: which slice to keep.",
+						"say": "dash D is the delimiter: where to cut. dash F is the field: which slice to keep."
 					}
 				},
 				{
@@ -938,7 +956,8 @@
 					],
 					"after": {
 						"who": "shell",
-						"text": "tr swaps each character in the first list for its partner in the second. It only takes what comes down the pass, which is what cat is for."
+						"text": "tr swaps each character in the first list for its partner in the second. It only takes what comes down the pass, which is what cat is for.",
+						"say": "T R swaps each character in the first list for its partner in the second. It only takes what comes down the pass, which is what cat is for."
 					}
 				},
 				{
@@ -946,7 +965,8 @@
 					"card": "redirect",
 					"brief": {
 						"who": "dev",
-						"text": "We're out of two things and she's about to order. Put every 86 on the board for me. On the board. Not out loud."
+						"text": "We're out of two things and she's about to order. Put every 86 on the board for me. On the board. Not out loud.",
+						"say": "We're out of two things and she's about to order. Put every eighty-six on the board for me. On the board. Not out loud."
 					},
 					"files": [
 						"notes.txt",
@@ -984,7 +1004,8 @@
 						{
 							"who": "awk",
 							"text": "The machine! The to-go machine! It won't stop printing!",
-							"sound": "printer"
+							"sound": "printer",
+							"say": "[panicking] The machine! The to-go machine! It won't stop printing!"
 						},
 						{
 							"who": "shell",
@@ -1044,15 +1065,18 @@
 				},
 				{
 					"who": "awk",
-					"text": "She's coming back! SHE'S COMING BACK!"
+					"text": "She's coming back! SHE'S COMING BACK!",
+					"say": "[shouting, overjoyed] She's coming back! She's coming back!"
 				},
 				{
 					"who": "shell",
-					"text": "Inside voice, Chef."
+					"text": "Inside voice, Chef.",
+					"say": "[dry] Inside voice, Chef."
 				},
 				{
 					"who": "awk",
-					"text": "...Yes, Shell."
+					"text": "...Yes, Shell.",
+					"say": "[quietly, sheepish] ...Yes, Shell."
 				}
 			]
 		}
@@ -1147,6 +1171,7 @@
 		"wc": {
 			"title": "wc counts",
 			"text": "wc counts what's in a file: its lines, its words and its characters. An option picks just one of them.",
+			"say": "W C counts what's in a file: its lines, its words and its characters. An option picks just one of them.",
 			"chips": [
 				[
 					"wc",
@@ -1285,6 +1310,7 @@
 		"uniq": {
 			"title": "uniq",
 			"text": "uniq drops a line that repeats the line just before it. Only just before: so sort first, and the repeats stand together.",
+			"say": "unique drops a line that repeats the line just before it. Only just before: so sort first, and the repeats stand together.",
 			"chips": [
 				[
 					"uniq",
@@ -1344,6 +1370,7 @@
 		"tr": {
 			"title": "tr",
 			"text": "tr swaps characters: each one in the first list becomes its partner in the second. It reads only what's piped in.",
+			"say": "T R swaps characters: each one in the first list becomes its partner in the second. It reads only what's piped in.",
 			"chips": [
 				[
 					"tr",
@@ -1373,6 +1400,7 @@
 		"redirect": {
 			"title": "Into a file",
 			"text": "> sends what a command prints into a file instead of to the screen. The file is wiped, then written.",
+			"say": "The arrow sends what a command prints into a file instead of to the screen. The file is wiped, then written.",
 			"chips": [
 				[
 					"> board.txt",

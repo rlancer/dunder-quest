@@ -1,12 +1,11 @@
 class_name Voice
 extends RefCounted
 
-## The cast's voices: a clip for a line of dialogue, lesson card or prologue
-## page, if there is one in assets/voice/, named for who says it and what
-## they say (so a line that's been rewritten never plays the old reading).
-## A line with no clip is read in silence, and so far that is all of them:
-## this game was built without a key for the voice generator. The other
-## games' tools/voice.py would make the clips this looks for.
+## The cast's voices: one clip for every line of dialogue, lesson card and
+## prologue page, made by tools/voice.py (ElevenLabs, through OpenRouter)
+## and kept in assets/voice/. A clip is named for who says it and what they
+## say, so a line that's been rewritten never plays the old reading. A line
+## with no clip is simply read in silence.
 
 ## Tests turn the voices off, so a run doesn't wait on them.
 static var muted: bool = false

@@ -3269,7 +3269,7 @@ ${RESUME_JS}
 // plays and `shell/tests/verify_shell.ts` holds to the real bash: nothing on
 // this page is run here, so every line of output on it is one bash printed.
 const YS_NAME = "Yes, Shell!";
-const YS_ALT = "Yes, Shell!: a brick sandwich shop called the Standard Inn at night, under the elevated train tracks, its window lit amber.";
+const YS_ALT = "Yes, Shell!: a small brick sandwich shop at night under the elevated train tracks, its window lit amber, with the city across the water.";
 const YS_DESC = "Yes, Shell!, a Dunder Quest game that teaches the Unix command line: in the kitchen of the Standard Inn every "
   + "station is a command, the pass is a pipe, and the kitchen does exactly what you say. Play it free in your browser.";
 // Each shift's screenshot, by shift id.
@@ -3387,7 +3387,7 @@ function buildShell(prefix: string): string {
 
 <section class="ys-section" id="story">
   <h2>Never opened a terminal? It starts there</h2>
-  <p>A first game opens on a prologue that sets up the kitchen and says what the shell is: a place to type commands, each a small program that does one job, with a way to hand one's output to the next. Every new command arrives on a card, with what it means and a line run in a terminal.</p>
+  <p>A first game opens on a prologue that sets up the kitchen and says what the shell is: a place to type commands, each a small program that does one job, with a way to hand one's output to the next. Every new command arrives on a card, with what it means and a line run in a terminal, and every line of dialogue is voiced.</p>
   <div class="ys-pair">
     <img class="ys-shot" src="${img}intro.png" alt="The prologue: Shell at the pass, a file called orders.txt, and under it a terminal where grep beef orders.txt piped into wc -l prints 2" width="960" height="540" loading="lazy">
     <img class="ys-shot" src="${img}card.png" alt="A lesson card from the game: the pipe, what it means, and cat specials.txt piped into wc -l printing 3" width="960" height="540" loading="lazy">

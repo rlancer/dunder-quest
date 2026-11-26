@@ -56,13 +56,14 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 
 | Tool | Makes |
 |---|---|
-| `tools/paint.py` | The six rooms and the five faces, painted in code with Pillow |
-| `tools/music.py` | The five music loops, synthesized with numpy (needs ffmpeg) |
+| `tools/scenery.py` | The six backdrops and the cast's portraits, generated through OpenRouter (the portraits are one set: look at them together) |
+| `tools/music.py` | The five music cues, generated; loop them with `../dunder-quest/tools/make_loops.py` |
+| `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` spells a command the way it's said ("W C dash L"), and may carry directions in square brackets (`[shouting]`), which are acted, not read |
 | `tools/sfx.py` | The sound effects, synthesized with numpy |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window) |
 
-The art and the music are made in code, because the game was built in a cloud session with no OpenRouter key: they are stand-ins that a generated set can replace, file for file. For the same reason nobody is voiced yet. `core/voice.gd` already plays a clip for any line that has one in `assets/voice/`, named the way the regex game's `tools/voice.py` names them.
+Every line is voiced: the cast, the narrator, Shell reading each lesson card, and the brief for each ticket. The cast are spoofs of the kitchen drama's character types (the worn-out chef in the blue apron, the sharp one on the pass, the shouting relative out front), never drawn or voiced to be the actors.
 
-All the words are in `data/shifts.json`: the cast, the kitchen's files, the shifts, each ticket's brief, chips, solution, hint and `want`, the lesson cards, the glossary, and everything Shell says about a miss or an error.
+All the words are in `data/shifts.json` (and the prologue's in `ui/intro.gd`): the cast, the kitchen's files, the shifts, each ticket's brief, chips, solution, hint and `want`, the lesson cards, the glossary, and everything Shell says about a miss or an error.
 
 It has no trailer, brand-kit page or launch posts yet.

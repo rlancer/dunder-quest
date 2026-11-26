@@ -2,7 +2,7 @@ class_name LessonCard
 extends Control
 
 ## A lesson, taped up before the ticket that needs it: what the new chips
-## mean in plain words, and a line at work in a terminal, run by the game's
+## mean in plain words, read aloud by Shell, and a line at work in a terminal, run by the game's
 ## own shell, so what it prints is what the real thing prints.
 
 signal closed
@@ -24,6 +24,11 @@ func _ready() -> void:
 	visible = false
 
 
+## The card as Shell reads it aloud: its `say`, or else its text.
+static func spoken(c: Dictionary) -> Dictionary:
+	return {"who": "shell", "say": str(c.get("say", c.get("text", "")))}
+
+
 ## Shows the card, and comes back when the player has read it.
 func show_card(c: Dictionary) -> void:
 	card = c
@@ -33,7 +38,7 @@ func show_card(c: Dictionary) -> void:
 	visible = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	Sfx.play(self, "page")
-	Voice.say({"who": "shell", "say": str(c.get("say", c.get("text", "")))})
+	Voice.say(spoken(c))
 	queue_redraw()
 	await closed
 	active = false
