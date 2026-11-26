@@ -10,7 +10,9 @@
  * `flatmates/play/`, and Curb Your Oxidation, the Rust game, the same in
  * `curb/` and `curb/play/`. Prince of Versions, the Git
  * game, is in `prince/` and `prince/play/`, with a card of its own, and
- * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`.
+ * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`,
+ * and The Good, the Bad and the Greedy, the regex game, in `greedy/` and
+ * `greedy/play/`.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
@@ -18,6 +20,7 @@
  *     bun site/build.ts --curb build/site/curb/play/index.html
  *     bun site/build.ts --prince build/site/prince/play/index.html
  *     bun site/build.ts --lieutenant build/site/lieutenant/play/index.html
+ *     bun site/build.ts --greedy build/site/greedy/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -30,6 +33,7 @@ const FLATMATES = join(ROOT, "games", "flatmates");
 const CURB = join(ROOT, "games", "curb");
 const PRINCE = join(ROOT, "games", "prince");
 const LIEUTENANT = join(ROOT, "games", "lieutenant");
+const GREEDY = join(ROOT, "games", "greedy");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -246,7 +250,7 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
 const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
-  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["leaderboards/", "Leaderboards"]];
+  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["greedy/", "The Good, the Bad and the Greedy"], ["leaderboards/", "Leaderboards"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -331,7 +335,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your progress</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your progress</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}${social ? "\n" + SOCIAL_JS : ""}
@@ -452,7 +456,7 @@ ${RESUME_JS}`, path: QUEST_PAGE });
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
-  + "JavaScript in Flatmates.js, Git in Prince of Versions and SQL in Just One More JOIN. Play them in your browser.";
+  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN and regular expressions in The Good, the Bad and the Greedy. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -476,10 +480,14 @@ function buildSplash(prefix = ""): string {
       "A palace platformer where the dagger that turns back time is version control. It only rewinds to a commit, "
       + "so you learn when to make one. Five rooms, from your first commit to a merge conflict with the Vizier.",
       "Meet the Prince"],
-    ["game-jj", "New · Learn SQL", "Just One More JOIN", `${prefix}lieutenant/`, `${prefix}lieutenant/play/`, "lieutenant.png", JJ_ALT,
+    ["game-jj", "Learn SQL", "Just One More JOIN", `${prefix}lieutenant/`, `${prefix}lieutenant/play/`, "lieutenant.png", JJ_ALT,
       "A rumpled homicide lieutenant, and five people who thought of everything. You watch each of them do it. "
       + "Then you write the query that proves it, a clause at a time, from SELECT to LEFT JOIN.",
       "Meet the Lieutenant"],
+    ["game-gr", "New · Learn regex", GR_NAME, `${prefix}greedy/`, `${prefix}greedy/play/`, "greedy.png", GR_ALT,
+      "A town where everybody is named Hobson, and the law is the wanted poster. Write each one as a regular expression, "
+      + "from a plain word to greedy and lazy, groups and the same word twice, and catch only who it says.",
+      "Meet the Sheriff"],
   ];
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
@@ -521,10 +529,10 @@ function buildSplash(prefix = ""): string {
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, JavaScript, Git or SQL?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, Git, SQL or regex?</h2>
   <ul class="games">${cards}
   </ul>
-  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git and SQLite. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git, SQLite and JavaScript's RegExp. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 
 <section class="section" aria-labelledby="board-h">
@@ -541,13 +549,13 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git and SQL.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL and regex.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`, social: true,
   });
 }
 
-const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions and Just One More JOIN: "
-  + "free pixel-art games that teach Rust, Python, JavaScript, Git and SQL. Clear a level and you're on the board.";
+const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN and "
+  + "The Good, the Bad and the Greedy: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL and regex. Clear a level and you're on the board.";
 
 /** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
 function buildLeaderboards(prefix: string): string {
@@ -1029,7 +1037,7 @@ const JJ_YOUTUBE_TAGS = "learn sql, sql for beginners, sql tutorial, sql join, l
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it.
+Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster.
 
 Opus 5.5 built every game here: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -1037,13 +1045,14 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
   ["Play Curb Your Oxidation", `${SITE_URL}curb/play/`],
   ["Play Prince of Versions", `${SITE_URL}prince/play/`],
   ["Play Just One More JOIN", `${SITE_URL}lieutenant/play/`],
+  ["Play The Good, the Bad and the Greedy", `${SITE_URL}greedy/play/`],
   ["Source on GitHub", REPO],
 ];
 // [file, name, size YouTube asks for, where it goes, alt]
@@ -2336,7 +2345,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2668,7 +2677,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2829,7 +2838,7 @@ ${body}
 </main>
 <footer class="pv-foot">
   <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
 </footer>
 ${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
 ` : ""}${RESUME_JS}
@@ -3007,9 +3016,237 @@ ${body}
 </main>
 <footer class="jj-foot">
   <p>Just One More JOIN. One lieutenant, one basset hound, and a records desk that takes you at your exact word.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
 </footer>
 ${JOIN_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
+${RESUME_JS}
+</body>
+</html>
+`;
+}
+
+// The Good, the Bad and the Greedy's page at /greedy/, the regex game:
+// Backslash Ridge at sundown, in star gold, weathered wood, wanted-poster
+// parchment and a deep purple dusk, with the game's own western face (Rye)
+// for headings. The jobs, the lesson cards, the example poster and the cast
+// all come from `greedy/data/jobs.json`, the data the game plays and
+// `greedy/tests/verify_regex.ts` holds to JavaScript's RegExp. Every match
+// this page shows is worked out here, by JavaScript's RegExp, at build time.
+const GR_NAME = "The Good, the Bad and the Greedy";
+const GR_ALT = "The Good, the Bad and the Greedy: a dusty frontier main street at sundown, under a tall red butte that leans like a backslash.";
+const GR_DESC = "The Good, the Bad and the Greedy, a Dunder Quest game that teaches regular expressions: in a town where "
+  + "everybody is named Hobson, the law is the wanted poster, and a poster catches exactly what's written on it. Play it free in your browser.";
+// Each job's screenshot, by job id.
+const GR_SHOTS: Record<number, [string, string]> = {
+  1: ["street.png", "The first job's desk: the Kid's brief, a line-up of seven Hobsons marked catch or free, and the poster H.nk lighting up Hank, Honk, Hunk and Hink"],
+  2: ["toll.png", "The second job: the Sheriff and the Kid at a toll gate standing on its own in open desert"],
+  3: ["beans.png", "The third job's title card, Beans, over the gang's campfire at night"],
+  4: ["saloon.png", "Inside the saloon, where Dot Starr is waiting, the fourth job"],
+  5: ["showdown.png", "The last poster of the fifth job: ^D.*Starr$ catching Dot Starr under every name she owns"],
+};
+// The cast, in the order the page shows them, with their portraits.
+const GR_CAST: [string, string, string][] = [
+  ["sheriff", "Sheriff Reg Exley", "You. New in town, calm, tan hat, gold star. Never fires a shot: writes a poster instead."],
+  ["kid", "The Lazy Kid", "Your deputy. Used to be the fastest match in the West. These days he matches as little as he can get away with, and stops the first chance he gets."],
+  ["dot", "Dot Starr", "The villain. “Dot, as in any one thing at all. Star, as in as many as I please.” She takes everything on the line."],
+  ["mayor", "Mayor Hobson", "Runs the town. Keeps the stationery simple."],
+  ["gibber", "Gibber Hobson", "An old prospector nobody has understood in thirty years, because he speaks fluent regex. By the end of the week, you will."],
+  ["backtrack", "Big Backtrack", "Dot's enormous henchman. Tries every way, then goes back and tries every other way."],
+];
+
+/** The same tags for The Good, the Bad and the Greedy, the regex game in
+ * greedy/, which Godot exports to greedy/play/index.html. */
+function tagGreedyPage(index: string): void {
+  const desc = "Play The Good, the Bad and the Greedy, the Dunder Quest game that teaches regular expressions, right in your browser.";
+  tagGamePage(index, `Play ${GR_NAME} · Dunder Quest`, desc, "greedy/play/", "greedy.png", GR_ALT, "greedy");
+}
+
+/** A pattern with its parts picked out: escapes, counters, anchors, and the brackets that group. */
+function grPattern(pattern: string): string {
+  const parts = pattern.match(/\\.|\{\d+(?:,\d*)?\}|\[[^\]]*\]|[+*?]|[\^$]|[()|]|./g) ?? [];
+  return parts.map((t) => {
+    const e = esc(t);
+    if (/^\\[dwsb1]$/.test(t)) return `<span class="e">${e}</span>`;
+    if (/^\\/.test(t)) return `<span class="x">${e}</span>`;
+    if (/^[+*?]$|^\{/.test(t)) return `<span class="q">${e}</span>`;
+    if (/^[\^$]$/.test(t)) return `<span class="a">${e}</span>`;
+    if (/^[()|]$|^\[/.test(t)) return `<span class="g">${e}</span>`;
+    return e;
+  }).join("");
+}
+
+/** A line with what the pattern catches marked: the whole match, or one group's part of it.
+ * Returns the line's HTML and whether anything matched. */
+function grMark(pattern: string, line: string, group = 0): [string, boolean] {
+  const re = new RegExp(pattern, "gd");
+  let out = "";
+  let at = 0;
+  let hit = false;
+  for (const m of line.matchAll(re)) {
+    const span = m.indices?.[group];
+    if (!span) continue;
+    hit = true;
+    const [from, to] = span;
+    if (to === from) continue;
+    out += esc(line.slice(at, from)) + `<mark>${esc(line.slice(from, to))}</mark>`;
+    at = to;
+  }
+  return [out + esc(line.slice(at)), hit];
+}
+
+function buildGreedy(prefix: string): string {
+  const data = JSON.parse(read(join(GREEDY, "data", "jobs.json")));
+  const img = `${prefix}static/img/greedy/`;
+  const posters: Json[] = data.jobs.flatMap((j: Json) => j.posters);
+  // The example poster: the stage robber who signs the hotel book a new way every night.
+  const ex: Json = posters.find((p) => p.id === "1b") ?? posters[0];
+  const exPattern = ex.solution.join("");
+  const lineup = ex.lines.map((l: Json) => {
+    const [html, hit] = grMark(exPattern, l.text);
+    const right = hit === l.want;
+    return `<li class="${hit ? "gr-hit" : ""}"><span class="gr-line">${html}</span><span class="gr-tag ${l.want ? "gr-catch" : "gr-free"}">${l.want ? "CATCH" : "FREE"}</span><span class="gr-ok" aria-label="${right ? "right" : "wrong"}">${right ? "✓" : "✗"}</span></li>`;
+  }).join("");
+  const chips = ex.chips.map((c: string) =>
+    `<span class="gr-chip${ex.solution.includes(c) ? " gr-chip-on" : ""}">${grPattern(c)}</span>`).join("");
+  const exTitle = data.jobs[0].title;
+
+  const steps = [
+    ["Read the lineup", "Every line on the board is somebody in town, tagged CATCH or FREE. Nearly all of them are named Hobson."],
+    ["Build the poster", "Pick chips to write the poster's pattern. No typing: letters, a dot, a set, a backslash, one chip at a time."],
+    ["Watch it light up", "Every line lights up live with what your pattern matches, as you build it. A real regex engine is doing the reading."],
+    ["Draw!", "Put the poster up. Catch every CATCH and not one FREE, and the job moves on. Fewer draws is better, and a poster written in par, the fewest chips it can be done in, earns a star."],
+  ];
+  const stepHtml = steps.map(([h, p], i) => `<li><span class="gr-step">${i + 1}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
+
+  const jobs = data.jobs.map((j: Json) => {
+    const ids: string[] = [];
+    for (const p of j.posters) {
+      if (p.card && !ids.includes(p.card)) ids.push(p.card);
+      for (const beat of p.then ?? []) if (beat.card && !ids.includes(beat.card)) ids.push(beat.card);
+    }
+    const cards = ids.map((id) => {
+      const card = data.cards[id];
+      const toks = (card.chips ?? []).map(([t, what]: [string, string]) =>
+        `<li><code>${grPattern(t)}</code> <span>${esc(what)}</span></li>`).join("");
+      let demo = "";
+      if (card.demo) {
+        const rows = card.demo.lines.map((l: string) => {
+          const [html, hit] = grMark(card.demo.pattern, l, card.demo.group ?? 0);
+          return `<li class="${hit ? "gr-hit" : ""}">${html}</li>`;
+        }).join("");
+        demo = `<div class="gr-demo"><p><code>${grPattern(card.demo.pattern)}</code>${card.demo.group ? " <span>group 1 marked</span>" : ""}</p><ul>${rows}</ul></div>`;
+      } else if (card.count) {
+        demo = `<div class="gr-demo"><p><code>${grPattern(card.chips[0][0])}</code> <span>against</span></p><ul><li>${esc(card.count)}</li></ul></div>`;
+      }
+      return `<figure class="gr-card"><figcaption>${esc(card.title)}</figcaption><ul class="gr-toks">${toks}</ul>${demo}<p>${esc(card.text)}</p></figure>`;
+    }).join("");
+    const [shot, alt] = GR_SHOTS[j.id] ?? ["title.png", GR_ALT];
+    return `
+    <li class="gr-job">
+      <img class="gr-shot" src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy">
+      <div class="gr-job-copy">
+        <p class="gr-num">Job ${j.id} · ${j.posters.length} posters</p>
+        <h3>${esc(j.title)}</h3>
+        <p class="gr-lesson">${esc(j.lesson)}</p>
+        <div class="gr-cards">${cards}</div>
+      </div>
+    </li>`;
+  }).join("");
+
+  const cast = GR_CAST.map(([id, name, about]) =>
+    `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
+  const testedCount = posters.length;
+
+  const body = `
+<section class="gr-hero">
+  <div class="gr-hero-copy">
+    <p class="gr-kicker">a dunder_quest game · learn regex</p>
+    <h1><span>The Good, the Bad and the</span> Greedy</h1>
+    <p class="gr-lede">In Backslash Ridge everybody is named Hobson, which makes wanted posters hell. Nobody shoots anybody here. The law is the wanted poster, and a poster catches exactly what's written on it. Not who you meant. What you wrote.</p>
+    <p class="gr-actions"><a class="gr-btn" href="play/">Play in your browser</a><a class="gr-more" href="#jobs">The five jobs →</a></p>
+    ${resumePanel("greedy", "gr-btn gr-btn-small")}
+    <p class="gr-fine">Free. No typing: you build every poster from chips, and a real regex engine reads it.</p>
+  </div>
+  <img class="gr-shot" src="${img}title.png" alt="${esc(GR_ALT)}" width="960" height="540">
+</section>
+
+<section class="gr-section" id="how">
+  <h2>How it plays</h2>
+  <p>You're the new sheriff, Reg Exley. Each job is a handful of wanted posters, and each poster is a pattern: a <b>regular expression</b>, the little language programmers use to find, check and pull apart text.</p>
+  <figure class="gr-poster">
+    <div class="gr-poster-head"><p class="gr-wanted">Wanted</p><p class="gr-brief">${esc(ex.brief.text)}</p></div>
+    <p class="gr-pattern" aria-label="The poster's pattern"><code>${grPattern(exPattern)}</code></p>
+    <p class="gr-chips" aria-label="The chips to build it from">${chips}</p>
+    <ol class="gr-lineup">${lineup}</ol>
+    <figcaption>A poster from job 1, ${esc(exTitle)}. The chips that make it are lit; the marked letters are what <code>${esc(exPattern)}</code> matches on each line.</figcaption>
+  </figure>
+  <ol class="gr-steps">${stepHtml}</ol>
+</section>
+
+<section class="gr-section" id="story">
+  <h2>Never seen a regex? It starts there</h2>
+  <p>A first game opens on a narrated prologue that sets up the town and says what a pattern is: a description of text, which a regex engine checks against every line and marks wherever it fits. Every line of dialogue in the jobs is voiced, and the music is twangy guitar, whistling and harmonica.</p>
+  <div class="gr-pair">
+    <img class="gr-shot" src="${img}intro.png" alt="The prologue: the Lazy Kid writes Slim on a poster, and it lights up every Slim in the line-up, Slimy Pete the preacher included" width="960" height="540" loading="lazy">
+    <img class="gr-shot" src="${img}card.png" alt="A lesson card from the game: a new piece of regex, what it means, and a pattern lighting up what it matches" width="960" height="540" loading="lazy">
+  </div>
+</section>
+
+<section class="gr-section" id="jobs">
+  <h2>The jobs</h2>
+  <p class="gr-intro">Five jobs, from a plain word to a pattern that catches the same word twice. Each new piece of regex arrives on a lesson card, with what it means and a pattern lighting up a few lines. These are the cards, and the marks on them are what JavaScript's RegExp matches.</p>
+  <ol class="gr-jobs">${jobs}
+  </ol>
+</section>
+
+<section class="gr-section gr-real" id="real">
+  <h2>It's real regex</h2>
+  <p>The chips only write text. What reads your poster is a real regex engine: Godot's <code>RegEx</code>, which is PCRE2, the library behind regular expressions in PHP, R and plenty more. And so that nothing you learn is true of one engine only, on every change to the game a script runs every pattern of up to three chips that any poster's chips can make, hundreds of longer ones, the solutions to all ${testedCount} posters and every lesson card's example through JavaScript's <code>RegExp</code> as well, and fails if the two engines disagree on a single match, a single group, or on which patterns aren't patterns at all.</p>
+  <p>The last job ends on a warning, from Big Backtrack: a pattern with one quantifier inside another, like <code>${grPattern("(a+)+$")}</code>, can try a huge number of ways to fit a line before it gives up, about twice as many for every letter you add. It's called catastrophic backtracking, and it has taken real websites down.</p>
+</section>
+
+<section class="gr-section" id="cast">
+  <h2>Folks in Backslash Ridge</h2>
+  <ul class="gr-cast">${cast}</ul>
+</section>
+
+<section class="gr-section" id="small">
+  <p class="gr-fine">The Good, the Bad and the Greedy is a comic spaghetti-western spoof, with a wink or two at a certain western comedy. The names, town, art and music are its own, and it isn't affiliated with or endorsed by anyone who made the films it winks at.</p>
+</section>
+`;
+  return grPage(body, prefix);
+}
+
+function grPage(body: string, prefix: string): string {
+  const title = `${GR_NAME} · Dunder Quest`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${esc(GR_DESC)}">
+${headTags(title, GR_DESC, "greedy/", "greedy.png", GR_ALT)}
+<link rel="icon" href="${prefix}static/img/greedy/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${prefix}static/greedy.css">
+</head>
+<body class="gr">
+<a class="skip" href="#main">Skip to content</a>
+<header class="gr-bar">
+  <a class="gr-brand" href="./">The Good, the Bad and the Greedy</a>
+  <nav aria-label="${GR_NAME}"><a href="#how">How it plays</a><a href="#jobs">The jobs</a><a href="#real">Real regex</a><a href="${prefix}">All games</a></nav>
+  <a class="gr-btn gr-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="gr-foot">
+  <p>The Good, the Bad and the Greedy. One sheriff, one lazy deputy, and a town full of Hobsons who all fit the description.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/greedy">Source on GitHub</a></p>
+</footer>
 ${RESUME_JS}
 </body>
 </html>
@@ -3021,7 +3258,7 @@ function main(): void {
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
     "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage, "--prince": tagPrincePage,
-    "--lieutenant": tagLieutenantPage,
+    "--lieutenant": tagLieutenantPage, "--greedy": tagGreedyPage,
   };
   if (args[0] in tag) {
     tag[args[0]](args[1]);
@@ -3043,7 +3280,10 @@ function main(): void {
   mkdirSync(join(statics, "fonts"), { recursive: true });
   for (const [name, src] of Object.entries(FONTS)) copyFileSync(join(QUEST, src), join(statics, "fonts", name));
   copyFileSync(join(CURB, "assets", "fonts", "LibreFranklin.ttf"), join(statics, "fonts", "LibreFranklin.ttf"));
-  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"]]) { // their icons, for the brand kit and the tab
+  for (const font of ["Rye", "VT323", "PixelifySans"]) { // the regex game's faces, for greedy.css
+    copyFileSync(join(GREEDY, "assets", "fonts", `${font}.ttf`), join(statics, "fonts", `${font}.ttf`));
+  }
+  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }
 
@@ -3064,6 +3304,7 @@ function main(): void {
   write(join(out, "curb", "index.html"), buildCurb("../"));
   write(join(out, "prince", "index.html"), buildPrince("../"));
   write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
+  write(join(out, "greedy", "index.html"), buildGreedy("../"));
   write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
   write(join(out, "me", "index.html"), buildMe("../"));
   write(join(out, "privacy", "index.html"), buildPrivacy("../"));

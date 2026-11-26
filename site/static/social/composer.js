@@ -167,6 +167,7 @@ function suggestions(game, context) {
     flatmates: "My flatmate is running my JavaScript. What could possibly go wrong?",
     prince: "Turning back time with git reset. Learning Git in Prince of Versions.",
     lieutenant: "Just one more question… solving murders with SQL in Just One More JOIN.",
+    greedy: "New sheriff in Backslash Ridge, where everybody is named Hobson. Learning regex in The Good, the Bad and the Greedy.",
   }[game];
   out.push(flavour);
   out.push(`Learning ${def.lang} with a free pixel-art game.`);

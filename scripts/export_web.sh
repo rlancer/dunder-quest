@@ -3,8 +3,9 @@
 # Flatmates.js (games/flatmates/) in build/site/flatmates/play,
 # beside its page in build/site/flatmates, and Curb Your Oxidation
 # (games/curb/) in build/site/curb/play, Prince of Versions
-# (games/prince/) in build/site/prince/play, and Just One More JOIN
-# (games/lieutenant/) in build/site/lieutenant/play.
+# (games/prince/) in build/site/prince/play, Just One More JOIN
+# (games/lieutenant/) in build/site/lieutenant/play, and The Good, the Bad
+# and the Greedy (games/greedy/) in build/site/greedy/play.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -14,6 +15,7 @@ FLATMATES="${ROOT}/games/flatmates"
 CURB="${ROOT}/games/curb"
 PRINCE="${ROOT}/games/prince"
 LIEUTENANT="${ROOT}/games/lieutenant"
+GREEDY="${ROOT}/games/greedy"
 source "${ROOT}/scripts/godot_setup.sh"
 
 rm -rf build/site
@@ -46,3 +48,9 @@ mkdir -p build/site/lieutenant/play
 "$GODOT" --headless --path "$LIEUTENANT" --export-release "Web" "${ROOT}/build/site/lieutenant/play/index.html"
 bun "${ROOT}/site/build.ts" --lieutenant "${ROOT}/build/site/lieutenant/play/index.html"
 bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/lieutenant/play"
+
+mkdir -p build/site/greedy/play
+"$GODOT" --headless --path "$GREEDY" --import
+"$GODOT" --headless --path "$GREEDY" --export-release "Web" "${ROOT}/build/site/greedy/play/index.html"
+bun "${ROOT}/site/build.ts" --greedy "${ROOT}/build/site/greedy/play/index.html"
+bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/greedy/play"
