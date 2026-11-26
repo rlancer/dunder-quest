@@ -1,0 +1,532 @@
+{
+  "cast": {
+    "narrator": {"name": "Narrator"},
+    "stu": {"name": "Stu Lerner"},
+    "lenny": {"name": "Lenny Kaplan"},
+    "dana": {"name": "Dana Wexler"},
+    "zelnick": {"name": "Zelnick"},
+    "vernon": {"name": "Vernon"},
+    "pratt": {"name": "Mr. Pratt"}
+  },
+  "episodes": [
+    {
+      "id": 1,
+      "title": "The Callback",
+      "lesson": "Callbacks and setTimeout",
+      "place": "apartment",
+      "music": "apartment",
+      "intro": [
+        {"who": "narrator", "text": "Stu Lerner tells jokes for a living. His friend Lenny Kaplan tells lies for a living, but nobody has ever paid him for one."},
+        {"who": "lenny", "text": "The network wants our pilot by Friday! Half an hour where nothing happens. And I already wrote it!"},
+        {"who": "stu", "text": "You wrote every line in the wrong order, Lenny."},
+        {"who": "lenny", "text": "And legal locked the pages! We can't move a line! Not one!", "say": "[panicking] And legal locked the pages! We can't move a line! Not one!"},
+        {"who": "stu", "text": "So we don't move them. We tell them when. You're the new writer, kid. Here's a stack of cue cards."}
+      ],
+      "scenes": [
+        {
+          "id": "1a",
+          "card": "callback",
+          "brief": {"who": "stu", "text": "Zelnick bursts into an empty room. Nobody bursts into an empty room. Make him wait till I sit down."},
+          "script": [
+            {"log": "Zelnick bursts in", "slot": "a"},
+            {"log": "Stu sits down", "slot": "b"}
+          ],
+          "cues": ["timeout:0"],
+          "solution": {"a": "timeout:0"},
+          "want": ["Stu sits down", "Zelnick bursts in"],
+          "hint": "Put the setTimeout card on the line that has to wait. Its callback runs once the script is done.",
+          "after": {"who": "zelnick", "text": "Hey! Hey hey hey!", "say": "[bursting in, delighted] Hey! Hey hey hey!", "sound": "door"}
+        },
+        {
+          "id": "1b",
+          "brief": {"who": "dana", "text": "I label my lunch, I leave, THEN Lenny eats it. Here he eats it before I've found a pen."},
+          "script": [
+            {"log": "Lenny eats it", "slot": "a"},
+            {"log": "Dana labels it", "slot": "b"},
+            {"log": "Dana leaves", "slot": "c"}
+          ],
+          "cues": ["timeout:0"],
+          "solution": {"a": "timeout:0"},
+          "want": ["Dana labels it", "Dana leaves", "Lenny eats it"],
+          "hint": "A callback doesn't wait for the next line. It waits for every line."
+        },
+        {
+          "id": "1c",
+          "card": "fifo",
+          "brief": {"who": "lenny", "text": "Stu walks in, then hears both messages, in order. Or how does he know who's mad at him?"},
+          "script": [
+            {"log": "message one", "slot": "a"},
+            {"log": "message two", "slot": "b"},
+            {"log": "Stu walks in", "slot": "c"}
+          ],
+          "cues": ["timeout:0", "timeout:0"],
+          "solution": {"a": "timeout:0", "b": "timeout:0"},
+          "want": ["Stu walks in", "message one", "message two"],
+          "hint": "Two callbacks set for the same time run in the order they were set."
+        },
+        {
+          "id": "1d",
+          "brief": {"who": "stu", "text": "A joke goes setup, punchline, laugh, bow. Lenny's page has my act inside out."},
+          "script": [
+            {"log": "punchline", "slot": "a"},
+            {"log": "so anyway", "slot": "b"},
+            {"log": "the setup", "slot": "c"},
+            {"log": "big laugh", "slot": "d"},
+            {"log": "Stu bows", "slot": "e"}
+          ],
+          "cues": ["timeout:0", "timeout:0", "timeout:0"],
+          "solution": {"a": "timeout:0", "d": "timeout:0", "e": "timeout:0"},
+          "want": ["so anyway", "the setup", "punchline", "big laugh", "Stu bows"],
+          "hint": "Every line that has to come after the setup needs a card. They keep their own order."
+        }
+      ],
+      "outro": [
+        {"who": "stu", "text": "See? Nothing moved. Everything just waited its turn."},
+        {"who": "lenny", "text": "Waiting! I'm a natural. I've been waiting for something to happen my whole life."}
+      ]
+    },
+    {
+      "id": 2,
+      "title": "The Wait",
+      "lesson": "Timers and delays",
+      "place": "restaurant",
+      "music": "restaurant",
+      "intro": [
+        {"who": "narrator", "text": "Saturday night at the Jade Lantern. Twenty minutes, says the man at the podium. He has been saying twenty minutes for forty minutes."},
+        {"who": "lenny", "text": "There's a list! And people who came in after us are sitting down!", "say": "[outraged] There's a list! And people who came in after us are sitting down!"},
+        {"who": "dana", "text": "They were told ten minutes. We were told twenty. It's not who came first, Lenny. It's how long you were told."},
+        {"who": "stu", "text": "Like setTimeout. The number is how long the callback waits, counted from when it was set."},
+        {"who": "vernon", "text": "Lerner. Enjoying the wait? I was seated in four minutes. They know me here."}
+      ],
+      "scenes": [
+        {
+          "id": "2a",
+          "card": "delay",
+          "brief": {"who": "dana", "text": "Drinks, dinner, dessert. That's a meal. Lenny wrote it backwards, like his whole life."},
+          "script": [
+            {"log": "dessert", "slot": "a"},
+            {"log": "dinner", "slot": "b"},
+            {"log": "drinks", "slot": "c"}
+          ],
+          "cues": ["timeout:1000", "timeout:500"],
+          "solution": {"a": "timeout:1000", "b": "timeout:500"},
+          "want": ["drinks", "dinner", "dessert"],
+          "hint": "The longer wait goes on the line that airs last, whichever line was written first."
+        },
+        {
+          "id": "2b",
+          "brief": {"who": "lenny", "text": "We both got told twenty minutes, and I asked first. So I'm called first. It's only fair!"},
+          "script": [
+            {"log": "Kaplan, four", "slot": "a"},
+            {"log": "Lerner, two", "slot": "b"},
+            {"log": "we stand there", "slot": "c"}
+          ],
+          "cues": ["timeout:500", "timeout:500"],
+          "solution": {"a": "timeout:500", "b": "timeout:500"},
+          "want": ["we stand there", "Kaplan, four", "Lerner, two"],
+          "hint": "Timers due at the same moment run in the order they were set."
+        },
+        {
+          "id": "2c",
+          "card": "nested",
+          "brief": {"who": "stu", "text": "Dana's back after we're seated but before the food. Lenny's back after the food, as usual."},
+          "script": [
+            {"timeout": 500, "body": [
+              {"log": "table ready"},
+              {"timeout": 500, "body": [{"log": "food comes"}]}
+            ]},
+            {"log": "Dana's back", "slot": "a"},
+            {"log": "Lenny's back", "slot": "b"}
+          ],
+          "cues": ["timeout:700", "timeout:1500"],
+          "solution": {"a": "timeout:700", "b": "timeout:1500"},
+          "want": ["table ready", "Dana's back", "food comes", "Lenny's back"],
+          "hint": "The food's timer is only set when the table's goes off, at 500. So the food comes at 1000."
+        },
+        {
+          "id": "2d",
+          "brief": {"who": "lenny", "text": "We give up, we walk out, and THEN they call my name. That's the scene. That's every Saturday."},
+          "script": [
+            {"log": "table for Kaplan", "slot": "a"},
+            {"log": "we give up", "slot": "b"},
+            {"log": "one more minute", "slot": "c"},
+            {"log": "we walk out", "slot": "d"}
+          ],
+          "cues": ["timeout:0", "timeout:500", "timeout:500", "timeout:1000"],
+          "solution": {"a": "timeout:1000", "b": "timeout:500", "d": "timeout:500"},
+          "want": ["one more minute", "we give up", "we walk out", "table for Kaplan"],
+          "hint": "Three lines wait. The last waits longest, and two that wait the same go in the order they were set."
+        }
+      ],
+      "outro": [
+        {"who": "dana", "text": "Kaplan, party of four? NOW? We're standing on the sidewalk!", "say": "[exasperated] Kaplan, party of four? Now? We're standing on the sidewalk!"},
+        {"who": "stu", "text": "That's the thing about a timer. It doesn't care where you are. It just goes off."}
+      ]
+    },
+    {
+      "id": 3,
+      "title": "The Promise",
+      "lesson": "Promises and microtasks",
+      "place": "diner",
+      "music": "diner",
+      "intro": [
+        {"who": "narrator", "text": "Vic's Diner. Same booth, same order, every day for six years. Nobody has ever seen Lenny pay."},
+        {"who": "lenny", "text": "I'll get the next one. I promise! A promise is binding. It's practically a contract!"},
+        {"who": "stu", "text": "In JavaScript it is. A promise doesn't wait in the timer line. It cuts in ahead of every timer, even a zero."}
+      ],
+      "scenes": [
+        {
+          "id": "3a",
+          "card": "then",
+          "brief": {"who": "dana", "text": "The check comes, then Lenny pays. Here he pays before there's a check. As if that's ever happened."},
+          "script": [
+            {"log": "Lenny pays", "slot": "a"},
+            {"log": "check comes", "slot": "b"}
+          ],
+          "cues": ["then"],
+          "solution": {"a": "then"},
+          "want": ["check comes", "Lenny pays"],
+          "hint": "A .then callback waits for the script to finish too."
+        },
+        {
+          "id": "3b",
+          "brief": {"who": "stu", "text": "Coffee, then Lenny's toast, then Zelnick's soup, which takes forever. The toast can't wait for the soup."},
+          "script": [
+            {"log": "Zelnick's soup", "slot": "a"},
+            {"log": "Lenny's toast", "slot": "b"},
+            {"log": "coffee", "slot": "c"}
+          ],
+          "cues": ["timeout:0", "then"],
+          "solution": {"a": "timeout:0", "b": "then"},
+          "want": ["coffee", "Lenny's toast", "Zelnick's soup"],
+          "hint": "Microtasks run before any timer, even setTimeout 0, whichever was set first."
+        },
+        {
+          "id": "3c",
+          "card": "micro",
+          "brief": {"who": "lenny", "text": "We argue, Stu asks about the tip, I ask about the tip, then somebody leaves one. Never me."},
+          "script": [
+            {"log": "a tip", "slot": "a"},
+            {"log": "Stu: tip?", "slot": "b"},
+            {"log": "Lenny: tip?", "slot": "c"},
+            {"log": "they argue", "slot": "d"}
+          ],
+          "cues": ["timeout:0", "micro", "then"],
+          "solution": {"a": "timeout:0", "b": "micro", "c": "then"},
+          "want": ["they argue", "Stu: tip?", "Lenny: tip?", "a tip"],
+          "hint": "queueMicrotask and .then wait in the same line, in the order they joined it."
+        },
+        {
+          "id": "3d",
+          "card": "between",
+          "brief": {"who": "dana", "text": "Check, I ask who pays, Lenny's got this, Lenny has no wallet. All before Vic yells."},
+          "script": [
+            {"timeout": 0, "body": [
+              {"log": "no wallet", "slot": "a"},
+              {"log": "I've got this"}
+            ]},
+            {"timeout": 0, "body": [{"log": "Vic: pay up"}]},
+            {"log": "Dana: who pays?", "slot": "b"},
+            {"log": "check comes"}
+          ],
+          "cues": ["then", "then", "timeout:0"],
+          "solution": {"a": "then", "b": "then"},
+          "want": ["check comes", "Dana: who pays?", "I've got this", "no wallet", "Vic: pay up"],
+          "hint": "After each timer's callback, every microtask runs before the next timer gets a turn."
+        }
+      ],
+      "outro": [
+        {"who": "dana", "text": "Six years, Lenny. Six years of \"I've got this\"."},
+        {"who": "lenny", "text": "And every single time, I meant it. For about a microtask."}
+      ]
+    },
+    {
+      "id": 4,
+      "title": "The Chain",
+      "lesson": "Promise chains",
+      "place": "garage",
+      "music": "garage",
+      "intro": [
+        {"who": "narrator", "text": "Four friends, one parking garage, and nobody wrote down where they left the car."},
+        {"who": "zelnick", "text": "I've got a system! One level at a time. You don't even LOOK at the next level till you're done with this one!", "say": "[excited] I've got a system! One level at a time. You don't even look at the next level till you're done with this one!"},
+        {"who": "stu", "text": "That's a promise chain. Each .then waits for the one before. But anybody can cut in between two links.", "say": "That's a promise chain. Each dot then waits for the one before. But anybody can cut in between two links."}
+      ],
+      "scenes": [
+        {
+          "id": "4a",
+          "card": "chain",
+          "brief": {"who": "dana", "text": "Zelnick goes level by level. I find the car right after his level 1, while he's on his way to 2."},
+          "script": [
+            {"chain": [[{"log": "level 1"}], [{"log": "level 2"}], [{"log": "level 3"}]]},
+            {"log": "Dana: found it!", "slot": "a"}
+          ],
+          "cues": ["timeout:0", "then"],
+          "solution": {"a": "then"},
+          "want": ["level 1", "Dana: found it!", "level 2", "level 3"],
+          "hint": "A chain joins the line one link at a time. A .then beside it gets in behind the first link."
+        },
+        {
+          "id": "4b",
+          "brief": {"who": "stu", "text": "We split up. I do my two levels, THEN Dana does hers. Here we're running round each other."},
+          "script": [
+            {"chain": [[{"log": "Stu on 1"}], [{"log": "Stu on 2"}]]},
+            {"chain": [[{"log": "Dana on 1", "slot": "a"}], [{"log": "Dana on 2"}]]}
+          ],
+          "cues": ["then", "timeout:0"],
+          "solution": {"a": "then"},
+          "want": ["Stu on 1", "Stu on 2", "Dana on 1", "Dana on 2"],
+          "hint": "A .then inside a link puts that line one turn further back, behind whatever's already waiting."
+        },
+        {
+          "id": "4c",
+          "card": "nowait",
+          "brief": {"who": "zelnick", "text": "Level 2 waits for the valet, so I do level 3 while I'm waiting. That's efficiency!"},
+          "script": [
+            {"timeout": 0, "body": [{"log": "valet"}]},
+            {"chain": [[{"log": "level 1"}], [{"log": "level 2", "slot": "a"}], [{"log": "level 3"}]]}
+          ],
+          "cues": ["then", "timeout:0"],
+          "solution": {"a": "timeout:0"},
+          "want": ["level 1", "level 3", "valet", "level 2"],
+          "hint": "A link that only sets a timer is finished at once, so the next link doesn't wait for it."
+        },
+        {
+          "id": "4d",
+          "brief": {"who": "lenny", "text": "Stu does his two levels, Dana does hers, THEN I find it. Right by the exit, where I said."},
+          "script": [
+            {"chain": [[{"log": "Stu on 1"}], [{"log": "Stu on 2", "slot": "a"}]]},
+            {"chain": [[{"log": "Dana on 1", "slot": "b"}], [{"log": "Dana on 2"}]]},
+            {"log": "Lenny: it's here", "slot": "c"}
+          ],
+          "cues": ["then", "then", "timeout:0"],
+          "solution": {"b": "then", "c": "timeout:0"},
+          "want": ["Stu on 1", "Stu on 2", "Dana on 1", "Dana on 2", "Lenny: it's here"],
+          "hint": "Two chains take turns, a link each. Put one a turn behind, and make Lenny wait for a timer."
+        }
+      ],
+      "outro": [
+        {"who": "zelnick", "text": "Level 2! It was on level 2 the whole time!"},
+        {"who": "dana", "text": "It's a garage, Zelnick. It's always on a level."}
+      ]
+    },
+    {
+      "id": 5,
+      "title": "The Table Read",
+      "lesson": "async and await",
+      "place": "network",
+      "music": "network",
+      "intro": [
+        {"who": "narrator", "text": "The network. A long table on the fortieth floor, and Mr. Pratt, who has never laughed. Not once. Not even at a wedding."},
+        {"who": "pratt", "text": "Table read. Four storylines. They meet at the end, or there's no show."},
+        {"who": "lenny", "text": "Four storylines, in one room, at the same time? How?"},
+        {"who": "stu", "text": "Async. Each storyline runs until it has to wait. While it waits, the others go. Nobody just stands there."}
+      ],
+      "scenes": [
+        {
+          "id": "5a",
+          "card": "async",
+          "brief": {"who": "lenny", "text": "I pitch, Pratt checks his watch, and then, after a long pause, he laughs. It's my dream."},
+          "script": [
+            {"async": "pitch", "body": [
+              {"log": "Lenny pitches"},
+              {"log": "Pratt laughs", "slot": "a"}
+            ]},
+            {"call": "pitch"},
+            {"log": "Pratt checks watch"}
+          ],
+          "cues": ["wait:1000"],
+          "solution": {"a": "wait:1000"},
+          "want": ["Lenny pitches", "Pratt checks watch", "Pratt laughs"],
+          "hint": "Everything before an await runs at once. The await pauses that function; the script carries on."
+        },
+        {
+          "id": "5b",
+          "brief": {"who": "dana", "text": "Lenny lies, I dance, his lie's found out, and only THEN does the room stare at my dancing."},
+          "script": [
+            {"async": "lenny", "body": [
+              {"log": "Lenny lies"},
+              {"log": "lie found out", "slot": "a"}
+            ]},
+            {"async": "dana", "body": [
+              {"log": "Dana dances"},
+              {"log": "everyone stares", "slot": "b"}
+            ]},
+            {"call": "lenny"},
+            {"call": "dana"}
+          ],
+          "cues": ["wait:100", "wait:500"],
+          "solution": {"a": "wait:100", "b": "wait:500"},
+          "want": ["Lenny lies", "Dana dances", "lie found out", "everyone stares"],
+          "hint": "While one function waits, the next one runs. The shorter wait is over first."
+        },
+        {
+          "id": "5c",
+          "card": "awaitcall",
+          "brief": {"who": "stu", "text": "I don't say \"so?\" until Lenny's confessed. Pratt sighs meanwhile. He's good at it."},
+          "script": [
+            {"async": "lenny", "body": [
+              {"log": "Lenny stalls"},
+              {"wait": 500},
+              {"log": "Lenny confesses"}
+            ]},
+            {"async": "stu", "body": [
+              {"call": "lenny", "slot": "a"},
+              {"log": "Stu: so?", "slot": "b"}
+            ]},
+            {"call": "stu"},
+            {"log": "Pratt sighs"}
+          ],
+          "cues": ["await", "wait:100"],
+          "solution": {"a": "await"},
+          "want": ["Lenny stalls", "Pratt sighs", "Lenny confesses", "Stu: so?"],
+          "hint": "await in front of a call waits for that whole function to finish, its own waits and all."
+        },
+        {
+          "id": "5d",
+          "brief": {"who": "pratt", "text": "Lenny lies. Zelnick bursts in. Lenny's caught. Dana dances. Stu says \"scene\". In that order."},
+          "script": [
+            {"async": "lenny", "body": [
+              {"log": "Lenny lies"},
+              {"log": "Lenny's caught", "slot": "a"}
+            ]},
+            {"async": "stu", "body": [
+              {"call": "lenny", "slot": "b"},
+              {"log": "Dana dances", "slot": "c"},
+              {"log": "Stu: and scene"}
+            ]},
+            {"call": "stu"},
+            {"log": "Zelnick bursts in", "slot": "d"}
+          ],
+          "cues": ["await", "await", "wait:100", "timeout:0"],
+          "solution": {"a": "wait:100", "b": "await"},
+          "want": ["Lenny lies", "Zelnick bursts in", "Lenny's caught", "Dana dances", "Stu: and scene"],
+          "hint": "Lenny has to be caught later, so his storyline waits. Stu's has to wait for all of Lenny's."
+        }
+      ],
+      "outro": [
+        {"who": "pratt", "text": "Ha.", "say": "[a single, dry, surprised laugh] Ha."},
+        {"who": "narrator", "text": "Mr. Pratt laughed. Once. The network ordered six more episodes."},
+        {"who": "lenny", "text": "Six episodes! Of nothing! We're geniuses!", "say": "[ecstatic] Six episodes! Of nothing! We're geniuses!"},
+        {"who": "stu", "text": "Same time next week, kid. Bring the cue cards."}
+      ]
+    }
+  ],
+  "cards": {
+    "callback": {
+      "title": "Callbacks",
+      "text": "You ever notice JavaScript does one thing at a time? So how does it wait for anything? It doesn't! You hand setTimeout a function and it says, I'll call you back. And it does, once everybody else is done talking.",
+      "say": "You ever notice JavaScript does one thing at a time? So how does it wait for anything? It doesn't! You hand set timeout a function, and it says, I'll call you back. And it does, once everybody else is done talking.",
+      "chips": [["setTimeout(…, 0)", "call this back later, once the script has run"], ["() => { … }", "a function with no name: the callback"]],
+      "demo": [{"timeout": 0, "body": [{"log": "later"}]}, {"log": "now"}],
+      "out": ["now", "later"]
+    },
+    "fifo": {
+      "title": "In the order set",
+      "text": "Two callbacks, both set for zero. Who goes first? Whoever asked first! It's a deli counter. Take a number.",
+      "chips": [["setTimeout(…, 0)", "twice: the one set first runs first"]],
+      "demo": [{"timeout": 0, "body": [{"log": "first"}]}, {"timeout": 0, "body": [{"log": "second"}]}, {"log": "script"}],
+      "out": ["script", "first", "second"]
+    },
+    "delay": {
+      "title": "Delays",
+      "text": "The number in setTimeout isn't a time. It's a wait, in milliseconds. A thousand of them is a second. Who measures waiting in thousandths? Restaurants!",
+      "say": "The number in set timeout isn't a time. It's a wait, in milliseconds. A thousand of them is a second. Who measures waiting in thousandths? Restaurants!",
+      "chips": [["setTimeout(…, 500)", "wait half a second, then call back"], ["setTimeout(…, 1000)", "wait a whole second"]],
+      "demo": [{"timeout": 1000, "body": [{"log": "slow"}]}, {"timeout": 500, "body": [{"log": "fast"}]}],
+      "out": ["fast", "slow"]
+    },
+    "nested": {
+      "title": "A timer in a timer",
+      "text": "Set a timer inside another timer's callback, and it starts counting then. Not from the beginning. Like when the waiter says five more minutes. Five more from NOW.",
+      "chips": [["setTimeout(…, 500)", "inside a callback: 500 from when that callback runs"]],
+      "demo": [{"timeout": 500, "body": [{"log": "at 500"}, {"timeout": 500, "body": [{"log": "at 1000"}]}]}, {"timeout": 700, "body": [{"log": "at 700"}]}],
+      "out": ["at 500", "at 700", "at 1000"]
+    },
+    "then": {
+      "title": "Promises",
+      "text": "A promise is something that'll be done one day. Promise.resolve() is one that's already kept, the only kind Lenny makes. And .then is what happens next: a callback that runs before any timer.",
+      "say": "A promise is something that'll be done one day. Promise dot resolve is one that's already kept, the only kind Lenny makes. And dot then is what happens next: a callback that runs before any timer.",
+      "chips": [["Promise.resolve().then(…)", "call this back once the script is done, ahead of every timer"]],
+      "demo": [{"timeout": 0, "body": [{"log": "timer"}]}, {"then": [{"log": "promise"}]}, {"log": "script"}],
+      "out": ["script", "promise", "timer"]
+    },
+    "micro": {
+      "title": "Microtasks",
+      "text": "There are two lines. The timer line, out the door, and the microtask line, a booth that's always free. A .then joins the booth. So does queueMicrotask, without the promise. First in, first out.",
+      "say": "There are two lines. The timer line, out the door, and the microtask line, a booth that's always free. A dot then joins the booth. So does queue microtask, without the promise. First in, first out.",
+      "chips": [["queueMicrotask(…)", "straight into the microtask line"], ["Promise.resolve().then(…)", "the same line, by way of a promise"]],
+      "demo": [{"micro": [{"log": "one"}]}, {"then": [{"log": "two"}]}, {"micro": [{"log": "three"}]}],
+      "out": ["one", "two", "three"]
+    },
+    "between": {
+      "title": "Between timers",
+      "text": "After every timer's callback, before the next timer, the microtask line is emptied. Every time. Like a palate cleanser between courses. Even the soup!",
+      "chips": [["Promise.resolve().then(…)", "inside a timer's callback: runs right after it, before the next timer"]],
+      "demo": [{"timeout": 0, "body": [{"then": [{"log": "its promise"}]}, {"log": "timer one"}]}, {"timeout": 0, "body": [{"log": "timer two"}]}],
+      "out": ["timer one", "its promise", "timer two"]
+    },
+    "chain": {
+      "title": "Chains",
+      "text": ".then hands back a new promise, so you can .then that too. A chain! Each link waits for the one before. But every link is its own trip to the microtask line, and anybody can get in between.",
+      "say": "Dot then hands back a new promise, so you can dot then that too. A chain! Each link waits for the one before. But every link is its own trip to the microtask line, and anybody can get in between.",
+      "chips": [[".then(() => …)", "the next link: called back once the link before it is done"]],
+      "demo": [{"chain": [[{"log": "A1"}], [{"log": "A2"}]]}, {"chain": [[{"log": "B1"}], [{"log": "B2"}]]}],
+      "out": ["A1", "B1", "A2", "B2"]
+    },
+    "nowait": {
+      "title": "A link doesn't wait",
+      "text": "If a link only sets a timer, that link is done. Instantly. The chain moves on, and the timer goes off whenever. Like saying you'll call somebody. You've done your part!",
+      "chips": [["setTimeout(…, 0)", "inside a link: the link is done at once, and the next one goes"]],
+      "demo": [{"chain": [[{"timeout": 0, "body": [{"log": "timer"}]}], [{"log": "link 2"}]]}],
+      "out": ["link 2", "timer"]
+    },
+    "async": {
+      "title": "async and await",
+      "text": "An async function runs like any other, up to its first await. Then it steps out, and whoever called it carries on. When the wait's over, it picks up where it left off. wait is a promise kept after so many milliseconds.",
+      "chips": [["async function", "a function that can stop and wait"], ["await wait(1000);", "pause this function a second; everyone else carries on"]],
+      "demo": [{"async": "bit", "body": [{"log": "setup"}, {"wait": 1000}, {"log": "punchline"}]}, {"call": "bit"}, {"log": "they wait"}],
+      "out": ["setup", "they wait", "punchline"]
+    },
+    "awaitcall": {
+      "title": "await a call",
+      "text": "An async function hands back a promise, kept when its last line has run. Put await in front of the call and you wait for all of it, waits and all. The only way to know somebody's finished talking.",
+      "chips": [["await …", "in front of a call: wait till that whole function is done"]],
+      "demo": [{"async": "lenny", "body": [{"wait": 500}, {"log": "Lenny's done"}]}, {"async": "stu", "body": [{"await": {"call": "lenny"}}, {"log": "Stu talks"}]}, {"call": "stu"}],
+      "out": ["Lenny's done", "Stu talks"]
+    }
+  },
+  "glossary": {
+    "timeout:0": "call back once nothing else runs",
+    "timeout": "call back {ms} ms after it's set",
+    "then": "a microtask: ahead of every timer",
+    "micro": "straight into the microtask line",
+    "wait": "pause this function {ms} ms",
+    "await": "wait for it to finish first"
+  },
+  "stock": {
+    "miss": [
+      "We got \"{got}\" where the table read has \"{want}\". Something went early.",
+      "That's \"{got}\" where \"{want}\" goes. Watch which line got there first, and why.",
+      "Close! But \"{got}\" got in ahead of \"{want}\"."
+    ],
+    "nocue": [
+      "Nothing's cued, so it plays top to bottom. That's the page, not the table read."
+    ],
+    "par": [
+      "And scene!",
+      "That's a keeper.",
+      "Not a wasted card.",
+      "Print it. Next scene."
+    ],
+    "over": [
+      "It plays! There's a way with fewer cards, though.",
+      "And scene. A card or two to spare, but it plays.",
+      "It works. Pratt likes it lean: fewer cards next time."
+    ]
+  },
+  "errors": {
+    "async": "That card only goes inside an async function.",
+    "taken": "That line's got a cue already. Tap it to take it off first.",
+    "noslot": "Pick a line with a hook first. That's where a card goes."
+  }
+}

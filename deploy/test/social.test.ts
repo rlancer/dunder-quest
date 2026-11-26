@@ -156,6 +156,32 @@ describe("saves", () => {
     expect(png.type).toBe("image/png");
   });
 
+  test("a nothing save keeps the fewest takes and the most stars", async () => {
+    const one = { current_episode: 2, cleared: [1, 2], tries: { 1: 8, 2: 9 }, stars: { 1: 4, 2: 2 }, cards: ["callback", "fifo"] };
+    const two = { current_episode: 4, cleared: [1, 3, 8], tries: { 1: 5, 3: 4, 8: 1 }, stars: { 1: 3, 2: 4, 3: 7 }, cards: ["fifo", "then"], junk: 1 };
+    // Unknown episodes, out-of-range stars and stray fields are dropped.
+    expect(normalize("nothing", two)).toEqual({ current_episode: 4, cleared: [1, 3], tries: { 1: 5, 3: 4 }, stars: { 1: 3, 2: 4, 3: 4 }, cards: ["fifo", "then"] });
+    expect(normalize("nothing", { current_episode: 9 })).toEqual({ current_episode: 1, cleared: [], tries: {}, stars: {}, cards: [] });
+    const both = merge("nothing", JSON.stringify(one), two);
+    expect(both).toEqual({ current_episode: 2, cleared: [1, 2, 3], tries: { 1: 5, 2: 9, 3: 4 }, stars: { 1: 4, 2: 4, 3: 4 }, cards: ["callback", "fifo", "then"] });
+    const s = summarize("nothing", both);
+    expect(s.count).toBe(3);
+    expect(s.tries).toBe(18);
+    expect(s.collected).toBe(12);
+    expect(s.collectMax).toBe(20);
+    expect(bestLine("nothing", s)).toBe("18 tries");
+
+    // Clearing all five issues the certificate.
+    const { token } = await newPlayer();
+    const all = { current_episode: 5, cleared: [1, 2, 3, 4, 5], tries: { 1: 4, 2: 4, 3: 4, 4: 4, 5: 4 }, stars: { 5: 4 }, cards: [] };
+    const res = await call("PUT", "/api/saves/nothing", { token, body: { data: JSON.stringify(all) } });
+    expect(res.status).toBe(200);
+    expect(res.body.summary.complete).toBe(true);
+    expect(res.body.certificate.fresh).toBe(true);
+    const png = await call("GET", `/c/${res.body.certificate.id}.png`);
+    expect(png.type).toBe("image/png");
+  });
+
   test("garbage isn't a save", async () => {
     const { token } = await newPlayer();
     expect((await call("PUT", "/api/saves/curb", { token, body: { data: "{nope" } })).status).toBe(400);

@@ -609,6 +609,7 @@ tbody th { font-weight: 700; color: var(--parchment); }
 .game-jj:hover { border-color: #f08033; }
 .game-gr:hover { border-color: #e8a13a; }
 .game-ys:hover { border-color: #f59e2e; }
+.game-an:hover { border-color: #e8b03a; }
 /* Two across on a wide screen; an odd game out spans the row, art beside
    its copy. */
 @media (min-width: 761px) {
