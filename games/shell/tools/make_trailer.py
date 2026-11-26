@@ -369,7 +369,10 @@ def edit() -> list[Shot]:
     add(bar(24.25), BUILD, cap="s5", src=said("s5", "Twelve tickets") - 2, label="twelve tickets")
     # The critic's question, through the build.
     add(BUILD, bar(27.25), cap="s5", src=said("s5", "One question, Chef") - 2, label="one question")
-    add(bar(27.25), BACK, cap="s5", src=mark("s5", "brief 5d") + 4, audio=0.6, label="the critic's ticket")
+    # Her ticket, held on the empty line until the first chip.
+    brief = mark("s5", "brief 5d") + 4
+    add(bar(27.25), BACK, cap="s5", src=brief, speed=(mark("s5", "write 5d") + 4 - brief) / ((BACK - bar(27.25)) * FPS),
+        label="the critic's ticket")
     # The five-command line on the band's return.
     write = mark("s5", "write 5d")
     sent = mark("s5", "sent 5d")
@@ -447,7 +450,7 @@ def voices() -> list[Line]:
         Line(bar(19.5) + 0.25, "chef", "Yes, Shell."),
         Line(STOP + 0.15, "awk", "The machine! The to-go machine! It won't stop printing!"),
         Line(bar(24.25) + 0.15, "shell", "Twelve tickets and climbing. Don't read them, Chef. Build a line.", tight=0.15),
-        Line(BUILD + 0.1, "root", "One question, Chef, and I'll have the answer on one line.", tight=0.15),
+        Line(BUILD + 0.6, "root", "One question, Chef, and I'll have the answer on one line.", tight=0.15),
         Line(LAST_HIT + 0.9, "root", "Fries. Five stations, not one raised voice, and the answer is fries.", tight=0.2),
         Line(LAST_HIT + 7.0, "awk", "...Yes, Shell."),
     ]
