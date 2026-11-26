@@ -60,6 +60,11 @@ const PRINCE_TRAILER_ID = "BGxekAJEUNA";
 // YouTube. Empty leaves the trailer off the
 // /lieutenant/ page and shows the thumbnail alone on the brand kit.
 const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
+// The Good, the Bad and the Greedy's trailer (games/greedy/tools/make_trailer.py),
+// once it's on YouTube: paste its video ID here. Empty leaves the trailer off
+// the /greedy/ page and the splash's card, and shows the thumbnail alone on
+// the brand kit.
+const GREEDY_TRAILER_ID = "";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -489,6 +494,8 @@ function buildSplash(prefix = ""): string {
       + "from a plain word to greedy and lazy, groups and the same word twice, and catch only who it says.",
       "Meet the Sheriff"],
   ];
+  // The cards that link their trailer, once it's up.
+  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID };
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
       <a class="game-art" href="${about}"><img src="${prefix}static/img/og/${og}" alt="${esc(alt)}" width="1200" height="630" loading="lazy"></a>
@@ -497,7 +504,7 @@ function buildSplash(prefix = ""): string {
         <h3><a href="${about}">${name}</a></h3>
         <p>${blurb}</p>
         <div class="cta"><a class="btn btn-small" href="${play}">Play ${name}</a><a class="game-more" href="${about}">${more} →</a>${
-  cls === "game-pv" && PRINCE_TRAILER_ID ? `<a class="game-more" href="https://www.youtube.com/watch?v=${PRINCE_TRAILER_ID}">Watch the trailer →</a>` : ""}</div>
+  trailers[cls] ? `<a class="game-more" href="https://www.youtube.com/watch?v=${trailers[cls]}">Watch the trailer →</a>` : ""}</div>
       </div>
     </li>`).join("");
   const body = `
@@ -1034,6 +1041,45 @@ An homage to a certain rumpled television detective and the mysteries that showe
 #sql #learnsql #database #indiegame #pixelart #godot #codinggame`;
 const JJ_YOUTUBE_TAGS = "learn sql, sql for beginners, sql tutorial, sql join, left join, group by, sqlite, database, coding game, "
   + "educational game, pixel art, indie game, godot, detective game, just one more join, dunder quest";
+const GR_THUMB_ALT = "The Good, the Bad and the Greedy trailer thumbnail: Sheriff Reg Exley and Dot Starr either side of 'Learn regex', over a wanted poster that reads ^D.* Starr$";
+const GR_TRAILER_FACTS = [
+  ["Length", "68 seconds"],
+  ["Music", "An original cue for twangy guitar, a whistle, trumpet and jaw harp, 120 BPM; every cut lands on a beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses eleven of them"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the posters and the line-ups are sharp; 4K is ×2"],
+];
+const GR_CHAPTERS = "0:00 The band, and a town called Hobson\n0:15 Dot Starr rides in\n0:26 A wanted poster is a pattern\n0:40 Big Backtrack\n0:50 The greedy and the lazy";
+const GR_YOUTUBE_TITLE = "The Good, the Bad and the Greedy – Learn Regex in a Comic Western | Official Trailer";
+const GR_YOUTUBE_DESCRIPTION = `In Backslash Ridge everybody is named Hobson, and nobody shoots anybody. The law is a wanted poster, and a wanted poster is a pattern.
+
+The Good, the Bad and the Greedy is a free pixel-art comic western that teaches regular expressions. Dot Starr rode in and took the bank: Dot, as in anything at all, and Star, as in as much of it as she pleases. You're the new sheriff, Reg Exley. Read the line-up, write the poster from chips, watch the lines light up, then draw. A poster catches exactly what's written on it. Not who you meant. What you wrote.
+
+▶ Play free in your browser: ${SITE_URL}greedy/play/
+▶ The five jobs and what each one teaches: ${SITE_URL}greedy/
+▶ More games that teach code (Rust, Git, SQL, Python, JavaScript): ${SITE_URL}
+
+What's inside
+• 5 jobs and 19 posters, from a plain word to a pattern that catches the same word twice: literals, the dot, [sets] and \\d, the anchors ^ and $, \\b, the quantifiers + * ? and {3}, greedy and lazy, groups, | and \\1
+• Real regex: a real engine (PCRE2) reads every poster, and every pattern in the game is checked against JavaScript's RegExp too
+• It ends on Big Backtrack and catastrophic backtracking, the mistake that has taken real websites down
+• Never seen a regex? A narrated prologue says what a pattern is
+• Every line is voiced
+• No typing: you build each poster from chips, and the pattern you can read is all that runs
+• Keyboard, mouse or touch. No signup.
+
+How it was made
+Claude built the game: every line of Godot code, the checks that hold it to real regex, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. An image model made the backdrops and the cast, a music model made the music and the trailer's cue, and the voices are ElevenLabs text-to-speech. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/greedy
+
+${GR_CHAPTERS}
+
+A comic spoof of the spaghetti western and of the comedies that send it up. The names, town, lines, art and music are original; it isn't affiliated with or endorsed by anyone who made the films it winks at.
+
+#regex #regularexpressions #learntocode #indiegame #pixelart #godot #codinggame`;
+const GR_YOUTUBE_TAGS = "learn regex, regex tutorial, regular expressions, regex for beginners, regex explained, greedy vs lazy regex, "
+  + "catastrophic backtracking, capture groups, coding game, educational game, pixel art, indie game, godot, western game, "
+  + "the good the bad and the greedy, dunder quest";
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
@@ -1072,6 +1118,7 @@ const CHANNEL_PLAYLISTS = [
   ["Curb Your Oxidation", "The Rust game: its trailer, and later its Short."],
   ["Prince of Versions", "The Git game: its trailer, and later its Short."],
   ["Just One More JOIN", "The SQL game: its trailer, and later its Short."],
+  ["The Good, the Bad and the Greedy", "The regex game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
 const UPLOAD_SETTINGS = [
@@ -1815,6 +1862,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="fine">How it's made: <a href="${REPO}/blob/main/games/lieutenant/trailer/README.md">games/lieutenant/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="gr-trailer-h">
+  <p class="kicker">greedy.__trailer__</p>
+  <h2 id="gr-trailer-h">The Good, the Bad and the Greedy</h2>
+  <p class="lede">Cut to an original cue for a scrappy western band, with the game's own voices: the band standing in the desert, a town where everybody is a Hobson, a wanted poster written chip by chip, Big Backtrack in the music's dead stop, and greedy against lazy. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(GREEDY_TRAILER_ID, `${img}greedy/trailer.png`, GR_THUMB_ALT, "The Good, the Bad and the Greedy")}
+  <dl class="facts">${GR_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/greedy/trailer/README.md">games/greedy/trailer/README.md</a>.</p>
+</section>
+
 <section class="section kit">
   <p>Uploading them? The titles, descriptions and thumbnails are on <a href="${prefix}brand/youtube/">the YouTube page</a>.</p>
 </section>`;
@@ -1868,7 +1924,10 @@ function buildBrandYoutube(prefix: string): string {
       "games/prince/trailer/out/prince_trailer_4k.mp4")
     + uploadKit("Just One More JOIN", JOIN_TRAILER_ID, `${img}lieutenant/trailer.png`, "join_thumbnail.png",
       JJ_YOUTUBE_TITLE, JJ_YOUTUBE_DESCRIPTION, JJ_YOUTUBE_TAGS, "Just One More JOIN",
-      "games/lieutenant/trailer/out/join_trailer_4k.mp4");
+      "games/lieutenant/trailer/out/join_trailer_4k.mp4")
+    + uploadKit("The Good, the Bad and the Greedy", GREEDY_TRAILER_ID, `${img}greedy/trailer.png`, "greedy_thumbnail.png",
+      GR_YOUTUBE_TITLE, GR_YOUTUBE_DESCRIPTION, GR_YOUTUBE_TAGS, "The Good, the Bad and the Greedy",
+      "games/greedy/trailer/out/greedy_trailer_4k.mp4");
   const body = `
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
@@ -1913,7 +1972,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code> or <code>JOIN_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code> or <code>GREEDY_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -3157,6 +3216,14 @@ function buildGreedy(prefix: string): string {
     `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
   const testedCount = posters.length;
 
+  // No trailer yet: the section appears once GREEDY_TRAILER_ID is set.
+  const trailer = !GREEDY_TRAILER_ID ? "" : `
+<section class="gr-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(GREEDY_TRAILER_ID, `${img}trailer.png`, GR_THUMB_ALT, "The Good, the Bad and the Greedy")}
+  <p class="gr-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
   const body = `
 <section class="gr-hero">
   <div class="gr-hero-copy">
@@ -3169,7 +3236,7 @@ function buildGreedy(prefix: string): string {
   </div>
   <img class="gr-shot" src="${img}title.png" alt="${esc(GR_ALT)}" width="960" height="540">
 </section>
-
+${trailer}
 <section class="gr-section" id="how">
   <h2>How it plays</h2>
   <p>You're the new sheriff, Reg Exley. Each job is a handful of wanted posters, and each poster is a pattern: a <b>regular expression</b>, the little language programmers use to find, check and pull apart text.</p>
@@ -3247,6 +3314,7 @@ ${body}
   <p>The Good, the Bad and the Greedy. One sheriff, one lazy deputy, and a town full of Hobsons who all fit the description.</p>
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/greedy">Source on GitHub</a></p>
 </footer>
+${GREEDY_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
 </body>
 </html>

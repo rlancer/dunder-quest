@@ -61,8 +61,9 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 | `tools/music.py` | The four music cues, generated; loop them with `../dunder-quest/tools/make_loops.py` |
 | `tools/sfx.py` | The sound effects, synthesized with numpy |
 | `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` gives the words to read where the text is regex, and may carry directions in square brackets (`[whispering]`), which are acted, not read |
+| `tools/trailer_audio.py`, `tools/make_trailer.py` | The trailer's cue and effects, and the trailer itself (see `trailer/README.md`) |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window) |
 
 All the words are in `data/jobs.json`: the cast, the jobs, each poster's brief, chips, solution, hint and line-up, the lesson cards and everything the Kid says about a miss.
 
-It has no trailer, brand-kit page or launch posts yet.
+Its trailer is cut by `tools/make_trailer.py` to a generated cue (`tools/trailer_audio.py`), from captures of the bot paced for the camera (`tests/trailer_run.gd`); the steps are in [trailer/README.md](trailer/README.md). It has no brand-kit page or launch posts yet.
