@@ -108,13 +108,17 @@ func wait(chars: int = 0) -> void:
 
 # --- Lines ------------------------------------------------------------------
 
-## A speech bubble over `speaker` (or a caption when null) until read.
-func say(speaker: Person, text: String, mood: String = "") -> void:
+## A speech bubble over `speaker` (or a caption when null) until read,
+## with `voiced` (a line, core/voice.gd) read aloud while it's up.
+func say(speaker: Person, text: String, mood: String = "", voiced: Dictionary = {}) -> void:
 	var name := speaker.display_name if speaker != null else ""
 	bubble = {"who": speaker, "name": name, "text": text, "mood": mood}
 	if speaker != null:
 		speaker.strike_mood(mood, 60.0)
+	if not voiced.is_empty():
+		Voice.say(voiced)
 	await wait(text.length())
+	Voice.hush()
 	if speaker != null:
 		# The Lieutenant's thinking and a suspect's sweat linger a moment.
 		speaker.strike(int(Person.MOODS.get(mood, Person.Pose.IDLE)), 0.5)
@@ -126,8 +130,15 @@ func say(speaker: Person, text: String, mood: String = "") -> void:
 func caption(stamp: String, text: String) -> void:
 	caption_count += 1
 	_caption = {"stamp": stamp, "text": text}
+	Voice.say(caption_line(stamp, text))
 	await wait(text.length() + 30)
+	Voice.hush()
 	_caption = {}
+
+
+## A caption as the narrator reads it: the time, then the sentence.
+static func caption_line(stamp: String, text: String) -> Dictionary:
+	return {"who": "narrator", "text": "%s. %s" % [stamp, text] if stamp != "" else text}
 
 
 func set_letterbox(amount: float) -> void:
@@ -148,8 +159,19 @@ func show_card(card: Dictionary) -> void:
 	card_count += 1
 	_card = card.duplicate()
 	_card["result"] = Sql.run(card.db, str(card.sql))
+	Voice.say(card_line(card))
 	await wait(str(card.get("text", "")).length() + 60)
+	Voice.hush()
 	_card = {}
+
+
+## A lesson card as the narrator reads it: its title, then its text, with
+## the SQL in it said the way it's said (the card's `say`).
+static func card_line(card: Dictionary) -> Dictionary:
+	var line := {"who": "narrator", "text": "%s. %s" % [card.get("title", ""), card.get("text", "")]}
+	if card.has("say"):
+		line["say"] = str(card.say)
+	return line
 
 
 func is_card_open() -> bool:

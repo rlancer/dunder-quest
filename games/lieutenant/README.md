@@ -28,7 +28,7 @@ A first run (Start with no save, or New game) opens with a short prologue, `ui/i
 8. He's almost out of the door, and turns round (`JOIN` puts two tables side by side).
 9. The five case files land on the desk.
 
-The table on screen is case 1's real guest book and the query is run by the game's own engine, so the lit rows are the ones SQLite returns. The right arrow (or any key, or a tap) turns the page, the left arrow (or a tap on the left quarter of the screen) turns back one to watch it again, Skip or Esc goes straight on, and left alone it plays itself. Keep the lines short: one or two sentences a page. The bot turns every page, goes back to the first and forward again, and checks the query. It has no voice-over yet (Prince of Versions' prologue is read aloud; this one was built in a session with no key for the voice generator).
+The table on screen is case 1's real guest book and the query is run by the game's own engine, so the lit rows are the ones SQLite returns. The right arrow (or any key, or a tap) turns the page, the left arrow (or a tap on the left quarter of the screen) turns back one to watch it again, Skip or Esc goes straight on, and left alone it plays itself. Keep the lines short: one or two sentences a page. The bot turns every page, goes back to the first and forward again, and checks the query. The narrator reads every page aloud, the story and then the database word, and a page left alone waits for him to finish before it turns.
 
 ## The cases
 
@@ -78,16 +78,31 @@ bash tests/check.sh                                         # all four, as CI ru
 
 ## Art and sound
 
-All of it is made by scripts in `tools/`, with no key and no network:
+The pictures, the effects and the music are made by scripts in `tools/`, with no key and no network:
 
 - `tools/paint.py` paints the cast from shapes, four times larger and averaged down, lit in three tones (the way Prince of Versions paints its cast).
 - `tools/scenery.py` paints the five rooms, the night street, the title's street and the desk, from shapes, lit by their lamps.
 - `tools/audio.py` synthesizes the effects and the three music loops (an original minor blues for bass, vibraphone, electric piano and brushes) with numpy.
 - `tools/site_art.py` copies the page's screenshots out of `tests/shots/` and paints the social card.
 
-The trailer is the exception: `tools/trailer_audio.py` generates its music cue and effects through OpenRouter (the key in the repo's `.env`), and `tools/make_trailer.py` cuts it from captures of the bot (`tests/trailer_run.gd`, recorded by `trailer/capture.sh`). See [trailer/README.md](trailer/README.md).
+The trailer and the voices (below) are the exceptions: `tools/trailer_audio.py` generates its music cue and effects through OpenRouter (the key in the repo's `.env`), and `tools/make_trailer.py` cuts it from captures of the bot (`tests/trailer_run.gd`, recorded by `trailer/capture.sh`). See [trailer/README.md](trailer/README.md).
 
 The other games' rooms and music are generated (`tools/scenery.py` and `tools/music.py` there go through OpenRouter). This game was built in a session without that key, so its rooms and music are stand-ins made in code; generated ones can replace them file for file. Fonts are Caprasimo (the titles), Pixelify Sans and VT323, all OFL.
+
+## Voices
+
+Every line is voiced: the prologue, each cold open's captions, everything the Lieutenant and the suspects say, the question he reads to Records and his hint after a miss, each lesson card, and over every printout Doris's answer ("Records. 14 rows, Lieutenant.") and his remark on it. `tools/voice.py` makes them with ElevenLabs' v4 (`elevenlabs/eleven-v4`) through OpenRouter's `/audio/speech`, with the same key as the trailer's cue (in a cloud session for this repo, a `.env` with `OPENROUTER_API_KEY=proxy-injected`); it needs ffmpeg and Godot (`GODOT`, else `godot` on the PATH). It asks the game for every line (`tools/lines.tscn`), and writes one clip per line to `assets/voice/`, named for the speaker and a hash of the words. For the printouts, whose lines carry row counts and column names, `lines.gd` puts every query each page can spell through the Judge, the way `tests/replay.gd` does, and lists every line that comes back. A page spelled past that can say a line with no clip, which is read in silence, as is any line whose clip is missing.
+
+**After editing any line** (in `data/cases.json` or `ui/intro.gd`), run it again and import:
+
+```sh
+python tools/voice.py --prune               # the clips that are missing; --prune drops ones no line uses
+godot --headless --path . --import
+```
+
+How a line is read (`core/voice.gd`): a line's `say` if it has one (the prologue's pages and the lesson cards carry theirs), else the entry for its exact text in the `say` table in `data/cases.json`, else its text with the code read out (`checked_at` is "checked at", `seating.seat` is "seating dot seat", `COUNT(*)` is "count star", keywords in capitals are said as words). Put SQL, plates and telephone numbers in the `say` table the way they're said ("percent four K", "oh one nine nine"); a line edited without its entry falls back to the plain reading. A line's mood becomes a v4 direction (`think` is "[thinking aloud]", `smug` "[smugly]", `sweat` "[nervously]"), which v4 acts and doesn't read, and a `say` may carry its own in square brackets.
+
+The voices are ElevenLabs' stock ones, cast as types and never to sound like any actor: an older announcer for the narrator, a warm, polite, down-to-earth rambler for the Lieutenant, a brisk clerk for Doris (put through a telephone's band, since she's always on the line), and five well-off, pleased-with-themselves suspects. Clips are levelled to -16 LUFS and kept at 24 kHz mono, so the game's many lines stay well inside the web build's size cap; the music drops under a voice. The tests mute them.
 
 ## Export
 

@@ -49,6 +49,8 @@ var _canvas: Control
 var _skip: Button
 var _guests: Dictionary = {}
 var _music: String = ""
+## How long this page's voice runs.
+var _voice: float = 0.0
 
 
 func _ready() -> void:
@@ -107,24 +109,30 @@ static func script_beats() -> Array:
 			"text": "They plan it for months. The alibi. The witnesses. The one small detail nobody would ever think to check."},
 		{"stage": "table", "music": "title",
 			"text": "But this town writes everything down. Who signed the guest book. Who telephoned whom. Whose car went through the gate, and at what time.",
-			"sql": "a database is where records are kept so they can be asked about"},
+			"sql": "a database is where records are kept so they can be asked about",
+			"say": "But this town writes everything down. Who signed the guest book. Who telephoned whom. Whose car went through the gate, and at what time. [pause] A database is where records are kept, so they can be asked about."},
 		{"stage": "table", "scan": true,
 			"text": "Downtown, Doris in Records has typed all of it into the department's new machine, as tables: a row for every record, a column for every fact.",
-			"sql": "a table: each row is one record, each column is one fact about it"},
+			"sql": "a table: each row is one record, each column is one fact about it",
+			"say": "Downtown, Doris in Records has typed all of it into the department's new machine, as tables: a row for every record, a column for every fact. [pause] A table. Each row is one record. Each column is one fact about it."},
 		{"stage": "query",
 			"text": "The machine will answer any question you like. But it only understands one language, and it takes you at your exact word.",
-			"sql": "that language is SQL. A question written in it is a query"},
+			"sql": "that language is SQL. A question written in it is a query",
+			"say": "The machine will answer any question you like. But it only understands one language, and it takes you at your exact word. [pause] That language is S Q L. A question written in it is a query."},
 		{"stage": "arrive", "sound": "turn",
 			"text": "Then there is Lieutenant Colonna, Homicide. He looks like he slept in that raincoat. He usually knows who did it inside five minutes."},
 		{"stage": "think",
 			"text": "Knowing isn't proof. Proof is one question, asked exactly right, with an answer that can only mean one thing.",
-			"sql": "SELECT what to read back · FROM which table · WHERE which rows"},
+			"sql": "SELECT what to read back · FROM which table · WHERE which rows",
+			"say": "Knowing isn't proof. Proof is one question, asked exactly right, with an answer that can only mean one thing. [pause] Select: what to read back. From: which table. Where: which rows."},
 		{"stage": "door", "sound": "turn",
 			"text": "So he asks. He thanks them. He is almost out of the door. And then he thinks of one more.",
-			"sql": "JOIN puts two tables side by side, and that's when alibis come apart"},
+			"sql": "JOIN puts two tables side by side, and that's when alibis come apart",
+			"say": "So he asks. He thanks them. He is almost out of the door. And then he thinks of one more. [pause] Join puts two tables side by side. And that's when alibis come apart."},
 		{"stage": "files", "sound": "page",
 			"text": "%s cases. You'll watch each of them do it. Then it's your notebook: find the query that proves it." % count,
-			"sql": "write it a clause at a time · call Records · read what comes back"},
+			"sql": "write it a clause at a time · call Records · read what comes back",
+			"say": "%s cases. You'll watch each of them do it. Then it's your notebook: find the query that proves it. [pause] Write it a clause at a time. Call Records. Read what comes back." % count},
 	]
 
 
@@ -186,6 +194,15 @@ func _go(index: int) -> void:
 		var path := "res://assets/audio/%s.wav" % beat.sound
 		if ResourceLoader.exists(path):
 			StageAudio.play(get_tree(), load(path) as AudioStream)
+	_voice = Voice.say(page_line(beat))
+
+
+## A page as the narrator reads it: the story, then the database word.
+static func page_line(beat: Dictionary) -> Dictionary:
+	var line := {"who": "narrator", "text": str(beat.text)}
+	if beat.has("say"):
+		line["say"] = str(beat.say)
+	return line
 
 
 func _process(delta: float) -> void:
@@ -207,7 +224,7 @@ func _process(delta: float) -> void:
 		if _lt.facing > 0 and _t > 0.4:
 			_lt.facing = -1
 			_lt.strike(Person.Pose.TWO, 600.0)
-	if not driven and _typed() >= str(beat.text).length() and _t > str(beat.text).length() / TYPE + AFTER + float(beat.get("hold", 0.0)):
+	if not driven and _typed() >= str(beat.text).length() and _t > maxf(str(beat.text).length() / TYPE, _voice) + AFTER + float(beat.get("hold", 0.0)):
 		_go(_index + 1)
 	_canvas.queue_redraw()
 
@@ -262,6 +279,7 @@ func _finish() -> void:
 	if _leaving:
 		return
 	_leaving = true
+	Voice.hush()
 	var tree := get_tree()
 	await tree.create_timer(0.35).timeout
 	if then > 0:

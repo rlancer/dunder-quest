@@ -388,7 +388,7 @@ func _say(line: Array) -> void:
 		suspect.face(lt.position.x)
 	elif person == suspect and lt.visible:
 		lt.face(suspect.position.x)
-	await hud.say(person, str(line[1]), mood)
+	await hud.say(person, str(line[1]), mood, Voice.of(line))
 
 
 func _pause(seconds: float) -> void:

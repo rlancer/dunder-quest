@@ -24,6 +24,9 @@ const STEP := 14.0
 ## much of its width they take.
 const BUTTONS := 26.0
 const BESIDE := 164.0
+const OK_REMARK := "That's what I needed."
+## What he says into the telephone while it dials.
+const DIALING := {"who": "lt", "text": "Doris? It's Colonna."}
 
 ## Tests set these before a case starts.
 static var test_auto_frames: int = 0
@@ -115,6 +118,8 @@ func open(for_beat: Dictionary, database: Dictionary, found_tables: Array, case_
 	_opened_ms = Time.get_ticks_msec()
 	_buttons()
 	StageAudio.play(get_tree(), preload("res://assets/audio/page.wav"))
+	if fresh:
+		Voice.say({"who": "lt", "text": str(beat.get("ask", ""))})
 	_canvas.queue_redraw()
 
 
@@ -123,6 +128,7 @@ func close() -> void:
 		return
 	visible = false
 	_closed_ms = Time.get_ticks_msec()
+	Voice.hush()
 	closed.emit()
 
 
@@ -145,6 +151,7 @@ func call_records() -> void:
 	_dial = 0.9 * test_pace
 	_buttons()
 	StageAudio.play(get_tree(), preload("res://assets/audio/dial.wav"))
+	Voice.say(DIALING)
 
 
 ## Puts the printout down: back to the page, or on with the case.
@@ -152,6 +159,7 @@ func dismiss() -> void:
 	if mode != "printout":
 		return
 	var v := verdict
+	Voice.hush()
 	if v.verdict == "ok":
 		visible = false
 		_closed_ms = Time.get_ticks_msec()
@@ -159,7 +167,34 @@ func dismiss() -> void:
 		misses += 1
 		mode = "edit"
 		_buttons()
+		# The first miss brings the hint up at the foot of the page.
+		if misses == 1 and str(beat.get("hint", "")) != "":
+			Voice.say(hint_line(beat))
 	called.emit(v)
+
+
+## What Doris says when the printout comes back: how many rows, or that the
+## machine won't take it.
+static func doris_text(result: Dictionary) -> String:
+	var doris: Dictionary = Story.stock("doris")
+	if not result.ok:
+		return str(doris.strict if str(result.error.kind) == "strict" else doris.error)
+	var count: int = (result.rows as Array).size()
+	return str(doris.none) if count == 0 else (str(doris.row) if count == 1 else str(doris.rows) % count)
+
+
+## What the Lieutenant makes of a printout.
+static func remark_text(v: Dictionary) -> String:
+	return OK_REMARK if v.verdict == "ok" else str(v.says)
+
+
+## The two of them, as they're read aloud when the printout comes back.
+static func printout_lines(v: Dictionary) -> Array:
+	return [{"who": "doris", "text": doris_text(v.result)}, {"who": "lt", "text": remark_text(v), "mood": "" if v.verdict == "ok" else "think"}]
+
+
+static func hint_line(b: Dictionary) -> Dictionary:
+	return {"who": "lt", "text": str(b.get("hint", "")), "mood": "think"}
 
 
 func _buttons() -> void:
@@ -180,6 +215,8 @@ func _process(delta: float) -> void:
 			var good: bool = verdict.verdict == "ok"
 			var bad: bool = verdict.verdict == "error"
 			StageAudio.play(get_tree(), preload("res://assets/audio/ding.wav") if good else (preload("res://assets/audio/buzz.wav") if bad else preload("res://assets/audio/teletype.wav")))
+			Voice.hush()
+			Voice.say_after(printout_lines(verdict))
 	elif mode == "printout" and test_auto_frames > 0:
 		_wait_frames += 1
 		if _wait_frames >= test_auto_frames:
@@ -474,7 +511,7 @@ func _draw_dialing(c: Control) -> void:
 	c.draw_circle(hub, 5, Palette.EMBER)
 	Fit.begin(box, "the Calling Records box")
 	Fit.text(c, font, box.position + Vector2(56, 22), "Calling Records" + ".".repeat(int(_clock * 5.0) % 4), 16, Palette.CREAM)
-	Fit.text(c, font, box.position + Vector2(56, 36), "\"Doris? It's Colonna.\"", 16, Palette.STEEL)
+	Fit.text(c, font, box.position + Vector2(56, 36), "\"%s\"" % DIALING.text, 16, Palette.STEEL)
 	Fit.end()
 
 
@@ -482,7 +519,6 @@ func _draw_printout(c: Control) -> void:
 	var font := Palette.mono()
 	var result: Dictionary = verdict.result
 	var good: bool = verdict.verdict == "ok"
-	var doris: Dictionary = Story.stock("doris")
 	# Green-bar paper with its strips of feed holes.
 	c.draw_rect(PANEL.grow(2), Palette.BAR_INK.lightened(0.2))
 	c.draw_rect(PANEL, Palette.BAR_LIGHT)
@@ -511,8 +547,7 @@ func _draw_printout(c: Control) -> void:
 		y += 11
 	y += 3
 	# What the Lieutenant makes of it goes at the bottom; measure it first.
-	var says := str(verdict.says)
-	var says_lines := SqlDraw.wrap(says, room - 12) if not good else PackedStringArray(["That's what I needed."])
+	var says_lines := SqlDraw.wrap(remark_text(verdict), room - 12)
 	var note_lines := PackedStringArray()
 	if not result.ok and result.error.kind == "strict":
 		note_lines = SqlDraw.wrap(str(Story.stock("strict_note")), room)
@@ -522,8 +557,7 @@ func _draw_printout(c: Control) -> void:
 	Fit.begin(Rect2(PANEL.position.x + 9, PANEL.position.y, PANEL.size.x - 18, says_top - 1 - PANEL.position.y), "the printout, above the Lieutenant's slip")
 	if result.ok:
 		var count: int = (result.rows as Array).size()
-		var heard := str(doris.none) if count == 0 else (str(doris.row) if count == 1 else str(doris.rows) % count)
-		Fit.text(c, font, Vector2(left, y), "Doris: \"%s\"" % heard, 16, Palette.BAR_INK)
+		Fit.text(c, font, Vector2(left, y), "Doris: \"%s\"" % doris_text(result), 16, Palette.BAR_INK)
 		y += 5
 		var fit := int((says_top - y - 6) / 11.0) - 1
 		var max_rows := count if count <= fit else fit - 1
@@ -533,7 +567,7 @@ func _draw_printout(c: Control) -> void:
 		Printout.draw(c, Rect2(left - 4, y, room + 8, h), table)
 	else:
 		var kind := str(result.error.kind)
-		Fit.text(c, font, Vector2(left, y), "Doris: \"%s\"" % str(doris.strict if kind == "strict" else doris.error), 16, Palette.BAR_INK)
+		Fit.text(c, font, Vector2(left, y), "Doris: \"%s\"" % doris_text(result), 16, Palette.BAR_INK)
 		y += 14
 		for line in SqlDraw.wrap(("ERROR: " if kind == "strict" else "Error: ") + str(result.error.msg), room - 8):
 			Fit.text(c, font, Vector2(left + 8, y), line, 16, Palette.RED.darkened(0.25))
