@@ -12,8 +12,9 @@
  * game, is in `prince/` and `prince/play/`, with a card of its own, and
  * Just One More JOIN, the SQL game, in `lieutenant/` and `lieutenant/play/`,
  * The Good, the Bad and the Greedy, the regex game, in `greedy/` and
- * `greedy/play/`, and Yes, Shell!, the shell game, in `shell/` and
- * `shell/play/`.
+ * `greedy/play/`, Yes, Shell!, the shell game, in `shell/` and
+ * `shell/play/`, and A Game About Nothing, the HTTP game, in `nothing/` and
+ * `nothing/play/`.
  *
  *     bun site/build.ts build/site
  *     bun site/build.ts --play build/site/play/index.html
@@ -23,10 +24,12 @@
  *     bun site/build.ts --lieutenant build/site/lieutenant/play/index.html
  *     bun site/build.ts --greedy build/site/greedy/play/index.html
  *     bun site/build.ts --shell build/site/shell/play/index.html
+ *     bun site/build.ts --nothing build/site/nothing/play/index.html
  */
 
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { type Counter, asked, respond, wire } from "../games/nothing/http/counter.ts";
 
 const SITE = import.meta.dir;
 const ROOT = resolve(SITE, "..");
@@ -37,6 +40,7 @@ const PRINCE = join(ROOT, "games", "prince");
 const LIEUTENANT = join(ROOT, "games", "lieutenant");
 const GREEDY = join(ROOT, "games", "greedy");
 const SHELL = join(ROOT, "games", "shell");
+const NOTHING = join(ROOT, "games", "nothing");
 const REPO = "https://github.com/rlancer/dunder-quest";
 // Social previews need absolute URLs, so every page points at production,
 // even when built for the dev deploy.
@@ -72,6 +76,11 @@ const GREEDY_TRAILER_ID = "zsXZ5G07tcc";
 // YouTube: paste its video ID here. Empty leaves the trailer off the /shell/
 // page and the splash's card, and shows the thumbnail alone on the brand kit.
 const SHELL_TRAILER_ID = "";
+// A Game About Nothing's trailer (games/nothing/tools/make_trailer.py), once
+// it's on YouTube: paste its video ID here. Empty leaves the trailer off the
+// /nothing/ page and the splash's card, and shows the thumbnail alone on the
+// brand kit.
+const NOTHING_TRAILER_ID = "";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -262,7 +271,7 @@ const WORDMARK = '<span class="wordmark"><span class="sr">Dunder Quest</span>'
 const QUEST_PAGE = "dunder-quest/";
 const NAV: [string, string][] = [["lessons/", "Lessons"], ["guide/", "How to play"], [`${QUEST_PAGE}#download`, "Download"]];
 const HOME_NAV: [string, string][] = [["curb/", "Curb Your Oxidation"], [QUEST_PAGE, "Dunder Quest"], ["flatmates/", "Flatmates.js"],
-  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["greedy/", "The Good, the Bad and the Greedy"], ["shell/", "Yes, Shell!"], ["leaderboards/", "Leaderboards"]];
+  ["prince/", "Prince of Versions"], ["lieutenant/", "Just One More JOIN"], ["greedy/", "The Good, the Bad and the Greedy"], ["shell/", "Yes, Shell!"], ["nothing/", "A Game About Nothing"], ["leaderboards/", "Leaderboards"]];
 const FRANKLIN = "&family=Libre+Franklin:ital,wght@0,400..900;1,400";
 
 /** Social preview and analytics tags. `path` is the page's address under
@@ -468,7 +477,7 @@ ${RESUME_JS}`, path: QUEST_PAGE });
 }
 
 const SPLASH_DESC = "Free pixel-art games that teach real programming: Rust in Curb Your Oxidation, Python in Dunder Quest, "
-  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN, regular expressions in The Good, the Bad and the Greedy and the command line in Yes, Shell! Play them in your browser.";
+  + "JavaScript in Flatmates.js, Git in Prince of Versions, SQL in Just One More JOIN, regular expressions in The Good, the Bad and the Greedy, the command line in Yes, Shell! and HTTP in A Game About Nothing. Play them in your browser.";
 
 /** The site root: every game, with Curb Your Oxidation out front on a
  * title card of its own. Each game's full page is a click away. */
@@ -500,13 +509,17 @@ function buildSplash(prefix = ""): string {
       "A town where everybody is named Hobson, and the law is the wanted poster. Write each one as a regular expression, "
       + "from a plain word to greedy and lazy, groups and the same word twice, and catch only who it says.",
       "Meet the Sheriff"],
-    ["game-ys", "New · Learn the shell", YS_NAME, `${prefix}shell/`, `${prefix}shell/play/`, "shell.png", YS_ALT,
+    ["game-an", "New · Learn HTTP", AN_NAME, `${prefix}nothing/`, `${prefix}nothing/play/`, "nothing.png", AN_ALT,
+      "Four friends, one coffee shop, and five counters in New York that run on rules. Every one is a web server: make each "
+      + "request from cards, from a GET for the menu to a PATCH with a token and an ETag, and get what the scene wants.",
+      "Meet the gang"],
+    ["game-ys", "Learn the shell", YS_NAME, `${prefix}shell/`, `${prefix}shell/play/`, "shell.png", YS_ALT,
       "A sandwich shop that ran on shouting, and a chef who came home with a system. Every station is a command and the "
       + "pass is a pipe: build each line from chips, from ls and grep to sort, uniq and a five-command pipeline.",
       "Meet the kitchen"],
   ];
   // The cards that link their trailer, once it's up.
-  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID, "game-ys": SHELL_TRAILER_ID };
+  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID, "game-ys": SHELL_TRAILER_ID, "game-an": NOTHING_TRAILER_ID };
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
       <a class="game-art" href="${about}"><img src="${prefix}static/img/og/${og}" alt="${esc(alt)}" width="1200" height="630" loading="lazy"></a>
@@ -547,10 +560,10 @@ function buildSplash(prefix = ""): string {
 
 <section class="section" aria-labelledby="more-h">
   <p class="kicker">More games</p>
-  <h2 id="more-h">Prefer Python, JavaScript, Git, SQL or regex?</h2>
+  <h2 id="more-h">Prefer Python, JavaScript, Git, SQL, regex, the shell or HTTP?</h2>
   <ul class="games">${cards}
   </ul>
-  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git, SQLite and JavaScript's RegExp. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+  <p class="count">Every snippet in every game is checked against the real thing: Python, Node, rustc, git, SQLite, JavaScript's RegExp, bash and a real web server. Trailers are on <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
 </section>
 
 <section class="section" aria-labelledby="board-h">
@@ -567,13 +580,13 @@ function buildSplash(prefix = ""): string {
   return page("", body, prefix, {
     description: SPLASH_DESC, path: "", nav: HOME_NAV, brand: "", play: "curb/play/",
     fonts: FRANKLIN, fullTitle: "Dunder Quest · Games that teach programming",
-    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL, regex and the shell.",
+    foot: "Dunder Quest. Pixel-art games that teach Python, JavaScript, Rust, Git, SQL, regex, the shell and HTTP.",
     scripts: `${old}\n<script src="${prefix}static/trailer.js"></script>`, social: true,
   });
 }
 
 const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN, "
-  + "The Good, the Bad and the Greedy and Yes, Shell!: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex and the shell. Clear a level and you're on the board.";
+  + "The Good, the Bad and the Greedy, Yes, Shell! and A Game About Nothing: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex, the shell and HTTP. Clear a level and you're on the board.";
 
 /** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
 function buildLeaderboards(prefix: string): string {
@@ -1130,10 +1143,49 @@ An affectionate spoof of the frantic restaurant-kitchen drama. The names, restau
 const YS_YOUTUBE_TAGS = "learn bash, command line, linux command line, terminal for beginners, shell tutorial, unix pipe, grep, "
   + "sort uniq, bash for beginners, coding game, educational game, pixel art, indie game, godot, kitchen game, yes shell, "
   + "dunder quest";
+const AN_THUMB_ALT = "A Game About Nothing trailer thumbnail: Stu Lerner and Mr. Pratt either side of 'Learn HTTP', over a response that reads HTTP/1.1 204 No Content";
+const AN_TRAILER_FACTS = [
+  ["Length", "70 seconds"],
+  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 120 BPM; every cut lands on a beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses thirteen of them"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the request slips and the responses are sharp; 4K is ×2"],
+];
+const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:38 204 No Content\n0:50 The network";
+const AN_YOUTUBE_TITLE = "A Game About Nothing – Learn HTTP and REST APIs in a Sitcom | Official Trailer";
+const AN_YOUTUBE_DESCRIPTION = `Four friends, one coffee shop, and absolutely nothing going on. Except that every counter in New York is a web server, and every errand is an HTTP request.
+
+A Game About Nothing is a free pixel-art sitcom that teaches HTTP and REST APIs. Stu Lerner is a stand-up comedian who notices things, and what he's noticed is that the whole internet is people asking for things. You make each request from cards (a method, a path, headers, a body), send it over the counter, and read what comes back: the status line, the headers that matter and the body. Get one thing wrong at the broth counter and the answer is one word.
+
+▶ Play free in your browser: ${SITE_URL}nothing/play/
+▶ The five episodes and what each one teaches: ${SITE_URL}nothing/
+▶ More games that teach code (Rust, Git, SQL, regex, the shell, Python, JavaScript): ${SITE_URL}
+
+What's inside
+• 5 episodes and 20 scenes, from a GET for the menu to a PATCH with a token, a version and a body: GET, POST, PUT, PATCH, DELETE, HEAD and OPTIONS, paths and ids, headers, JSON bodies, Content-Type and Accept, ETags, If-None-Match and If-Match, and Bearer tokens
+• The status codes as they really are: 200, 201, 202, 204, 304, 400, 401, 403, 404, 405, 406, 412, 415 and 428
+• Real HTTP: every request the cards can make, about 450 of them, is sent to a real HTTP server with real fetch on every change, and the game has to agree with it to the character
+• Never looked under a website? A narrated prologue says what a request and a response are
+• Every line is voiced
+• No typing: you make each request from cards, and what's on the slip is all that's sent
+• Keyboard, mouse or touch. No signup.
+
+How it was made
+Claude built the game: every line of Godot code, the checks that hold it to real HTTP, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. An image model made the backdrops and the cast, a music model made the music and the trailer's cue, and the voices are ElevenLabs text-to-speech. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/nothing
+
+${AN_CHAPTERS}
+
+A comic spoof of the 1990s New York sitcom. The names, counters, lines, art and music are original; it isn't affiliated with or endorsed by anyone who made the shows it winks at.
+
+#http #restapi #webdev #learntocode #indiegame #pixelart #godot #codinggame`;
+const AN_YOUTUBE_TAGS = "learn http, http tutorial, http explained, rest api, rest api tutorial, http status codes, http methods, "
+  + "get post put patch delete, json, etag, bearer token, web development, coding game, educational game, pixel art, indie game, "
+  + "godot, sitcom game, a game about nothing, dunder quest";
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
-Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster. Yes, Shell! teaches the command line in a sandwich shop's kitchen, where every station is a command and the pass is a pipe.
+Dunder Quest teaches Python on a silly quest for the Grail. Flatmates.js teaches JavaScript in a tiny Croydon flat, where your flatmate runs the to-do list you write. Curb Your Oxidation teaches Rust on the Westside, where the borrow checker is the unwritten social contract. Prince of Versions teaches Git with a dagger that turns back time, but only to a commit. Just One More JOIN teaches SQL to a rumpled detective who needs the query that proves it. The Good, the Bad and the Greedy teaches regular expressions in a frontier town where everybody is named Hobson and the law is the wanted poster. Yes, Shell! teaches the command line in a sandwich shop's kitchen, where every station is a command and the pass is a pipe. A Game About Nothing teaches HTTP and REST APIs at five counters in New York, where every errand is a request.
 
 Opus 5.5 built every game here: the code, the sprites, the websites, and the trailers, cut from code with no video editor. Image and music models made the backdrops and soundtracks. I prompt and playtest.
 
@@ -1141,7 +1193,7 @@ Why learning games? I'm dyslexic, and I failed my spelling tests until my dad wr
 
 Play free, no signup: ${SITE_URL}`;
 const CHANNEL_KEYWORDS = '"learn python" "learn javascript" "coding game" "educational game" "pixel art" '
-  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions" "learn bash" "command line" "yes shell"';
+  + '"indie game" godot "programming for beginners" "dunder quest" flatmates.js "learn rust" "curb your oxidation" "learn git" "prince of versions" "learn sql" "just one more join" "learn regex" "regular expressions" "learn bash" "command line" "yes shell" "learn http" "rest api" "a game about nothing"';
 const CHANNEL_LINKS = [
   ["Play Dunder Quest", `${SITE_URL}play/`],
   ["Play Flatmates.js", `${SITE_URL}flatmates/play/`],
@@ -1150,6 +1202,7 @@ const CHANNEL_LINKS = [
   ["Play Just One More JOIN", `${SITE_URL}lieutenant/play/`],
   ["Play The Good, the Bad and the Greedy", `${SITE_URL}greedy/play/`],
   ["Play Yes, Shell!", `${SITE_URL}shell/play/`],
+  ["Play A Game About Nothing", `${SITE_URL}nothing/play/`],
   ["Source on GitHub", REPO],
 ];
 // [file, name, size YouTube asks for, where it goes, alt]
@@ -1171,6 +1224,7 @@ const CHANNEL_PLAYLISTS = [
   ["Just One More JOIN", "The SQL game: its trailer, and later its Short."],
   ["The Good, the Bad and the Greedy", "The regex game: its trailer, and later its Short."],
   ["Yes, Shell!", "The shell game: its trailer, and later its Short."],
+  ["A Game About Nothing", "The HTTP game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
 const UPLOAD_SETTINGS = [
@@ -1932,6 +1986,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="fine">How it's made: <a href="${REPO}/blob/main/games/shell/trailer/README.md">games/shell/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="an-trailer-h">
+  <p class="kicker">nothing.__trailer__</p>
+  <h2 id="an-trailer-h">A Game About Nothing</h2>
+  <p class="lede">Cut to an original cue for a slapped bass and a light funk band, with the game's own voices: Stu on stage noticing that the whole internet is people asking for things, a request slip made card by card, the broth counter's one word, and then the music drops to almost nothing for 204 No Content. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(NOTHING_TRAILER_ID, `${img}nothing/trailer.png`, AN_THUMB_ALT, "A Game About Nothing")}
+  <dl class="facts">${AN_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/nothing/trailer/README.md">games/nothing/trailer/README.md</a>.</p>
+</section>
+
 <section class="section kit">
   <p>Uploading them? The titles, descriptions and thumbnails are on <a href="${prefix}brand/youtube/">the YouTube page</a>.</p>
 </section>`;
@@ -1991,7 +2054,10 @@ function buildBrandYoutube(prefix: string): string {
       "games/greedy/trailer/out/greedy_trailer_4k.mp4")
     + uploadKit("Yes, Shell!", SHELL_TRAILER_ID, `${img}shell/trailer.png`, "shell_thumbnail.png",
       YS_YOUTUBE_TITLE, YS_YOUTUBE_DESCRIPTION, YS_YOUTUBE_TAGS, "Yes, Shell!",
-      "games/shell/trailer/out/shell_trailer_4k.mp4");
+      "games/shell/trailer/out/shell_trailer_4k.mp4")
+    + uploadKit("A Game About Nothing", NOTHING_TRAILER_ID, `${img}nothing/trailer.png`, "nothing_thumbnail.png",
+      AN_YOUTUBE_TITLE, AN_YOUTUBE_DESCRIPTION, AN_YOUTUBE_TAGS, "A Game About Nothing",
+      "games/nothing/trailer/out/nothing_trailer_4k.mp4");
   const body = `
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
@@ -2036,7 +2102,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code>, <code>GREEDY_TRAILER_ID</code> or <code>SHELL_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code>, <code>GREEDY_TRAILER_ID</code>, <code>SHELL_TRAILER_ID</code> or <code>NOTHING_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -3579,9 +3645,215 @@ ${body}
 </main>
 <footer class="ys-foot">
   <p>Yes, Shell! One chef, one pass, and a kitchen that does exactly what you say.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the HTTP game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
 </footer>
 ${SHELL_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
+${RESUME_JS}
+</body>
+</html>
+`;
+}
+
+// A Game About Nothing's page at /nothing/, the HTTP game: a 1990s sitcom
+// apartment in plum, teal and mustard, with the game's own rounded capitals
+// (Righteous) for headings. The episodes, Stu's sets, the example scene and
+// every response on the page come from `nothing/data/episodes.json`, the
+// data the game plays, answered by `nothing/http/counter.ts`: the same
+// counters `nothing/tests/verify_http.ts` serves from a real HTTP server and
+// holds the game's own (http/http.gd) to.
+const AN_NAME = "A Game About Nothing";
+const AN_ALT = "A Game About Nothing: a corner coffee shop on a New York street at dusk, its window lit, beside brick apartment buildings with fire escapes.";
+const AN_DESC = "A Game About Nothing, a Dunder Quest game that teaches HTTP and REST APIs: four friends, five counters in New York that "
+  + "run on rules, and a request slip made from cards. GET, POST, PUT, PATCH, DELETE, headers, status codes and ETags. Free in your browser.";
+// Each episode's screenshot, by episode id.
+const AN_SHOTS: Record<number, [string, string]> = {
+  1: ["order.png", "The first episode at Vic's Diner: a POST to /orders with a JSON body on the request slip, and the 201 Created coming back with its Location"],
+  2: ["counter.png", "The second episode at the broth counter: an order with the right Content-Type and every field, and the counter's response"],
+  3: ["duplicate.png", "The third episode at the Jade Lantern: a PUT, a PATCH or a DELETE to one table's own path"],
+  4: ["mail.png", "The fourth episode at the post office: a request with If-Match and the version on the board, and the answer it gets"],
+  5: ["tableread.png", "The table read: a PATCH with an Authorization token, Content-Type, If-Match and a JSON body, and the network's 200 OK"],
+};
+// The cast, in the order the page shows them, with their portraits.
+const AN_CAST: [string, string, string][] = [
+  ["stu", "Stu Lerner", "A stand-up comedian who notices things. He teaches every card, at the Rimshot, between jokes. Small things. Things nobody else bothers to notice."],
+  ["lenny", "Lenny Kaplan", "Stu's oldest friend. Lies for a living, though nobody has ever paid him for one. Books every table twice, to be safe."],
+  ["dana", "Dana Wexler", "Stu's ex, still his friend, mostly out of spite. Knows exactly what she wants, and exactly how to ask for it."],
+  ["zelnick", "Zelnick", "From across the hall. Has never once knocked. Wants to know all his options, every time."],
+  ["kasimir", "Kasimir", "Runs the broth counter on 55th Street. The line goes round the block. Get one rule wrong and he says one word."],
+  ["vernon", "Vernon", "A mail carrier at the post office on 81st Street. Every parcel has a version, and he wants to know which one you saw."],
+  ["pratt", "Mr. Pratt", "Runs the network. Keeps the pilots behind a login. Has never been seen to laugh. Not once. Not even at a wedding."],
+];
+
+/** The same tags for A Game About Nothing, the HTTP game in nothing/, which
+ * Godot exports to nothing/play/index.html. */
+function tagNothingPage(index: string): void {
+  const desc = "Play A Game About Nothing, the Dunder Quest game that teaches HTTP and REST APIs, right in your browser.";
+  tagGamePage(index, `Play ${AN_NAME} · Dunder Quest`, desc, "nothing/play/", "nothing.png", AN_ALT, "nothing");
+}
+
+/** A request and what a counter answers it, a line at a time each, as the game shows them. */
+function anTake(counters: Record<string, Counter>, counter: string, data: Json, versions: Json, cards: string[]): { asked: string[]; answered: string[] } {
+  const c = counters[counter];
+  const req = asked(cards);
+  const a = respond(c, { items: structuredClone(data), v: { ...(versions ?? {}) } }, req);
+  const lines = [`${req.method} ${req.path} HTTP/1.1`, `Host: ${c.host}`, ...cards.filter((x) => x.includes(": ") && !x.startsWith("{"))];
+  if (req.body) lines.push("", req.body);
+  return { asked: lines, answered: wire(a, req.method) };
+}
+
+/** Lines of HTTP, the first (the request or status line) set apart. */
+function anPre(lines: string[]): string {
+  return lines.map((l, i) => (i === 0 ? `<b>${esc(l)}</b>` : esc(l))).join("\n");
+}
+
+/** A card on the table, coloured by what it is. */
+function anCard(card: string, on: boolean): string {
+  const kind = /^[A-Z]+$/.test(card) ? "m" : card.startsWith("/") ? "p" : card.startsWith("{") ? "b" : "h";
+  return `<span class="an-chip an-chip-${kind}${on ? " an-chip-on" : ""}">${esc(card)}</span>`;
+}
+
+function buildNothing(prefix: string): string {
+  const data = JSON.parse(read(join(NOTHING, "data", "episodes.json")));
+  const counters: Record<string, Counter> = data.counters;
+  const img = `${prefix}static/img/nothing/`;
+  const scenes: Json[] = data.episodes.flatMap((e: Json) => e.scenes);
+  // The example scene: a toast for table 4.
+  const ex: Json = scenes.find((s) => s.id === "1c") ?? scenes[0];
+  const exEp = data.episodes.find((e: Json) => e.scenes.includes(ex));
+  const take = anTake(counters, ex.counter, ex.data, ex.versions, ex.solution);
+  const cards = (ex.cards as string[]).map((c) => anCard(c, ex.solution.includes(c))).join("");
+
+  const steps = [
+    ["Read what the scene wants", "Every scene has somebody who wants something done at a counter, and the status it should come back with: 200 OK, 201 Created, 204 No Content."],
+    ["Make the slip", "Put cards on the request slip: a method, a path, headers, a body. No typing, and nothing goes over but what's on the slip."],
+    ["Send it", "The counter answers exactly as a real web server would: the status line, the headers that matter, the body. Or a 4xx, and the reason in the body."],
+    ["And scene!", "Every take starts from the same counter, so a miss changes nothing. Fewer takes is better, and a slip with the fewest cards it can be done in earns a star."],
+  ];
+  const stepHtml = steps.map(([h, p], i) => `<li><span class="an-step">${i + 1}</span><h3>${esc(h)}</h3><p>${esc(p)}</p></li>`).join("");
+
+  const episodes = data.episodes.map((e: Json) => {
+    const ids: string[] = [];
+    for (const s of e.scenes) if (s.card && !ids.includes(s.card)) ids.push(s.card);
+    const sets = ids.map((id) => {
+      const card = data.cards[id];
+      const t = anTake(counters, card.demo.counter, card.demo.data, card.demo.versions, card.demo.request);
+      const demo = `<div class="an-demo"><pre>${anPre(t.asked)}</pre><pre class="an-logs">${anPre(t.answered)}</pre></div>`;
+      return `<figure class="an-card"><figcaption>${esc(card.title)}</figcaption>${demo}<p>${esc(card.text)}</p></figure>`;
+    }).join("");
+    const [shot, alt] = AN_SHOTS[e.id] ?? ["title.png", AN_ALT];
+    return `
+    <li class="an-episode">
+      <img class="an-shot" src="${img}${shot}" alt="${esc(alt)}" width="960" height="540" loading="lazy">
+      <div class="an-episode-copy">
+        <p class="an-num">Episode ${e.id} · ${e.scenes.length} scenes · ${esc(counters[e.scenes[0].counter].name)}</p>
+        <h3>${esc(e.title)}</h3>
+        <p class="an-lesson">${esc(e.lesson)}</p>
+        <div class="an-cards">${sets}</div>
+      </div>
+    </li>`;
+  }).join("");
+
+  const cast = AN_CAST.map(([id, name, about]) =>
+    `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
+
+  // No trailer yet: the section appears once NOTHING_TRAILER_ID is set.
+  const trailer = !NOTHING_TRAILER_ID ? "" : `
+<section class="an-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(NOTHING_TRAILER_ID, `${img}trailer.png`, AN_THUMB_ALT, "A Game About Nothing")}
+  <p class="an-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
+  const body = `
+<section class="an-hero">
+  <div class="an-hero-copy">
+    <p class="an-kicker">a dunder_quest game · learn HTTP and REST APIs</p>
+    <h1><span>A game about</span> Nothing</h1>
+    <p class="an-lede">Four friends, one coffee shop, and five counters in New York that run on rules nobody explains. A diner, a broth stand with a line round the block, a restaurant, the post office and a television network. Every one of them is a web server, and every errand is a request.</p>
+    <p class="an-actions"><a class="an-btn" href="play/">Play in your browser</a><a class="an-more" href="#episodes">The five episodes →</a></p>
+    ${resumePanel("nothing", "an-btn an-btn-small")}
+    <p class="an-fine">Free. No typing: every request is made from cards, and what's on the slip is exactly what's sent.</p>
+  </div>
+  <img class="an-shot" src="${img}title.png" alt="${esc(AN_ALT)}" width="960" height="540">
+</section>
+${trailer}
+<section class="an-section" id="how">
+  <h2>How it plays</h2>
+  <p>Every app on your phone and every website talks to its servers in <b>HTTP</b>: a request with a method (GET, POST, PUT, PATCH, DELETE) and a path, a few headers, maybe a body, and a response that starts with a status code. A <b>REST</b> API is a server laid out as things at paths: <code>/orders</code> is all the orders, <code>/orders/7</code> is one of them. In the game each counter is one, and you work it by hand.</p>
+  <div class="an-scene">
+    <div class="an-script"><h3>The request slip</h3><pre>${anPre(take.asked)}</pre></div>
+    <div class="an-read"><h3>What comes back</h3><pre>${anPre(take.answered)}</pre></div>
+    <p class="an-table" aria-label="The cards on the table">${cards}</p>
+  </div>
+  <p class="an-caption">A scene from episode ${exEp.id}, ${esc(exEp.title)}: “${esc(ex.brief.text)}” The highlighted cards make the slip. Leave off the Content-Type and the counter says 415 Unsupported Media Type; send it to <code>/orders/7</code> and it's 405 Method Not Allowed, with an Allow header saying what that path does take.</p>
+  <ol class="an-steps">${stepHtml}</ol>
+</section>
+
+<section class="an-section" id="story">
+  <h2>Never looked under a website? It starts there</h2>
+  <p>A first game opens on a prologue that meets the gang and says what a request and a response are, with a few real ones written out as they go over the wire. Every new idea arrives in one of Stu's stand-up sets, with a request and what a counter answers it, and every line of dialogue is voiced.</p>
+  <div class="an-pair">
+    <img class="an-shot" src="${img}intro.png" alt="The prologue: Stu on stage at the Rimshot, beside a GET request for an order that isn't there, and the 404 Not Found that comes back" width="960" height="540" loading="lazy">
+    <img class="an-shot" src="${img}card.png" alt="One of Stu's sets: 204 No Content, a DELETE request and the empty response it gets" width="960" height="540" loading="lazy">
+  </div>
+</section>
+
+<section class="an-section" id="episodes">
+  <h2>The episodes</h2>
+  <p class="an-intro">Five episodes at five counters, from a GET for the menu to a PATCH with a token, a version and a JSON body. These are the sets the game teaches from, and every response beside them is what the counter answers.</p>
+  <ol class="an-episodes">${episodes}
+  </ol>
+</section>
+
+<section class="an-section an-real" id="real">
+  <h2>It's real HTTP</h2>
+  <p>The cards only write a request. What answers it in the game is a set of counters written for it, and on every change to the game a script sends every request the cards on every table can make, each of Stu's examples and a set of harder cases, about four hundred and fifty in all, to a real web server running the same counters, over a real connection with <code>fetch</code>. It fails if the two disagree on a status, a reason phrase, a header, a single character of a body, or what was left on the counter. It also holds every answer to the rules of HTTP the game teaches: a 201 says where in Location, a 405 says what's allowed, a 401 says how to log in, and a 204, a 304 and an answer to HEAD never have a body.</p>
+  <p>The last scene's slip has a method, a path, an Authorization token, a Content-Type, an If-Match with the version on the board, and a JSON body: the shape of a real request to a real API. By then you can say what every line of it is for.</p>
+</section>
+
+<section class="an-section" id="cast">
+  <h2>The gang</h2>
+  <ul class="an-cast">${cast}</ul>
+</section>
+
+<section class="an-section" id="small">
+  <p class="an-fine">A Game About Nothing is an affectionate spoof of the 1990s New York sitcom. The names, the city's counters, the jokes, the art and the music are its own, and it isn't affiliated with or endorsed by anyone who made the shows it winks at.</p>
+</section>
+`;
+  return anPage(body, prefix);
+}
+
+function anPage(body: string, prefix: string): string {
+  const title = `${AN_NAME} · Dunder Quest`;
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<meta name="description" content="${esc(AN_DESC)}">
+${headTags(title, AN_DESC, "nothing/", "nothing.png", AN_ALT)}
+<link rel="icon" href="${prefix}static/img/nothing/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="${prefix}static/nothing.css">
+</head>
+<body class="an">
+<a class="skip" href="#main">Skip to content</a>
+<header class="an-bar">
+  <a class="an-brand" href="./">A Game About Nothing</a>
+  <nav aria-label="${AN_NAME}"><a href="#how">How it plays</a><a href="#episodes">The episodes</a><a href="#real">Real HTTP</a><a href="${prefix}">All games</a></nav>
+  <a class="an-btn an-btn-small" href="play/">Play</a>
+</header>
+<main id="main">
+${body}
+</main>
+<footer class="an-foot">
+  <p>A Game About Nothing. Four friends, five counters, and a request for everything.</p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}shell/">Yes, Shell!, the shell game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/nothing">Source on GitHub</a></p>
+</footer>
+${NOTHING_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
 </body>
 </html>
@@ -3593,7 +3865,7 @@ function main(): void {
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
     "--flatmates": tagFlatmatesPage, "--curb": tagCurbPage, "--prince": tagPrincePage,
-    "--lieutenant": tagLieutenantPage, "--greedy": tagGreedyPage, "--shell": tagShellPage,
+    "--lieutenant": tagLieutenantPage, "--greedy": tagGreedyPage, "--shell": tagShellPage, "--nothing": tagNothingPage,
   };
   if (args[0] in tag) {
     tag[args[0]](args[1]);
@@ -3619,7 +3891,8 @@ function main(): void {
     copyFileSync(join(GREEDY, "assets", "fonts", `${font}.ttf`), join(statics, "fonts", `${font}.ttf`));
   }
   copyFileSync(join(SHELL, "assets", "fonts", "BebasNeue.ttf"), join(statics, "fonts", "BebasNeue.ttf")); // the shell game's titles, for shell.css
-  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"], [SHELL, "shell"]]) { // their icons, for the brand kit and the tab
+  copyFileSync(join(NOTHING, "assets", "fonts", "Righteous.ttf"), join(statics, "fonts", "Righteous.ttf")); // the HTTP game's titles, for nothing.css
+  for (const [game, folder] of [[CURB, "curb"], [FLATMATES, "flatmates"], [PRINCE, "prince"], [LIEUTENANT, "lieutenant"], [GREEDY, "greedy"], [SHELL, "shell"], [NOTHING, "nothing"]]) { // their icons, for the brand kit and the tab
     copyFileSync(join(game, "icon.svg"), join(statics, "img", folder, "icon.svg"));
   }
 
@@ -3642,6 +3915,7 @@ function main(): void {
   write(join(out, "lieutenant", "index.html"), buildLieutenant("../"));
   write(join(out, "greedy", "index.html"), buildGreedy("../"));
   write(join(out, "shell", "index.html"), buildShell("../"));
+  write(join(out, "nothing", "index.html"), buildNothing("../"));
   write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
   write(join(out, "me", "index.html"), buildMe("../"));
   write(join(out, "privacy", "index.html"), buildPrivacy("../"));

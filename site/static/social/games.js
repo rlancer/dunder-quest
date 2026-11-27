@@ -167,16 +167,42 @@ export const GAMES = {
       { id: 5, name: "The Critic", lesson: "cut, tr, > and a five-command line", max: 4 },
     ],
   },
+  nothing: {
+    name: "A Game About Nothing",
+    short: "Nothing",
+    lang: "HTTP",
+    page: "/nothing/",
+    play: "/nothing/play/",
+    og: "nothing.png",
+    unit: ["episode", "episodes"],
+    accent: "#e8b03a",
+    ink: "#1c1421",
+    tag: "#LearnHTTP",
+    // Fewest takes is the tiebreak: the game counts a try each time a slip is sent.
+    best: "tries",
+    // A star for every scene done at par, with the fewest cards it can be.
+    collectible: ["star", "stars"],
+    levels: [
+      { id: 1, name: "The Order", lesson: "Requests: GET and POST", max: 4 },
+      { id: 2, name: "The Counter", lesson: "Headers and JSON bodies", max: 4 },
+      { id: 3, name: "The Duplicate", lesson: "PUT, PATCH and DELETE", max: 4 },
+      { id: 4, name: "The Mail", lesson: "Versions: ETags and If-Match", max: 4 },
+      { id: 5, name: "The Table Read", lesson: "Tokens: 401 and 403", max: 4 },
+    ],
+  },
 };
 
 /** Game keys in the order the site shows them (Curb leads, as on the home page). */
-export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant", "greedy", "shell"];
+export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant", "greedy", "shell", "nothing"];
 
 /** XP: a level is worth 100, finishing a game 400 more, a collectible 10. */
 export const XP = { level: 100, complete: 400, collectible: 10 };
 
 /** The biggest save the server takes, in characters. Real saves are under 2 KB. */
 export const MAX_SAVE = 16000;
+
+/** Where the games that keep a star count per level keep the level to carry on from. */
+const CURRENT = { greedy: "current_job", shell: "current_shift", nothing: "current_episode" };
 
 const isObj = (v) => v !== null && typeof v === "object" && !Array.isArray(v);
 const num = (v) => (typeof v === "number" && Number.isFinite(v) ? v : Number.parseFloat(v));
@@ -301,10 +327,12 @@ export function normalize(game, raw) {
         cards: strings(save.cards),
       };
     case "greedy":
-    case "shell": {
+    case "shell":
+    case "nothing": {
       // The Lieutenant's shape, plus a star count per job, capped at its posters.
-      // (Yes, Shell! keeps the same save, with shifts for jobs.)
-      const at = game === "shell" ? "current_shift" : "current_job";
+      // (Yes, Shell! keeps the same save, with shifts for jobs, and A Game
+      // About Nothing with episodes.)
+      const at = CURRENT[game];
       const stars = idNumbers(game, save.stars, true);
       for (const l of GAMES[game].levels) if (stars[l.id] > l.max) stars[l.id] = l.max;
       return {
@@ -385,8 +413,9 @@ export function merge(game, a, b) {
       });
     case "greedy":
     case "shell":
+    case "nothing":
       return normalize(game, {
-        [game === "shell" ? "current_shift" : "current_job"]: ahead[game === "shell" ? "current_shift" : "current_job"],
+        [CURRENT[game]]: ahead[CURRENT[game]],
         cleared: [...x.cleared, ...y.cleared],
         tries: bestOf(x.tries, y.tries, true),
         stars: bestOf(x.stars, y.stars, false),
@@ -438,6 +467,7 @@ export function summarize(game, raw) {
       break;
     case "greedy":
     case "shell":
+    case "nothing":
       cleared = save.cleared;
       for (const id of cleared) tries += save.tries[String(id)] || 0;
       for (const v of Object.values(save.stars)) collected += v;
