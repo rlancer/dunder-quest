@@ -5,8 +5,9 @@
 # (games/curb/) in build/site/curb/play, Prince of Versions
 # (games/prince/) in build/site/prince/play, Just One More JOIN
 # (games/lieutenant/) in build/site/lieutenant/play, The Good, the Bad
-# and the Greedy (games/greedy/) in build/site/greedy/play, and Yes, Shell!
-# (games/shell/) in build/site/shell/play.
+# and the Greedy (games/greedy/) in build/site/greedy/play, Yes, Shell!
+# (games/shell/) in build/site/shell/play, and A Game About Nothing
+# (games/nothing/) in build/site/nothing/play.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -18,6 +19,7 @@ PRINCE="${ROOT}/games/prince"
 LIEUTENANT="${ROOT}/games/lieutenant"
 GREEDY="${ROOT}/games/greedy"
 SHELL_GAME="${ROOT}/games/shell"
+NOTHING="${ROOT}/games/nothing"
 source "${ROOT}/scripts/godot_setup.sh"
 
 rm -rf build/site
@@ -62,3 +64,9 @@ mkdir -p build/site/shell/play
 "$GODOT" --headless --path "$SHELL_GAME" --export-release "Web" "${ROOT}/build/site/shell/play/index.html"
 bun "${ROOT}/site/build.ts" --shell "${ROOT}/build/site/shell/play/index.html"
 bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/shell/play"
+
+mkdir -p build/site/nothing/play
+"$GODOT" --headless --path "$NOTHING" --import
+"$GODOT" --headless --path "$NOTHING" --export-release "Web" "${ROOT}/build/site/nothing/play/index.html"
+bun "${ROOT}/site/build.ts" --nothing "${ROOT}/build/site/nothing/play/index.html"
+bun "${ROOT}/scripts/fit_pages_limit.ts" "${ROOT}/build/site/nothing/play"
