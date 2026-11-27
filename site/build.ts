@@ -72,6 +72,11 @@ const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
 // the /greedy/ page and the splash's card, and shows the thumbnail alone on
 // the brand kit.
 const GREEDY_TRAILER_ID = "zsXZ5G07tcc";
+// A Game About Nothing's trailer (games/nothing/tools/make_trailer.py), once
+// it's on YouTube: paste its video ID here. Empty leaves the trailer off the
+// /nothing/ page and the splash's card, and shows the thumbnail alone on the
+// brand kit.
+const NOTHING_TRAILER_ID = "";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -510,7 +515,7 @@ function buildSplash(prefix = ""): string {
       "Meet the kitchen"],
   ];
   // The cards that link their trailer, once it's up.
-  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID };
+  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID, "game-an": NOTHING_TRAILER_ID };
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
       <a class="game-art" href="${about}"><img src="${prefix}static/img/og/${og}" alt="${esc(alt)}" width="1200" height="630" loading="lazy"></a>
@@ -1095,6 +1100,45 @@ A comic spoof of the spaghetti western and of the comedies that send it up. The 
 const GR_YOUTUBE_TAGS = "learn regex, regex tutorial, regular expressions, regex for beginners, regex explained, greedy vs lazy regex, "
   + "catastrophic backtracking, capture groups, coding game, educational game, pixel art, indie game, godot, western game, "
   + "the good the bad and the greedy, dunder quest";
+const AN_THUMB_ALT = "A Game About Nothing trailer thumbnail: Stu Lerner and Mr. Pratt either side of 'Learn HTTP', over a response that reads HTTP/1.1 204 No Content";
+const AN_TRAILER_FACTS = [
+  ["Length", "70 seconds"],
+  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 120 BPM; every cut lands on a beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses thirteen of them"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the request slips and the responses are sharp; 4K is ×2"],
+];
+const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:38 204 No Content\n0:50 The network";
+const AN_YOUTUBE_TITLE = "A Game About Nothing – Learn HTTP and REST APIs in a Sitcom | Official Trailer";
+const AN_YOUTUBE_DESCRIPTION = `Four friends, one coffee shop, and absolutely nothing going on. Except that every counter in New York is a web server, and every errand is an HTTP request.
+
+A Game About Nothing is a free pixel-art sitcom that teaches HTTP and REST APIs. Stu Lerner is a stand-up comedian who notices things, and what he's noticed is that the whole internet is people asking for things. You make each request from cards (a method, a path, headers, a body), send it over the counter, and read what comes back: the status line, the headers that matter and the body. Get one thing wrong at the broth counter and the answer is one word.
+
+▶ Play free in your browser: ${SITE_URL}nothing/play/
+▶ The five episodes and what each one teaches: ${SITE_URL}nothing/
+▶ More games that teach code (Rust, Git, SQL, regex, the shell, Python, JavaScript): ${SITE_URL}
+
+What's inside
+• 5 episodes and 20 scenes, from a GET for the menu to a PATCH with a token, a version and a body: GET, POST, PUT, PATCH, DELETE, HEAD and OPTIONS, paths and ids, headers, JSON bodies, Content-Type and Accept, ETags, If-None-Match and If-Match, and Bearer tokens
+• The status codes as they really are: 200, 201, 202, 204, 304, 400, 401, 403, 404, 405, 406, 412, 415 and 428
+• Real HTTP: every request the cards can make, about 450 of them, is sent to a real HTTP server with real fetch on every change, and the game has to agree with it to the character
+• Never looked under a website? A narrated prologue says what a request and a response are
+• Every line is voiced
+• No typing: you make each request from cards, and what's on the slip is all that's sent
+• Keyboard, mouse or touch. No signup.
+
+How it was made
+Claude built the game: every line of Godot code, the checks that hold it to real HTTP, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. An image model made the backdrops and the cast, a music model made the music and the trailer's cue, and the voices are ElevenLabs text-to-speech. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/nothing
+
+${AN_CHAPTERS}
+
+A comic spoof of the 1990s New York sitcom. The names, counters, lines, art and music are original; it isn't affiliated with or endorsed by anyone who made the shows it winks at.
+
+#http #restapi #webdev #learntocode #indiegame #pixelart #godot #codinggame`;
+const AN_YOUTUBE_TAGS = "learn http, http tutorial, http explained, rest api, rest api tutorial, http status codes, http methods, "
+  + "get post put patch delete, json, etag, bearer token, web development, coding game, educational game, pixel art, indie game, "
+  + "godot, sitcom game, a game about nothing, dunder quest";
 // The channel's own fields, in YouTube Studio under Customization.
 const CHANNEL_DESCRIPTION = `Free pixel-art games that teach you to code, playable in your browser.
 
@@ -1136,6 +1180,7 @@ const CHANNEL_PLAYLISTS = [
   ["Prince of Versions", "The Git game: its trailer, and later its Short."],
   ["Just One More JOIN", "The SQL game: its trailer, and later its Short."],
   ["The Good, the Bad and the Greedy", "The regex game: its trailer, and later its Short."],
+  ["A Game About Nothing", "The HTTP game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
 const UPLOAD_SETTINGS = [
@@ -1888,6 +1933,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="fine">How it's made: <a href="${REPO}/blob/main/games/greedy/trailer/README.md">games/greedy/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="an-trailer-h">
+  <p class="kicker">nothing.__trailer__</p>
+  <h2 id="an-trailer-h">A Game About Nothing</h2>
+  <p class="lede">Cut to an original cue for a slapped bass and a light funk band, with the game's own voices: Stu on stage noticing that the whole internet is people asking for things, a request slip made card by card, the broth counter's one word, and then the music drops to almost nothing for 204 No Content. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(NOTHING_TRAILER_ID, `${img}nothing/trailer.png`, AN_THUMB_ALT, "A Game About Nothing")}
+  <dl class="facts">${AN_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/nothing/trailer/README.md">games/nothing/trailer/README.md</a>.</p>
+</section>
+
 <section class="section kit">
   <p>Uploading them? The titles, descriptions and thumbnails are on <a href="${prefix}brand/youtube/">the YouTube page</a>.</p>
 </section>`;
@@ -1944,7 +1998,10 @@ function buildBrandYoutube(prefix: string): string {
       "games/lieutenant/trailer/out/join_trailer_4k.mp4")
     + uploadKit("The Good, the Bad and the Greedy", GREEDY_TRAILER_ID, `${img}greedy/trailer.png`, "greedy_thumbnail.png",
       GR_YOUTUBE_TITLE, GR_YOUTUBE_DESCRIPTION, GR_YOUTUBE_TAGS, "The Good, the Bad and the Greedy",
-      "games/greedy/trailer/out/greedy_trailer_4k.mp4");
+      "games/greedy/trailer/out/greedy_trailer_4k.mp4")
+    + uploadKit("A Game About Nothing", NOTHING_TRAILER_ID, `${img}nothing/trailer.png`, "nothing_thumbnail.png",
+      AN_YOUTUBE_TITLE, AN_YOUTUBE_DESCRIPTION, AN_YOUTUBE_TAGS, "A Game About Nothing",
+      "games/nothing/trailer/out/nothing_trailer_4k.mp4");
   const body = `
 <section class="section kit" aria-labelledby="channel-h">
   <p class="kicker">dunder_quest.__channel__</p>
@@ -1989,7 +2046,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code> or <code>GREEDY_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code>, <code>GREEDY_TRAILER_ID</code> or <code>NOTHING_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -3634,6 +3691,14 @@ function buildNothing(prefix: string): string {
   const cast = AN_CAST.map(([id, name, about]) =>
     `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
 
+  // No trailer yet: the section appears once NOTHING_TRAILER_ID is set.
+  const trailer = !NOTHING_TRAILER_ID ? "" : `
+<section class="an-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(NOTHING_TRAILER_ID, `${img}trailer.png`, AN_THUMB_ALT, "A Game About Nothing")}
+  <p class="an-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
   const body = `
 <section class="an-hero">
   <div class="an-hero-copy">
@@ -3646,7 +3711,7 @@ function buildNothing(prefix: string): string {
   </div>
   <img class="an-shot" src="${img}title.png" alt="${esc(AN_ALT)}" width="960" height="540">
 </section>
-
+${trailer}
 <section class="an-section" id="how">
   <h2>How it plays</h2>
   <p>Every app on your phone and every website talks to its servers in <b>HTTP</b>: a request with a method (GET, POST, PUT, PATCH, DELETE) and a path, a few headers, maybe a body, and a response that starts with a status code. A <b>REST</b> API is a server laid out as things at paths: <code>/orders</code> is all the orders, <code>/orders/7</code> is one of them. In the game each counter is one, and you work it by hand.</p>
@@ -3723,6 +3788,7 @@ ${body}
   <p>A Game About Nothing. Four friends, five counters, and a request for everything.</p>
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}shell/">Yes, Shell!, the shell game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/nothing">Source on GitHub</a></p>
 </footer>
+${NOTHING_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
 </body>
 </html>

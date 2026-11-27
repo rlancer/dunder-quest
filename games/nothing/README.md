@@ -60,9 +60,10 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 | `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` may carry directions in square brackets (`[panicking]`), which are acted, not read |
 | `tools/sfx.py` | The sound effects, synthesized with numpy, the slap-bass sting included |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window; in a cloud session, under `xvfb-run`) |
+| `tools/trailer_audio.py`, `tools/make_trailer.py` | The trailer's music cue (generated) and the trailer itself, from `trailer/capture.sh`'s captures of `tests/trailer_run.tscn` |
 
 Every line is voiced: the cast, the narrator, Stu reading each of his sets, and the brief for each scene. The cast are sitcom types with invented names, never drawn or voiced to be any actor.
 
 All the words are in `data/episodes.json` (and the prologue's in `ui/intro.gd`): the cast, the counters, the episodes, each scene's brief, data, cards, solution, goal and hint, Stu's sets, the glossary, and everything Stu says about a miss.
 
-It has no trailer, brand-kit page or launch posts yet.
+Its trailer is cut by `tools/make_trailer.py` from captures of the bot, to a generated cue (`tools/trailer_audio.py`); the steps are in [trailer/README.md](trailer/README.md). It has no brand-kit page or launch posts yet.
