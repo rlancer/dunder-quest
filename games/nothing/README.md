@@ -56,7 +56,7 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 | Tool | Makes |
 |---|---|
 | `tools/scenery.py` | The backdrops and the cast's portraits, generated through OpenRouter (the portraits are one set: look at them together) |
-| `tools/music.py` | The music cues, generated; loop them with `../dunder-quest/tools/make_loops.py` |
+| `tools/music.py` | The music cues, with ElevenLabs Music (`music_v2_5`, through ElevenLabs' own API: it needs `ELEVENLABS_API_KEY` and a paid ElevenLabs plan); smooth the seams with `../dunder-quest/tools/make_loops.py` |
 | `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` may carry directions in square brackets (`[panicking]`), which are acted, not read |
 | `tools/sfx.py` | The sound effects, synthesized with numpy, the slap-bass sting included |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window; in a cloud session, under `xvfb-run`) |

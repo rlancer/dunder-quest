@@ -1,101 +1,145 @@
-"""Generate the title, prologue and episode music.
+"""Generate the title, prologue and episode music with ElevenLabs Music.
 
-Uses the Dunder Quest music helpers (../../dunder-quest/tools/generate_music.py)
-with this game's briefs: original music in the style of an early-1990s
-studio sitcom (slap bass, a little synth, finger snaps, a light funk drum
-groove). The briefs ask for a style and instruments only; they never name or
-describe any show's music or any existing song, and none of them recreates a
-theme tune. Never prints the key.
+Original music in the style of an early-1990s studio sitcom: slapped and
+popped bass up front, a little synth, finger snaps, a tight funk kit, and
+the stops and hits that land a joke. The briefs ask for a style and
+instruments only; they never name or describe any show's music or any
+existing song, and none of them recreates a theme tune.
+
+It calls ElevenLabs' own music API (POST /v1/music) with its newest model,
+`music_v2_5`, instrumental only, in loop mode, so a track's end runs back
+into its start. OpenRouter carries ElevenLabs' voices but not its music, so
+this needs ELEVENLABS_API_KEY in .env (in a cloud session for this repo the
+environment holds it as a network secret, and `ELEVENLABS_API_KEY=proxy-injected`
+is enough). The key is never printed.
 
     python tools/music.py                    # every track that's missing
-    python tools/music.py title diner        # just these
-    python ../dunder-quest/tools/make_loops.py assets/audio/music_*.ogg   # then loop the music
+    python tools/music.py title diner        # just these, again
+    python ../dunder-quest/tools/make_loops.py assets/audio/music_*.ogg   # then smooth the seams
 """
 
 from __future__ import annotations
 
+import json
+import os
+import subprocess
 import sys
+import urllib.error
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
-sys.path.insert(0, str(ROOT.parent / "dunder-quest" / "tools"))
 sys.path.insert(0, str(HERE))
 
-import generate_music as base  # noqa: E402
-from common import api  # noqa: E402
+from common import load_env  # noqa: E402
 
 OUT = ROOT / "assets" / "audio"
-base.RAW = HERE / "generated" / "music"
+RAW = HERE / "generated" / "music"
+URL = "https://api.elevenlabs.io/v1/music"
+MODEL = os.environ.get("MUSIC_MODEL", "music_v2_5")
 
 COMMON = (
-    "Instrumental only. No vocals, no lyrics, no speech, no humming, no chanting, no choir, no laugh track. "
-    "Original music for a small comic 2D pixel-art puzzle game about four friends in New York in the early "
-    "1990s. Do not imitate or quote any existing song, television theme, score or game soundtrack; write a "
-    "brand-new melody and a brand-new bass line. Must loop seamlessly, about 60 to 90 seconds. "
+    "Instrumental only, no vocals. Original music for a comic pixel-art game about four friends in New York "
+    "in the early 1990s. Clean, punchy, live-sounding studio band, recorded dry and close. Do not imitate or "
+    "quote any existing song, television theme or soundtrack: a brand-new melody and a brand-new bass line. "
 )
 
+# Each: the brief, and its length in seconds.
 TRACKS = {
-    "title": COMMON + (
-        "A bouncy, cheeky title theme: a funky slapped and popped electric bass carrying an original, playful, "
-        "syncopated riff, finger snaps, a light dry funk drum groove, a bright synth organ, short muted "
-        "electric guitar chops. Wry and confident, like a joke about to land. Major key, medium-fast tempo."
-    ),
-    "apartment": COMMON + (
-        "Light, chatty thinking music for hanging around a friend's apartment: a gentle slapped bass playing "
-        "short little phrases with gaps between them, finger snaps, soft synth marimba, a brushed snare, the "
-        "odd synth bass blip. Sparse and airy so it can sit under reading. Major key, medium tempo."
-    ),
-    "restaurant": COMMON + (
-        "Restless waiting music for standing in the lobby of a crowded restaurant: a nervous walking slap bass "
-        "line, a ticking woodblock like a clock, a muted vibraphone, a soft tom groove, a lounge electric piano "
-        "noodling politely. Impatient, a little exasperated, comic. Minor key, medium tempo."
-    ),
-    "diner": COMMON + (
-        "Easygoing, chatty music for a long breakfast in a corner diner: a warm round slapped bass groove, "
-        "a clean electric piano, finger snaps, a shaker, a soft synth brass stab now and then. Relaxed and "
-        "gossipy, plenty of space. Major key, medium-slow tempo."
-    ),
-    "garage": COMMON + (
-        "Comic suspense music for being lost in a parking garage: a low slapped bass ostinato that keeps "
-        "climbing and falling, a synth pad, a hollow echoing rimshot, a tense pizzicato synth, a little "
-        "detective-style muted synth trumpet. Mysterious and silly, never scary. Minor key, medium tempo."
-    ),
-    "network": COMMON + (
-        "Tense, buttoned-up music for a big meeting in a television network's boardroom: a tight, nervous "
-        "slapped bass figure, a stiff electronic drum groove, a cold synth string pad slowly swelling, a "
-        "synth brass hit at the end of each phrase. Comic pressure that builds without getting loud. Minor "
-        "key, medium tempo."
-    ),
+    "title": (COMMON + (
+        "A cocky, bouncy title theme at 112 BPM in E major. A slapped and popped electric bass plays a "
+        "syncopated, conversational riff full of ghost notes and octave pops, like someone telling a joke "
+        "with great timing. Finger snaps on 2 and 4, a tight dry funk kit with a crisp snare, a bright synth "
+        "organ answering the bass, muted clean guitar chops. Sudden full-band stops where only the bass "
+        "keeps talking, then the band slams back in. Wry, confident and funny."), 60),
+    "apartment": (COMMON + (
+        "Light, sly hanging-out music for a friend's apartment, 96 BPM in G major. A slapped bass plays short "
+        "chatty phrases with gaps between them, like someone thinking out loud. Finger snaps, soft synth "
+        "marimba, a brushed snare, a little synth bass blip at the end of phrases. Sparse and airy so "
+        "dialogue sits on top. Amused, never sleepy."), 70),
+    "diner": (COMMON + (
+        "Easygoing breakfast music for a corner diner, 92 BPM in F major. A warm, round slapped bass groove "
+        "with a cheeky little turnaround, a clean electric piano comping lightly, finger snaps, a shaker, a "
+        "soft synth brass stab now and then like a raised eyebrow. Relaxed and gossipy, with plenty of space "
+        "for talk."), 60),
+    "garage": (COMMON + (
+        "Comic, impatient music for queuing at a strict food counter with a line round the block, 104 BPM in "
+        "D minor. A tense slapped bass ostinato that shuffles forward then stops dead, a ticking hi-hat, "
+        "a muted synth trumpet with a deadpan little motif, pizzicato synth plucks, a single snare crack on "
+        "each stop. Nervous, silly, never scary."), 65),
+    "restaurant": (COMMON + (
+        "Restless waiting music for the lobby of a crowded restaurant on a Saturday night, 100 BPM in A minor. "
+        "A walking slap bass that keeps checking its watch, a woodblock ticking like a clock, a muted "
+        "vibraphone, a lounge electric piano noodling politely, a soft tom groove. Exasperated, comic, "
+        "slightly over-dressed."), 65),
+    "network": (COMMON + (
+        "Buttoned-up boardroom music for pitching a show to a man who never laughs, 108 BPM in C minor. A "
+        "tight, nervous slapped bass figure, a stiff electronic drum groove, a cold synth string pad slowly "
+        "swelling, a synth brass hit at the end of each phrase like a joke that didn't land. Comic pressure "
+        "that builds without getting loud."), 70),
     # Under the prologue's narration, so it stays out of the voice's way.
-    "intro": COMMON + (
-        "A warm storytelling underscore for a narrator introducing a group of friends in the city: a soft "
-        "slapped bass playing a few quiet notes at a time, a mellow electric piano, finger snaps, a gentle "
-        "shaker. Spacious and calm, no sudden loud hits, mostly low and middle register so a speaking voice "
-        "sits clearly on top. Major key, slow to medium tempo."
-    ),
+    "intro": (COMMON + (
+        "A warm storytelling underscore for a narrator introducing a group of friends in the city, 90 BPM in "
+        "B-flat major. A soft slapped bass plays a few playful notes at a time, a mellow electric piano, "
+        "finger snaps, a gentle shaker. Spacious and calm, no sudden loud hits, mostly low and middle register "
+        "so a speaking voice sits clearly on top. Charming, with a little wink."), 70),
 }
+
+
+def key() -> str:
+    found = os.environ.get("ELEVENLABS_API_KEY") or load_env().get("ELEVENLABS_API_KEY", "")
+    if not found:
+        raise SystemExit("ELEVENLABS_API_KEY is missing from .env")
+    return found
 
 
 def target(name: str) -> Path:
     return OUT / f"music_{name}.ogg"
 
 
+def generate(api_key: str, name: str) -> Path:
+    brief, seconds = TRACKS[name]
+    body = json.dumps({"prompt": brief, "model_id": MODEL, "music_length_ms": seconds * 1000,
+                       "force_instrumental": True, "generation_mode": "loop"}).encode("utf-8")
+    request = urllib.request.Request(f"{URL}?output_format=mp3_44100_192", data=body, method="POST", headers={
+        "xi-api-key": api_key, "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=600) as response:
+            audio = response.read()
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(f"HTTP {exc.code}: {exc.read().decode('utf-8', 'replace')[:400]}") from None
+    if len(audio) < 10000 or audio[:1] in (b"{", b"["):
+        raise RuntimeError(f"not audio: {audio[:200]!r}")
+    RAW.mkdir(parents=True, exist_ok=True)
+    path = RAW / f"{name}.mp3"
+    path.write_bytes(audio)
+    return path
+
+
+def to_ogg(source: Path, dest: Path) -> None:
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(source), "-ac", "2", "-ar", "44100",
+                    "-c:a", "libvorbis", "-q:a", "4", str(dest)], check=True)
+    print(f"INSTALLED {dest.name} {dest.stat().st_size // 1024} KiB", flush=True)
+
+
 def main() -> None:
     names = [a for a in sys.argv[1:] if not a.startswith("--")]
     names = names or [n for n in TRACKS if not target(n).exists()]
-    base.TRACKS = TRACKS
-    url, key = api()
+    api_key = key()
     OUT.mkdir(parents=True, exist_ok=True)
+    failed = 0
     with ThreadPoolExecutor(max_workers=4) as pool:
-        futures = {pool.submit(base.generate, url, key, name): name for name in names}
+        futures = {pool.submit(generate, api_key, name): name for name in names}
         for future in as_completed(futures):
             name = futures[future]
             try:
-                base.to_ogg(future.result(), target(name))
+                to_ogg(future.result(), target(name))
             except Exception as exc:  # keep the other tracks going
-                print(f"MUSIC fail {name}: {str(exc).replace(key, '[REDACTED]')}", flush=True)
+                failed += 1
+                print(f"MUSIC fail {name}: {str(exc).replace(api_key, '[REDACTED]')}", flush=True)
+    sys.exit(1 if failed else 0)
 
 
 if __name__ == "__main__":
