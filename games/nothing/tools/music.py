@@ -66,31 +66,34 @@ TRACKS = {
         "marimba, a brushed snare, a little synth bass blip at the end of phrases. Sparse and airy so "
         "dialogue sits on top. Amused, never sleepy."), 70),
     "diner": (COMMON + (
-        "Easygoing breakfast music for a corner diner, 92 BPM in F major. A warm, round slapped bass groove "
-        "with a cheeky little turnaround, a clean electric piano comping lightly, finger snaps, a shaker, a "
-        "soft synth brass stab now and then like a raised eyebrow. Relaxed and gossipy, with plenty of space "
-        "for talk."), 60),
+        "Upbeat, cheeky breakfast-rush music for a busy corner diner, 116 BPM in F major. A punchy slapped and "
+        "popped bass riff with attitude, a tight funk kit with a snappy snare, finger snaps, a bright synth "
+        "organ answering the bass, short stabby synth brass hits like a raised eyebrow, muted guitar chops. "
+        "Busy, gossipy and comic, with full-band stops where the bass gets the last word. Not smooth jazz, "
+        "not lounge, not relaxed: it should make you want to order fast."), 60),
     "garage": (COMMON + (
         "Comic, impatient music for queuing at a strict food counter with a line round the block, 104 BPM in "
         "D minor. A tense slapped bass ostinato that shuffles forward then stops dead, a ticking hi-hat, "
         "a muted synth trumpet with a deadpan little motif, pizzicato synth plucks, a single snare crack on "
         "each stop. Nervous, silly, never scary."), 65),
     "restaurant": (COMMON + (
-        "Restless waiting music for the lobby of a crowded restaurant on a Saturday night, 100 BPM in A minor. "
-        "A walking slap bass that keeps checking its watch, a woodblock ticking like a clock, a muted "
-        "vibraphone, a lounge electric piano noodling politely, a soft tom groove. Exasperated, comic, "
-        "slightly over-dressed."), 65),
+        "Restless, impatient waiting music for the packed lobby of a restaurant on a Saturday night, 112 BPM in "
+        "A minor. A pushy walking slap bass that keeps checking its watch, a woodblock ticking like a clock, a "
+        "tight snare with a cross-stick groove, staccato vibraphone stabs, a clavinet arguing with the bass. "
+        "Exasperated and comic, with sudden stops where everyone glares at the door. Not smooth jazz, not lounge."), 65),
     "network": (COMMON + (
         "Buttoned-up boardroom music for pitching a show to a man who never laughs, 108 BPM in C minor. A "
         "tight, nervous slapped bass figure, a stiff electronic drum groove, a cold synth string pad slowly "
         "swelling, a synth brass hit at the end of each phrase like a joke that didn't land. Comic pressure "
         "that builds without getting loud."), 70),
     # Under the prologue's narration, so it stays out of the voice's way.
+    # Under the prologue's narration: it sits lower to leave room for the voice, but it still moves.
     "intro": (COMMON + (
-        "A warm storytelling underscore for a narrator introducing a group of friends in the city, 90 BPM in "
-        "B-flat major. A soft slapped bass plays a few playful notes at a time, a mellow electric piano, "
-        "finger snaps, a gentle shaker. Spacious and calm, no sudden loud hits, mostly low and middle register "
-        "so a speaking voice sits clearly on top. Charming, with a little wink."), 70),
+        "A sly, bouncy storytelling underscore for a narrator introducing a group of friends in the city, 100 BPM "
+        "in B-flat major. A slapped bass plays short playful riffs with gaps for the voice, a clean electric piano "
+        "comping in short chords, finger snaps, a crisp shaker, a light funk kit. Mostly low and middle register "
+        "so a speaking voice sits on top, but with a wink and a groove you can nod to. Not smooth jazz, not "
+        "lounge, not ambient."), 70),
 }
 
 
