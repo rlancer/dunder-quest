@@ -11,8 +11,9 @@ It calls ElevenLabs' own music API (POST /v1/music) with its newest model,
 track at full volume, but not always (some end in a short tail), so the
 seams are still smoothed with make_loops.py afterwards. OpenRouter
 carries ElevenLabs' voices but not its music, so this needs
-ELEVENLABS_API_KEY in .env (in a cloud session for this repo holds it as a network secret, and `ELEVENLABS_API_KEY=proxy-injected` is
-enough). The key is never printed.
+ELEVENLABS_API_KEY in .env. In a cloud session for this repo the
+environment holds it as a network secret, and
+`ELEVENLABS_API_KEY=proxy-injected` is enough. The key is never printed.
 
     python tools/music.py                    # every track that's missing
     python tools/music.py title diner        # just these, again
