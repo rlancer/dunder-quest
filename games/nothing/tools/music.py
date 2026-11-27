@@ -108,10 +108,10 @@ def target(name: str) -> Path:
     return OUT / f"music_{name}.ogg"
 
 
-def generate(api_key: str, name: str) -> Path:
+def generate(api_key: str, name: str, mode: str = "loop") -> Path:
     brief, seconds = TRACKS[name]
     body = json.dumps({"prompt": brief, "model_id": MODEL, "music_length_ms": seconds * 1000,
-                       "force_instrumental": True, "generation_mode": "loop"}).encode("utf-8")
+                       "force_instrumental": True, "generation_mode": mode}).encode("utf-8")
     request = urllib.request.Request(f"{URL}?output_format=mp3_44100_192", data=body, method="POST", headers={
         "xi-api-key": api_key, "Content-Type": "application/json"})
     try:

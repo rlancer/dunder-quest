@@ -58,6 +58,7 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 | `tools/scenery.py` | The backdrops and the cast's portraits, generated through OpenRouter (the portraits are one set: look at them together) |
 | `tools/music.py` | The music cues, with ElevenLabs Music (`music_v2_5`, through ElevenLabs' own API: it needs `ELEVENLABS_API_KEY` and a paid ElevenLabs plan); smooth the seams with `../dunder-quest/tools/make_loops.py` |
 | `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` may carry directions in square brackets (`[panicking]`), which are acted, not read |
+| `tools/stings.py` | The slap-bass stings between scenes (`assets/audio/sting_<n>.ogg`): original solo-bass licks with mouth-pop percussion, one ElevenLabs Music generation each, cut at the end of the lick. The game plays a different one each time |
 | `tools/sfx.py` | The sound effects, synthesized with numpy, the slap-bass sting included |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window; in a cloud session, under `xvfb-run`) |
 | `tools/trailer_audio.py`, `tools/make_trailer.py` | The trailer's music cue (generated) and the trailer itself, from `trailer/capture.sh`'s captures of `tests/trailer_run.tscn` |
