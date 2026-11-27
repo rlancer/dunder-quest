@@ -6,7 +6,7 @@
 A sitcom's worth: cards slapped on a slip and pulled off, a slip sent over
 the counter, applause, a door flung open by somebody who never knocks, and
 a slapped bass between the scenes (an original riff, made here a note at a
-time).
+time: the game plays it only when there are no stings from tools/stings.py).
 """
 
 from __future__ import annotations

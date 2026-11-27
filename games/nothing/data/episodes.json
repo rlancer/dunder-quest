@@ -63,17 +63,17 @@
       "place": "diner",
       "music": "diner",
       "intro": [
-        {"who": "narrator", "text": "Vic's Diner. Same booth, same order, every day for six years. Then Vic put the counter on the internet."},
-        {"who": "lenny", "text": "A counter you talk to through a computer? What do you say? How do you say it?", "say": "[bewildered] A counter you talk to through a computer? What do you say? How do you say it?"},
-        {"who": "stu", "text": "You send a request: a method, what you want done, and a path, what to. It sends back a response with a status. That's HTTP."},
-        {"who": "dana", "text": "And you're the new kid at the counter. Go on. Order something."}
+        {"who": "narrator", "text": "Vic's Diner. Lenny has ordered the tuna on rye here every day for six years. This morning, Vic put the counter on the internet."},
+        {"who": "lenny", "text": "I talk to the counter through a computer? What do I say? Do I say please? Does it know me?", "say": "[bewildered] I talk to the counter through a computer? What do I say? Do I say please? Does it know me?"},
+        {"who": "stu", "text": "You send a request: a method, what to do, and a path, what to. It answers with a status. That's HTTP. And no, it doesn't know you."},
+        {"who": "dana", "text": "The new kid makes the slips. Lenny once spent forty minutes arguing with a vending machine. He lost."}
       ],
       "scenes": [
         {
           "id": "1a",
           "card": "request",
           "counter": "vics",
-          "brief": {"who": "lenny", "text": "Before I order anything, I want to see the menu. Ask the counter for it."},
+          "brief": {"who": "lenny", "text": "Ask the counter for the menu. The whole menu. I'm not getting the tuna today. I'm a different man.", "say": "[determined] Ask the counter for the menu. The whole menu. I'm not getting the tuna today. I'm a different man."},
           "data": {
             "menu": ["coffee", "toast", "tuna on rye", "cherry pie"],
             "orders": [{"id": 7, "item": "tuna on rye", "table": 4}, {"id": 8, "item": "coffee", "table": 2}]
@@ -81,13 +81,14 @@
           "cards": ["GET", "POST", "/menu", "/orders"],
           "solution": ["GET", "/menu"],
           "goal": {"status": 200, "path": "/menu"},
-          "hint": "GET means \"give me\". The path says what: the menu is at /menu."
+          "hint": "GET means \"give me\". The path says what: the menu is at /menu.",
+          "after": {"who": "lenny", "text": "Coffee. Toast. Tuna on rye. Cherry pie. Too many options. I'm going to need a minute.", "say": "[overwhelmed] Coffee. Toast. Tuna on rye. Cherry pie. Too many options. I'm going to need a minute."}
         },
         {
           "id": "1b",
           "card": "path",
           "counter": "vics",
-          "brief": {"who": "dana", "text": "What did table 4 have? It's order number 7. Just that one, not the lot."},
+          "brief": {"who": "dana", "text": "What did table 4 order? It's order number 7. Just that one. I don't need the life story of every sandwich in the place."},
           "data": {
             "menu": ["coffee", "toast", "tuna on rye", "cherry pie"],
             "orders": [{"id": 7, "item": "tuna on rye", "table": 4}, {"id": 8, "item": "coffee", "table": 2}]
@@ -95,13 +96,14 @@
           "cards": ["GET", "/orders", "/orders/7", "/orders/9"],
           "solution": ["GET", "/orders/7"],
           "goal": {"status": 200, "path": "/orders/7"},
-          "hint": "One order has a path of its own: the collection's path, then its id."
+          "hint": "One order has a path of its own: the collection's path, then its id.",
+          "after": {"who": "dana", "text": "Tuna on rye, table 4. That's your table, Lenny. You ordered the tuna before you sat down.", "say": "[deadpan] Tuna on rye, table 4. That's your table, Lenny. You ordered the tuna before you sat down."}
         },
         {
           "id": "1c",
           "card": "post",
           "counter": "vics",
-          "brief": {"who": "stu", "text": "Lenny wants a toast at table 4. Put the order in, as JSON."},
+          "brief": {"who": "stu", "text": "Lenny wants a toast at table 4. Put the order in, as JSON, before he loses his nerve."},
           "data": {
             "menu": ["coffee", "toast", "tuna on rye", "cherry pie"],
             "orders": [{"id": 7, "item": "tuna on rye", "table": 4}, {"id": 8, "item": "coffee", "table": 2}]
@@ -109,13 +111,14 @@
           "cards": ["GET", "POST", "/orders", "/orders/7", "Content-Type: application/json", "{\"item\":\"toast\",\"table\":4}"],
           "solution": ["POST", "/orders", "Content-Type: application/json", "{\"item\":\"toast\",\"table\":4}"],
           "goal": {"status": 201, "state": {"orders": [{"id": 7, "item": "tuna on rye", "table": 4}, {"id": 8, "item": "coffee", "table": 2}, {"id": 9, "item": "toast", "table": 4}]}},
-          "hint": "POST to the collection makes a new order in it. The body says what, and Content-Type says it's JSON."
+          "hint": "POST to the collection makes a new order in it. The body says what, and Content-Type says it's JSON.",
+          "after": {"who": "lenny", "text": "Order 9! Toast! Look at me! Six years of tuna, and now I'm a toast guy!", "say": "[giddy] Order nine! Toast! Look at me! Six years of tuna, and now I'm a toast guy!"}
         },
         {
           "id": "1d",
           "card": "options",
           "counter": "vics",
-          "brief": {"who": "zelnick", "text": "I don't want to order. I want to know what a man's allowed to DO with order 7. All my options!"},
+          "brief": {"who": "zelnick", "text": "I don't want to order. I want to know what a man is allowed to DO to order 7. All my options!", "say": "[bursting in] I don't want to order. I want to know what a man is allowed to DO to order seven. All my options!"},
           "data": {
             "menu": ["coffee", "toast", "tuna on rye", "cherry pie"],
             "orders": [{"id": 7, "item": "tuna on rye", "table": 4}, {"id": 8, "item": "coffee", "table": 2}, {"id": 9, "item": "toast", "table": 4}]
@@ -130,7 +133,10 @@
       "outro": [
         {"who": "stu", "text": "200, 201, 204. Anything starting with a 2 means it worked."},
         {"who": "lenny", "text": "And anything starting with a 4?"},
-        {"who": "stu", "text": "Means it's your fault."}
+        {"who": "stu", "text": "Means it's your fault."},
+        {"who": "lenny", "text": "And a 5?"},
+        {"who": "stu", "text": "Their fault. Good luck getting them to admit it."},
+        {"who": "lenny", "text": "I'm going to live in the fives.", "say": "[wistful] I'm going to live in the fives."}
       ]
     },
     {
@@ -140,17 +146,17 @@
       "place": "counter",
       "music": "garage",
       "intro": [
-        {"who": "narrator", "text": "There is a broth counter on 55th Street with a line round the block, and a man behind it with rules."},
+        {"who": "narrator", "text": "A broth counter on 55th Street. A line round the block, a man behind it with rules, and no chairs. Chairs encourage chat."},
         {"who": "dana", "text": "Know what you want. Say it in JSON. Step up, don't chat. Get one thing wrong and he says one word."},
         {"who": "kasimir", "text": "Next!", "say": "[barking, stern] Next!"},
-        {"who": "stu", "text": "His counter's an API, and every rule is a header or the body. Get the format exactly right, or you're out of the line."}
+        {"who": "stu", "text": "His counter's an API. Every rule is a header or the body. Get one wrong, and you're back at the end of the line with the tourists."}
       ],
       "scenes": [
         {
           "id": "2a",
           "card": "headers",
           "counter": "broth",
-          "brief": {"who": "dana", "text": "First, what's he got today? Lenny swears you have to say you'll take it as HTML. Lenny's wrong."},
+          "brief": {"who": "dana", "text": "First, what's he got today? Lenny swears you have to say you'll take it as HTML. Lenny also swears he went to Yale."},
           "data": {
             "broths": ["mulligatawny", "lobster bisque", "split pea", "turkey chili"],
             "orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}]
@@ -158,13 +164,14 @@
           "cards": ["GET", "/broths", "Accept: text/html", "Accept: application/json"],
           "solution": ["GET", "/broths"],
           "goal": {"status": 200, "path": "/broths"},
-          "hint": "Accept is optional. Leave it off, or ask for something the counter has: it only does JSON."
+          "hint": "Accept is optional. Leave it off, or ask for something the counter has: it only does JSON.",
+          "after": {"who": "lenny", "text": "Fine, no HTML. But I did go to Yale. For the tour.", "say": "[defensive] Fine, no HTML. But I did go to Yale. [beat] For the tour."}
         },
         {
           "id": "2b",
           "card": "contenttype",
           "counter": "broth",
-          "brief": {"who": "lenny", "text": "The mulligatawny, a cup. And you tell him it's JSON, or he won't even look at it."},
+          "brief": {"who": "lenny", "text": "The mulligatawny, a cup. And tell him the body's JSON. I'm not getting thrown out in front of the tourists again.", "say": "[nervous] The mulligatawny, a cup. And tell him the body's JSON. I'm not getting thrown out in front of the tourists again."},
           "data": {
             "broths": ["mulligatawny", "lobster bisque", "split pea", "turkey chili"],
             "orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}]
@@ -172,13 +179,14 @@
           "cards": ["POST", "/orders", "Content-Type: text/plain", "Content-Type: application/json", "{\"broth\":\"mulligatawny\",\"size\":\"cup\"}"],
           "solution": ["POST", "/orders", "Content-Type: application/json", "{\"broth\":\"mulligatawny\",\"size\":\"cup\"}"],
           "goal": {"status": 201, "state": {"orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}, {"id": 31, "broth": "mulligatawny", "size": "cup"}]}},
-          "hint": "The body is JSON, so Content-Type says application/json. Anything else gets a 415."
+          "hint": "The body is JSON, so Content-Type says application/json. Anything else gets a 415.",
+          "after": {"who": "lenny", "text": "201! He took it! He didn't look at me, but he took it!", "say": "[whispering, thrilled] Two oh one! He took it! He didn't look at me, but he took it!"}
         },
         {
           "id": "2c",
           "card": "fields",
           "counter": "broth",
-          "brief": {"who": "dana", "text": "My turn. Lobster bisque, a bowl. Every field he asks for, and not one he didn't."},
+          "brief": {"who": "dana", "text": "My turn. Lobster bisque, a bowl. Every field he asks for, and not one he didn't. Lenny asked for bread once. We don't talk about it."},
           "data": {
             "broths": ["mulligatawny", "lobster bisque", "split pea", "turkey chili"],
             "orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}]
@@ -192,7 +200,7 @@
           "id": "2d",
           "card": "json",
           "counter": "broth",
-          "brief": {"who": "lenny", "text": "Zelnick wrote out three slips for a cup of lentil. Only one of them is real JSON."},
+          "brief": {"who": "zelnick", "text": "I wrote three slips for a cup of lentil! Only one of them is real JSON. I don't know which. That's the thrill!", "say": "[breathless, excited] I wrote three slips for a cup of lentil! Only one of them is real JSON. I don't know which. That's the thrill!"},
           "data": {
             "broths": ["mulligatawny", "lobster bisque", "split pea", "turkey chili"],
             "orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}]
@@ -200,7 +208,8 @@
           "cards": ["POST", "/orders", "Content-Type: application/json", "{broth:\"lentil\",size:\"cup\"}", "{'broth':'lentil','size':'cup'}", "{\"broth\":\"lentil\",\"size\":\"cup\"}"],
           "solution": ["POST", "/orders", "Content-Type: application/json", "{\"broth\":\"lentil\",\"size\":\"cup\"}"],
           "goal": {"status": 201, "state": {"orders": [{"id": 30, "broth": "turkey chili", "size": "bowl"}, {"id": 31, "broth": "lentil", "size": "cup"}]}},
-          "hint": "In JSON every key is a string, and strings take double quotes. Not single ones, not none."
+          "hint": "In JSON every key is a string, and strings take double quotes. Not single ones, not none.",
+          "after": {"who": "zelnick", "text": "Double quotes! Every key! I've been single-quoting my whole life like an animal!", "say": "[shocked] Double quotes! Every key! I've been single-quoting my whole life like an animal!"}
         }
       ],
       "outro": [
@@ -216,16 +225,16 @@
       "place": "restaurant",
       "music": "restaurant",
       "intro": [
-        {"who": "narrator", "text": "Saturday night at the Jade Lantern. Lenny booked a table. Then, to be safe, he booked another one."},
-        {"who": "lenny", "text": "POST makes one! So I posted twice! Twice as safe!"},
-        {"who": "stu", "text": "POST makes a new one every time. To change one you've got, PUT or PATCH it. To get rid of one, DELETE."}
+        {"who": "narrator", "text": "Saturday night at the Jade Lantern. Lenny booked a table. Then, to be safe, he booked another one. Then he lay awake wondering if they knew."},
+        {"who": "lenny", "text": "POST makes one! So I posted twice! If one table falls through, I've got a backup table!", "say": "[proud] POST makes one! So I posted twice! If one table falls through, I've got a backup table!"},
+        {"who": "stu", "text": "POST makes a new one every time. To change one you've got, PUT or PATCH it. To get rid of one, DELETE. To end up with two, be you."}
       ],
       "scenes": [
         {
           "id": "3a",
           "card": "put",
           "counter": "jade",
-          "brief": {"who": "dana", "text": "Make Kaplan's table, number 3, a table for four. Don't book a third one."},
+          "brief": {"who": "dana", "text": "Make Kaplan's table, number 3, a table for four. Don't book a third one. He'll want to keep it for emergencies."},
           "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 2}, {"id": 4, "name": "Kaplan", "size": 2}]},
           "cards": ["POST", "PUT", "/tables", "/tables/3", "Content-Type: application/json", "{\"size\":4}", "{\"name\":\"Kaplan\",\"size\":4}"],
           "solution": ["PUT", "/tables/3", "Content-Type: application/json", "{\"name\":\"Kaplan\",\"size\":4}"],
@@ -236,7 +245,7 @@
           "id": "3b",
           "card": "patch",
           "counter": "jade",
-          "brief": {"who": "stu", "text": "Dana's coming, and Zelnick. Make table 3 a six, and change nothing else."},
+          "brief": {"who": "stu", "text": "Zelnick's bringing a date, and she's bringing a date. Make table 3 a six, and change nothing else."},
           "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 4}, {"id": 4, "name": "Kaplan", "size": 2}]},
           "cards": ["PUT", "PATCH", "/tables", "/tables/3", "Content-Type: application/json", "{\"size\":6}"],
           "solution": ["PATCH", "/tables/3", "Content-Type: application/json", "{\"size\":6}"],
@@ -247,18 +256,19 @@
           "id": "3c",
           "card": "delete",
           "counter": "jade",
-          "brief": {"who": "lenny", "text": "Table 4's the spare. Get rid of it before they charge me for it."},
+          "brief": {"who": "lenny", "text": "Table 4's the spare. Get rid of it before they charge me for it. Quietly. The man at the door is looking at me.", "say": "[hushed, anxious] Table four's the spare. Get rid of it before they charge me for it. Quietly. The man at the door is looking at me."},
           "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 6}, {"id": 4, "name": "Kaplan", "size": 2}]},
           "cards": ["GET", "DELETE", "/tables", "/tables/4"],
           "solution": ["DELETE", "/tables/4"],
           "goal": {"status": 204, "state": {"tables": [{"id": 3, "name": "Kaplan", "size": 6}]}},
-          "hint": "DELETE goes to the one thing you want gone, at its own path."
+          "hint": "DELETE goes to the one thing you want gone, at its own path.",
+          "after": {"who": "lenny", "text": "204! No Content! No charge! It's like I was never here!", "say": "[relieved] Two oh four! No content! No charge! It's like I was never here!"}
         },
         {
           "id": "3d",
           "card": "head",
           "counter": "jade",
-          "brief": {"who": "dana", "text": "Is table 3 still ours? Don't read me the whole booking. Yes or no."},
+          "brief": {"who": "dana", "text": "Is table 3 still ours? Don't read me the whole booking. I've heard enough about this booking for one lifetime. Yes or no."},
           "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 6}]},
           "cards": ["GET", "HEAD", "/tables/3", "/tables/4"],
           "solution": ["HEAD", "/tables/3"],
@@ -278,57 +288,62 @@
       "place": "post",
       "music": "apartment",
       "intro": [
-        {"who": "narrator", "text": "The post office on 81st Street, where Vernon has worked for eleven years and never once changed his mind."},
+        {"who": "narrator", "text": "The post office on 81st Street, where Vernon has worked for eleven years and never once changed his mind, or his cardigan."},
         {"who": "vernon", "text": "Every parcel has a version, Lerner. Ask if it's changed, I'll tell you. Change it without saying which version you saw, and I won't."},
-        {"who": "stu", "text": "That's an ETag: a version stamp on a thing. You can ask for it only if it's changed. Or change it only if it hasn't."}
+        {"who": "stu", "text": "That's an ETag: a version stamp on a thing. You can ask for it only if it's changed. Or change it only if it hasn't."},
+        {"who": "dana", "text": "He's waited eleven years for somebody to ask him that. Look at him. He's glowing."}
       ],
       "scenes": [
         {
           "id": "4a",
           "card": "etag",
           "counter": "post",
-          "brief": {"who": "dana", "text": "Has my mail changed since I last looked? I saw version 3. If not, Vernon needn't read it all out."},
+          "brief": {"who": "dana", "text": "Has my mail changed since I last looked? I saw version 3. If not, Vernon needn't read it all out. He does voices."},
           "data": {"mail": [{"id": 12, "to": "Dana Wexler", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}]},
           "versions": {"mail": 3, "mail/12": 2, "mail/13": 3},
           "cards": ["GET", "/mail", "If-None-Match: \"v2\"", "If-None-Match: \"v3\""],
           "solution": ["GET", "/mail", "If-None-Match: \"v3\""],
           "goal": {"status": 304, "path": "/mail"},
-          "hint": "If-None-Match with the version you saw: if it's still that one, the answer is 304, and no body."
+          "hint": "If-None-Match with the version you saw: if it's still that one, the answer is 304, and no body.",
+          "after": {"who": "vernon", "text": "304. Not Modified. Nothing new for you, Wexler. As usual.", "say": "[smug, savouring it] Three oh four. Not modified. Nothing new for you, Wexler. [beat] As usual."}
         },
         {
           "id": "4b",
           "card": "accepted",
           "counter": "post",
-          "brief": {"who": "lenny", "text": "Send my resume to Mr. Pratt at the network. Vernon says it'll get there when it gets there."},
+          "brief": {"who": "lenny", "text": "Send my resume to Mr. Pratt at the network. It says I'm fluent in HTTP. I'm conversational."},
           "data": {"mail": [{"id": 12, "to": "Dana Wexler", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}]},
           "versions": {"mail": 3, "mail/12": 2, "mail/13": 3},
           "cards": ["GET", "POST", "/mail", "/mail/13", "Content-Type: application/json", "{\"to\":\"Mr. Pratt\",\"what\":\"a resume\"}"],
           "solution": ["POST", "/mail", "Content-Type: application/json", "{\"to\":\"Mr. Pratt\",\"what\":\"a resume\"}"],
           "goal": {"status": 202, "state": {"mail": [{"id": 12, "to": "Dana Wexler", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}, {"id": 14, "to": "Mr. Pratt", "what": "a resume"}]}},
-          "hint": "A new parcel is a POST to the collection, with the body as JSON."
+          "hint": "A new parcel is a POST to the collection, with the body as JSON.",
+          "after": {"who": "vernon", "text": "202. Accepted. It'll get there when it gets there, Kaplan. Maybe Tuesday. Maybe never.", "say": "[smug] Two oh two. Accepted. It'll get there when it gets there, Kaplan. Maybe Tuesday. [beat] Maybe never."}
         },
         {
           "id": "4c",
           "card": "ifmatch",
           "counter": "post",
-          "brief": {"who": "stu", "text": "Send Dana's parcel to me instead. Vernon wants the version you saw: v2, on the board."},
+          "brief": {"who": "stu", "text": "That parcel of Dana's is my birthday present. She'll keep it out of spite. Send it to me. Vernon wants the version: v2, on the board.", "say": "That parcel of Dana's is my birthday present. She'll keep it out of spite. Send it to me. Vernon wants the version: v two, on the board."},
           "data": {"mail": [{"id": 12, "to": "Dana Wexler", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}]},
           "versions": {"mail": 3, "mail/12": 2, "mail/13": 3},
           "cards": ["PATCH", "/mail/12", "Content-Type: application/json", "If-Match: \"v1\"", "If-Match: \"v2\"", "{\"to\":\"Stu Lerner\"}"],
           "solution": ["PATCH", "/mail/12", "Content-Type: application/json", "If-Match: \"v2\"", "{\"to\":\"Stu Lerner\"}"],
           "goal": {"status": 200, "state": {"mail": [{"id": 12, "to": "Stu Lerner", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}]}},
-          "hint": "If-Match with the version on the board. Leave it off here and it's 428; an old one, 412."
+          "hint": "If-Match with the version on the board. Leave it off here and it's 428; an old one, 412.",
+          "after": {"who": "dana", "text": "That was a present, Stu. For my new boyfriend. Enjoy the cufflinks.", "say": "[icy] That was a present, Stu. For my new boyfriend. [beat] Enjoy the cufflinks."}
         },
         {
           "id": "4d",
           "counter": "post",
-          "brief": {"who": "vernon", "text": "Kaplan wants his summons gone. Fine. Tell me which version, Kaplan. It's on the board."},
+          "brief": {"who": "vernon", "text": "Kaplan wants his jury summons gone. Fine. Tell me which version, Kaplan. It's on the board. I'll wait. They pay me to wait.", "say": "[slow, smug] Kaplan wants his jury summons gone. Fine. Tell me which version, Kaplan. It's on the board. I'll wait. They pay me to wait."},
           "data": {"mail": [{"id": 12, "to": "Stu Lerner", "what": "a parcel"}, {"id": 13, "to": "Lenny Kaplan", "what": "a summons"}]},
           "versions": {"mail": 4, "mail/12": 3, "mail/13": 3},
           "cards": ["DELETE", "PATCH", "/mail", "/mail/13", "If-Match: \"v1\"", "If-Match: \"v3\""],
           "solution": ["DELETE", "/mail/13", "If-Match: \"v3\""],
           "goal": {"status": 204, "state": {"mail": [{"id": 12, "to": "Stu Lerner", "what": "a parcel"}]}},
-          "hint": "DELETE the summons at its own path, with If-Match and the version the board shows for it."
+          "hint": "DELETE the summons at its own path, with If-Match and the version the board shows for it.",
+          "after": {"who": "lenny", "text": "Gone! No jury duty! Justice will have to manage without me!", "say": "[triumphant] Gone! No jury duty! Justice will have to manage without me!"}
         }
       ],
       "outro": [
@@ -353,7 +368,7 @@
           "id": "5a",
           "card": "auth",
           "counter": "network",
-          "brief": {"who": "stu", "text": "Get the list of pilots. The door wants a token, and mine is stu-1990."},
+          "brief": {"who": "stu", "text": "Get the list of pilots. The door wants a token. Mine is stu-1990. The year I peaked.", "say": "Get the list of pilots. The door wants a token. Mine is stu dash nineteen ninety. [dry] The year I peaked."},
           "data": {"pilots": [{"id": 1, "title": "Untitled Lerner Project", "status": "draft"}]},
           "versions": {"pilots": 1, "pilots/1": 1},
           "cards": ["GET", "/pilots", "Authorization: Bearer zelnick", "Authorization: Bearer stu-1990"],
@@ -365,13 +380,14 @@
           "id": "5b",
           "card": "forbidden",
           "counter": "network",
-          "brief": {"who": "lenny", "text": "Send in a second pilot, mine! My pass got me in the building. How far can it get me?"},
+          "brief": {"who": "lenny", "text": "Send in my pilot, \"Kaplan!\" My pass got me into the building. How far can it get me?", "say": "[eager] Send in my pilot, Kaplan! My pass got me into the building. How far can it get me?"},
           "data": {"pilots": [{"id": 1, "title": "Untitled Lerner Project", "status": "draft"}]},
           "versions": {"pilots": 1, "pilots/1": 1},
           "cards": ["POST", "/pilots", "Authorization: Bearer lenny-1990", "Authorization: Bearer stu-1990", "Content-Type: application/json", "{\"title\":\"Kaplan!\",\"status\":\"draft\"}"],
           "solution": ["POST", "/pilots", "Authorization: Bearer stu-1990", "Content-Type: application/json", "{\"title\":\"Kaplan!\",\"status\":\"draft\"}"],
           "goal": {"status": 201, "state": {"pilots": [{"id": 1, "title": "Untitled Lerner Project", "status": "draft"}, {"id": 2, "title": "Kaplan!", "status": "draft"}]}},
-          "hint": "Lenny's token can read, not write: 403. Stu's can do both."
+          "hint": "Lenny's token can read, not write: 403. Stu's can do both.",
+          "after": {"who": "lenny", "text": "In under your name? Fine. But the exclamation mark stays.", "say": "[sulking] In under your name? Fine. But the exclamation mark stays."}
         },
         {
           "id": "5c",
@@ -387,7 +403,7 @@
         {
           "id": "5d",
           "counter": "network",
-          "brief": {"who": "pratt", "text": "If I laugh, it's picked up. Set pilot 1 to \"picked up\". Your retitle made it version 2."},
+          "brief": {"who": "pratt", "text": "Set pilot 1 to \"picked up\". Your retitle made it version 2. If I laugh, I'll sign it. I won't laugh.", "say": "[flat, stern] Set pilot one to picked up. Your retitle made it version two. If I laugh, I'll sign it. [beat] I won't laugh."},
           "data": {"pilots": [{"id": 1, "title": "Nothing Happens", "status": "draft"}, {"id": 2, "title": "Kaplan!", "status": "draft"}]},
           "versions": {"pilots": 3, "pilots/1": 2, "pilots/2": 1},
           "cards": ["PATCH", "/pilots/1", "/pilots/2", "Authorization: Bearer lenny-1990", "Authorization: Bearer stu-1990", "Content-Type: application/json", "If-Match: \"v1\"", "If-Match: \"v2\"", "{\"status\":\"picked up\"}"],
@@ -398,7 +414,7 @@
       ],
       "outro": [
         {"who": "pratt", "text": "Ha.", "say": "[a single, dry, surprised laugh] Ha."},
-        {"who": "narrator", "text": "Mr. Pratt laughed. Once. The network picked up six episodes."},
+        {"who": "narrator", "text": "Mr. Pratt laughed. Once. A paramedic was called, to be safe. The network picked up six episodes."},
         {"who": "lenny", "text": "Six episodes! Of nothing! We're geniuses!", "say": "[ecstatic] Six episodes! Of nothing! We're geniuses!"},
         {"who": "stu", "text": "Same time next week, kid. Bring the cards."}
       ]
@@ -407,55 +423,56 @@
   "cards": {
     "request": {
       "title": "Requests",
-      "text": "You ever notice the whole internet is people asking for things? A request is a method, what you want, and a path, what to. GET means give me. And it always answers with a number. 200 means OK.",
+      "text": "The whole internet is people asking for things. A request is a method, what you want, and a path, what to. GET means give me. It answers: 200, OK. Like a waiter, but it never sighs.",
       "demo": {"counter": "vics", "data": {"menu": ["coffee", "toast"]}, "request": ["GET", "/menu"]},
       "out": "HTTP/1.1 200 OK"
     },
     "path": {
       "title": "Paths and ids",
-      "text": "/orders is all the orders. /orders/7 is one of them, number 7. Ask for number 9 when there isn't one? 404 Not Found. The most famous number on the internet, and it means nothing's there.",
+      "text": "/orders is all the orders. /orders/7 is one of them, number 7. Ask for number 9 when there isn't one? 404 Not Found. The most famous number on the internet, and it means nothing. I relate.",
+      "say": "Slash orders is all the orders. Slash orders slash seven is one of them, number seven. Ask for number nine when there isn't one? Four oh four, Not Found. The most famous number on the internet, and it means nothing. [beat] I relate.",
       "demo": {"counter": "vics", "data": {"orders": [{"id": 7, "item": "toast", "table": 4}]}, "request": ["GET", "/orders/9"]},
       "out": "HTTP/1.1 404 Not Found"
     },
     "post": {
       "title": "POST",
-      "text": "POST to a collection makes a new one in it. You send a body, and a Content-Type header that says what the body is. It says 201 Created, and Location: where your new thing lives.",
+      "text": "POST to a collection makes a new one in it. Send a body, and a Content-Type that says what it is. It says 201 Created, and Location: where it lives. More than Dana ever told me.",
       "demo": {"counter": "vics", "data": {"orders": [{"id": 7, "item": "toast", "table": 4}]}, "request": ["POST", "/orders", "Content-Type: application/json", "{\"item\":\"pie\",\"table\":2}"]},
       "out": "HTTP/1.1 201 Created"
     },
     "options": {
       "title": "405 and OPTIONS",
-      "text": "Ask a path for something it doesn't do and it says 405, and tells you what it does do, in Allow. Or just ask first, with OPTIONS. It's the only polite method.",
+      "text": "Ask a path for something it doesn't do and it says 405, and tells you what it does do, in Allow. Or ask first, with OPTIONS. The only polite method. So naturally nobody uses it.",
       "demo": {"counter": "vics", "data": {"menu": ["coffee", "toast"]}, "request": ["POST", "/menu"]},
       "out": "HTTP/1.1 405 Method Not Allowed"
     },
     "headers": {
       "title": "Headers",
-      "text": "Under the first line go the headers. Name, colon, value. Accept says what you'll take back. Ask for something the counter hasn't got and it's 406 Not Acceptable. Leave it off, and you take what it's got.",
+      "text": "Under the first line go the headers. Name, colon, value. Accept says what you'll take back. Ask for what it hasn't got: 406 Not Acceptable. Leave it off, you get what's going. Like at my mother's.",
       "demo": {"counter": "broth", "data": {"broths": ["split pea"]}, "request": ["GET", "/broths", "Accept: text/html"]},
       "out": "HTTP/1.1 406 Not Acceptable"
     },
     "contenttype": {
       "title": "Content-Type",
-      "text": "Accept is what you want back. Content-Type is what you're sending. Send JSON and call it text? 415 Unsupported Media Type. You can't call soup a sandwich.",
+      "text": "Accept is what you want back. Content-Type is what you're sending. Send JSON and call it text? 415 Unsupported Media Type. You can't hand a man soup and call it a sandwich.",
       "demo": {"counter": "broth", "data": {"orders": []}, "request": ["POST", "/orders", "Content-Type: text/plain", "{\"broth\":\"split pea\",\"size\":\"cup\"}"]},
       "out": "HTTP/1.1 415 Unsupported Media Type"
     },
     "fields": {
       "title": "400 Bad Request",
-      "text": "The counter read it, and it's wrong. A field missing, or one it never asked for. 400 Bad Request. Read the body it sends back: it usually says what.",
+      "text": "The counter read it, and it's wrong. A field missing, or one it never asked for. 400 Bad Request. And the body tells you exactly what you did. Which is more than people do.",
       "demo": {"counter": "vics", "data": {"orders": []}, "request": ["POST", "/orders", "Content-Type: application/json", "{\"item\":\"pie\"}"]},
       "out": "HTTP/1.1 400 Bad Request"
     },
     "json": {
       "title": "JSON",
-      "text": "JSON is braces, keys and values. Every key is a string, and strings get double quotes. Not single quotes. Not no quotes. Who decided this? Somebody very particular.",
+      "text": "JSON is braces, keys and values. Every key is a string, and strings get double quotes. Not single. Not none. Who decided this? I'd like a word with him. In double quotes.",
       "demo": {"counter": "vics", "data": {"orders": []}, "request": ["POST", "/orders", "Content-Type: application/json", "{item: \"pie\", table: 2}"]},
       "out": "HTTP/1.1 400 Bad Request"
     },
     "put": {
       "title": "PUT",
-      "text": "PUT goes to one thing's own path and replaces it. All of it: send every field. And send it twice, it's the same as once. Try that with POST and you've got two tables.",
+      "text": "PUT goes to one thing's own path and replaces it. All of it: send every field. Send it twice, it's the same as once. Try that with POST and you've got two tables. Ask Lenny.",
       "demo": {"counter": "jade", "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 2}]}, "request": ["PUT", "/tables/3", "Content-Type: application/json", "{\"name\":\"Lerner\",\"size\":2}"]},
       "out": "HTTP/1.1 200 OK"
     },
@@ -473,37 +490,37 @@
     },
     "head": {
       "title": "HEAD",
-      "text": "HEAD is GET without the body. Same status, same headers, and then it just stops talking. It's how you ask if something's there without hearing all about it.",
+      "text": "HEAD is GET without the body. Same status, same headers, and then it just stops talking. You ask if something's there, and you don't hear all about it. If only people did this.",
       "demo": {"counter": "jade", "data": {"tables": [{"id": 3, "name": "Kaplan", "size": 2}]}, "request": ["HEAD", "/tables/3"]},
       "out": "HTTP/1.1 200 OK"
     },
     "etag": {
       "title": "ETags and 304",
-      "text": "An ETag is a version stamp. Send it back in If-None-Match and you're saying: only if it's changed. Hasn't? 304 Not Modified, and no body. It's how your browser doesn't download the same thing twice.",
+      "text": "An ETag is a version stamp. Send it back in If-None-Match: only if it's changed. Hasn't? 304 Not Modified, no body. Your browser never hears the same thing twice. My uncle should try it.",
       "demo": {"counter": "post", "data": {"mail": []}, "versions": {"mail": 7}, "request": ["GET", "/mail", "If-None-Match: \"v7\""]},
       "out": "HTTP/1.1 304 Not Modified"
     },
     "accepted": {
       "title": "202 Accepted",
-      "text": "201 means it's made. 202 means: we've got it, we'll get round to it. Not done, not refused. Accepted. The post office invented this one.",
+      "text": "201 means it's made. 202 means: we've got it, we'll get round to it. Not done, not refused. Accepted. It's \"I'll call you\" as a status code. The post office invented it.",
       "demo": {"counter": "post", "data": {"mail": []}, "request": ["POST", "/mail", "Content-Type: application/json", "{\"to\":\"Stu\",\"what\":\"a card\"}"]},
       "out": "HTTP/1.1 202 Accepted"
     },
     "ifmatch": {
       "title": "If-Match",
-      "text": "If-Match says: change it only if it's still the version I saw. Somebody changed it since? 412 Precondition Failed. And some counters won't take a change without one at all: 428.",
+      "text": "If-Match: change it only if it's still the version I saw. Changed since? 412 Precondition Failed. Also my last three relationships. And some counters won't change a thing without one: 428.",
       "demo": {"counter": "post", "data": {"mail": [{"id": 5, "to": "Dana", "what": "a card"}]}, "versions": {"mail/5": 2}, "request": ["DELETE", "/mail/5", "If-Match: \"v1\""]},
       "out": "HTTP/1.1 412 Precondition Failed"
     },
     "auth": {
       "title": "Tokens",
-      "text": "Authorization: Bearer, then your token. That's who you are. No token, or one it doesn't know, and it's 401, with a WWW-Authenticate header telling you how to log in.",
+      "text": "Authorization: Bearer, then your token. Bearer! Very dramatic, for a password. No token, or one it doesn't know, and it's 401, with WWW-Authenticate telling you how to log in.",
       "demo": {"counter": "network", "data": {"pilots": []}, "request": ["GET", "/pilots"]},
       "out": "HTTP/1.1 401 Unauthorized"
     },
     "forbidden": {
       "title": "403 Forbidden",
-      "text": "401 is: who are you? 403 is: I know exactly who you are, and no. Logging in again won't help. Ask someone who's allowed.",
+      "text": "401 is: who are you? 403 is: I know exactly who you are, and no. It's the bouncer who remembers you. Logging in again won't help. Send someone who's allowed.",
       "demo": {"counter": "network", "data": {"pilots": []}, "request": ["POST", "/pilots", "Authorization: Bearer lenny-1990", "Content-Type: application/json", "{\"title\":\"Lenny\",\"status\":\"draft\"}"]},
       "out": "HTTP/1.1 403 Forbidden"
     }
@@ -528,19 +545,19 @@
     "miss": ["We got {got}. The scene wants {want}."],
     "wrong": [
       "It worked, but it's not what the scene wants. Look at what it did, and what was asked.",
-      "A 2, so it worked. Just not the thing we needed."
+      "A 2, so it worked. Beautifully. On a completely different errand."
     ],
-    "400": ["400: the counter read it and didn't like it. The body says why."],
-    "401": ["401: it doesn't know who you are. That needs a token it knows."],
-    "403": ["403: it knows who you are, and the answer's no. Somebody else's token, maybe."],
-    "404": ["404: nothing at that path. Check the path, and the id."],
-    "405": ["405: that path doesn't do that. The Allow line says what it does."],
-    "406": ["406: you asked for something it hasn't got. Look at your Accept."],
-    "412": ["412: it's changed since that version. Check the board."],
-    "415": ["415: it can't read the body as what you said it was. Look at Content-Type."],
+    "400": ["400: the counter read it and didn't like it. The body says why. It went to the trouble, so read it."],
+    "401": ["401: it doesn't know who you are. Nobody does, at first. It needs a token it knows."],
+    "403": ["403: it knows exactly who you are, and the answer's no. Somebody else's token, maybe."],
+    "404": ["404: nothing at that path. Check the path, and the id. Then check them again."],
+    "405": ["405: that path doesn't do that. The Allow line says what it does. It's a menu. Read the menu."],
+    "406": ["406: you asked for something it hasn't got. Look at your Accept. You don't ask a diner for sushi."],
+    "412": ["412: it's changed since that version. Somebody got there first. Check the board."],
+    "415": ["415: it can't read the body as what you said it was. Look at Content-Type. You called soup a sandwich."],
     "428": ["428: this counter won't change a thing without being told which version you saw."],
-    "par": ["And scene!", "That's a keeper.", "Not a wasted card.", "Print it. Next scene."],
-    "over": ["It worked! There's a slip with fewer cards, though.", "And scene. A card or two to spare, but it works."]
+    "par": ["And scene!", "That's a keeper.", "Not a wasted card.", "Print it. Next scene.", "Tight. Mr. Pratt almost moved his face."],
+    "over": ["It worked! There's a slip with fewer cards, though.", "And scene. A card or two to spare, but it works.", "It works. It rambles, but it works. Like my act."]
   },
   "errors": {
     "method": "Every request needs a method. Put one on the slip.",
