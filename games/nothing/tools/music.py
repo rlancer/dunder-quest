@@ -7,15 +7,20 @@ instruments only; they never name or describe any show's music or any
 existing song, and none of them recreates a theme tune.
 
 It calls ElevenLabs' own music API (POST /v1/music) with its newest model,
-`music_v2_5`, instrumental only, in loop mode, so a track's end runs back
-into its start. OpenRouter carries ElevenLabs' voices but not its music, so
-this needs ELEVENLABS_API_KEY in .env (in a cloud session for this repo the
-environment holds it as a network secret, and `ELEVENLABS_API_KEY=proxy-injected`
-is enough). The key is never printed.
+`music_v2_5`, instrumental only, in loop mode. Loop mode mostly ends a
+track at full volume, but not always (some end in a short tail), so the
+seams are still smoothed with make_loops.py afterwards. OpenRouter
+carries ElevenLabs' voices but not its music, so this needs
+ELEVENLABS_API_KEY in .env (in a cloud session for this repo holds it as a network secret, and `ELEVENLABS_API_KEY=proxy-injected` is
+enough). The key is never printed.
 
     python tools/music.py                    # every track that's missing
     python tools/music.py title diner        # just these, again
     python ../dunder-quest/tools/make_loops.py assets/audio/music_*.ogg   # then smooth the seams
+    godot --headless --path . --import       # and import them
+
+The smaller ElevenLabs plans run two requests at a time, so it makes two at
+once.
 """
 
 from __future__ import annotations
@@ -130,7 +135,8 @@ def main() -> None:
     api_key = key()
     OUT.mkdir(parents=True, exist_ok=True)
     failed = 0
-    with ThreadPoolExecutor(max_workers=4) as pool:
+    # ElevenLabs runs two requests at a time on the smaller plans.
+    with ThreadPoolExecutor(max_workers=2) as pool:
         futures = {pool.submit(generate, api_key, name): name for name in names}
         for future in as_completed(futures):
             name = futures[future]
