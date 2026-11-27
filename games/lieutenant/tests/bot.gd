@@ -33,6 +33,7 @@ var extra_tries: Dictionary = {}
 
 
 func _ready() -> void:
+	Voice.muted = true
 	Progress.persist = false
 	StageAudio.web_audio_unlocked = true
 	process_mode = Node.PROCESS_MODE_ALWAYS

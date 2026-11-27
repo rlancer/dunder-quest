@@ -40,51 +40,110 @@
 			"strict": "I'm not reading you that one, Lieutenant. It says:"
 		}
 	},
+	"say": {
+		"I had Doris down at Records type it into the new machine. It only answers in a thing called SQL.": "I had Doris down at Records type it into the new machine. It only answers in a thing called S Q L.",
+		"FROM is the file. SELECT is what to read out of it. A star is everything.": "From is the file. Select is what to read out of it. A star is everything.",
+		"WHERE keeps the rows that pass a test. A name has to match to the letter.": "Where keeps the rows that pass a test. A name has to match to the letter.",
+		"The stubs are a different file from the guest book. Nine-thirty is '21:30'.": "The stubs are a different file from the guest book. Nine-thirty is twenty-one thirty.",
+		"'arrived' is a column in the guest book. The coat stubs call theirs 'checked_at'.": "Arrived is a column in the guest book. The coat stubs call theirs checked at.",
+		"No plate is just '4K'. Equals wants the whole plate. I only know how it starts.": "No plate is just four K. Equals wants the whole plate. I only know how it starts.",
+		"'%4K' is a plate that ends in 4K. The % goes where the part I don't know is.": "Percent four K is a plate that ends in four K. The percent sign goes where the part I don't know is.",
+		"That's any plate with a K anywhere in it. The jogger said it began 4K.": "That's any plate with a K anywhere in it. The jogger said it began four K.",
+		"Well, a jogger saw a second car up there. A black sedan. The plate started with a 4 and a K, that's all he got.": "Well, a jogger saw a second car up there. A black sedan. The plate started with a four and a K, that's all he got.",
+		"That's the three earliest. For newest first the sort has to run downward: DESC.": "That's the three earliest. For newest first, the sort has to run downward: desc, for descending.",
+		"'owner' is in the car register. The gate man only writes down plates.": "Owner is in the car register. The gate man only writes down plates.",
+		"Yours went out at ten past nine and came back at 10:25. Only one black 4K car was out, ma'am. And you told me it never left its space.": "Yours went out at ten past nine and came back at ten twenty-five. Only one black four K car was out, ma'am. And you told me it never left its space.",
+		"That's very helpful, sir. 0142. Let me write that down. Do you have a pencil?": "That's very helpful, sir. Oh one four two. Let me write that down. Do you have a pencil?",
+		"If I start FROM phones and then JOIN phones, that's the directory twice and no calls. Start from the calls.": "If I start from phones, and then join phones, that's the directory twice and no calls. Start from the calls.",
+		"0100 is the house. I'm asking about the car: 0199.": "Oh one hundred is the house. I'm asking about the car: oh one nine nine.",
+		"I called my answering service at 9:40, from this house. They'll tell you: 'Mr. Brandt, at home.' Ask the machine that.": "I called my answering service at nine-forty, from this house. They'll tell you: Mr. Brandt, at home. Ask the machine that.",
+		"Pile them up first, then throw out the small piles. That's not WHERE's job.": "Pile them up first, then throw out the small piles. That's not where's job.",
+		"WHERE picks out his rows first. Then one pile for each person who collected.": "Where picks out his rows first. Then one pile for each person who collected.",
+		"Both files have a 'seat'. The machine won't guess which one I mean. I have to say seating.seat or orders.seat.": "Both files have a seat. The machine won't guess which one I mean. I have to say seating dot seat, or orders dot seat.",
+		"Ten rows. Nine dinners. And beside Augusta Harrow the machine says NULL.": "Ten rows. Nine dinners. And beside Augusta Harrow, the machine says null.",
+		"NULL, ma'am. It means there's nothing there. I've got a dog by that name.": "Null, ma'am. It means there's nothing there. I've got a dog by that name.",
+		"All of the file in FROM is kept. LEFT JOIN the other one onto it.": "All of the file in from is kept. Left join the other one onto it.",
+		"A plain JOIN is what I had before: nine rows, and the empty chair dropped. I need the kind that keeps every chair.": "A plain join is what I had before: nine rows, and the empty chair dropped. I need the kind that keeps every chair.",
+		"The file in FROM is the one LEFT JOIN keeps all of. I want all the chairs, so the chart goes in FROM.": "The file in from is the one left join keeps all of. I want all the chairs, so the chart goes in from.",
+		"Doris says nothing ever equals NULL. Not even NULL. '= NULL' is never true, so it finds nothing. The way to ask is IS NULL.": "Doris says nothing ever equals null. Not even null. Equals null is never true, so it finds nothing. The way to ask is, is null.",
+		"A plain JOIN already threw the empty chair away. There's no NULL left to find. It has to be the LEFT JOIN.": "A plain join already threw the empty chair away. There's no null left to find. It has to be the left join.",
+		"Both files have a 'key_no'. I have to say whose.": "Both files have a key number. I have to say whose.",
+		"OR lets a car through if it passes either test: every 4K car, and every black car too. I want the ones that pass both.": "Or lets a car through if it passes either test: every four K car, and every black car too. I want the ones that pass both.",
+		"No car has two plates. AND wants one row to be both at once, and nothing is. I want either one: OR.": "No car has two plates. And wants one row to be both at once, and nothing is. I want either one: or.",
+		"I asked for a column and never said which file. That's what FROM is for.": "I asked for a column and never said which file. That's what from is for.",
+		"That column isn't in the file I'm asking. Either it's in another file, or I've got the wrong FROM.": "That column isn't in the file I'm asking. Either it's in another file, or I've got the wrong from.",
+		"Two files in this query have a column called that. I have to say whose: file.column.": "Two files in this query have a column called that. I have to say whose: file dot column.",
+		"WHERE looks at one row at a time. There's no count yet. A test on a count goes in HAVING.": "Where looks at one row at a time. There's no count yet. A test on a count goes in having.",
+		"HAVING is for piles. I haven't made any piles: no GROUP BY, no count.": "Having is for piles. I haven't made any piles: no group by, no count.",
+		"SELECT what? I haven't picked anything to read back.": "Select what? I haven't picked anything to read back.",
+		"One count for a whole pile of rows, and beside it I ask for a column that's different on every row. Which row's? I have to GROUP BY it.": "One count for a whole pile of rows, and beside it I ask for a column that's different on every row. Which row's? I have to group by it.",
+		"Right rows. But with no ORDER BY, they come back in whatever order the machine feels like. I need them in order.": "Right rows. But with no order by, they come back in whatever order the machine feels like. I need them in order.",
+		"The machine won't take it, Lieutenant. It says:": "The machine won't take it, Lieutenant. Here's what it says.",
+		"I'm not reading you that one, Lieutenant. It says:": "I'm not reading you that one, Lieutenant. Here's what it says.",
+		"Five to ten, a car goes out. Five past ten, a car goes out. And at 10:25 a car comes in. Plate 4KJ 882.": "Five to ten, a car goes out. Five past ten, a car goes out. And at ten twenty-five, a car comes in. Plate four K J, eight eight two.",
+		"The plate starts with 4K and then anything. % is the anything.": "The plate starts with four K, and then anything. The percent sign is the anything.",
+		"Every time 4KJ 882 or 4KR 310 went through the gate, in the order it happened: plate, direction, time.": "Every time four K J eight eight two, or four K R three one oh, went through the gate, in the order it happened: plate, direction, time.",
+		"Certainly I never telephoned Peggy. Her number is 555-0142. See for yourself who did.": "Certainly I never telephoned Peggy. Her number is five five five, oh one four two. See for yourself who did.",
+		"Three calls. From 0155, from 0199, and from 0166.": "Three calls. From oh one five five, from oh one nine nine, and from oh one six six.",
+		"And my number, Lieutenant, ends in 0100. None of those is mine.": "And my number, Lieutenant, ends in oh one hundred. None of those is mine.",
+		"Every call TO 555-0142 last night: the number that called, and when.": "Every call to five five five, oh one four two, last night: the number that called, and when.",
+		"Everybody the car telephone, 555-0199, called last night, in order: the time, and whose phone it rang.": "Everybody the car telephone, five five five, oh one nine nine, called last night, in order: the time, and whose phone it rang.",
+		"After nine is too late. He went over at five past. I want whoever went UP: the penthouse.": "After nine is too late. He went over at five past. I want whoever went up: the penthouse."
+	},
 	"cards": {
 		"c_select": {
 			"title": "SELECT and FROM",
 			"sql": "SELECT name, arrived\nFROM guests",
-			"text": "A table is a file of records: every row is one record, every column is one fact about it. FROM says which table. SELECT says which columns to read back, in the order you list them. SELECT * means all of them."
+			"text": "A table is a file of records: every row is one record, every column is one fact about it. FROM says which table. SELECT says which columns to read back, in the order you list them. SELECT * means all of them.",
+			"say": "Select and from. A table is a file of records: every row is one record, every column is one fact about it. From says which table. Select says which columns to read back, in the order you list them. Select star means all of them."
 		},
 		"c_where": {
 			"title": "WHERE",
 			"sql": "SELECT name, arrived\nFROM guests\nWHERE arrived > '21:00'",
-			"text": "WHERE keeps only the rows where the condition is true. Text goes in single quotes and has to match to the letter. Records writes the time the way the Army does: '21:00' is nine at night, so later times sort after earlier ones."
+			"text": "WHERE keeps only the rows where the condition is true. Text goes in single quotes and has to match to the letter. Records writes the time the way the Army does: '21:00' is nine at night, so later times sort after earlier ones.",
+			"say": "Where. Where keeps only the rows where the condition is true. Text goes in single quotes, and has to match to the letter. Records writes the time the way the Army does: twenty-one hundred is nine at night, so later times sort after earlier ones."
 		},
 		"c_like": {
 			"title": "LIKE",
 			"sql": "SELECT plate, owner\nFROM cars\nWHERE plate LIKE '%2'",
-			"text": "LIKE matches a pattern instead of the whole text. % stands for any run of characters (even none), and _ for exactly one. 'S%' starts with S. '%2' ends in 2. '%K%' has a K in it anywhere."
+			"text": "LIKE matches a pattern instead of the whole text. % stands for any run of characters (even none), and _ for exactly one. 'S%' starts with S. '%2' ends in 2. '%K%' has a K in it anywhere.",
+			"say": "Like. Like matches a pattern instead of the whole text. A percent sign stands for any run of characters, even none, and an underscore for exactly one. S percent starts with S. Percent two ends in two. Percent K percent has a K in it anywhere."
 		},
 		"c_and_or": {
 			"title": "AND, OR",
 			"sql": "SELECT plate, owner\nFROM cars\nWHERE color = 'white' OR color = 'red'",
-			"text": "AND keeps a row only when both conditions are true, so it narrows. OR keeps a row when either one is true, so it widens. No car is white AND red. Three are white OR red."
+			"text": "AND keeps a row only when both conditions are true, so it narrows. OR keeps a row when either one is true, so it widens. No car is white AND red. Three are white OR red.",
+			"say": "And, or. And keeps a row only when both conditions are true, so it narrows. Or keeps a row when either one is true, so it widens. No car is white and red. Three are white or red."
 		},
 		"c_order": {
 			"title": "ORDER BY and LIMIT",
 			"sql": "SELECT plate, at\nFROM gate_log\nORDER BY at\nLIMIT 2",
-			"text": "Unless you say ORDER BY, rows come back in no order you can count on. ORDER BY sorts them, smallest first; add DESC for largest first. LIMIT stops after that many rows. Together they ask for the first, the last, the most."
+			"text": "Unless you say ORDER BY, rows come back in no order you can count on. ORDER BY sorts them, smallest first; add DESC for largest first. LIMIT stops after that many rows. Together they ask for the first, the last, the most.",
+			"say": "Order by, and limit. Unless you say order by, rows come back in no order you can count on. Order by sorts them, smallest first; add desc, for descending, for largest first. Limit stops after that many rows. Together they ask for the first, the last, the most."
 		},
 		"c_join": {
 			"title": "JOIN ... ON",
 			"sql": "SELECT calls.at, phones.owner\nFROM calls\nJOIN phones ON calls.caller = phones.number\nWHERE calls.minutes > 5",
-			"text": "JOIN lays two tables side by side. ON says which rows go together: here a call goes with the phone that made it. Get ON wrong and you match every call with the wrong phone. With two tables in play, write table.column so there's no doubt whose column you mean."
+			"text": "JOIN lays two tables side by side. ON says which rows go together: here a call goes with the phone that made it. Get ON wrong and you match every call with the wrong phone. With two tables in play, write table.column so there's no doubt whose column you mean.",
+			"say": "Join, on. Join lays two tables side by side. On says which rows go together: here, a call goes with the phone that made it. Get on wrong, and you match every call with the wrong phone. With two tables in play, write table dot column, so there's no doubt whose column you mean."
 		},
 		"c_count": {
 			"title": "COUNT(*)",
 			"sql": "SELECT COUNT(*)\nFROM prescriptions\nWHERE drug = 'Calmex'",
-			"text": "COUNT(*) doesn't read the rows back. It counts them and hands you one number. WHERE still chooses which rows get counted. SUM, MIN, MAX and AVG do the same kind of thing to one column."
+			"text": "COUNT(*) doesn't read the rows back. It counts them and hands you one number. WHERE still chooses which rows get counted. SUM, MIN, MAX and AVG do the same kind of thing to one column.",
+			"say": "Count star. Count star doesn't read the rows back. It counts them, and hands you one number. Where still chooses which rows get counted. Sum, min, max and average do the same kind of thing to one column."
 		},
 		"c_group": {
 			"title": "GROUP BY",
 			"sql": "SELECT drug, COUNT(*)\nFROM prescriptions\nGROUP BY drug",
-			"text": "GROUP BY sorts the rows into piles, one pile for each value, and then the count is taken pile by pile: one row back per pile. Anything you SELECT beside the count has to be something you grouped by."
+			"text": "GROUP BY sorts the rows into piles, one pile for each value, and then the count is taken pile by pile: one row back per pile. Anything you SELECT beside the count has to be something you grouped by.",
+			"say": "Group by. Group by sorts the rows into piles, one pile for each value, and then the count is taken pile by pile: one row back per pile. Anything you select beside the count has to be something you grouped by."
 		},
 		"c_having": {
 			"title": "HAVING",
 			"sql": "SELECT drug, COUNT(*)\nFROM prescriptions\nGROUP BY drug\nHAVING COUNT(*) > 5",
-			"text": "WHERE throws out rows before they're piled up. HAVING throws out whole piles afterward. A count doesn't exist until the piles do, so a test on COUNT(*) belongs in HAVING, never in WHERE."
+			"text": "WHERE throws out rows before they're piled up. HAVING throws out whole piles afterward. A count doesn't exist until the piles do, so a test on COUNT(*) belongs in HAVING, never in WHERE.",
+			"say": "Having. Where throws out rows before they're piled up. Having throws out whole piles afterward. A count doesn't exist until the piles do, so a test on count star belongs in having, never in where."
 		},
 		"c_left": {
 			"title": "LEFT JOIN",
@@ -93,7 +152,8 @@
 				"motor_pool": {"columns": [["desk", "INTEGER"], ["car", "TEXT"]], "rows": [[5, "Plymouth"], [6, "Dodge"]]}
 			},
 			"sql": "SELECT detectives.name, motor_pool.car\nFROM detectives\nLEFT JOIN motor_pool ON detectives.desk = motor_pool.desk",
-			"text": "A plain JOIN drops any row that has no partner. LEFT JOIN keeps every row of the left-hand table, the one in FROM. Where there's no partner, the other table's columns come back NULL: nothing there. The department never issued the Lieutenant a car."
+			"text": "A plain JOIN drops any row that has no partner. LEFT JOIN keeps every row of the left-hand table, the one in FROM. Where there's no partner, the other table's columns come back NULL: nothing there. The department never issued the Lieutenant a car.",
+			"say": "Left join. A plain join drops any row that has no partner. Left join keeps every row of the left-hand table, the one in from. Where there's no partner, the other table's columns come back null: nothing there. The department never issued the Lieutenant a car."
 		},
 		"c_null": {
 			"title": "IS NULL",
@@ -102,7 +162,8 @@
 				"motor_pool": {"columns": [["desk", "INTEGER"], ["car", "TEXT"]], "rows": [[5, "Plymouth"], [6, "Dodge"]]}
 			},
 			"sql": "SELECT detectives.name\nFROM detectives\nLEFT JOIN motor_pool ON detectives.desk = motor_pool.desk\nWHERE motor_pool.car IS NULL",
-			"text": "NULL means there's no value here. It isn't equal to anything, not even to another NULL, so = NULL is never true and finds nothing. Ask with IS NULL, or IS NOT NULL. LEFT JOIN and then IS NULL is how you find what's missing."
+			"text": "NULL means there's no value here. It isn't equal to anything, not even to another NULL, so = NULL is never true and finds nothing. Ask with IS NULL, or IS NOT NULL. LEFT JOIN and then IS NULL is how you find what's missing.",
+			"say": "Is null. Null means there's no value here. It isn't equal to anything, not even to another null, so equals null is never true, and finds nothing. Ask with is null, or is not null. Left join, and then is null, is how you find what's missing."
 		}
 	},
 	"cases": [
