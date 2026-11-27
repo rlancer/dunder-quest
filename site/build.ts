@@ -72,6 +72,10 @@ const JOIN_TRAILER_ID = "ojUvSRr5Uq8";
 // the /greedy/ page and the splash's card, and shows the thumbnail alone on
 // the brand kit.
 const GREEDY_TRAILER_ID = "zsXZ5G07tcc";
+// Yes, Shell!'s trailer (games/shell/tools/make_trailer.py), once it's on
+// YouTube: paste its video ID here. Empty leaves the trailer off the /shell/
+// page and the splash's card, and shows the thumbnail alone on the brand kit.
+const SHELL_TRAILER_ID = "";
 // A Game About Nothing's trailer (games/nothing/tools/make_trailer.py), once
 // it's on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /nothing/ page and the splash's card, and shows the thumbnail alone on the
@@ -515,7 +519,7 @@ function buildSplash(prefix = ""): string {
       "Meet the kitchen"],
   ];
   // The cards that link their trailer, once it's up.
-  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID, "game-an": NOTHING_TRAILER_ID };
+  const trailers: Record<string, string> = { "game-pv": PRINCE_TRAILER_ID, "game-gr": GREEDY_TRAILER_ID, "game-ys": SHELL_TRAILER_ID, "game-an": NOTHING_TRAILER_ID };
   const cards = games.map(([cls, kick, name, about, play, og, alt, blurb, more]) => `
     <li class="game ${cls}">
       <a class="game-art" href="${about}"><img src="${prefix}static/img/og/${og}" alt="${esc(alt)}" width="1200" height="630" loading="lazy"></a>
@@ -1100,6 +1104,45 @@ A comic spoof of the spaghetti western and of the comedies that send it up. The 
 const GR_YOUTUBE_TAGS = "learn regex, regex tutorial, regular expressions, regex for beginners, regex explained, greedy vs lazy regex, "
   + "catastrophic backtracking, capture groups, coding game, educational game, pixel art, indie game, godot, western game, "
   + "the good the bad and the greedy, dunder quest";
+const YS_THUMB_ALT = "Yes, Shell! trailer thumbnail: Shell and the Chef either side of 'Learn the shell', over a terminal line that reads cut -d, -f2 flood.csv | sort | uniq -c | sort -rn | head -n 1, and its answer, 5 fries";
+const YS_TRAILER_FACTS = [
+  ["Length", "70 seconds"],
+  ["Music", "An original cue for a scrappy rock band and a kitchen's pots and pans, 120 BPM; every cut lands on a beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses eleven of them"],
+  ["Loudness", "−14 LUFS, YouTube's target"],
+  ["Pixels", "Captured at 1920×1080 so the pass and the line are sharp; 4K is ×2"],
+];
+const YS_CHAPTERS = "0:00 The Standard Inn\n0:23 Build the line\n0:40 The pass is a pipe\n0:52 The critic's question";
+const YS_YOUTUBE_TITLE = "Yes, Shell! – Learn the Command Line in a Kitchen Where the Pass Is a Pipe | Official Trailer";
+const YS_YOUTUBE_DESCRIPTION = `The Standard Inn ran on shouting for forty years. Then the chef came home with a roll of green tape and a system: every station does one thing, does it well, and passes it down the line. That's also how the Unix shell works.
+
+Yes, Shell! is a free pixel-art kitchen comedy that teaches the command line. You're Ash Bourne, the new chef. Read the ticket, build one line of shell from chips, and watch the pass print what it prints right now, or the shell's own error, word for word. Then fire. Every station is a command, and the pass is a pipe.
+
+▶ Play free in your browser: ${SITE_URL}shell/play/
+▶ The five shifts and what each one teaches: ${SITE_URL}shell/
+▶ More games that teach code (Python, JavaScript, Rust, Git, SQL, regex): ${SITE_URL}
+
+What's inside
+• 5 shifts and 20 tickets: ls, cat, head, tail and wc; grep and its options; the pipe; sort and uniq; cut, tr, > and a five-command pipeline
+• Real shell: every line the game can run is checked against the real bash and GNU tools, down to the words of every error
+• It ends on the line people reach for every week to find the most common thing in a file: cut | sort | uniq -c | sort -rn | head
+• Never opened a terminal? A narrated prologue says what a command, a file and a pipe are
+• Every line is voiced
+• No typing: you build each line from chips, and the text on the line is all that runs
+• Keyboard, mouse or touch. No signup.
+
+How it was made
+Claude built the game: every line of Godot code, a shell written in GDScript, the checks that hold it to the real bash, its web page, and this trailer, cut from a scripted gameplay capture with no video editor. An image model made the backdrops and the cast, a music model made the music and the trailer's cue, and the voices are ElevenLabs text-to-speech. My part was prompting and playtesting.
+Source: ${REPO}/tree/main/games/shell
+
+${YS_CHAPTERS}
+
+An affectionate spoof of the frantic restaurant-kitchen drama. The names, restaurant, lines, art and music are original; it isn't affiliated with or endorsed by anyone who made the shows it winks at.
+
+#bash #commandline #linux #learntocode #indiegame #pixelart #godot #codinggame`;
+const YS_YOUTUBE_TAGS = "learn bash, command line, linux command line, terminal for beginners, shell tutorial, unix pipe, grep, "
+  + "sort uniq, bash for beginners, coding game, educational game, pixel art, indie game, godot, kitchen game, yes shell, "
+  + "dunder quest";
 const AN_THUMB_ALT = "A Game About Nothing trailer thumbnail: Stu Lerner and Mr. Pratt either side of 'Learn HTTP', over a response that reads HTTP/1.1 204 No Content";
 const AN_TRAILER_FACTS = [
   ["Length", "70 seconds"],
@@ -1180,6 +1223,7 @@ const CHANNEL_PLAYLISTS = [
   ["Prince of Versions", "The Git game: its trailer, and later its Short."],
   ["Just One More JOIN", "The SQL game: its trailer, and later its Short."],
   ["The Good, the Bad and the Greedy", "The regex game: its trailer, and later its Short."],
+  ["Yes, Shell!", "The shell game: its trailer, and later its Short."],
   ["A Game About Nothing", "The HTTP game: its trailer, and later its Short."],
 ];
 // Studio's upload settings that are the same for every video.
@@ -1933,6 +1977,15 @@ function buildBrandTrailers(prefix: string): string {
   <p class="fine">How it's made: <a href="${REPO}/blob/main/games/greedy/trailer/README.md">games/greedy/trailer/README.md</a>.</p>
 </section>
 
+<section class="section kit" aria-labelledby="ys-trailer-h">
+  <p class="kicker">shell.__trailer__</p>
+  <h2 id="ys-trailer-h">Yes, Shell!</h2>
+  <p class="lede">Cut to an original cue for a scrappy rock band and a kitchen's pots and pans, with the game's own voices: a kitchen that ran on shouting, a line of shell written chip by chip with the pass printing as it goes, the shell's own error word for word, the pipe, the ticket machine in the music's dead stop, and the five-command line that answers the critic. Made the same way, from the repo, with no video editor.</p>
+  ${trailerPlayer(SHELL_TRAILER_ID, `${img}shell/trailer.png`, YS_THUMB_ALT, "Yes, Shell!")}
+  <dl class="facts">${YS_TRAILER_FACTS.map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+  <p class="fine">How it's made: <a href="${REPO}/blob/main/games/shell/trailer/README.md">games/shell/trailer/README.md</a>.</p>
+</section>
+
 <section class="section kit" aria-labelledby="an-trailer-h">
   <p class="kicker">nothing.__trailer__</p>
   <h2 id="an-trailer-h">A Game About Nothing</h2>
@@ -1999,6 +2052,9 @@ function buildBrandYoutube(prefix: string): string {
     + uploadKit("The Good, the Bad and the Greedy", GREEDY_TRAILER_ID, `${img}greedy/trailer.png`, "greedy_thumbnail.png",
       GR_YOUTUBE_TITLE, GR_YOUTUBE_DESCRIPTION, GR_YOUTUBE_TAGS, "The Good, the Bad and the Greedy",
       "games/greedy/trailer/out/greedy_trailer_4k.mp4")
+    + uploadKit("Yes, Shell!", SHELL_TRAILER_ID, `${img}shell/trailer.png`, "shell_thumbnail.png",
+      YS_YOUTUBE_TITLE, YS_YOUTUBE_DESCRIPTION, YS_YOUTUBE_TAGS, "Yes, Shell!",
+      "games/shell/trailer/out/shell_trailer_4k.mp4")
     + uploadKit("A Game About Nothing", NOTHING_TRAILER_ID, `${img}nothing/trailer.png`, "nothing_thumbnail.png",
       AN_YOUTUBE_TITLE, AN_YOUTUBE_DESCRIPTION, AN_YOUTUBE_TAGS, "A Game About Nothing",
       "games/nothing/trailer/out/nothing_trailer_4k.mp4");
@@ -2046,7 +2102,7 @@ function buildBrandYoutube(prefix: string): string {
     <tbody>${settings}</tbody>
   </table></div>
   ${kits}
-  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code>, <code>GREEDY_TRAILER_ID</code> or <code>NOTHING_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
+  <p class="fine">Once a trailer is up, put its video ID in <code>TRAILER_ID</code>, <code>FM_TRAILER_ID</code>, <code>CURB_TRAILER_ID</code>, <code>PRINCE_TRAILER_ID</code>, <code>JOIN_TRAILER_ID</code>, <code>GREEDY_TRAILER_ID</code>, <code>SHELL_TRAILER_ID</code> or <code>NOTHING_TRAILER_ID</code> in <code>site/build.ts</code>, and the site embeds it.</p>
 </section>`;
   return brandPage("youtube", body, prefix);
 }
@@ -3492,6 +3548,14 @@ function buildShell(prefix: string): string {
     `<li><img src="${img}cast_${id}.png" alt="${esc(name)}" width="192" height="192" loading="lazy"><div><b>${esc(name)}</b><p>${esc(about)}</p></div></li>`).join("");
   const last: Json = tickets[tickets.length - 1];
 
+  // No trailer yet: the section appears once SHELL_TRAILER_ID is set.
+  const trailer = !SHELL_TRAILER_ID ? "" : `
+<section class="ys-section" id="trailer">
+  <h2>The trailer</h2>
+  ${trailerPlayer(SHELL_TRAILER_ID, `${img}trailer.png`, YS_THUMB_ALT, YS_NAME)}
+  <p class="ys-fine">More on the channel: <a href="${CHANNEL}">youtube.com/@dunderquest</a>.</p>
+</section>
+`;
   const body = `
 <section class="ys-hero">
   <div class="ys-hero-copy">
@@ -3504,7 +3568,7 @@ function buildShell(prefix: string): string {
   </div>
   <img class="ys-shot" src="${img}title.png" alt="${esc(YS_ALT)}" width="960" height="540">
 </section>
-
+${trailer}
 <section class="ys-section" id="how">
   <h2>How it plays</h2>
   <p>You're the new chef, Ash Bourne. Each shift is a handful of tickets, and each ticket is answered with one line of <b>shell</b>: the commands people type into a terminal to list, search, sort, count and slice text. Every station in the kitchen is a command. The pass, where one cook's plate becomes the next cook's job, is the pipe.</p>
@@ -3583,6 +3647,7 @@ ${body}
   <p>Yes, Shell! One chef, one pass, and a kitchen that does exactly what you say.</p>
   <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the HTTP game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
 </footer>
+${SHELL_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
 </body>
 </html>

@@ -61,9 +61,10 @@ Run from this folder; Python comes from mise (`mise exec -- python ...`).
 | `tools/voice.py` | Every spoken line, with ElevenLabs' v4 through OpenRouter. A clip is named for who says it and what they say, so after editing a line, run it again and only that clip is made. A line's `say` spells a command the way it's said ("W C dash L"), and may carry directions in square brackets (`[shouting]`), which are acted, not read |
 | `tools/sfx.py` | The sound effects, synthesized with numpy |
 | `tools/site_art.py` | The site's screenshots and social card, from `tests/shots/` (`godot --path . res://tests/shots.tscn`, which needs a window) |
+| `tools/trailer_audio.py`, `trailer/capture.sh`, `tools/make_trailer.py` | The trailer: its cue, the bot's captures, and the cut (see [trailer/README.md](trailer/README.md)) |
 
 Every line is voiced: the cast, the narrator, Shell reading each lesson card, and the brief for each ticket. The cast are spoofs of the kitchen drama's character types (the worn-out chef in the blue apron, the sharp one on the pass, the shouting relative out front), never drawn or voiced to be the actors.
 
 All the words are in `data/shifts.json` (and the prologue's in `ui/intro.gd`): the cast, the kitchen's files, the shifts, each ticket's brief, chips, solution, hint and `want`, the lesson cards, the glossary, and everything Shell says about a miss or an error.
 
-It has no trailer, brand-kit page or launch posts yet.
+It has no brand-kit page or launch posts yet.
