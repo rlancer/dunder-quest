@@ -1145,9 +1145,9 @@ const YS_YOUTUBE_TAGS = "learn bash, command line, linux command line, terminal 
   + "dunder quest";
 const AN_THUMB_ALT = "A Game About Nothing trailer thumbnail: Stu Lerner and Mr. Pratt either side of 'Learn HTTP', over a response that reads HTTP/1.1 204 No Content";
 const AN_TRAILER_FACTS = [
-  ["Length", "70 seconds"],
-  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 120 BPM; every cut lands on a beat"],
-  ["Voices", "The game's own: every line in it is voiced, and the trailer uses thirteen of them"],
+  ["Length", "80 seconds"],
+  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 122 BPM; every cut lands on its beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses seventeen of them"],
   ["Loudness", "−14 LUFS, YouTube's target"],
   ["Pixels", "Captured at 1920×1080 so the request slips and the responses are sharp; 4K is ×2"],
 ];

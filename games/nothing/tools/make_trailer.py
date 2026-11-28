@@ -3,17 +3,20 @@
 A fast run of highlights on the beat of one original cue (a slapped bass,
 finger snaps, a light funk band): Stu on stage at the Rimshot noticing that
 the whole internet is people asking for things, while a request writes
-itself out and a 200 comes back; the name as the band comes in; the 404 and
-Lenny, who wanted the soup; then a card at a time ("Every errand is an HTTP
-request.") between the moments that teach: a request slip made card by card
-and a 201 Created, the broth counter answering a wrong Content-Type with
-`{"error":"Next!"}`, a run of status lines a beat each, and then the cue
-drops to nearly nothing for Stu's bit on DELETE and 204 No Content. The band
-comes back for the post office's 412, the network's PATCH with a token, a
-version and a body, Mr. Pratt's one laugh, and an end card with the URL and
-one last joke. It doesn't play the game through. The voices are the game's
-own clips (assets/voice/), laid in here rather than taken from the
-captures, so a line can be trimmed to the sentence that lands.
+itself out and a 200 comes back; the name as the band comes in; the 404
+("Like my refrigerator.") and Lenny, who wanted the soup; then a card at a
+time ("Every errand is an HTTP request.") between the moments that teach: a
+request slip made card by card and a 201 Created (Lenny, after six years of
+tuna, is a toast guy), the broth counter answering a wrong Content-Type
+with `{"error":"Next!"}`, a run of status lines a beat each, and then the
+cue drops to nearly nothing for Stu's bit on DELETE and 204 No Content, and
+Lenny's "Finally, a status code about us." The band comes back for the post
+office's 412, the network's PATCH with a token, a version and a body under
+Mr. Pratt's "If I laugh, I'll sign it. I won't laugh.", his one laugh, and
+an end card with the URL and one last joke. It doesn't play the game
+through. The voices are the game's own clips (assets/voice/), laid in here
+rather than taken from the captures, so a line can be trimmed to the
+sentence that lands.
 
 Shots are laid out in the game's native 480x270 units but composed at
 1920x1080 (`S` times that), so text is sharp: the game draws its text at
@@ -22,15 +25,17 @@ the trailer's own cards are drawn at full size too. The pixel art stays on
 whole-number nearest-neighbor scales. The mixing and encoding helpers come
 from the Dunder Quest trailer (../../dunder-quest/tools/make_trailer.py).
 
-The cue (`trailer/audio/cue_nothing.wav`, from tools/trailer_audio.py) was
-measured at 120 BPM, its first note at 0.18 s. The trailer starts 0.32 s
-before the cue does, so that note is on 0.5 s and every beat after it is on
-a half second. In trailer time: the bass alone, with finger snaps, until a
-drum fill at 7.6 s; the band in on 8.5; a breath from 22.6 and a slam on
-24.0; the band's last hit on 38.5, then eight seconds of almost nothing
-(a snap a second, and one lone hit on 40.0); the band back on 47.0; a bass
-tag from 60.6; and the last hit on 63.0. Every cut lands on a beat. The
-opening's solo bass comes back, quietly, as a tag under the end card.
+The cue (`trailer/audio/cue_nothing.wav`: take 5 of tools/trailer_audio.py's
+`cue_nothing`) was measured at 122 BPM (a beat is 0.4915 s), its first note
+at 0.6 s. The trailer and the cue start together. In trailer time: the bass
+alone, with finger snaps, until the band comes in on 7.0; the band's last
+hit on 40.17 (an eighth before the beat, the way the cue's hits fall), then
+almost nothing, a snap every two beats, until the band comes back on 54.0.
+Nine bars of the band (cue 64.46 to 82.17) are cut out, so its last hit is
+on 69.79, and a solo slap-bass tag follows it to 72.7; the cue is stopped
+there, before a stray full-band burst it adds after a silence. Cuts are on
+the cue's eighth notes. The opening's solo bass comes back, quietly, under
+the end card.
 
 Shots find their capture frames by name in the MARK logs
 (`trailer/captures/<name>.log`), so a fresh capture needs no renumbering.
@@ -106,22 +111,30 @@ BLACK = (0, 0, 0)
 # --- The cue -----------------------------------------------------------------
 
 CUE = "cue_nothing"
-BEAT = 0.5
-## The trailer starts this long before the cue does, which puts the cue's
-## beats (the first at 0.18 s) on the trailer's half seconds.
-LEAD = 0.32
+BEAT = 0.4915
+## The cue starts with the trailer.
+LEAD = 0.0
 ## Trailer times of the cue's landmarks.
-BAND = 8.5       # the band comes in, after a fill
-SLAM = 24.0      # the band slams back after a breath
-STOP = 38.5      # the band's last hit before the eight seconds of nearly nothing
-LONE = 40.0      # one lone hit in the nothing
-BACK = 47.0      # the band again
-TAG = 60.5       # the band's last downbeat; a bass tag follows
-LAST_HIT = 63.0
+BAND = 7.0       # the band comes in, after a fill
+STOP = 40.17     # the band's last hit before the thirteen seconds of nearly nothing
+BACK = 54.0      # the band again
+LAST_HIT = 69.79  # the band's last hit (cue 87.5, after the splice)
+TAG = 72.69      # the end of the solo-bass tag that follows it: the end card
+## Nine bars cut out of the cue, in cue time, so its ending lands on LAST_HIT;
+## the two points were picked where the band sounds most alike.
+SPLICE = (64.46, 82.17)
+## Where the cue is stopped, in cue time: after the tag, before a stray burst.
+CUE_END = 91.0
 ## The cue's solo bass opening, in cue time: it comes back under the end card.
-CUE_SOLO = (0.1, 6.5)
-## How long the end card runs, with the tag and the last joke under it.
+CUE_SOLO = (0.5, 6.5)
+## How long the end card runs, with the last joke under it.
 END_HOLD = 7.5
+
+
+def on(k: int) -> float:
+    """The k-th eighth note after the band comes in, in trailer time: up to
+    the splice, the cue's hits all fall on these."""
+    return round(BAND + k * BEAT / 2, 3)
 
 
 # --- The capture's MARK logs ---------------------------------------------------
@@ -334,13 +347,15 @@ class Shot:
 RUN = (("e1", "1a", "200 OK"), ("e2", "2b", "201 Created"), ("e4", "4a", "304 Not Modified"),
        ("e4", "4b", "202 Accepted"))
 ## Where the run starts: it ends on the band's last hit.
-RUN_AT = STOP - len(RUN) * BEAT
+RUN_AT = round(STOP - len(RUN) * BEAT, 3)
 ## When Stu's bit on DELETE starts, in the nothing, and the part of his set
 ## that's used: from "And what does it send back?" to the end.
-BIT_AT = STOP + 0.2
+BIT_AT = STOP + 0.15
 BIT_CUT = (2.05, 11.64)
 ## How long into that the words "204 No Content" start: the slip goes then.
-BIT_204 = 1.35
+BIT_204 = 1.62
+## Lenny's answer to it, after a breath.
+FINALLY_AT = 50.3
 
 
 def edit() -> list[Shot]:
@@ -352,53 +367,54 @@ def edit() -> list[Shot]:
         return shot
 
     # The bass alone: Stu at the Rimshot, and a request writing itself out.
-    page = mark("open", "page 3")
-    add(0.0, BAND, cap="open", src=page, speed=0.97, label="stu notices", fx=[fade_in_fx(0.0, 0.5)])
+    add(0.0, BAND, cap="open", src=mark("open", "page 3"), label="stu notices", fx=[fade_in_fx(0.0, 0.5)])
     # The band comes in on the name.
-    add(BAND, 10.5, draw=title_card, label="title", fx=[flash_fx(BAND, 5, 0.8)])
+    add(BAND, on(8), draw=title_card, label="title", fx=[flash_fx(BAND, 5, 0.8)])
     # It always answers with a number.
-    add(10.5, 17.0, cap="open", src=mark("open", "page 4"), label="404")
-    add(17.0, 20.5, cap="open", src=mark("open", "page 5"), label="the soup")
-    add(20.5, 22.5, draw=card(["Every counter in New York", "is a web server."], 26, "street"), label="card counter")
-    add(22.5, SLAM, draw=card(["Every errand", "is an HTTP request."], 30, "street"), label="card errand")
-    # A slip, a card at a time, and a 201.
-    add(SLAM, 29.5, cap="e1", src=mark("e1", "brief 1c") + 2, audio=1.0, label="post an order",
-        fx=[flash_fx(SLAM, 4, 0.5)])
+    add(on(8), on(38), cap="open", src=mark("open", "page 4"), label="404")
+    add(on(38), on(54), cap="open", src=mark("open", "page 5"), label="the soup")
+    add(on(54), on(62), draw=card(["Every counter in New York", "is a web server."], 26, "street"), label="card counter")
+    add(on(62), on(70), draw=card(["Every errand", "is an HTTP request."], 30, "street"), label="card errand")
+    # A slip, a card at a time, and a 201; and Lenny, a new man.
+    add(on(70), on(94), cap="e1", src=mark("e1", "brief 1c") + 2, audio=1.0, label="post an order",
+        fx=[flash_fx(on(70), 4, 0.5)])
+    add(on(94), on(106), cap="e1", src=said("e1", "Order 9!") + round(2.6 * FPS), label="toast guy")
     # The broth counter, and its one word.
-    add(29.5, 33.0, cap="e2", src=said("e2", "Know what you want") + round(4.6 * FPS), label="one word")
-    add(33.0, 34.0, cap="e2", src=said("e2", "Next!") + 4, label="next")
-    add(34.0, RUN_AT, cap="e2", src=mark("e2", "send 2b 0") - 30, audio=1.0, label="415 next")
+    add(on(106), on(117), cap="e2", src=said("e2", "Know what you want") + round(4.6 * FPS), label="one word")
+    add(on(117), on(120), cap="e2", src=said("e2", "Next!") + 4, label="next")
+    add(on(120), RUN_AT, cap="e2", src=mark("e2", "send 2b 0") + 30, audio=1.0, label="415 next")
     # A run of status lines, a beat each, up to the band's last hit.
     for k, (cap, scene, line) in enumerate(RUN):
-        at = RUN_AT + k * BEAT
-        add(at, at + BEAT, cap=cap, src=mark(cap, f"won {scene}") + 24, label=line,
+        at = round(RUN_AT + k * BEAT, 3)
+        add(at, round(at + BEAT, 3), cap=cap, src=mark(cap, f"won {scene}") + 24, label=line,
             fx=[status_fx(line, at, MUSTARD_LIGHT if line.startswith("3") else GREEN_LIGHT), flash_fx(at, 3, 0.4)])
     # The band stops. DELETE, and what it sends back: nothing.
     send = mark("e3", "send 3c")
     gone = BIT_AT + BIT_204
-    add(STOP, 42.0, cap="e3", src=send - round((gone - STOP) * FPS), audio=1.0, label="delete")
-    add(42.0, BACK, cap="e3", src=mark("e3", "card delete") + 150, label="stu's set")
+    add(STOP, on(149), cap="e3", src=send - round((gone - STOP) * FPS), audio=1.0, label="delete")
+    add(on(149), on(176), cap="e3", src=mark("e3", "card delete") + 150, label="stu's set")
+    add(on(176), BACK, cap="e3", src=said("e3", "Finally, a status code") + 2, label="finally")
     # The band's back: the post office, and a version that's out of date.
-    add(BACK, 49.0, cap="e4", src=said("e4", "Every parcel has a version") + 2, label="vernon",
+    add(BACK, 56.0, cap="e4", src=said("e4", "Every parcel has a version") + 2, label="vernon",
         fx=[flash_fx(BACK, 4, 0.6)])
-    add(49.0, 50.5, cap="e4", src=mark("e4", "send 4c 0") - 12, audio=1.0, label="412")
-    # The network.
-    add(50.5, 53.0, cap="e5", src=said("e5", "Our pilots are behind") + round(2.25 * FPS), label="pratt")
-    start = mark("e5", "write 5d") - 6
+    add(56.0, 57.5, cap="e4", src=mark("e4", "send 4c 0") - 12, audio=1.0, label="412")
+    # The network: a login, and a PATCH under a man who won't laugh.
+    add(57.5, 60.0, cap="e5", src=said("e5", "Our pilots are behind") + round(2.25 * FPS), label="pratt")
+    start = mark("e5", "brief 5d") + 20
     stop = mark("e5", "won 5d") + 50
-    add(53.0, 56.0, cap="e5", src=start, speed=(stop - start) / (3.0 * FPS), label="the patch")
-    add(56.0, 57.5, cap="e5", src=said("e5", "Ha.") + 2, label="ha")
-    add(57.5, TAG, cap="e5", src=said("e5", "Six episodes!") + 2, label="six episodes")
-    add(TAG, LAST_HIT, draw=card(["Real HTTP. Every request is checked", "against a real HTTP server."], 22, "club"),
-        label="card real")
-    add(LAST_HIT, LAST_HIT + END_HOLD, draw=end_card(LAST_HIT), label="end card", fx=[flash_fx(LAST_HIT, 5, 0.7)])
+    add(60.0, 64.2, cap="e5", src=start, speed=(stop - start) / (4.2 * FPS), label="the patch")
+    add(64.2, 65.6, cap="e5", src=said("e5", "Ha.") + 2, label="ha")
+    add(65.6, LAST_HIT, cap="e5", src=said("e5", "Six episodes!") + 2, label="six episodes")
+    add(LAST_HIT, TAG, draw=card(["Real HTTP. Every request is checked", "against a real HTTP server."], 22, "club"),
+        label="card real", fx=[flash_fx(LAST_HIT, 4, 0.5)])
+    add(TAG, TAG + END_HOLD, draw=end_card(TAG), label="end card", fx=[flash_fx(TAG, 5, 0.7)])
     return shots
 
 
 def chapters() -> list[tuple[float, str]]:
     """YouTube chapters (each at least 10 s long), for the video description."""
-    return [(0.0, "People asking for things"), (SLAM, "Every errand is a request"),
-            (STOP, "204 No Content"), (50.5, "The network")]
+    return [(0.0, "People asking for things"), (on(70), "Every errand is a request"),
+            (STOP, "204 No Content"), (BACK, "Versions, tokens and one laugh")]
 
 
 # --- The voices -------------------------------------------------------------------
@@ -411,36 +427,44 @@ def voice_key(who: str, words: str) -> str:
 @dataclass
 class Line:
     """A voice clip laid into the trailer at `at`: `cut` is the part of it
-    used, in seconds; `tight` closes its pauses up to that many seconds."""
+    used, in seconds; `drop` is a stretch taken out of that; `tight` closes
+    its pauses up to that many seconds."""
     at: float
     who: str
     words: str
     cut: tuple[float, float] | None = None
+    drop: tuple[float, float] | None = None
     tight: float = 0.0
     gain: float = 1.0
 
 
 def voices() -> list[Line]:
     return [
-        Line(0.7, "stu", "You ever notice the whole internet is just people asking for things? Give me the menu. "
-             "Give me the weather."),
-        Line(10.65, "stu", "And it always answers with a number. 200, it's OK. 404, there's nothing there."),
-        Line(17.05, "lenny", "[exasperated] A number? I don't want a number! I want the soup!"),
-        Line(SLAM + 0.2, "stu", "Lenny wants a toast at table 4. Put the order in, as JSON."),
-        Line(29.8, "dana", "Know what you want. Say it in JSON. Step up, don't chat. Get one thing wrong and he says "
-             "one word.", cut=(5.0, 7.68)),
-        Line(33.1, "kasimir", "[barking, stern] Next!"),
-        Line(35.55, "kasimir", "[barking, stern] Next!", gain=0.9),
+        Line(0.35, "stu", "You ever notice the whole internet is just people asking for things? Give me the menu. "
+             "Give me the weather. Nobody goes on to offer.", drop=(4.65, 5.95)),
+        Line(on(8) + 0.1, "stu", "And it always answers with a number. 200, it's OK. 404, there's nothing there. "
+             "Like my refrigerator.", tight=0.3),
+        Line(on(38) + 0.05, "lenny", "[exasperated] A number? I don't want a number! I want the soup!"),
+        Line(on(70) + 0.1, "stu", "Lenny wants a toast at table 4. Put the order in, as JSON, before he loses his nerve."),
+        Line(on(94) + 0.05, "lenny", "[giddy] Order nine! Toast! Look at me! Six years of tuna, and now I'm a toast "
+             "guy!", cut=(3.1, 6.09)),
+        Line(on(106) + 0.05, "dana", "Know what you want. Say it in JSON. Step up, don't chat. Get one thing wrong and "
+             "he says one word.", cut=(5.0, 7.68)),
+        Line(on(117) + 0.05, "kasimir", "[barking, stern] Next!"),
+        Line(on(120) + 0.6, "kasimir", "[barking, stern] Next!", gain=0.9),
         Line(BIT_AT, "stu", "DELETE gets rid of a thing. And what does it send back? 204 No Content. It worked, and "
              "there's nothing to say about it. My favourite status. It's a show about nothing.", cut=BIT_CUT,
              tight=0.22),
+        Line(FINALLY_AT, "lenny", "Finally, a status code about us."),
         Line(BACK + 0.1, "vernon", "Every parcel has a version, Lerner. Ask if it's changed, I'll tell you. Change it "
              "without saying which version you saw, and I won't.", cut=(0.0, 2.1)),
-        Line(50.6, "pratt", "Our pilots are behind a login. Show me who you are, or don't come in.", cut=(2.25, 4.7)),
-        Line(56.0, "pratt", "[a single, dry, surprised laugh] Ha."),
-        Line(57.6, "lenny", "[ecstatic] Six episodes! Of nothing! We're geniuses!"),
-        Line(LAST_HIT + 2.6, "lenny", "And anything starting with a 4?"),
-        Line(LAST_HIT + 4.8, "stu", "Means it's your fault."),
+        Line(57.6, "pratt", "Our pilots are behind a login. Show me who you are, or don't come in.", cut=(2.25, 4.7)),
+        Line(60.2, "pratt", "[flat, stern] Set pilot one to picked up. Your retitle made it version two. If I laugh, "
+             "I'll sign it. [beat] I won't laugh.", cut=(4.5, 7.81)),
+        Line(64.2, "pratt", "[a single, dry, surprised laugh] Ha.", cut=(0.0, 0.5)),
+        Line(65.62, "lenny", "[ecstatic] Six episodes! Of nothing! We're geniuses!"),
+        Line(TAG + 2.6, "lenny", "And anything starting with a 4?"),
+        Line(TAG + 4.8, "stu", "Means it's your fault."),
     ]
 
 
@@ -485,6 +509,9 @@ def voice_clip(line: Line) -> np.ndarray:
     clip = load_audio(path)
     if line.cut is not None:
         clip = clip[int(line.cut[0] * RATE):int(line.cut[1] * RATE)].copy()
+    if line.drop is not None:
+        a, b = int(line.drop[0] * RATE), int(line.drop[1] * RATE)
+        clip = np.concatenate([clip[:a], clip[b:]])
     if line.tight > 0:
         clip = tightened(clip, line.tight)
     soft = int(0.03 * RATE)
@@ -502,11 +529,10 @@ def cues() -> list[tuple[Path, float, float]]:
     """(sound, trailer time, gain): effects laid in by hand. The trailer's
     own are in trailer/audio/, the game's in assets/audio/."""
     out = [
-        (AUDIO / "whoosh.wav", 20.5 - WHOOSH, 0.5),
-        (AUDIO / "whoosh.wav", 22.5 - WHOOSH, 0.5),
-        (AUDIO / "whoosh.wav", TAG - WHOOSH, 0.5),
-        (GAME_AUDIO / "sting.wav", LAST_HIT + 0.05, 0.5),
-        (AUDIO / "rimshot.wav", LAST_HIT + 6.2, 0.7),
+        (AUDIO / "whoosh.wav", on(54) - WHOOSH, 0.5),
+        (AUDIO / "whoosh.wav", on(62) - WHOOSH, 0.5),
+        (GAME_AUDIO / "sting.wav", TAG + 0.05, 0.5),
+        (AUDIO / "rimshot.wav", TAG + 6.2, 0.7),
     ]
     for k in range(len(RUN)):
         out.append((GAME_AUDIO / "card.wav", RUN_AT + k * BEAT, 0.6))
@@ -549,19 +575,32 @@ def soft_edges(clip: np.ndarray, seconds: float) -> np.ndarray:
     return clip
 
 
+def spliced(score: np.ndarray) -> np.ndarray:
+    """The cue as the trailer plays it: SPLICE's nine bars taken out, with a
+    short crossfade, and stopped at CUE_END."""
+    fade = int(0.02 * RATE)
+    a, b, end = (int(t * RATE) for t in (*SPLICE, CUE_END))
+    head = score[:a + fade].copy()
+    tail = score[b:end].copy()
+    ramp = np.linspace(0, 1, fade)[:, None]
+    tail[:fade] = tail[:fade] * ramp + head[-fade:] * (1 - ramp)
+    tail[-int(0.3 * RATE):] *= np.linspace(1, 0, int(0.3 * RATE))[:, None]
+    return np.concatenate([head[:-fade], tail])
+
+
 def mix_audio(shots: list[Shot], total_s: float, path: Path) -> None:
     n = int(total_s * RATE)
 
     def at(seconds: float) -> int:
         return int(seconds * RATE)
 
-    # The cue, as written, from LEAD on; and its solo bass opening again,
+    # The cue, spliced and stopped (`spliced`), from LEAD on; and its solo bass opening again,
     # quietly, as a tag under the end card.
     score = load_audio(AUDIO / f"{CUE}.wav")
     music = np.zeros((n, 2), np.float32)
-    dq.place(music, score, LEAD, 1.0)
+    dq.place(music, spliced(score), LEAD, 1.0)
     tag = soft_edges(score[at(CUE_SOLO[0]):at(CUE_SOLO[1])], 0.3)
-    dq.place(music, tag, LAST_HIT + 1.0 + LEAD - CUE_SOLO[0], 0.75)
+    dq.place(music, tag, TAG + 1.0, 0.75)
     # The captures' own sound: cards going on the slip, the send, the verdict.
     game = np.zeros((n, 2), np.float32)
     for shot in shots:
