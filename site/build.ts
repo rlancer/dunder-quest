@@ -1151,7 +1151,7 @@ const AN_TRAILER_FACTS = [
   ["Loudness", "−14 LUFS, YouTube's target"],
   ["Pixels", "Captured at 1920×1080 so the request slips and the responses are sharp; 4K is ×2"],
 ];
-const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:38 204 No Content\n0:50 The network";
+const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:40 204 No Content\n0:54 Versions, tokens and one laugh";
 const AN_YOUTUBE_TITLE = "A Game About Nothing – Learn HTTP and REST APIs in a Sitcom | Official Trailer";
 const AN_YOUTUBE_DESCRIPTION = `Four friends, one coffee shop, and absolutely nothing going on. Except that every counter in New York is a web server, and every errand is an HTTP request.
 
