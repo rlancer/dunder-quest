@@ -80,7 +80,7 @@ const SHELL_TRAILER_ID = "";
 // it's on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /nothing/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
-const NOTHING_TRAILER_ID = "";
+const NOTHING_TRAILER_ID = "Vv5iIuROf7Q";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
@@ -1175,13 +1175,13 @@ const YS_YOUTUBE_TAGS = "learn bash, command line, linux command line, terminal 
   + "dunder quest";
 const AN_THUMB_ALT = "A Game About Nothing trailer thumbnail: Stu Lerner and Mr. Pratt either side of 'Learn HTTP', over a response that reads HTTP/1.1 204 No Content";
 const AN_TRAILER_FACTS = [
-  ["Length", "70 seconds"],
-  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 120 BPM; every cut lands on a beat"],
-  ["Voices", "The game's own: every line in it is voiced, and the trailer uses thirteen of them"],
+  ["Length", "80 seconds"],
+  ["Music", "An original cue for a slapped bass, finger snaps and a light funk band, 122 BPM; every cut lands on its beat"],
+  ["Voices", "The game's own: every line in it is voiced, and the trailer uses seventeen of them"],
   ["Loudness", "−14 LUFS, YouTube's target"],
   ["Pixels", "Captured at 1920×1080 so the request slips and the responses are sharp; 4K is ×2"],
 ];
-const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:38 204 No Content\n0:50 The network";
+const AN_CHAPTERS = "0:00 People asking for things\n0:24 Every errand is a request\n0:40 204 No Content\n0:54 Versions, tokens and one laugh";
 const AN_YOUTUBE_TITLE = "A Game About Nothing – Learn HTTP and REST APIs in a Sitcom | Official Trailer";
 const AN_YOUTUBE_DESCRIPTION = `Four friends, one coffee shop, and absolutely nothing going on. Except that every counter in New York is a web server, and every errand is an HTTP request.
 

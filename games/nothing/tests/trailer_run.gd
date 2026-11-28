@@ -50,18 +50,21 @@ const PAGES := [3, 4, 5]
 ## start. `scenes`: by id; `miss` is wrong slips to send first. `cards`:
 ## Stu's sets, by id. `end`: hold the end card.
 const WANT := {
-	1: {"scenes": {"1a": {}, "1c": {}}},
+	1: {
+		"say": ["Order 9!"],
+		"scenes": {"1a": {}, "1c": {}},
+	},
 	2: {
-		"say": ["Know what you want", "Next!"],
+		"say": ["Know what you want", "Next!", "201! He took it!"],
 		"scenes": {"2b": {"miss": [["POST", "/orders", "Content-Type: text/plain", "{\"broth\":\"mulligatawny\",\"size\":\"cup\"}"]]}},
 	},
 	3: {
-		"say": ["And did you see what DELETE", "Finally, a status code"],
+		"say": ["204! No Content!", "And did you see what DELETE", "Finally, a status code"],
 		"cards": ["delete"],
 		"scenes": {"3c": {}},
 	},
 	4: {
-		"say": ["Every parcel has a version"],
+		"say": ["Every parcel has a version", "That was a present"],
 		"scenes": {
 			"4a": {},
 			"4b": {},
@@ -69,7 +72,7 @@ const WANT := {
 		},
 	},
 	5: {
-		"say": ["Our pilots are behind", "Ha.", "Six episodes!"],
+		"say": ["Our pilots are behind", "Ha.", "Mr. Pratt laughed.", "Six episodes!"],
 		"scenes": {"5d": {}},
 		"end": true,
 	},
