@@ -17,7 +17,7 @@ const GOOGLE_CLIENT_ID = "907567662959-8egdjo19gucnb8pbidnod3epmcuo2mqt.apps.goo
  * TURNSTILE_SECRET. Empty (or no secret) leaves the form on the honeypot and
  * the rate limit alone. See README.md.
  */
-const TURNSTILE_SITE_KEY = "";
+const TURNSTILE_SITE_KEY = "0x4AAAAAAGWoYkRawuOcz1vH";
 
 export default defineConfig(({ mode }) => {
   const dev = mode === "dev";
