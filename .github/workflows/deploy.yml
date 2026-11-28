@@ -177,6 +177,19 @@ jobs:
             exit 0
           fi
           npx --no-install wrangler d1 migrations apply ember-trail-stats --remote
+          # The Feedback page reads the site Worker's social databases, which
+          # `cf deploy` made by name, so their ids aren't in wrangler.jsonc.
+          # Look them up, put them in place of the placeholders, and build
+          # again: the Vite plugin bakes the config into dist at build time.
+          dbs=$(npx --no-install wrangler d1 list --json)
+          live=$(jq -r '.[] | select(.name == "dunderquest-social") | .uuid' <<<"$dbs")
+          dev=$(jq -r '.[] | select(.name == "dunderquest-social-dev") | .uuid' <<<"$dbs")
+          if [ -z "$live" ] || [ -z "$dev" ]; then
+            echo "::error::Couldn't find dunderquest-social and dunderquest-social-dev with wrangler d1 list (does the API token have D1 read?)."
+            exit 1
+          fi
+          sed -i "s/\"SOCIAL_DB_ID\"/\"$live\"/; s/\"SOCIAL_DB_DEV_ID\"/\"$dev\"/" wrangler.jsonc
+          bun run build
           npx --no-install wrangler deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

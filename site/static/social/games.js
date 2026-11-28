@@ -198,6 +198,21 @@ export const ORDER = ["curb", "dunder-quest", "flatmates", "prince", "lieutenant
 /** XP: a level is worth 100, finishing a game 400 more, a collectible 10. */
 export const XP = { level: 100, complete: 400, collectible: 10 };
 
+/**
+ * What a piece of feedback is about, in the order the form offers them: the
+ * key the server stores, and the words the form and the admin page show.
+ */
+export const FEEDBACK_KINDS = {
+  bug: "Something's broken",
+  stuck: "I got stuck",
+  idea: "An idea",
+  praise: "I liked something",
+  other: "Something else",
+};
+
+/** The longest feedback message the server takes, in characters. */
+export const FEEDBACK_MAX = 4000;
+
 /** The biggest save the server takes, in characters. Real saves are under 2 KB. */
 export const MAX_SAVE = 16000;
 

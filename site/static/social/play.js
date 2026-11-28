@@ -1,5 +1,5 @@
 // The social layer on a game's play page: the small toolbar in the corner
-// (screenshot, leaderboard, you), the toasts when a level is cleared or a
+// (screenshot, leaderboard, feedback, you), the toasts when a level is cleared or a
 // certificate earned, and window.DQSocial, the bridge each game's Social
 // autoload talks to.
 //
@@ -16,6 +16,7 @@ import { GAMES, ORDER, merge, normalize, summarize } from "./games.js";
 import { avatarSvg } from "./avatar.js";
 import { api, cachedPlayer, ensurePlayer, googleButton, me, onPlayer, rename, setPlayer, token } from "./client.js";
 import { openComposer } from "./composer.js";
+import { openFeedback, progressLine } from "./feedback.js";
 import { icon } from "./share.js";
 import { dialog, h, plural, toast } from "./ui.js";
 
@@ -298,6 +299,11 @@ function screenshot() {
   openComposer(c, game, context(), { onClose: focusGame });
 }
 
+/** The feedback form over the game, with the game and where the player is filled in. */
+function feedback() {
+  openFeedback({ game, context: progressLine(game, last || summarize(game, null)), onClose: focusGame });
+}
+
 async function openBoard() {
   const { body } = dialog(`${def.name} leaderboard`, { onClose: focusGame });
   body.append(h("p.dq-status", {}, "Loading…"));
@@ -375,9 +381,10 @@ async function openAccount() {
 
 function toolbar() {
   chip = h("button.dq-tool.dq-chip", { type: "button", onclick: openAccount }, h("span.dq-chip-face", { html: icon("user") }), h("span.dq-chip-name", {}, "Guest"));
-  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Screenshot, leaderboard and you" },
+  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Screenshot, leaderboard, feedback and you" },
     h("button.dq-tool", { type: "button", title: "Screenshot (F9)", "aria-label": "Take a screenshot to share", onclick: screenshot }, h("span", { html: icon("camera") })),
     h("button.dq-tool", { type: "button", title: "Leaderboard", "aria-label": "Leaderboard", onclick: openBoard }, h("span", { html: icon("trophy") })),
+    h("button.dq-tool", { type: "button", title: "Send feedback", "aria-label": "Send feedback", onclick: feedback }, h("span", { html: icon("chat") })),
     chip);
   document.body.append(bar);
   updateChip(cachedPlayer());

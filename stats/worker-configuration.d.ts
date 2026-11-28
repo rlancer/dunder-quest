@@ -7,6 +7,8 @@ declare namespace Cloudflare {
 	}
 	interface Env {
 		DB: D1Database;
+		SOCIAL_DB: D1Database;
+		SOCIAL_DB_DEV: D1Database;
 		EVENT_LIMITER: RateLimit;
 		ASSETS: Fetcher;
 		GAME_ORIGINS: "https://dunderquest.com,https://www.dunderquest.com,https://dev.dunderquest.com,https://ember-trail.robertlancer.com";
