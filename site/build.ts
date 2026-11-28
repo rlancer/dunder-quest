@@ -27,7 +27,7 @@
  *     bun site/build.ts --nothing build/site/nothing/play/index.html
  */
 
-import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { type Counter, asked, respond, wire } from "../games/nothing/http/counter.ts";
 
@@ -588,7 +588,7 @@ function buildSplash(prefix = ""): string {
 const BOARDS_DESC = "Leaderboards for Curb Your Oxidation, Dunder Quest, Flatmates.js, Prince of Versions, Just One More JOIN, "
   + "The Good, the Bad and the Greedy, Yes, Shell! and A Game About Nothing: free pixel-art games that teach Rust, Python, JavaScript, Git, SQL, regex, the shell and HTTP. Clear a level and you're on the board.";
 
-/** /leaderboards/: every game's board and the overall one (site/static/social/boards.js fills them). */
+/** /leaderboards/: every game's board and the overall one (site/static/social/boards.ts fills them). */
 function buildLeaderboards(prefix: string): string {
   const body = `
 <section class="section page-head">
@@ -606,7 +606,7 @@ function buildLeaderboards(prefix: string): string {
   });
 }
 
-/** /me/: your player, progress, certificates, screenshots, sign-in and save key (site/static/social/me.js). */
+/** /me/: your player, progress, certificates, screenshots, sign-in and save key (site/static/social/me.ts). */
 function buildMe(prefix: string): string {
   const body = `
 <section class="section page-head dq-page">
@@ -619,7 +619,7 @@ function buildMe(prefix: string): string {
   });
 }
 
-/** /feedback/: the feedback form in the page (site/static/social/feedback.js). `?game=<key>` preselects a game. */
+/** /feedback/: the feedback form in the page (site/static/social/feedback.ts). `?game=<key>` preselects a game. */
 function buildFeedback(prefix: string): string {
   const body = `
 <section class="section page-head dq-page">
@@ -2243,7 +2243,7 @@ function tagGamePage(index: string, title: string, desc: string, path: string, i
 const SOCIAL_CSS = '<link rel="stylesheet" href="/static/social/social.css">';
 const SOCIAL_JS = '<script type="module" src="/static/social/site.js"></script>';
 /** "Welcome back": a returning player's place in a game (or, with "any", their last game) and a button to carry on.
- * Hidden until site/static/social/resume.js fills it; `btn` is the page's own button class. */
+ * Hidden until site/static/social/resume.ts fills it; `btn` is the page's own button class. */
 function resumePanel(game: string, btn = "btn"): string {
   return `<div data-dq-resume="${game}" data-dq-btn="${btn}" hidden></div>`;
 }
@@ -3890,7 +3890,31 @@ ${RESUME_JS}
 `;
 }
 
-function main(): void {
+/**
+ * The browser code in site/static is TypeScript; browsers get JavaScript, at
+ * the same paths with .js (static/social/play.js, static/pad.js, ...).
+ * The social layer is ES modules that import each other and load me.js,
+ * boards.js, resume.js and feedback.js lazily, so it's one build with code
+ * splitting: every file stays an entry at its own URL, and what they share
+ * goes in chunks beside them, loaded once per page. The page scripts outside
+ * social/ are classic <script>s, so each is bundled on its own as an IIFE.
+ */
+async function buildScripts(statics: string): Promise<void> {
+  const dir = join(SITE, "static");
+  const ts = (sub: string) => readdirSync(join(dir, sub)).filter((f) => f.endsWith(".ts") && !f.endsWith(".d.ts")).map((f) => join(dir, sub, f));
+  const builds = [
+    Bun.build({
+      entrypoints: ts("social"), root: dir, outdir: statics, target: "browser", format: "esm", splitting: true,
+      naming: { entry: "[dir]/[name].[ext]", chunk: "social/chunk-[hash].[ext]" },
+    }),
+    Bun.build({ entrypoints: ts("."), root: dir, outdir: statics, target: "browser", format: "iife", naming: "[dir]/[name].[ext]" }),
+  ];
+  for (const result of await Promise.all(builds)) {
+    if (!result.success) throw new AggregateError(result.logs, "Couldn't compile the browser code in site/static");
+  }
+}
+
+async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const tag: Record<string, (index: string) => void> = {
     "--play": tagPlayPage,
@@ -3907,7 +3931,9 @@ function main(): void {
 
   const statics = join(out, "static");
   if (existsSync(statics)) rmSync(statics, { recursive: true });
-  cpSync(join(SITE, "static"), statics, { recursive: true });
+  // Everything but the TypeScript is copied as it is; buildScripts compiles that.
+  cpSync(join(SITE, "static"), statics, { recursive: true, filter: (src) => !src.endsWith(".ts") });
+  await buildScripts(statics);
   copyFileSync(join(SITE, "favicon.ico"), join(out, "favicon.ico")); // painted by tools/make_og.py
   for (const [name, src] of Object.entries(IMAGES)) copyFileSync(join(QUEST, src), join(statics, "img", name));
   mkdirSync(join(statics, "img", "shots"), { recursive: true });
@@ -3956,4 +3982,4 @@ function main(): void {
   console.log(`site built into ${out}`);
 }
 
-main();
+await main();

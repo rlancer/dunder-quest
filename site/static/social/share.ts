@@ -4,7 +4,10 @@
 // window with the text and link filled in; nothing is posted for the player.
 
 /** [key, label, url builder] for each network, in the order the buttons show. */
-export const NETWORKS = [
+/** Builds a network's compose link from the text and the link to share. */
+export type ShareLink = (text: string, url: string) => string;
+
+export const NETWORKS: [string, string, ShareLink][] = [
   ["x", "X", (text, url) => `https://x.com/intent/post?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`],
   ["linkedin", "LinkedIn", (_text, url) => `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`],
   ["bluesky", "Bluesky", (text, url) => `https://bsky.app/intent/compose?text=${encodeURIComponent(`${text} ${url}`)}`],
@@ -16,7 +19,7 @@ export const NETWORKS = [
 ];
 
 /** Small single-color icons (24x24 paths) so the buttons need no image requests. */
-export const ICONS = {
+export const ICONS: Record<string, string> = {
   x: "M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L1.8 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z",
   linkedin: "M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.5c0-1.3 0-3-1.9-3s-2.2 1.4-2.2 2.9V21H9z",
   bluesky: "M5.2 3.6C7.6 5.4 10.2 9 11.2 11c1-2 3.6-5.6 6-7.4 1.7-1.3 4.5-2.3 4.5.9 0 .6-.4 5.3-.6 6-.8 2.6-3.4 3.3-5.8 2.9 4.2.7 5.2 3.1 2.9 5.4-4.4 4.5-6.3-1.1-6.8-2.5l-.2-.5-.2.5c-.5 1.4-2.4 7-6.8 2.5-2.3-2.3-1.3-4.7 2.9-5.4-2.4.4-5-.3-5.8-2.9-.2-.7-.6-5.4-.6-6 0-3.2 2.8-2.2 4.5-.9z",
@@ -34,17 +37,17 @@ export const ICONS = {
   chat: "M4 3h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2h-8.2L7 22v-4H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2zm3 6.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z",
 };
 
-export function icon(name, size = 18) {
+export function icon(name: string, size = 18): string {
   return `<svg class="dq-icon" viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true" focusable="false"><path fill="currentColor" d="${ICONS[name]}"/></svg>`;
 }
 
-const escAttr = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const escAttr = (s: unknown): string => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /**
  * A row of share buttons as HTML. The page's script adds the native share
  * sheet (on phones) and copy-link behaviour to the buttons marked data-share.
  */
-export function shareButtons(text, url, { networks = NETWORKS.map((n) => n[0]) } = {}) {
+export function shareButtons(text: string, url: string, { networks = NETWORKS.map((n) => n[0]) }: { networks?: string[] } = {}): string {
   const links = NETWORKS.filter(([key]) => networks.includes(key)).map(([key, label, build]) =>
     `<a class="dq-share-btn dq-share-${key}" href="${escAttr(build(text, url))}" target="_blank" rel="noopener" title="Share on ${label}">${icon(key)}<span>${label}</span></a>`);
   return `<div class="dq-share" data-share-text="${escAttr(text)}" data-share-url="${escAttr(url)}">`
@@ -55,7 +58,7 @@ export function shareButtons(text, url, { networks = NETWORKS.map((n) => n[0]) }
 }
 
 /** LinkedIn's "Add licence or certification" form, filled in. */
-export function linkedInCertUrl({ name, issued, url, id }) {
+export function linkedInCertUrl({ name, issued, url, id }: { name: string; issued: number; url: string; id: string }): string {
   const d = new Date(issued * 1000);
   const q = new URLSearchParams({
     startTask: "CERTIFICATION_NAME",

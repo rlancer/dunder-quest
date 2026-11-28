@@ -39,6 +39,12 @@ jobs:
         with:
           bun-version: 1.4.3
 
+      # The site's browser code (site/static/**/*.ts) is TypeScript, compiled
+      # by site/build.ts with Bun.build; this fails the build on a type error.
+      - name: Type-check the site's browser code
+        working-directory: site
+        run: bun install --frozen-lockfile && bun run typecheck
+
       - name: Build the site and the browser games
         run: bash scripts/export_web.sh
 

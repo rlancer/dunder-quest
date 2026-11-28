@@ -3,15 +3,42 @@
 // new, and questions never repeat until the bank runs dry. Two hints per
 // question: his riddle plus the scroll it draws on, then one wrong option dimmed.
 (function () {
-  const root = document.querySelector("[data-trial]");
+  /** One of the wizard's questions, as the lesson page embeds it. */
+  interface Question {
+    code: string;
+    prompt: string;
+    options: string[];
+    answer: number;
+    hint?: string;
+    scroll?: string;
+    insight?: string;
+    explanation: string;
+  }
+
+  /** The trial's data in #trial-data: who sets it, how many wards, and the question bank. */
+  interface TrialData {
+    wizard: string;
+    trial: number;
+    questions: Question[];
+  }
+
+  // Cast once, checked just below: the functions further down never see it missing.
+  const root = document.querySelector("[data-trial]") as HTMLElement;
   const source = document.getElementById("trial-data");
   if (!root || !source) return;
-  const data = JSON.parse(source.textContent);
+  const data: TrialData = JSON.parse(source.textContent!);
   const LETTERS = ["A", "B", "C", "D", "E", "F"];
 
-  let owed, deck, current, hintLevel, dimmed, answered, asked, misses;
+  let owed: number;
+  let deck: number[];
+  let current: Question;
+  let hintLevel: number;
+  let dimmed: Set<number>;
+  let answered: boolean;
+  let asked: number;
+  let misses: number;
 
-  function shuffle(list) {
+  function shuffle<T>(list: T[]): T[] {
     const a = list.slice();
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -20,19 +47,19 @@
     return a;
   }
 
-  function el(tag, attrs, children) {
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, attrs?: Record<string, unknown> | null, children?: (Node | null | undefined)[]): HTMLElementTagNameMap[K] {
     const node = document.createElement(tag);
     for (const [key, value] of Object.entries(attrs || {})) {
-      if (key === "html") node.innerHTML = value;
-      else if (key === "text") node.textContent = value;
-      else if (key.startsWith("on")) node.addEventListener(key.slice(2), value);
-      else node.setAttribute(key, value);
+      if (key === "html") node.innerHTML = value as string;
+      else if (key === "text") node.textContent = value as string;
+      else if (key.startsWith("on")) node.addEventListener(key.slice(2), value as EventListener);
+      else node.setAttribute(key, value as string);
     }
     for (const child of children || []) if (child) node.append(child);
     return node;
   }
 
-  function start() {
+  function start(): void {
     owed = data.trial;
     deck = [];
     asked = 0;
@@ -40,25 +67,25 @@
     next();
   }
 
-  function next() {
+  function next(): void {
     if (deck.length === 0) deck = shuffle(data.questions.map((_, i) => i));
-    current = data.questions[deck.pop()];
+    current = data.questions[deck.pop()!];
     hintLevel = 0;
     dimmed = new Set();
     answered = false;
     asked += 1;
     render();
-    const first = root.querySelector(".options button");
+    const first = root.querySelector<HTMLElement>(".options button");
     if (first && asked > 1) first.focus();
   }
 
-  function wards() {
+  function wards(): HTMLDivElement {
     const box = el("div", { class: "wards", role: "img", "aria-label": `${owed} of ${data.trial} wards left` });
     for (let i = 0; i < data.trial; i++) box.append(el("span", { class: "ward" + (i >= owed ? " broken" : "") }));
     return box;
   }
 
-  function render(verdict) {
+  function render(verdict?: { pick: number }): void {
     root.replaceChildren();
     root.append(el("div", { class: "trial-top" }, [
       el("span", { class: "trial-who", text: `${data.wizard} · question ${asked}` }),
@@ -114,7 +141,7 @@
     root.append(actions);
   }
 
-  function askHint() {
+  function askHint(): void {
     if (hintLevel >= 2 || answered) return;
     hintLevel += 1;
     if (hintLevel === 2) {
@@ -124,7 +151,7 @@
     render();
   }
 
-  function choose(index) {
+  function choose(index: number): void {
     if (answered) return;
     answered = true;
     if (index === current.answer) {
@@ -136,11 +163,11 @@
       root.classList.add("shake");
     }
     render({ pick: index });
-    const button = root.querySelector(".trial-actions button");
+    const button = root.querySelector<HTMLElement>(".trial-actions button");
     if (button) button.focus();
   }
 
-  function banish() {
+  function banish(): void {
     root.replaceChildren(el("div", { class: "banished", role: "status" }, [
       wards(),
       el("h3", { text: `${data.wizard} is banished` }),
@@ -151,7 +178,7 @@
         el("button", { type: "button", onclick: start, text: "Sit the trial again" }),
       ]),
     ]));
-    root.querySelector(".banished button").focus();
+    root.querySelector<HTMLElement>(".banished button")!.focus();
   }
 
   start();

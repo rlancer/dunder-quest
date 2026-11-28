@@ -3,7 +3,16 @@
 // every combination of blanks comes from the in-game checker, in the pad's
 // data-verdicts: Sharon's interruption, or the scene playing out.
 (function () {
-  function line(who, text) {
+  /** One combination of blanks: the scene playing out, or Sharon's interruption with rustc's error. */
+  interface Verdict {
+    kind: "ok" | "wrong" | "panic" | "err";
+    at: string;
+    head: string;
+    out: string[];
+    lines: [string, string][];
+  }
+
+  function line(who: string, text: string): HTMLParagraphElement {
     const p = document.createElement("p");
     const b = document.createElement("b");
     b.textContent = who;
@@ -11,24 +20,24 @@
     return p;
   }
 
-  function block(lines, cls) {
+  function block(lines: string[], cls: string): HTMLPreElement {
     const pre = document.createElement("pre");
     pre.className = cls;
     pre.textContent = lines.join("\n");
     return pre;
   }
 
-  const TITLES = { ok: "It compiles. And then it happens.", wrong: "It compiles. It just isn't what happened.",
+  const TITLES: Record<Verdict["kind"], string> = { ok: "It compiles. And then it happens.", wrong: "It compiles. It just isn't what happened.",
     panic: "It compiles. Then it panics.", err: "Sharon has a problem with line " };
 
-  document.querySelectorAll("[data-pad]").forEach(function (pad) {
-    const verdicts = JSON.parse(pad.dataset.verdicts);
-    const blanks = Array.from(pad.querySelectorAll(".blank"));
-    const run = pad.querySelector(".run");
-    const out = pad.querySelector(".pad-out");
+  document.querySelectorAll<HTMLElement>("[data-pad]").forEach(function (pad) {
+    const verdicts: Record<string, Verdict | undefined> = JSON.parse(pad.dataset.verdicts!);
+    const blanks = Array.from(pad.querySelectorAll<HTMLButtonElement>(".blank"));
+    const run = pad.querySelector<HTMLButtonElement>(".run")!;
+    const out = pad.querySelector<HTMLElement>(".pad-out")!;
 
     blanks.forEach(function (blank) {
-      const options = JSON.parse(blank.dataset.options);
+      const options: string[] = JSON.parse(blank.dataset.options!);
       blank.disabled = false;
       blank.addEventListener("click", function () {
         const pick = (Number(blank.dataset.pick) + 1) % options.length;

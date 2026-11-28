@@ -3,9 +3,9 @@
 // picture included). The same id always gives the same sprite, here and in
 // the Worker's pages (deploy/src/pages.ts imports this file).
 
-const COLORS = ["#f2b544", "#7be08a", "#6cc6ff", "#ff8fa3", "#c49bff", "#ffa25c", "#5fe0c8", "#e9e46b"];
+const COLORS: string[] = ["#f2b544", "#7be08a", "#6cc6ff", "#ff8fa3", "#c49bff", "#ffa25c", "#5fe0c8", "#e9e46b"];
 
-function hash(text) {
+function hash(text: string): number {
   // FNV-1a, 32-bit.
   let h = 0x811c9dc5;
   for (let i = 0; i < text.length; i++) {
@@ -20,7 +20,7 @@ function hash(text) {
  * face, in one of eight colours on the site's dark panel. `size` is in CSS
  * pixels; `label` makes it an image for screen readers, else it's hidden.
  */
-export function avatarSvg(id, size = 24, label = "") {
+export function avatarSvg(id: string | null | undefined, size = 24, label = ""): string {
   const h = hash(String(id || "?"));
   const color = COLORS[h % COLORS.length];
   let bits = h >>> 3;

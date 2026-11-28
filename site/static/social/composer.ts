@@ -3,10 +3,10 @@
 // share it: the phone's own share sheet with the image attached, a download,
 // a copied image, or a link to a page on the site whose preview is the card.
 
-import { GAMES } from "./games.js";
-import { api, ensurePlayer } from "./client.js";
-import { NETWORKS, icon } from "./share.js";
-import { copyText, dialog, h, toast } from "./ui.js";
+import { GAMES, type GameKey, type Level } from "./games.ts";
+import { api, ensurePlayer } from "./client.ts";
+import { NETWORKS, icon, type ShareLink } from "./share.ts";
+import { copyText, dialog, h, toast } from "./ui.ts";
 
 const CARD_W = 1200;
 const CARD_H = 630;
@@ -14,12 +14,26 @@ const CARD_H = 630;
 const NATIVE_W = 480;
 const NATIVE_H = 270;
 
+/** Where the player is, for the suggested captions. */
+export interface ShotContext {
+  level?: Level;
+  complete?: boolean;
+}
+
+/** A screenshot once it's on the server, with its full link. */
+interface Shared {
+  id: string;
+  url: string;
+  image: string;
+  full: string;
+}
+
 /**
  * The game's screen at its own 480x270, cut out of the canvas's letterboxing.
  * The page asks WebGL to keep its last frame (see the play page's head), so
  * the canvas can be read at any moment.
  */
-export function grabNative(canvas) {
+export function grabNative(canvas: HTMLCanvasElement): HTMLCanvasElement {
   const W = canvas.width;
   const H = canvas.height;
   const scale = Math.min(W / NATIVE_W, H / NATIVE_H);
@@ -30,35 +44,35 @@ export function grabNative(canvas) {
   const out = document.createElement("canvas");
   out.width = NATIVE_W;
   out.height = NATIVE_H;
-  const ctx = out.getContext("2d");
+  const ctx = out.getContext("2d")!;
   ctx.imageSmoothingEnabled = s < 1;
   ctx.drawImage(canvas, Math.floor((W - w) / 2), Math.floor((H - h) / 2), w, h, 0, 0, NATIVE_W, NATIVE_H);
   return out;
 }
 
 /** True if a canvas came back blank (WebGL cleared it before we looked). */
-function isBlank(canvas) {
-  const data = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+function isBlank(canvas: HTMLCanvasElement): boolean {
+  const data = canvas.getContext("2d")!.getImageData(0, 0, canvas.width, canvas.height).data;
   for (let i = 0; i < data.length; i += 4 * 97) if (data[i] || data[i + 1] || data[i + 2]) return false;
   return true;
 }
 
-const crispCache = new WeakMap();
+const crispCache = new WeakMap<HTMLCanvasElement, HTMLCanvasElement>();
 
 /** Native pixels blown up crisply: big with no smoothing, then down to size smoothly. */
-function crisp(native, w, h) {
+function crisp(native: HTMLCanvasElement, w: number, h: number): HTMLCanvasElement {
   const hit = crispCache.get(native);
   if (hit && hit.width === w && hit.height === h) return hit;
   const big = document.createElement("canvas");
   big.width = NATIVE_W * 5;
   big.height = NATIVE_H * 5;
-  const b = big.getContext("2d");
+  const b = big.getContext("2d")!;
   b.imageSmoothingEnabled = false;
   b.drawImage(native, 0, 0, big.width, big.height);
   const out = document.createElement("canvas");
   out.width = w;
   out.height = h;
-  const o = out.getContext("2d");
+  const o = out.getContext("2d")!;
   o.imageSmoothingEnabled = true;
   o.imageSmoothingQuality = "high";
   o.drawImage(big, 0, 0, w, h);
@@ -66,8 +80,8 @@ function crisp(native, w, h) {
   return out;
 }
 
-function wrapLines(ctx, text, width, maxLines) {
-  const lines = [];
+function wrapLines(ctx: CanvasRenderingContext2D, text: string, width: number, maxLines: number): string[] {
+  const lines: string[] = [];
   for (const para of text.split("\n")) {
     let line = "";
     for (const word of para.split(/\s+/).filter(Boolean)) {
@@ -88,7 +102,7 @@ function wrapLines(ctx, text, width, maxLines) {
   return lines;
 }
 
-function roundRect(ctx, x, y, w, h, r) {
+function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number): void {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -101,15 +115,15 @@ function roundRect(ctx, x, y, w, h, r) {
 const FONT = "'Pixelify Sans', 'Atkinson Hyperlegible', system-ui, sans-serif";
 
 /** Pixelify Sans draws "fi" and "fl" as ligatures that read as other letters; a zero-width non-joiner keeps them apart. */
-const unligature = (s) => s.replace(/f(?=[fil])/g, "f‌");
+const unligature = (s: string): string => s.replace(/f(?=[fil])/g, "f‌");
 
 /** The share card: the screen, cropped to 1200x630, with the caption and the game over it. */
-export function drawCard(native, game, caption, { frame = true } = {}) {
+export function drawCard(native: HTMLCanvasElement, game: GameKey, caption: string, { frame = true }: { frame?: boolean } = {}): HTMLCanvasElement {
   const def = GAMES[game];
   const out = document.createElement("canvas");
   out.width = CARD_W;
   out.height = CARD_H;
-  const ctx = out.getContext("2d");
+  const ctx = out.getContext("2d")!;
   // 16:9 into 1200x630 (1.9:1): fill the width and lose a sliver top and bottom.
   const shotH = Math.round((CARD_W * NATIVE_H) / NATIVE_W);
   ctx.drawImage(crisp(native, CARD_W, shotH), 0, Math.round((CARD_H - shotH) / 2));
@@ -148,20 +162,20 @@ export function drawCard(native, game, caption, { frame = true } = {}) {
 }
 
 /** PNG if it's small enough for the server, else a good JPEG. */
-async function encode(canvas) {
-  const png = await new Promise((r) => canvas.toBlob(r, "image/png"));
+async function encode(canvas: HTMLCanvasElement): Promise<Blob | null> {
+  const png = await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/png"));
   if (png && png.size <= 1_400_000) return png;
-  return new Promise((r) => canvas.toBlob(r, "image/jpeg", 0.9));
+  return new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.9));
 }
 
 /** A few captions to start from, about where the player is. */
-function suggestions(game, context) {
+function suggestions(game: GameKey, context: ShotContext): string[] {
   const def = GAMES[game];
   const level = context.level;
-  const out = [];
+  const out: string[] = [];
   if (context.complete) out.push(`I finished ${def.name} and learned ${def.lang}!`);
   if (level) out.push(`Just cleared “${level.name}” in ${def.name}. Today's lesson: ${level.lesson}.`);
-  const flavour = {
+  const flavour = ({
     curb: "Me vs. the borrow checker. The borrow checker is winning. Learning Rust in Curb Your Oxidation.",
     "dunder-quest": "On a very silly quest for the Grail, learning Python one scroll at a time.",
     flatmates: "My flatmate is running my JavaScript. What could possibly go wrong?",
@@ -170,7 +184,7 @@ function suggestions(game, context) {
     greedy: "New sheriff in Backslash Ridge, where everybody is named Hobson. Learning regex in The Good, the Bad and the Greedy.",
     shell: "Every station is a command and the pass is a pipe. Learning the command line in Yes, Shell!",
     nothing: "Five counters, one request slip, and a show about nothing. Learning HTTP in A Game About Nothing.",
-  }[game];
+  } satisfies Record<GameKey, string>)[game];
   out.push(flavour);
   out.push(`Learning ${def.lang} with a free pixel-art game.`);
   return [...new Set(out)].slice(0, 4);
@@ -181,7 +195,7 @@ function suggestions(game, context) {
  * player is ({level, complete}) for the suggested captions. `onClose` runs
  * when it's dismissed (the play page gives the game its focus back).
  */
-export function openComposer(canvas, game, context = {}, { onClose } = {}) {
+export function openComposer(canvas: HTMLCanvasElement, game: GameKey, context: ShotContext = {}, { onClose }: { onClose?: () => void } = {}): (() => void) | undefined {
   const def = GAMES[game];
   const native = grabNative(canvas);
   if (isBlank(native)) {
@@ -192,8 +206,8 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
   const ideas = suggestions(game, context);
   let caption = ideas[0];
   let frame = true;
-  let blob = null;
-  let shared = null; // {id, url, image} once uploaded
+  let blob: Blob | null = null;
+  let shared: Shared | null = null; // {id, url, image} once uploaded
 
   const { body, close } = dialog("Share a screenshot", { wide: true, onClose, className: "dq-composer" });
   const preview = h("canvas.dq-preview", { width: CARD_W, height: CARD_H, "aria-label": "The card as it will be shared" });
@@ -206,19 +220,19 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
 
   function redraw() {
     const card = drawCard(native, game, caption, { frame });
-    preview.getContext("2d").drawImage(card, 0, 0);
+    preview.getContext("2d")!.drawImage(card, 0, 0);
     blob = null;
   }
 
-  async function getBlob() {
+  async function getBlob(): Promise<Blob> {
     if (!blob) blob = await encode(preview);
-    return blob;
+    return blob!;
   }
 
   const fileName = () => `${def.short.replace(/[^\w]+/g, "-").toLowerCase()}-${Date.now().toString(36)}.${blob?.type === "image/jpeg" ? "jpg" : "png"}`;
   const shareText = () => `${caption.trim()} ${def.tag}`.trim();
 
-  async function upload() {
+  async function upload(): Promise<Shared> {
     if (shared) return shared;
     status.textContent = "Making a link…";
     await ensurePlayer();
@@ -227,7 +241,7 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
     form.set("caption", caption.trim());
     const b = await getBlob();
     form.set("image", new File([b], fileName(), { type: b.type }));
-    shared = await api("POST", "/api/shots", form);
+    shared = await api<Shared>("POST", "/api/shots", form);
     shared.full = `${location.origin}${shared.url}`;
     status.textContent = "";
     linkOut.value = shared.full;
@@ -235,29 +249,29 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
     return shared;
   }
 
-  async function run(fn) {
+  async function run(fn: () => Promise<void>): Promise<void> {
     try {
       await fn();
     } catch (err) {
-      status.textContent = err.message || "That didn't work.";
+      status.textContent = (err as Error).message || "That didn't work.";
     }
   }
 
   // Open the network's window first (so the popup isn't blocked), then point it at the link.
-  function shareTo(build) {
+  function shareTo(build: ShareLink): void {
     const win = window.open("about:blank", "_blank");
     if (win) win.opener = null;
     upload().then((s) => {
       const url = build(shareText(), s.full);
       if (win) win.location.href = url;
       else location.href = url;
-    }).catch((err) => {
+    }).catch((err: Error) => {
       win?.close();
       status.textContent = err.message || "That didn't work.";
     });
   }
 
-  const linkOut = h("input.dq-link", { readonly: true, "aria-label": "Link to this screenshot", onclick: (e) => e.target.select() });
+  const linkOut = h("input.dq-link", { readonly: true, "aria-label": "Link to this screenshot", onclick: (e) => (e.target as HTMLInputElement).select() });
   const linkRow = h("div.dq-link-row", { hidden: true }, linkOut,
     h("button.dq-btn", { type: "button", onclick: () => run(async () => { await copyText(linkOut.value); status.textContent = "Link copied."; }) }, "Copy"));
 
@@ -276,7 +290,7 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
         const b = await getBlob();
         const file = new File([b], fileName(), { type: b.type });
         await navigator.share({ files: [file], text: `${shareText()} ${location.origin}${def.page}` }).catch((e) => {
-          if (e.name !== "AbortError") throw e;
+          if ((e as Error).name !== "AbortError") throw e;
         });
       }),
     }, h("span", { html: icon("share") }), "Share…") : null,
@@ -293,8 +307,8 @@ export function openComposer(canvas, game, context = {}, { onClose } = {}) {
       type: "button",
       onclick: () => run(async () => {
         // Clipboards take PNG only.
-        const png = await new Promise((r) => preview.toBlob(r, "image/png"));
-        await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+        const png = await new Promise<Blob | null>((r) => preview.toBlob(r, "image/png"));
+        await navigator.clipboard.write([new ClipboardItem({ "image/png": png! })]);
         status.textContent = "Image copied. Paste it into a post.";
       }),
     }, "Copy image") : null,

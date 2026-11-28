@@ -2,7 +2,7 @@
 // player's profile card. Both are drawn on a 600x315 grid and saved at 2x,
 // the 1200x630 that Facebook, LinkedIn, X and Bluesky all ask for.
 
-import { GAMES, ORDER, XP, formatTime } from "../../site/static/social/games.js";
+import { GAMES, ORDER, XP, formatTime } from "../../site/static/social/games.ts";
 import { Pixels } from "./png";
 
 type Game = keyof typeof GAMES;

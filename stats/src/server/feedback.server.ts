@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { FEEDBACK_KINDS, GAMES } from "../../../site/static/social/games.js";
+import { FEEDBACK_KINDS, GAMES } from "../../../site/static/social/games.ts";
 
 /**
  * The feedback inbox. Players send feedback to the site's Worker
