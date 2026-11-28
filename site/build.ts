@@ -80,7 +80,7 @@ const SHELL_TRAILER_ID = "";
 // it's on YouTube: paste its video ID here. Empty leaves the trailer off the
 // /nothing/ page and the splash's card, and shows the thumbnail alone on the
 // brand kit.
-const NOTHING_TRAILER_ID = "";
+const NOTHING_TRAILER_ID = "Vv5iIuROf7Q";
 // The channel every trailer goes up on.
 const CHANNEL = "https://www.youtube.com/@dunderquest";
 // A rolling release CI refreshes on every push to main.
