@@ -1,6 +1,6 @@
 // The social layer on the site's own pages: share buttons, the bits only a
 // page's owner sees (rename a certificate, delete a screenshot), you in the
-// site bar, and the /me/ and /leaderboards/ pages, which load their own
+// site bar, and the /me/, /leaderboards/ and /feedback/ pages, which load their own
 // modules.
 
 import { avatarSvg } from "./avatar.js";
@@ -66,5 +66,11 @@ document.querySelector("[data-dq-delete-shot]")?.addEventListener("click", async
 document.querySelector("[data-dq-print]")?.addEventListener("click", () => print());
 
 if (document.getElementById("dq-me")) import("./me.js");
+const feedbackRoot = document.getElementById("dq-feedback");
+if (feedbackRoot) {
+  import("./feedback.js").then(({ feedbackForm }) => {
+    feedbackForm(feedbackRoot, { game: new URLSearchParams(location.search).get("game") || "", kind: "idea" });
+  });
+}
 if (document.getElementById("dq-boards") || document.getElementById("dq-mini-board")) import("./boards.js");
 if (document.querySelector("[data-dq-resume]")) import("./resume.js");

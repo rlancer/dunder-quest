@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DevRouteImport } from './routes/dev'
 import { Route as EggsRouteImport } from './routes/eggs'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as OgRouteImport } from './routes/og'
 import { Route as QuestionsRouteImport } from './routes/questions'
 import { Route as StagesStageRouteImport } from './routes/stages/$stage'
@@ -29,6 +30,11 @@ const DevRoute = DevRouteImport.update({
 const EggsRoute = EggsRouteImport.update({
   id: '/eggs',
   path: '/eggs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OgRoute = OgRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/eggs': typeof EggsRoute
+  '/feedback': typeof FeedbackRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/eggs': typeof EggsRoute
+  '/feedback': typeof FeedbackRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
@@ -68,20 +76,36 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dev': typeof DevRoute
   '/eggs': typeof EggsRoute
+  '/feedback': typeof FeedbackRoute
   '/og': typeof OgRoute
   '/questions': typeof QuestionsRoute
   '/stages/$stage': typeof StagesStageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dev' | '/eggs' | '/og' | '/questions' | '/stages/$stage'
+  fullPaths:
+    | '/'
+    | '/dev'
+    | '/eggs'
+    | '/feedback'
+    | '/og'
+    | '/questions'
+    | '/stages/$stage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dev' | '/eggs' | '/og' | '/questions' | '/stages/$stage'
+  to:
+    | '/'
+    | '/dev'
+    | '/eggs'
+    | '/feedback'
+    | '/og'
+    | '/questions'
+    | '/stages/$stage'
   id:
     | '__root__'
     | '/'
     | '/dev'
     | '/eggs'
+    | '/feedback'
     | '/og'
     | '/questions'
     | '/stages/$stage'
@@ -91,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DevRoute: typeof DevRoute
   EggsRoute: typeof EggsRoute
+  FeedbackRoute: typeof FeedbackRoute
   OgRoute: typeof OgRoute
   QuestionsRoute: typeof QuestionsRoute
   StagesStageRoute: typeof StagesStageRoute
@@ -117,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/eggs'
       fullPath: '/eggs'
       preLoaderRoute: typeof EggsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/og': {
@@ -147,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DevRoute: DevRoute,
   EggsRoute: EggsRoute,
+  FeedbackRoute: FeedbackRoute,
   OgRoute: OgRoute,
   QuestionsRoute: QuestionsRoute,
   StagesStageRoute: StagesStageRoute,

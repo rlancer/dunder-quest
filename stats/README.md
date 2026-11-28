@@ -1,6 +1,6 @@
 # Dunder Quest admin
 
-The admin area at `dunderquest.com/admin`: anonymous play stats from the game, and the dev notes (debug shortcuts, the save file, test scenes, builds). Only the owner can open it. The brand kit (logo, colors, trailer and social cards) is public, at `dunderquest.com/brand/`.
+The admin area at `dunderquest.com/admin`: anonymous play stats from the game, the feedback inbox, and the dev notes (debug shortcuts, the save file, test scenes, builds). Only the owner can open it. The brand kit (logo, colors, trailer and social cards) is public, at `dunderquest.com/brand/`.
 
 - **Game side:** `common/telemetry.gd` queues events (stage start, clear, quit, deaths, scrolls read, duel answers and hints) and posts them in batches to `/api/events`. A player is a random install id and nothing else. Players can switch stats off on the title screen. Only exported release builds report; editor and debug runs stay quiet unless `EMBER_TELEMETRY_URL` is set.
 - **Server side:** one Cloudflare Worker, built with TanStack Start (Router, Query, Table, Charts) and backed by D1.
@@ -8,6 +8,16 @@ The admin area at `dunderquest.com/admin`: anonymous play stats from the game, a
   - `stats.dunderquest.com` is kept for `/api/events`, which shipped game builds post to. Anything else there redirects to `/admin`.
   - `stats.ember-trail.robertlancer.com` does the same for builds from before the game was renamed from Ember Trail. Keep it until those builds stop reporting.
   - `src/server.ts` lets `/api/events` through and requires a Cloudflare Access sign-in for everything else.
+
+## Feedback
+
+`/admin/feedback` is Rob's inbox for what players send from the speech bubble in every game and from `/feedback/` (see `deploy/README.md`). It's private: nothing on the public site shows feedback.
+
+- It reads the site Worker's social databases, not this app's: `SOCIAL_DB` (`dunderquest-social`, the live site) and `SOCIAL_DB_DEV` (`dunderquest-social-dev`), switched with the Live site / dev.dunderquest.com toggle.
+- `cf deploy` made those databases by name, so their ids aren't in `wrangler.jsonc`, only the placeholders `SOCIAL_DB_ID` and `SOCIAL_DB_DEV_ID`. CI's "Deploy stats" step looks the ids up with `wrangler d1 list --json`, swaps them in and builds again before `wrangler deploy`. So the API token needs to be able to list D1 databases (D1: Edit covers it).
+- Tiles for new items, this week, open bugs and the average rating; New / Done / Spam / All tabs; game and kind filters; and on each card the context (the level the player was up to), the page, the player (linked to their public profile), the browser, a Reply link when they left an email, and Mark done / Spam. The nav shows how many are new on the live site.
+- Spam older than 30 days is deleted whenever the page loads. A database with no `feedback` table yet (a fresh local one) shows a note instead.
+- Locally, the placeholders are empty local databases. To try the page with data, make the table in one (`npx wrangler d1 execute dunderquest-social --local --command "..."`, with the `feedback` and `players` schema from `deploy/src/db.ts`).
 
 ## Run it locally
 

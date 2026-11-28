@@ -8,7 +8,11 @@ export interface Env {
   ASSETS: Fetcher;
   /** The OAuth client ID from Google Cloud Console. Empty turns Google sign-in off. */
   GOOGLE_CLIENT_ID?: string;
-  /** Per-IP limit on writes that cost something: new players, screenshots. */
+  /** Cloudflare Turnstile's site key for the feedback form (not secret). Empty turns Turnstile off. */
+  TURNSTILE_SITE_KEY?: string;
+  /** Turnstile's secret key, a Worker secret (`wrangler secret put TURNSTILE_SECRET`). */
+  TURNSTILE_SECRET?: string;
+  /** Per-IP limit on writes that cost something: new players, screenshots, feedback. */
   WRITE_LIMITER?: RateLimit;
 }
 
@@ -72,6 +76,24 @@ const SCHEMA = [
     hidden INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE INDEX IF NOT EXISTS shots_player ON shots (player_id, created_at DESC)`,
+  // What players tell us, from the feedback form on every play page and at
+  // /feedback/. Read on the admin area's Feedback page (stats/), which binds
+  // this database too. `game` is '' for the site in general.
+  `CREATE TABLE IF NOT EXISTS feedback (
+    id TEXT PRIMARY KEY,
+    player_id TEXT,
+    game TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    rating INTEGER,
+    message TEXT NOT NULL,
+    contact TEXT NOT NULL DEFAULT '',
+    page TEXT NOT NULL DEFAULT '',
+    context TEXT NOT NULL DEFAULT '',
+    agent TEXT NOT NULL DEFAULT '',
+    created_at INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new'
+  )`,
+  `CREATE INDEX IF NOT EXISTS feedback_recent ON feedback (created_at DESC)`,
 ];
 
 const ready = new WeakMap<D1Database, Promise<void>>();

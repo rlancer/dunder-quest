@@ -356,7 +356,7 @@ ${body}
 <footer class="foot">
   <p><img src="${prefix}static/img/tin.png" alt="" width="12" height="12"> ${foot || "Dunder Quest. A squire's quest for the Grail, and six lessons of Python on the way."}</p>
   <p class="fine">Python is named after Monty Python, so the quest is a Holy Grail homage. Python programmers call names like <code>__init__</code> “dunders”, short for <b>d</b>ouble <b>under</b>score. Say <code>__quest__</code> out loud and you get the name.</p>
-  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your progress</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a></p>
+  <p><a href="${prefix}">All games</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest</a> · <a href="${prefix}play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}me/">Your progress</a> · <a href="${prefix}lessons/">Lessons</a> · <a href="${prefix}guide/">How to play</a> · <a href="${prefix}flatmates/">Flatmates.js</a> · <a href="${prefix}curb/">Curb Your Oxidation</a> · <a href="${prefix}prince/">Prince of Versions</a> · <a href="${prefix}lieutenant/">Just One More JOIN</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}">Source on GitHub</a> · <a href="${prefix}privacy/">Privacy</a> · <a href="${prefix}feedback/"${path === "feedback/" ? ' aria-current="page"' : ""}>Feedback</a></p>
   <p><a class="help" href="${prefix}brand/" title="The brand kit">&gt;&gt;&gt; help(dunder_quest)</a></p>
 </footer>
 ${scripts}${social ? "\n" + SOCIAL_JS : ""}
@@ -619,22 +619,52 @@ function buildMe(prefix: string): string {
   });
 }
 
+/** /feedback/: the feedback form in the page (site/static/social/feedback.js). `?game=<key>` preselects a game. */
+function buildFeedback(prefix: string): string {
+  const body = `
+<section class="section page-head dq-page">
+  <p class="kicker">Feedback</p>
+  <h1>Tell us what you think</h1>
+  <p class="lede">A bug, a level you're stuck on, an idea for the next game, or just what you liked. No sign-up needed.</p>
+  <div class="dq-fb-page">
+    <div class="dq-fb-card" id="dq-feedback"><noscript>The form needs JavaScript. You can also <a href="${REPO}/issues">open an issue on GitHub</a>.</noscript></div>
+    <aside class="dq-fb-aside">
+      <div class="dq-fb-note">
+        <h2>What happens next</h2>
+        <p>Rob, who makes these games, reads every message. Bugs get fixed, and good ideas end up in the next update.</p>
+        <p>Leave an email and he can write back. Leave it out and it's anonymous.</p>
+      </div>
+      <div class="dq-fb-note">
+        <h2>In a game?</h2>
+        <p>Use the speech bubble at the top right of the game. It says which level you're on for you.</p>
+      </div>
+    </aside>
+  </div>
+</section>`;
+  return page("Feedback", body, prefix, {
+    description: "Send feedback about any Dunder Quest game, or the site: a bug, a level you're stuck on, or an idea. No sign-up.",
+    path: "feedback/", nav: HOME_NAV, brand: "", play: "curb/play/", social: true,
+  });
+}
+
 /** /privacy/: what the site and the social layer (deploy/src/) keep. Google's consent screen links here. */
 function buildPrivacy(prefix: string): string {
   const body = `
 <section class="section page-head">
   <p class="kicker">Privacy</p>
   <h1>What Dunder Quest keeps</h1>
-  <p class="lede">As little as it can. There's no sign-up, no email address and no advertising.</p>
+  <p class="lede">As little as it can. There's no sign-up and no advertising, and no email address unless you leave one with your feedback so we can reply.</p>
   <h2>Playing</h2>
   <p>The games run in your browser. The first time you clear a level, the site makes you an anonymous player with a silly name you can change. Your browser keeps that player's key in its local storage; the server keeps only a scrambled copy of the key (its SHA-256), so it can recognise you but can't hand the key out.</p>
   <p>For each game the server keeps your save (the levels you've cleared, your best time, tries and collectibles), your experience points and your place on the leaderboards, the certificates you've earned with the name on them, and any screenshots you choose to upload with their captions. Your player name, scores, certificates and uploaded screenshots are public: that's what the leaderboards, certificate links and screenshot links are for.</p>
   <h2>Signing in with Google</h2>
   <p>Signing in with Google is optional; it lets your progress follow you to another device. When you do, Google tells the site who you are, and the site keeps only your Google account number. It doesn't keep your email address, name or picture, and it never sees your Google password.</p>
+  <h2>Feedback</h2>
+  <p>The feedback form (the speech bubble in every game, and the <a href="${prefix}feedback/">feedback page</a>) needs no sign-up. With your message the server keeps what it's about (which game, what kind, your rating if you gave one, and in a game, the level you're up to), the email address if you leave one, which is used only to reply to you, the path of the page you sent it from, your browser's name (its user-agent), and your player id if you have a player. Only the person who makes these games reads it; it's never shown to other players. To keep bots out, the form may use Cloudflare Turnstile, which checks your browser (usually without a puzzle), and the server counts messages from each address for a minute to stop floods, without keeping the address.</p>
   <h2>Analytics and videos</h2>
   <p>The site counts visits with Cloudflare Web Analytics, which doesn't use cookies or follow you across sites. Trailers are YouTube videos embedded from youtube-nocookie.com, and the pages use Google Fonts.</p>
   <h2>Deleting it all</h2>
-  <p>Your <a href="${prefix}me/">profile page</a> has a button that deletes your player and everything that belongs to it: saves, certificates and screenshots. Clearing your browser's storage forgets the key on that device.</p>
+  <p><a href="${prefix}me/">Your progress</a> has a button that deletes your player and everything that belongs to it: saves, certificates, screenshots and any feedback you sent while you had a player. Clearing your browser's storage forgets the key on that device. Feedback sent as a guest isn't tied to anyone, so it can't be found to delete it; leave out anything you'd rather we didn't keep.</p>
   <h2>Questions</h2>
   <p>Dunder Quest is open source: <a href="${REPO}">open an issue on GitHub</a>.</p>
 </section>`;
@@ -2534,7 +2564,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/flatmates/jazz.png" alt="" width="16" height="24"> Flatmates.js. Two flatmates, one Croydon, six stops of JavaScript.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#line">The stops</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/flatmates">Source on GitHub</a> · <a href="${prefix}feedback/?game=flatmates">Feedback</a></p>
 </footer>
 <script src="${prefix}static/laptop.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -2866,7 +2896,7 @@ ${body}
 </main>
 <footer class="foot">
   <p><img src="${prefix}static/img/curb/sharon.png" alt="" width="12" height="24"> Curb Your Oxidation. One Westside, ten petty disputes, ten pieces of Rust.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="#season">The episodes</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${REPO}/tree/main/games/curb">Source on GitHub</a> · <a href="${prefix}feedback/?game=curb">Feedback</a></p>
 </footer>
 <script src="${prefix}static/pad.js"></script>
 <script src="${prefix}static/trailer.js"></script>
@@ -3027,7 +3057,7 @@ ${body}
 </main>
 <footer class="pv-foot">
   <p>Prince of Versions. One prince, one dagger, and every commit you'll wish you'd made.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/prince">Source on GitHub</a> · <a href="${prefix}feedback/?game=prince">Feedback</a></p>
 </footer>
 ${PRINCE_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>
 ` : ""}${RESUME_JS}
@@ -3205,7 +3235,7 @@ ${body}
 </main>
 <footer class="jj-foot">
   <p>Just One More JOIN. One lieutenant, one basset hound, and a records desk that takes you at your exact word.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/lieutenant">Source on GitHub</a> · <a href="${prefix}feedback/?game=lieutenant">Feedback</a></p>
 </footer>
 ${JOIN_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
@@ -3442,7 +3472,7 @@ ${body}
 </main>
 <footer class="gr-foot">
   <p>The Good, the Bad and the Greedy. One sheriff, one lazy deputy, and a town full of Hobsons who all fit the description.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/greedy">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/greedy">Source on GitHub</a> · <a href="${prefix}feedback/?game=greedy">Feedback</a></p>
 </footer>
 ${GREEDY_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
@@ -3645,7 +3675,7 @@ ${body}
 </main>
 <footer class="ys-foot">
   <p>Yes, Shell! One chef, one pass, and a kitchen that does exactly what you say.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the HTTP game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}nothing/">A Game About Nothing, the HTTP game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/shell">Source on GitHub</a> · <a href="${prefix}feedback/?game=shell">Feedback</a></p>
 </footer>
 ${SHELL_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
@@ -3851,7 +3881,7 @@ ${body}
 </main>
 <footer class="an-foot">
   <p>A Game About Nothing. Four friends, five counters, and a request for everything.</p>
-  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}shell/">Yes, Shell!, the shell game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/nothing">Source on GitHub</a></p>
+  <p><a href="play/">Play in your browser</a> · <a href="${prefix}leaderboards/">Leaderboards</a> · <a href="${prefix}curb/">Curb Your Oxidation, the Rust game</a> · <a href="${prefix}${QUEST_PAGE}">Dunder Quest, the Python game</a> · <a href="${prefix}flatmates/">Flatmates.js, the JavaScript game</a> · <a href="${prefix}prince/">Prince of Versions, the Git game</a> · <a href="${prefix}lieutenant/">Just One More JOIN, the SQL game</a> · <a href="${prefix}greedy/">The Good, the Bad and the Greedy, the regex game</a> · <a href="${prefix}shell/">Yes, Shell!, the shell game</a> · <a href="${CHANNEL}">YouTube</a> · <a href="${REPO}/tree/main/games/nothing">Source on GitHub</a> · <a href="${prefix}feedback/?game=nothing">Feedback</a></p>
 </footer>
 ${NOTHING_TRAILER_ID ? `<script src="${prefix}static/trailer.js"></script>` : ""}
 ${RESUME_JS}
@@ -3919,6 +3949,7 @@ function main(): void {
   write(join(out, "leaderboards", "index.html"), buildLeaderboards("../"));
   write(join(out, "me", "index.html"), buildMe("../"));
   write(join(out, "privacy", "index.html"), buildPrivacy("../"));
+  write(join(out, "feedback", "index.html"), buildFeedback("../"));
   write(join(out, "404.html"), build404("/"));
   write(join(out, "_redirects"), Object.entries(OLD_SLUGS).map(([old, slug]) =>
     `/lessons/${old}/ /lessons/${slug}/ 301\n/lessons/${old} /lessons/${slug}/ 301\n`).join(""));

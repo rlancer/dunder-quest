@@ -30,6 +30,22 @@
       // Replace with the id `wrangler d1 create ember-trail-stats` prints.
       "database_id": "da5fc032-958f-418a-a872-9eb1f223b2fa",
       "migrations_dir": "migrations"
+    },
+    // The site Worker's social databases (deploy/cloudflare.config.ts), read
+    // by the Feedback page: SOCIAL_DB is the live site's, SOCIAL_DB_DEV
+    // dev.dunderquest.com's. `cf deploy` made them by name, so their ids
+    // aren't kept here: CI's "Deploy stats" step looks them up with
+    // `wrangler d1 list` and swaps them in for these placeholders, then
+    // builds again. Locally, the placeholders are empty local databases.
+    {
+      "binding": "SOCIAL_DB",
+      "database_name": "dunderquest-social",
+      "database_id": "SOCIAL_DB_ID"
+    },
+    {
+      "binding": "SOCIAL_DB_DEV",
+      "database_name": "dunderquest-social-dev",
+      "database_id": "SOCIAL_DB_DEV_ID"
     }
   ],
   "ratelimits": [
