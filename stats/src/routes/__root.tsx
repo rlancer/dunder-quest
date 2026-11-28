@@ -1,7 +1,7 @@
-import type { QueryClient } from "@tanstack/react-query";
+import { type QueryClient, useQuery } from "@tanstack/react-query";
 import { HeadContent, Link, Outlet, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import { RangeSearch } from "../data";
+import { RangeSearch, newCountQuery } from "../data";
 import styles from "../styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
@@ -25,6 +25,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function Root() {
+  // Waiting feedback on the live site; the nav shows it without holding up the page.
+  const { data: waiting } = useQuery(newCountQuery());
   return (
     <Document>
       <header className="bar">
@@ -37,6 +39,14 @@ function Root() {
           </Link>
           <Link to="/questions" search={true} activeOptions={{ includeSearch: false }}>
             Duel questions
+          </Link>
+          <Link to="/feedback" activeOptions={{ includeSearch: false }}>
+            Feedback
+            {waiting ? (
+              <span className="count" aria-label={`, ${waiting} new`}>
+                {waiting}
+              </span>
+            ) : null}
           </Link>
           <a href="https://dunderquest.com/brand/">Brand kit</a>
           <Link to="/dev">Dev notes</Link>

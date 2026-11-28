@@ -3,8 +3,8 @@
 // screenshots. See deploy/README.md for the list.
 
 import {
-  GAMES, ORDER, bestLine, merge, normalize, randomName, summarize,
-} from "../../site/static/social/games.js";
+  FEEDBACK_KINDS, FEEDBACK_MAX, GAMES, ORDER, bestLine, merge, normalize, randomName, summarize,
+} from "../../site/static/social/games.ts";
 import { authenticate, createPlayer, issueToken, revokeToken, verifyGoogle } from "./auth";
 import { type CertRow, type Env, type PlayerRow, type SaveRow, type ShotRow, now, randomId } from "./db";
 import { allowedName } from "./names";
@@ -142,6 +142,7 @@ async function absorb(env: Env, from: PlayerRow, into: PlayerRow): Promise<Playe
   // Certificates first, so the earlier date of the two survives the merge.
   await env.DB.batch([
     env.DB.prepare("UPDATE shots SET player_id = ? WHERE player_id = ?").bind(into.id, from.id),
+    env.DB.prepare("UPDATE feedback SET player_id = ? WHERE player_id = ?").bind(into.id, from.id),
     // A certificate only moves if the other player has none for that game.
     env.DB.prepare(
       "UPDATE certificates SET player_id = ? WHERE player_id = ? AND game NOT IN (SELECT game FROM certificates WHERE player_id = ?)",
@@ -285,6 +286,77 @@ async function postShot(request: Request, env: Env, me: PlayerRow): Promise<Resp
   return json(shotJson(shot), 201);
 }
 
+// ---- Feedback ----
+
+/** Free text made safe to keep: no control or format characters but newlines, at most `max` characters. */
+function cleanText(raw: unknown, max: number, newlines = true): string {
+  if (typeof raw !== "string") return "";
+  return raw.normalize("NFKC")
+    .replace(/\r\n?/g, "\n")
+    .replace(/[\p{Cc}\p{Cf}]/gu, (c) => (newlines && c === "\n" ? "\n" : newlines ? "" : " "))
+    .replace(/\n{3,}/g, "\n\n").replace(/[ \t]+/g, " ").trim().slice(0, max);
+}
+
+type FeedbackBody = {
+  game: string; kind: string; rating: number | null; message: string; contact: string; page: string; context: string;
+  /** Cloudflare Turnstile's token, when the site has a Turnstile widget. */
+  turnstile: string;
+  /** A field people never see: anything in it is a bot filling in every box. */
+  website: string;
+};
+
+const SITEVERIFY = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+/**
+ * Asks Cloudflare whether a Turnstile token is good. With no widget set up
+ * (no site key or no secret), everyone passes, and the honeypot and the rate
+ * limit are the only defence.
+ */
+async function humanEnough(request: Request, env: Env, token: unknown): Promise<boolean> {
+  if (!env.TURNSTILE_SITE_KEY || !env.TURNSTILE_SECRET) return true;
+  if (typeof token !== "string" || !token || token.length > 2048) return false;
+  const form = new FormData();
+  form.append("secret", env.TURNSTILE_SECRET);
+  form.append("response", token);
+  const ip = request.headers.get("CF-Connecting-IP");
+  if (ip) form.append("remoteip", ip);
+  try {
+    const res = await fetch(SITEVERIFY, { method: "POST", body: form });
+    const out = (await res.json()) as { success?: boolean };
+    return out.success === true;
+  } catch {
+    return false;
+  }
+}
+
+async function postFeedback(request: Request, env: Env, me: PlayerRow | null): Promise<Response> {
+  const b = await body<FeedbackBody>(request);
+  // A bot that filled in the hidden box is thanked and forgotten.
+  if (typeof b.website === "string" && b.website.trim()) return json({ id: "thanks" }, 201);
+  if (await limited(request, env, "feedback")) return fail(429, "That's a lot of feedback at once. Try again in a minute.");
+  if (!(await humanEnough(request, env, b.turnstile))) return fail(403, "We couldn't tell you're not a bot. Reload the page and try again.");
+  const game = typeof b.game === "string" ? b.game : "";
+  if (game && !isGame(game)) return fail(400, "Unknown game.");
+  const kind = typeof b.kind === "string" && Object.hasOwn(FEEDBACK_KINDS, b.kind) ? b.kind : "other";
+  const message = cleanText(b.message, FEEDBACK_MAX);
+  if (message.length < 3) return fail(400, "Write a few words first.");
+  const rating = Number.isInteger(b.rating) && (b.rating as number) >= 1 && (b.rating as number) <= 5 ? b.rating as number : null;
+  // Only the path of the page it was sent from, never another site's address.
+  let page = "";
+  try {
+    if (typeof b.page === "string" && b.page) page = new URL(b.page, "https://dunderquest.com").pathname.slice(0, 200);
+  } catch {}
+  const id = randomId(10);
+  await env.DB.prepare(
+    `INSERT INTO feedback (id, player_id, game, kind, rating, message, contact, page, context, agent, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    id, me?.id ?? null, game, kind, rating, message, cleanText(b.contact, 200, false), page,
+    cleanText(b.context, 200, false), cleanText(request.headers.get("User-Agent") ?? "", 300, false), now(),
+  ).run();
+  return json({ id }, 201);
+}
+
 // ---- The router ----
 
 export async function handleApi(request: Request, env: Env, url: URL): Promise<Response> {
@@ -294,7 +366,9 @@ export async function handleApi(request: Request, env: Env, url: URL): Promise<R
   const signedIn = () => (me ? null : fail(401, "Not signed in."));
 
   if (path === "/api/config" && method === "GET") {
-    return json({ google: env.GOOGLE_CLIENT_ID ?? "", games: ORDER });
+    // The Turnstile site key goes out only when the secret is there to check its tokens.
+    const turnstile = env.TURNSTILE_SITE_KEY && env.TURNSTILE_SECRET ? env.TURNSTILE_SITE_KEY : "";
+    return json({ google: env.GOOGLE_CLIENT_ID ?? "", turnstile, games: ORDER });
   }
 
   if (path === "/api/players" && method === "POST") {
@@ -329,7 +403,7 @@ export async function handleApi(request: Request, env: Env, url: URL): Promise<R
     }
     if (method === "DELETE") {
       if (!me) return fail(401, "Not signed in.");
-      await env.DB.batch(["shots", "certificates", "saves", "tokens"].map((table) =>
+      await env.DB.batch(["shots", "certificates", "saves", "tokens", "feedback"].map((table) =>
         env.DB.prepare(`DELETE FROM ${table} WHERE player_id = ?`).bind(me.id)).concat(
         env.DB.prepare("DELETE FROM players WHERE id = ?").bind(me.id),
       ));
@@ -416,6 +490,10 @@ export async function handleApi(request: Request, env: Env, url: URL): Promise<R
       .bind(clean, certMatch[1], me.id).run();
     if (!res.meta.changes) return fail(404, "No such certificate of yours.");
     return json({ id: certMatch[1], name: clean });
+  }
+
+  if (path === "/api/feedback" && method === "POST") {
+    return postFeedback(request, env, me);
   }
 
   if (path === "/api/shots" && method === "POST") {

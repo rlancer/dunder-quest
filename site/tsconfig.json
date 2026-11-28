@@ -1,0 +1,17 @@
+{
+  // The browser code in static/, which site/build.ts compiles with Bun.build.
+  // This only checks its types (CI runs `bun run typecheck` here).
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["static/**/*.ts"]
+}

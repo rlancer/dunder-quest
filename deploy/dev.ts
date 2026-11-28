@@ -8,7 +8,9 @@
  *     bun deploy/dev.ts                 # http://localhost:8788
  *
  * Options: --port 8788, --site <dir>, --db <file> (":memory:" for a throwaway one),
- * GOOGLE_CLIENT_ID=... in the environment to try Google sign-in on localhost.
+ * GOOGLE_CLIENT_ID=... in the environment to try Google sign-in on localhost,
+ * and TURNSTILE_SITE_KEY and TURNSTILE_SECRET to try Turnstile (Cloudflare's
+ * test keys work: see deploy/README.md).
  */
 
 import { Database } from "bun:sqlite";
@@ -102,7 +104,9 @@ if (import.meta.main) {
   const site = resolve(opt("site", join(here, "..", "build", "site")));
   const dbFile = opt("db", join(here, "..", "build", "social-dev.sqlite"));
   const port = Number(opt("port", "8788"));
-  const env: Env = { DB: d1(dbFile), ASSETS: assets(site), GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "" };
+  const env: Env = { DB: d1(dbFile), ASSETS: assets(site), GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? "",
+    TURNSTILE_SITE_KEY: process.env.TURNSTILE_SITE_KEY ?? "", TURNSTILE_SECRET: process.env.TURNSTILE_SECRET ?? "",
+  };
   const ctx = { waitUntil() {}, passThroughOnException() {} } as unknown as ExecutionContext;
   Bun.serve({
     port,

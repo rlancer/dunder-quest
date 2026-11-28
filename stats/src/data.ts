@@ -1,6 +1,8 @@
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 import * as v from "valibot";
+import { SITES, STATUSES } from "./feedback";
+import { inbox, newCount, setStatus } from "./server/feedback.server";
 import { overview, questions, stageDetail } from "./server/stats.server";
 
 /** The time windows the dashboard offers, in days; 0 is all time. */
@@ -32,3 +34,31 @@ export const stageQuery = (stage: number, days: Days) =>
 
 export const questionsQuery = (days: Days) =>
   queryOptions({ queryKey: ["questions", days], queryFn: () => getQuestions({ data: { days } }), staleTime });
+
+// ---- Feedback (src/server/feedback.server.ts) ----
+
+export const Site = v.fallback(v.picklist(SITES), "live");
+export const Tab = v.fallback(v.picklist(STATUSES), "new");
+const Key = v.fallback(v.pipe(v.string(), v.maxLength(40)), "");
+export const FeedbackSearch = v.object({
+  site: v.optional(Site, "live"),
+  tab: v.optional(Tab, "new"),
+  game: v.optional(Key, ""),
+  kind: v.optional(Key, ""),
+});
+export type FeedbackFilters = v.InferOutput<typeof FeedbackSearch>;
+
+const getInbox = createServerFn({ method: "GET" })
+  .validator(FeedbackSearch)
+  .handler(({ data }) => inbox(data.site, data.tab, data.game, data.kind));
+
+const getNewCount = createServerFn({ method: "GET" }).handler(() => newCount());
+
+export const markFeedback = createServerFn({ method: "POST" })
+  .validator(v.object({ site: Site, id: v.pipe(v.string(), v.maxLength(40)), status: v.picklist(["new", "done", "spam"]) }))
+  .handler(({ data }) => setStatus(data.site, data.id, data.status));
+
+export const inboxQuery = (f: FeedbackFilters) =>
+  queryOptions({ queryKey: ["feedback", f.site, f.tab, f.game, f.kind], queryFn: () => getInbox({ data: f }), staleTime: 10_000 });
+
+export const newCountQuery = () => queryOptions({ queryKey: ["feedback-new"], queryFn: () => getNewCount(), staleTime });

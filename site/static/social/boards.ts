@@ -2,34 +2,34 @@
 // overall one, in tabs, plus the latest certificates. The home page's small
 // board (#dq-mini-board) is the overall top five.
 
-import { avatarSvg } from "./avatar.js";
-import { GAMES, ORDER } from "./games.js";
-import { api, cachedPlayer } from "./client.js";
-import { h } from "./ui.js";
+import { avatarSvg } from "./avatar.ts";
+import { GAMES, ORDER, type GameKey } from "./games.ts";
+import { api, cachedPlayer, type Board, type BoardRow, type Certificate, type Player } from "./client.ts";
+import { h } from "./ui.ts";
 
 /** The board's rows, and yours under them when you're further down. */
-function rows(board, me) {
-  const row = (r, mine) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
+function rows(board: Board, me: Player | null): HTMLOListElement {
+  const row = (r: BoardRow, mine?: boolean) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
     h("span.dq-rank", {}, `#${r.rank}`),
     h("a.dq-name", { href: `/u/${r.id}` }, h("span", { html: avatarSvg(r.id, 18) }), r.name),
     h("span.dq-progress", { title: `${r.count} of ${r.total} levels` }, board.game === "all" ? `${r.xp.toLocaleString()} XP` : `${r.count}/${r.total}`),
     h("span.dq-line", {}, board.game === "all" ? `${r.count}/${r.total}` : `${r.complete ? "★ " : ""}${r.line}`));
-  const below = board.me && !board.rows.some((r) => r.id === board.me.id);
+  const below = board.me && !board.rows.some((r) => r.id === board.me!.id);
   return h("ol.dq-board", {}, board.rows.map((r) => row(r)),
     below ? h("li.dq-gap", { "aria-hidden": "true" }, "⋯") : null,
-    below ? row(board.me, true) : null);
+    below ? row(board.me!, true) : null);
 }
 
-async function renderBoard(panel, game) {
+async function renderBoard(panel: HTMLElement, game: "all" | GameKey): Promise<void> {
   panel.replaceChildren(h("p.dq-fine", {}, "Loading…"));
   try {
-    const board = await api("GET", `/api/leaderboard?game=${game}&limit=50`);
+    const board = await api<Board>("GET", `/api/leaderboard?game=${game}&limit=50`);
     const me = cachedPlayer();
-    const def = GAMES[game];
+    const def = GAMES[game as GameKey];
     const how = game === "all"
       ? "Ranked by XP: 100 a level, 400 for finishing a game, 10 a collectible."
       : `Ranked by ${def.unit[1]} cleared, then ${def.best === "tries" ? "fewest tries" : "fastest total time"}.`;
-    const kids = [h("div.dq-board-head", {}, h("span", {}, how), h("span", {}, `${board.players} ${board.players === 1 ? "player" : "players"}`))];
+    const kids: HTMLElement[] = [h("div.dq-board-head", {}, h("span", {}, how), h("span", {}, `${board.players} ${board.players === 1 ? "player" : "players"}`))];
     if (!board.rows.length) {
       kids.push(h("p", { style: { padding: "0 10px" } }, "Nobody here yet. ", h("a", { href: game === "all" ? "/" : def.play }, "Play"), " and it's yours."));
     } else {
@@ -38,14 +38,14 @@ async function renderBoard(panel, game) {
     if (game !== "all") kids.push(h("p", { style: { padding: "0 10px" } }, h("a.btn.btn-small", { href: def.play }, `Play ${def.name}`)));
     panel.replaceChildren(...kids);
   } catch (err) {
-    panel.replaceChildren(h("p", {}, err.message));
+    panel.replaceChildren(h("p", {}, (err as Error).message));
   }
 }
 
 const page = document.getElementById("dq-boards");
 if (page) {
-  const keys = ["all", ...ORDER];
-  const label = (k) => (k === "all" ? "Overall" : GAMES[k].name);
+  const keys: ("all" | GameKey)[] = ["all", ...ORDER];
+  const label = (k: "all" | GameKey) => (k === "all" ? "Overall" : GAMES[k].name);
   const panel = h("div.dq-board-panel", { role: "tabpanel", id: "dq-board-panel" });
   const tabs = h("div.dq-tabs", { role: "tablist" }, keys.map((k) => h("button", {
     type: "button", role: "tab", "data-game": k, "aria-controls": "dq-board-panel",
@@ -54,17 +54,17 @@ if (page) {
       select(k);
     },
   }, label(k))));
-  function select(k) {
-    for (const b of tabs.children) b.setAttribute("aria-selected", String(b.dataset.game === k));
+  function select(k: "all" | GameKey): void {
+    for (const b of tabs.children as HTMLCollectionOf<HTMLElement>) b.setAttribute("aria-selected", String(b.dataset.game === k));
     renderBoard(panel, k);
   }
   page.replaceChildren(tabs, panel);
   const start = location.hash.slice(1);
-  select(keys.includes(start) ? start : "all");
+  select(keys.includes(start as GameKey) ? (start as GameKey) : "all");
 
   const feed = document.getElementById("dq-feed");
   if (feed) {
-    api("GET", "/api/feed").then(({ certificates }) => {
+    api<{ certificates: (Certificate & { player: string })[] }>("GET", "/api/feed").then(({ certificates }) => {
       if (!certificates.length) {
         feed.replaceChildren(h("p.dq-fine", {}, "No certificates yet. Finish a game to be the first."));
         return;
@@ -78,7 +78,7 @@ if (page) {
 
 const mini = document.getElementById("dq-mini-board");
 if (mini) {
-  api("GET", "/api/leaderboard?game=all&limit=5").then((board) => {
+  api<Board>("GET", "/api/leaderboard?game=all&limit=5").then((board) => {
     if (!board.rows.length) {
       mini.replaceChildren(h("p", {}, "The board is empty. Clear a level in any game and you're on it."));
       return;

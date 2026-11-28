@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assets, d1 } from "../dev";
 import worker, { type Env } from "../src/worker";
-import { bestLine, merge, normalize, summarize } from "../../site/static/social/games.js";
+import { bestLine, merge, normalize, summarize } from "../../site/static/social/games.ts";
 
 const CLIENT_ID = "test-client.apps.googleusercontent.com";
 let site: string;
@@ -357,5 +357,82 @@ describe("google", () => {
     const good = await idToken("x");
     const forged = good.slice(0, good.lastIndexOf(".") + 1) + b64(new Uint8Array(256));
     expect((await call("POST", "/api/auth/google", { body: { credential: forged } })).status).toBe(401);
+  });
+});
+
+describe("feedback", () => {
+  type Row = { id: string; player_id: string | null; game: string; kind: string; rating: number | null; message: string; contact: string; page: string; context: string; agent: string; status: string };
+  const row = (id: string) => env.DB.prepare("SELECT * FROM feedback WHERE id = ?").bind(id).first<Row>();
+
+  test("anyone can send it, guest or player, and it's kept cleaned", async () => {
+    const guest = await call("POST", "/api/feedback", {
+      body: { game: "curb", kind: "bug", rating: 4, message: "  Scene 3\r\n\r\n\r\n\r\nwon't load\u0007 ", contact: "me@example.com\nhi", page: "https://evil.example/curb/play/?x=1", context: "Last cleared: The Regift" },
+    });
+    expect(guest.status).toBe(201);
+    const kept = await row(guest.body.id);
+    expect(kept).toMatchObject({ player_id: null, game: "curb", kind: "bug", rating: 4, message: "Scene 3\n\nwon't load", contact: "me@example.com hi", page: "/curb/play/", context: "Last cleared: The Regift", status: "new" });
+    const { token, player } = await newPlayer("Feedback Fan");
+    const mine = await call("POST", "/api/feedback", { token, body: { kind: "idea", message: "More games please", rating: 9 } });
+    expect(mine.status).toBe(201);
+    expect(await row(mine.body.id)).toMatchObject({ player_id: player.id, game: "", kind: "idea", rating: null });
+  });
+
+  test("an empty message or an unknown game is refused, an unknown kind is 'other'", async () => {
+    expect((await call("POST", "/api/feedback", { body: { message: " a " } })).status).toBe(400);
+    expect((await call("POST", "/api/feedback", { body: { game: "nope", message: "hello there" } })).status).toBe(400);
+    const odd = await call("POST", "/api/feedback", { body: { kind: "rant", message: "hello there" } });
+    expect((await row(odd.body.id))?.kind).toBe("other");
+  });
+
+  test("a bot that fills in the hidden box is thanked and nothing is kept", async () => {
+    const before = await env.DB.prepare("SELECT COUNT(*) AS n FROM feedback").first<{ n: number }>();
+    const bot = await call("POST", "/api/feedback", { body: { message: "buy cheap things", website: "http://spam.example" } });
+    expect(bot.status).toBe(201);
+    const after = await env.DB.prepare("SELECT COUNT(*) AS n FROM feedback").first<{ n: number }>();
+    expect(after?.n).toBe(before?.n);
+  });
+
+  test("with Turnstile set up, the token is checked with Cloudflare before anything is kept", async () => {
+    const realFetch = globalThis.fetch;
+    const asked: { secret: string; response: string }[] = [];
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input instanceof Request ? input.url : input);
+      if (!url.startsWith("https://challenges.cloudflare.com/turnstile/v0/siteverify")) return realFetch(input, init);
+      const form = init?.body as FormData;
+      const sent = { secret: String(form.get("secret")), response: String(form.get("response")) };
+      asked.push(sent);
+      return Response.json({ success: sent.response === "good-token" });
+    }) as typeof fetch;
+    env.TURNSTILE_SITE_KEY = "site-key";
+    env.TURNSTILE_SECRET = "secret-key";
+    try {
+      expect((await call("GET", "/api/config")).body.turnstile).toBe("site-key");
+      const count = async () => (await env.DB.prepare("SELECT COUNT(*) AS n FROM feedback").first<{ n: number }>())?.n;
+      const before = await count();
+      expect((await call("POST", "/api/feedback", { body: { message: "no token at all" } })).status).toBe(403);
+      expect((await call("POST", "/api/feedback", { body: { message: "a bad token", turnstile: "bad-token" } })).status).toBe(403);
+      expect(await count()).toBe(before);
+      const ok = await call("POST", "/api/feedback", { body: { message: "a good token", turnstile: "good-token" } });
+      expect(ok.status).toBe(201);
+      expect(asked.at(-1)).toEqual({ secret: "secret-key", response: "good-token" });
+      expect(asked.length).toBe(2);
+    } finally {
+      globalThis.fetch = realFetch;
+      env.TURNSTILE_SITE_KEY = "";
+      env.TURNSTILE_SECRET = "";
+    }
+    // Without a secret, the site key isn't handed out, and nothing is checked.
+    env.TURNSTILE_SITE_KEY = "site-key";
+    expect((await call("GET", "/api/config")).body.turnstile).toBe("");
+    expect((await call("POST", "/api/feedback", { body: { message: "no Turnstile yet" } })).status).toBe(201);
+    env.TURNSTILE_SITE_KEY = "";
+  });
+
+  test("deleting a player deletes their feedback", async () => {
+    const { token } = await newPlayer();
+    const sent = await call("POST", "/api/feedback", { token, body: { message: "Forget me later" } });
+    expect(await row(sent.body.id)).not.toBeNull();
+    expect((await call("DELETE", "/api/me", { token })).status).toBe(200);
+    expect(await row(sent.body.id)).toBeNull();
   });
 });

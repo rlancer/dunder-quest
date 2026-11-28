@@ -10,6 +10,15 @@ const accountId = "3315bb3e7d2e3556bfea6fb3947a890e";
  */
 const GOOGLE_CLIENT_ID = "907567662959-8egdjo19gucnb8pbidnod3epmcuo2mqt.apps.googleusercontent.com";
 
+/**
+ * Cloudflare Turnstile's site key for the feedback form (Turnstile in the
+ * Cloudflare dashboard, a widget for dunderquest.com, dev.dunderquest.com and
+ * localhost). It isn't secret; its secret key is the Worker secret
+ * TURNSTILE_SECRET. Empty (or no secret) leaves the form on the honeypot and
+ * the rate limit alone. See README.md.
+ */
+const TURNSTILE_SITE_KEY = "";
+
 export default defineConfig(({ mode }) => {
   const dev = mode === "dev";
 
@@ -33,6 +42,7 @@ export default defineConfig(({ mode }) => {
         // `cf deploy` makes each database the first time; the Worker makes its tables.
         DB: bindings.d1({ name: dev ? "dunderquest-social-dev" : "dunderquest-social" }),
         GOOGLE_CLIENT_ID: { type: "text", value: GOOGLE_CLIENT_ID },
+        TURNSTILE_SITE_KEY: { type: "text", value: TURNSTILE_SITE_KEY },
         WRITE_LIMITER: bindings.rateLimit({ namespace: dev ? "4302" : "4301", simple: { limit: 20, period: 60 } }),
       },
       // The old host stays attached so a redirect rule on robertlancer.com

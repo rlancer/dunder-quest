@@ -1,5 +1,5 @@
 // The social layer on a game's play page: the small toolbar in the corner
-// (screenshot, leaderboard, you), the toasts when a level is cleared or a
+// (screenshot, leaderboard, feedback, you), the toasts when a level is cleared or a
 // certificate earned, and window.DQSocial, the bridge each game's Social
 // autoload talks to.
 //
@@ -10,33 +10,46 @@
 //   DQSocial.screenshot()               open the composer (a key in the game)
 //
 // Progress is merged, never replaced: a save from another device adds its
-// cleared levels and best times to this one's (see games.js).
+// cleared levels and best times to this one's (see games.ts).
 
-import { GAMES, ORDER, merge, normalize, summarize } from "./games.js";
-import { avatarSvg } from "./avatar.js";
-import { api, cachedPlayer, ensurePlayer, googleButton, me, onPlayer, rename, setPlayer, token } from "./client.js";
-import { openComposer } from "./composer.js";
-import { icon } from "./share.js";
-import { dialog, h, plural, toast } from "./ui.js";
+import { GAMES, ORDER, merge, normalize, summarize, type GameDef, type GameKey, type Summary } from "./games.ts";
+import { avatarSvg } from "./avatar.ts";
+import {
+  api, cachedPlayer, ensurePlayer, googleButton, me, onPlayer, rename, setPlayer, token,
+  type Board, type BoardRow, type CloudSave, type Player,
+} from "./client.ts";
+import { openComposer } from "./composer.ts";
+import { openFeedback, progressLine } from "./feedback.ts";
+import { icon } from "./share.ts";
+import { dialog, h, plural, toast } from "./ui.ts";
 
-const game = new URL(import.meta.url).searchParams.get("game") || guessGame();
-const def = GAMES[game];
+/** What PUT /api/saves/<game> answers. */
+interface SaveResult extends CloudSave {
+  player: Player;
+  certificate: { id: string; name: string; fresh?: boolean } | null;
+  rank: number | null;
+}
 
-function guessGame() {
+// The game is named in this script's own URL (play.js?game=curb); the page's
+// path is the fallback. Either way it's a key of GAMES only if def is set.
+const game = (new URL(import.meta.url).searchParams.get("game") || guessGame()) as GameKey;
+const def: GameDef = GAMES[game];
+
+function guessGame(): string {
   const first = location.pathname.split("/").filter(Boolean)[0];
   return first === "play" ? "dunder-quest" : first;
 }
 
 const MARK = `dq.synced.${game}`;
 /** What this browser last knew of its own progress, to tell an in-game reset from a stale save. */
-function marker() {
+function marker(): { count: number } | null {
   try {
     return JSON.parse(localStorage.getItem(MARK) || "null");
   } catch {
     return null;
   }
 }
-function setMarker(count) {
+function setMarker(count: number): void {
   try {
     localStorage.setItem(MARK, JSON.stringify({ count }));
   } catch {}
@@ -44,24 +57,24 @@ function setMarker(count) {
 
 // Ask for the cloud save straight away: the game takes seconds to download,
 // so this is nearly always back before the game's Social autoload asks.
-let cloud = null; // {data, summary} or null
+let cloud: CloudSave | null = null; // {data, summary} or null
 let cloudReady = false;
-let booted = null; // the text the game started on
-const cloudFetch = (token() ? api("GET", "/api/saves").then((r) => {
+let booted: string | null = null; // the text the game started on
+const cloudFetch = (token() ? api<{ saves: Partial<Record<GameKey, CloudSave>> }>("GET", "/api/saves").then((r) => {
   cloud = r.saves[game] || null;
 }).catch(() => {}) : Promise.resolve()).finally(() => {
   cloudReady = true;
   if (booted !== null) lateCloud();
 });
 
-let last = null; // the summary of the last save seen
+let last: Summary | null = null; // the summary of the last save seen
 let lastText = "";
 
 /**
  * The game's Social autoload calls this before its progress loads. Returns
  * the save to use when the cloud has progress this browser lacks, else "".
  */
-function boot(_game, local) {
+function boot(_game: string, local: string): string {
   booted = local || "";
   const localSave = local ? normalize(game, local) : null;
   last = summarize(game, localSave);
@@ -71,7 +84,7 @@ function boot(_game, local) {
 }
 
 /** The merged save as text if it adds anything to `local`, else null. */
-function mergedText(local) {
+function mergedText(local: string): string | null {
   const localSave = local ? normalize(game, local) : null;
   const localCount = summarize(game, localSave).count;
   const mark = marker();
@@ -80,7 +93,7 @@ function mergedText(local) {
     setMarker(localCount);
     return null;
   }
-  const merged = merge(game, localSave, cloud.data);
+  const merged = merge(game, localSave, cloud!.data);
   if (!merged || JSON.stringify(merged) === JSON.stringify(localSave)) return null;
   setMarker(summarize(game, merged).count);
   last = summarize(game, merged);
@@ -88,7 +101,7 @@ function mergedText(local) {
 }
 
 /** The cloud answered after the game started: offer to reload if it has more. */
-function lateCloud() {
+function lateCloud(): void {
   if (!cloud || booted === null) return;
   const text = mergedText(lastText || booted);
   if (!text) return;
@@ -97,13 +110,13 @@ function lateCloud() {
     timeout: 0,
     actions: [["Load it", () => {
       try {
-        sessionStorage.setItem(`dq.restore.${game}`, pendingRestore);
+        sessionStorage.setItem(`dq.restore.${game}`, pendingRestore!);
       } catch {}
       location.reload();
     }]],
   });
 }
-let pendingRestore = null;
+let pendingRestore: string | null = null;
 
 // A reload asked for by lateCloud(): hand the merged save straight to boot().
 const restoring = (() => {
@@ -116,7 +129,7 @@ const restoring = (() => {
   }
 })();
 
-function bootWithRestore(g, local) {
+function bootWithRestore(g: string, local: string): string {
   if (restoring) {
     booted = local || "";
     const merged = merge(game, local ? normalize(game, local) : null, restoring);
@@ -129,7 +142,7 @@ function bootWithRestore(g, local) {
 }
 
 /** The page script loaded after the game had already read its save: watch from here. */
-function attach(_game, local) {
+function attach(_game: string, local: string): void {
   booted = local || "";
   last = summarize(game, local ? normalize(game, local) : null);
   lastText = local || "";
@@ -137,20 +150,20 @@ function attach(_game, local) {
   if (cloudReady) lateCloud();
 }
 
-let uploadTimer = 0;
-let uploading = Promise.resolve();
+let uploadTimer: ReturnType<typeof setTimeout> | undefined;
+let uploading: Promise<void> = Promise.resolve();
 let uploadedText = "";
 
 /**
  * The game saved (or started with a save): score it against the last one,
  * then back it up. A save with nothing cleared yet doesn't make a player.
  */
-function saved(_game, text) {
+function saved(_game: string, text: string): void {
   if (!text) return;
   const save = normalize(game, text);
   if (!save) return;
   const now = summarize(game, save);
-  let fresh = [];
+  let fresh: number[] = [];
   if (text !== lastText) {
     const before = last || summarize(game, null);
     fresh = now.cleared.filter((id) => !before.cleared.includes(id));
@@ -177,19 +190,20 @@ function saved(_game, text) {
 
 let welcomed = false;
 // A first clear's toast, held back so the welcome can say both in one toast.
-let heldClear = null;
+let heldClear: [number, Summary] | null = null;
 
-async function upload(text) {
+async function upload(text: string): Promise<void> {
   const firstTime = !token();
   await ensurePlayer();
-  const res = await api("PUT", `/api/saves/${game}`, { data: text });
+  const res = await api<SaveResult>("PUT", `/api/saves/${game}`, { data: text });
   uploadedText = text;
   cloud = { data: res.data, summary: res.summary };
   setPlayer(res.player); // keeps the cached XP current, and redraws the chip
   if (res.certificate?.fresh) certificateEarned(res.certificate);
   else if (firstTime && !welcomed && res.summary.count) {
     welcomed = true;
-    const level = heldClear && def.levels.find((l) => l.id === heldClear[0]);
+    const held = heldClear;
+    const level = held && def.levels.find((l) => l.id === held[0]);
     toast(`${level ? `Cleared “${level.name}”! ` : ""}You're on the leaderboard as ${res.player.name}${res.rank ? `, #${res.rank} in ${def.short}` : ""}. No sign-up needed.`, {
       kind: level ? "win" : "",
       timeout: 10000,
@@ -199,7 +213,7 @@ async function upload(text) {
   heldClear = null;
 }
 
-function celebrate(id, now, held = false) {
+function celebrate(id: number, now: Summary, held = false): void {
   const level = def.levels.find((l) => l.id === id);
   if (!level || now.complete) return; // a finished game gets the certificate instead
   // No player yet: this clear makes one, and the welcome toast says both.
@@ -214,7 +228,7 @@ function celebrate(id, now, held = false) {
   });
 }
 
-function certificateEarned(cert) {
+function certificateEarned(cert: { id: string; name: string }): void {
   const url = `/c/${cert.id}`;
   const { body, close } = dialog("You earned a certificate!", { className: "dq-cert-dialog", onClose: focusGame });
   const name = h("input", { value: cert.name, maxlength: 32, minlength: 2, "aria-label": "Name on the certificate" });
@@ -231,7 +245,7 @@ function certificateEarned(cert) {
           img.src = `${url}.png?t=${Date.now()}`;
           status.textContent = "Saved.";
         } catch (err) {
-          status.textContent = err.message;
+          status.textContent = (err as Error).message;
         }
       },
     }, h("label", {}, "Name on it ", name), h("button.dq-btn", { type: "submit" }, "Save")),
@@ -241,9 +255,9 @@ function certificateEarned(cert) {
       h("button.dq-btn", { type: "button", onclick: close }, "Keep playing")),
   );
   // Then the next game: the first after this one, in the site's order, not finished yet.
-  const actions = body.querySelector(".dq-actions");
+  const actions = body.querySelector(".dq-actions")!;
   me().then((data) => {
-    const done = (k) => k === game || data?.saves?.[k]?.complete;
+    const done = (k: GameKey) => k === game || data?.saves?.[k]?.complete;
     const from = ORDER.indexOf(game);
     const next = [...ORDER.slice(from + 1), ...ORDER.slice(0, from)].find((k) => !done(k));
     if (!next) return;
@@ -268,65 +282,70 @@ function certificateEarned(cert) {
 
 // ---- The toolbar ----
 
-let chip;
+let chip: HTMLButtonElement | undefined;
 
-function updateChip(player) {
+function updateChip(player: Player | null): void {
   if (!chip) return;
-  chip.querySelector(".dq-chip-face").innerHTML = player ? avatarSvg(player.id, 20) : icon("user");
-  chip.querySelector(".dq-chip-name").textContent = player ? player.name : "Guest";
+  chip.querySelector(".dq-chip-face")!.innerHTML = player ? avatarSvg(player.id, 20) : icon("user");
+  chip.querySelector(".dq-chip-name")!.textContent = player ? player.name : "Guest";
   chip.title = player ? `${player.name} · ${player.xp} XP` : "Playing as a guest: nothing to sign up for";
   chip.setAttribute("aria-label", player ? `You: ${player.name}` : "You, playing as a guest");
 }
 
-function canvas() {
-  return document.getElementById("canvas") || document.querySelector("canvas");
+function canvas(): HTMLCanvasElement | null {
+  return (document.getElementById("canvas") as HTMLCanvasElement | null) || document.querySelector("canvas");
 }
 
-function focusGame() {
+function focusGame(): void {
   canvas()?.focus();
 }
 
-function context() {
+function context(): { level: GameDef["levels"][number] | undefined; complete: boolean } {
   const s = last || summarize(game, null);
   const id = s.cleared[s.cleared.length - 1];
   return { level: def.levels.find((l) => l.id === id), complete: s.complete };
 }
 
-function screenshot() {
+function screenshot(): void {
   const c = canvas();
   if (!c) return;
   openComposer(c, game, context(), { onClose: focusGame });
 }
 
-async function openBoard() {
+/** The feedback form over the game, with the game and where the player is filled in. */
+function feedback(): void {
+  openFeedback({ game, context: progressLine(game, last || summarize(game, null)), onClose: focusGame });
+}
+
+async function openBoard(): Promise<void> {
   const { body } = dialog(`${def.name} leaderboard`, { onClose: focusGame });
   body.append(h("p.dq-status", {}, "Loading…"));
   try {
-    const board = await api("GET", `/api/leaderboard?game=${game}&limit=10`);
+    const board = await api<Board>("GET", `/api/leaderboard?game=${game}&limit=10`);
     body.textContent = "";
     if (!board.rows.length) {
       body.append(h("p", {}, `Nobody's on the board yet. Clear a ${def.unit[0]} and it's yours.`));
     } else {
       const me = cachedPlayer();
-      const row = (r, mine) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
+      const row = (r: BoardRow, mine?: boolean) => h(`li${mine || (me && r.id === me.id) ? ".dq-me" : ""}`, {},
         h("span.dq-rank", {}, `#${r.rank}`),
         h("a.dq-name", { href: `/u/${r.id}`, target: "_blank" }, h("span", { html: avatarSvg(r.id, 18) }), r.name),
         h("span.dq-progress", {}, `${r.count}/${r.total}`),
         h("span.dq-line", {}, r.complete ? `★ ${r.line}` : r.line));
       // You, under a gap, when you're further down than the top ten.
-      const below = board.me && !board.rows.some((r) => r.id === board.me.id);
+      const below = board.me && !board.rows.some((r) => r.id === board.me!.id);
       body.append(h("ol.dq-board", {}, board.rows.map((r) => row(r)),
         below ? h("li.dq-gap", { "aria-hidden": "true" }, "⋯") : null,
-        below ? row(board.me, true) : null));
+        below ? row(board.me!, true) : null));
     }
     if (board.rows.length && !board.me) body.append(h("p.dq-fine", {}, `Clear a ${def.unit[0]} and you're on it, under a silly name you can change.`));
     body.append(h("p", {}, h("a", { href: `/leaderboards/#${game}`, target: "_blank" }, "Every leaderboard")));
   } catch (err) {
-    body.textContent = err.message;
+    body.textContent = (err as Error).message;
   }
 }
 
-async function openAccount() {
+async function openAccount(): Promise<void> {
   const player = cachedPlayer();
   const { body, close } = dialog(player ? player.name : "Playing as a guest", { onClose: focusGame });
   const status = h("p.dq-status", { role: "status" });
@@ -346,7 +365,7 @@ async function openAccount() {
           updateChip(p);
           status.textContent = "Saved.";
         } catch (err) {
-          status.textContent = err.message;
+          status.textContent = (err as Error).message;
         }
       },
     }, h("label", {}, "Name ", name), h("button.dq-btn", { type: "submit" }, "Save")),
@@ -373,17 +392,18 @@ async function openAccount() {
     h("button.dq-btn", { type: "button", onclick: close }, "Back to the game")));
 }
 
-function toolbar() {
+function toolbar(): void {
   chip = h("button.dq-tool.dq-chip", { type: "button", onclick: openAccount }, h("span.dq-chip-face", { html: icon("user") }), h("span.dq-chip-name", {}, "Guest"));
-  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Screenshot, leaderboard and you" },
+  const bar = h("div.dq-toolbar", { role: "toolbar", "aria-label": "Screenshot, leaderboard, feedback and you" },
     h("button.dq-tool", { type: "button", title: "Screenshot (F9)", "aria-label": "Take a screenshot to share", onclick: screenshot }, h("span", { html: icon("camera") })),
     h("button.dq-tool", { type: "button", title: "Leaderboard", "aria-label": "Leaderboard", onclick: openBoard }, h("span", { html: icon("trophy") })),
+    h("button.dq-tool", { type: "button", title: "Send feedback", "aria-label": "Send feedback", onclick: feedback }, h("span", { html: icon("chat") })),
     chip);
   document.body.append(bar);
   updateChip(cachedPlayer());
   onPlayer(updateChip);
   // Fade the bar while playing; any mouse movement brings it back.
-  let idle = 0;
+  let idle: ReturnType<typeof setTimeout> | undefined;
   const wake = () => {
     bar.classList.remove("dq-idle");
     clearTimeout(idle);
