@@ -70,7 +70,7 @@ A new origin (another preview host, a different local port) goes on the client's
 
 ### Turnstile on the feedback form
 
-Not on yet: the form works on the honeypot and the rate limit until it is, so nothing breaks before then. To turn it on:
+On since 27 November 2026: the widget is "Dunder Quest feedback" (Managed, for `dunderquest.com`, `dev.dunderquest.com` and `localhost`), and both Workers have its secret. Without the site key or the secret, the form falls back to the honeypot and the rate limit, so nothing breaks. To set it up again (a new account, or a rotated secret):
 
 1. In the Cloudflare dashboard, open **Turnstile** and **Add widget**: name it "Dunder Quest feedback", add the hostnames `dunderquest.com`, `dev.dunderquest.com` and `localhost`, and choose the **Managed** mode (it only shows a checkbox when it's unsure).
 2. Put the **site key** (public) in `TURNSTILE_SITE_KEY` at the top of `cloudflare.config.ts`.
