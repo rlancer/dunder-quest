@@ -3,9 +3,9 @@
 // (/u/<id>) and a shared screenshot (/s/<id>), with their images. They
 // borrow the site's stylesheet and bar, so they look like the rest of it.
 
-import { GAMES, ORDER, bestLine, formatTime, summarize } from "../../site/static/social/games.js";
-import { avatarSvg } from "../../site/static/social/avatar.js";
-import { icon, linkedInCertUrl, shareButtons } from "../../site/static/social/share.js";
+import { GAMES, ORDER, bestLine, formatTime, summarize } from "../../site/static/social/games.ts";
+import { avatarSvg } from "../../site/static/social/avatar.ts";
+import { icon, linkedInCertUrl, shareButtons } from "../../site/static/social/share.ts";
 import { certJson, certsOf, leaderboard, publicPlayer, savesOf } from "./api";
 import { CERT_DESIGN, type CardGame, certificatePng, longDate, profilePng } from "./cards";
 import type { CertRow, Env, PlayerRow, ShotRow } from "./db";

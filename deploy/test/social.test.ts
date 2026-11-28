@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { assets, d1 } from "../dev";
 import worker, { type Env } from "../src/worker";
-import { bestLine, merge, normalize, summarize } from "../../site/static/social/games.js";
+import { bestLine, merge, normalize, summarize } from "../../site/static/social/games.ts";
 
 const CLIENT_ID = "test-client.apps.googleusercontent.com";
 let site: string;

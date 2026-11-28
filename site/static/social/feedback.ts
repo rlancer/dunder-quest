@@ -8,13 +8,20 @@
 // rate limit, and Cloudflare Turnstile once the site has a widget (its site
 // key comes from /api/config; without one the form works without it).
 
-import { api, getConfig } from "./client.js";
-import { FEEDBACK_KINDS, FEEDBACK_MAX, GAMES, ORDER } from "./games.js";
-import { dialog, h } from "./ui.js";
+import { api, getConfig } from "./client.ts";
+import { FEEDBACK_KINDS, FEEDBACK_MAX, GAMES, ORDER, type FeedbackKind, type GameKey, type Summary } from "./games.ts";
+import { dialog, h } from "./ui.ts";
 
 const DRAFT = "dq.feedback.draft";
 
-const PROMPTS = {
+/** What the form remembers between visits, until it's sent. */
+interface Draft {
+  kind?: string;
+  message?: string;
+  contact?: string;
+}
+
+const PROMPTS: Record<FeedbackKind, string> = {
   bug: "What happened, and what did you expect?",
   stuck: "Where are you stuck, and what have you tried?",
   idea: "What would make it better?",
@@ -25,7 +32,7 @@ const PROMPTS = {
 const CHECK = '<svg class="dq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12l5 5L20 6"/></svg>';
 const TICK = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L19 7"/></svg>';
 
-function loadDraft() {
+function loadDraft(): Draft {
   try {
     return JSON.parse(localStorage.getItem(DRAFT) || "null") || {};
   } catch {
@@ -33,7 +40,7 @@ function loadDraft() {
   }
 }
 
-function saveDraft(draft) {
+function saveDraft(draft: Draft | null): void {
   try {
     if (draft) localStorage.setItem(DRAFT, JSON.stringify(draft));
     else localStorage.removeItem(DRAFT);
@@ -43,10 +50,10 @@ function saveDraft(draft) {
 /**
  * Where a player has got to in a game, as a line kept with their feedback:
  * the level they're up to and how many they've cleared, e.g. "Scene 3, The
- * Regift (2 of 10 cleared)". `summary` is games.js's summarize().
+ * Regift (2 of 10 cleared)". `summary` is games.ts's summarize().
  */
-export function progressLine(game, summary) {
-  const def = GAMES[game];
+export function progressLine(game: string, summary: Summary | null): string {
+  const def = GAMES[game as GameKey];
   if (!def || !summary) return "";
   const { count, total, complete, cleared } = summary;
   if (complete) return `Finished (${total} of ${total})`;
@@ -57,15 +64,15 @@ export function progressLine(game, summary) {
   return `${unit} ${index + 1}, ${level.name} (${count} of ${total} cleared)`;
 }
 
-let turnstileScript = null;
+let turnstileScript: Promise<Turnstile> | null = null;
 
-function loadTurnstile() {
+function loadTurnstile(): Promise<Turnstile> {
   if (!turnstileScript) {
-    turnstileScript = new Promise((resolve, reject) => {
+    turnstileScript = new Promise<Turnstile>((resolve, reject) => {
       const s = document.createElement("script");
       s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
       s.async = true;
-      s.onload = () => resolve(window.turnstile);
+      s.onload = () => resolve(window.turnstile!);
       s.onerror = () => {
         turnstileScript = null;
         reject(new Error("Couldn't load the bot check."));
@@ -85,9 +92,13 @@ function loadTurnstile() {
  * - `rating` shows the "How's the game so far?" stars.
  * - `onDone` closes the dialog: the "Back to the game" buttons.
  */
-export function feedbackForm(root, { game = "", context = "", kind: firstKind = "bug", rating: withRating = false, onDone = null } = {}) {
+export function feedbackForm(
+  root: HTMLElement,
+  { game = "", context = "", kind: firstKind = "bug", rating: withRating = false, onDone = null }:
+    { game?: string; context?: string; kind?: FeedbackKind; rating?: boolean; onDone?: (() => void) | null } = {},
+): HTMLFormElement {
   const draft = loadDraft();
-  const startGame = game && GAMES[game] ? game : "";
+  const startGame = game && GAMES[game as GameKey] ? (game as GameKey) : "";
   const inGame = Boolean(onDone && startGame);
 
   const about = h("select", { name: "game" },
@@ -97,30 +108,30 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
   const aboutField = h("label.dq-fb-field", {}, h("span.dq-label", {}, "About"), about);
 
   // In a game: the game and where they are, with the picker behind Change.
-  let sentWith = null;
+  let sentWith: HTMLDivElement | null = null;
   if (inGame) {
     aboutField.hidden = true;
     sentWith = h("div.dq-fb-context", {},
       h("span", { html: CHECK }),
-      h("span", {}, "Sent with: ", h("b", {}, GAMES[startGame].name), context ? `, ${context[0].toLowerCase()}${context.slice(1)}` : ""),
+      h("span", {}, "Sent with: ", h("b", {}, GAMES[startGame as GameKey].name), context ? `, ${context[0].toLowerCase()}${context.slice(1)}` : ""),
       h("a", {
         href: "#", onclick: (e) => {
           e.preventDefault();
-          sentWith.hidden = true;
+          sentWith!.hidden = true;
           aboutField.hidden = false;
           about.focus();
         },
       }, "Change"));
   }
 
-  let kind = FEEDBACK_KINDS[draft.kind] ? draft.kind : firstKind;
+  let kind: FeedbackKind = FEEDBACK_KINDS[draft.kind as FeedbackKind] ? (draft.kind as FeedbackKind) : firstKind;
   const kinds = h("div.dq-fb-kinds", { role: "radiogroup", "aria-label": "What it's about" },
     Object.entries(FEEDBACK_KINDS).map(([key, label]) => h("button.dq-fb-kind", {
-      type: "button", role: "radio", "data-kind": key, onclick: () => setKind(key),
+      type: "button", role: "radio", "data-kind": key, onclick: () => setKind(key as FeedbackKind),
     }, label)));
-  function setKind(key) {
+  function setKind(key: FeedbackKind): void {
     kind = key;
-    for (const b of kinds.children) b.setAttribute("aria-checked", String(b.dataset.kind === key));
+    for (const b of kinds.children as HTMLCollectionOf<HTMLElement>) b.setAttribute("aria-checked", String(b.dataset.kind === key));
     message.placeholder = PROMPTS[key];
     keep();
   }
@@ -131,9 +142,9 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
       type: "button", role: "radio", "aria-checked": "false", "aria-label": `${n} out of 5`, "data-n": n,
       onclick: () => setRating(rating === n ? 0 : n),
     }, "★")));
-  function setRating(n) {
+  function setRating(n: number): void {
     rating = n;
-    for (const b of stars.children) {
+    for (const b of stars.children as HTMLCollectionOf<HTMLElement>) {
       b.classList.toggle("dq-on", Number(b.dataset.n) <= n);
       b.setAttribute("aria-checked", String(Number(b.dataset.n) === n));
     }
@@ -151,7 +162,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
   // Turnstile, if the site has a widget: drawn when the config says so.
   const bot = h("div.dq-fb-turnstile");
   let botToken = "";
-  let botWidget = null;
+  let botWidget: string | null = null;
   getConfig().then(async ({ turnstile: siteKey }) => {
     if (!siteKey) return bot.remove();
     const ts = await loadTurnstile();
@@ -160,13 +171,13 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
       theme: "dark",
       size: "flexible",
       action: "feedback",
-      callback: (t) => (botToken = t),
+      callback: (t: string) => (botToken = t),
       "expired-callback": () => (botToken = ""),
       "error-callback": () => {
         botToken = "";
       },
     });
-  }).catch((err) => {
+  }).catch((err: Error) => {
     status.textContent = err.message;
   });
   const resetBot = () => {
@@ -174,7 +185,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
     if (botWidget !== null) window.turnstile?.reset(botWidget);
   };
 
-  function keep() {
+  function keep(): void {
     saveDraft({ kind, message: message.value, contact: contact.value });
   }
   message.addEventListener("input", keep);
@@ -214,7 +225,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
         saveDraft(null);
         thanks(Boolean(contact.value.trim()));
       } catch (err) {
-        status.textContent = err.message;
+        status.textContent = (err as Error).message;
         send.disabled = false;
         resetBot();
       }
@@ -237,7 +248,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
     h("div.dq-actions.dq-fb-actions", {}, send, back),
     status);
 
-  function thanks(withEmail) {
+  function thanks(withEmail: boolean): void {
     root.replaceChildren(h("div.dq-fb-thanks", { tabindex: "-1" },
       h("div.dq-fb-thanks-head", {},
         h("span.dq-fb-tick", { html: TICK, "aria-hidden": "true" }),
@@ -251,7 +262,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
           type: "button",
           onclick: () => feedbackForm(root, { game: about.value, context: about.value === startGame ? context : "", kind: firstKind, rating: withRating, onDone }),
         }, "Send more"))));
-    root.firstChild.focus();
+    (root.firstChild as HTMLElement).focus();
   }
 
   setKind(kind);
@@ -260,7 +271,7 @@ export function feedbackForm(root, { game = "", context = "", kind: firstKind = 
 }
 
 /** The form in a dialog, over a game. */
-export function openFeedback({ game = "", context = "", onClose } = {}) {
+export function openFeedback({ game = "", context = "", onClose }: { game?: string; context?: string; onClose?: () => void } = {}): void {
   const { body, close } = dialog("Send feedback", { onClose, className: "dq-fb-dialog" });
   feedbackForm(body, { game, context, rating: Boolean(game), onDone: close });
   body.querySelector("textarea")?.focus();

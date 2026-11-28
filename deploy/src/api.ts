@@ -4,7 +4,7 @@
 
 import {
   FEEDBACK_KINDS, FEEDBACK_MAX, GAMES, ORDER, bestLine, merge, normalize, randomName, summarize,
-} from "../../site/static/social/games.js";
+} from "../../site/static/social/games.ts";
 import { authenticate, createPlayer, issueToken, revokeToken, verifyGoogle } from "./auth";
 import { type CertRow, type Env, type PlayerRow, type SaveRow, type ShotRow, now, randomId } from "./db";
 import { allowedName } from "./names";

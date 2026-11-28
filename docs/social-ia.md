@@ -42,7 +42,7 @@ Three places, three names, used the same way everywhere:
 - **Public profile** (`/u/<id>`): what others see. Linked from Your progress, from every board row, certificate and screenshot.
 - **Leaderboards** (`/leaderboards/`): in the site bar on every site page.
 
-And one face: a **pixel avatar** drawn from the player's id (a mirrored 5×5 sprite in one of eight colours, `site/static/social/avatar.js`). It needs no upload, stores nothing, and is the same in the browser and in the Worker's pages. It's the "profile picture" on the bar, the play toolbar, the boards, Your progress and the public profile.
+And one face: a **pixel avatar** drawn from the player's id (a mirrored 5×5 sprite in one of eight colours, `site/static/social/avatar.ts`). It needs no upload, stores nothing, and is the same in the browser and in the Worker's pages. It's the "profile picture" on the bar, the play toolbar, the boards, Your progress and the public profile.
 
 ## What this change did
 
@@ -60,7 +60,7 @@ And one face: a **pixel avatar** drawn from the player's id (a mirrored 5×5 spr
 
 Rob then asked for whatever would help engagement most. Most visits land on the home page or a game's own page (the trailers link there), and neither knew a returning player. So:
 
-- **Welcome back** (`site/static/social/resume.js`): on the home page and on every game's page, a returning player sees their avatar, "Welcome back, Sleepy Prince 649.", where they are ("1 of 5 rooms of Prince of Versions cleared. Next up: The Vizier's Seal (git reset).") and one button to carry on, in the page's own button style. The home page picks the game they played last (`/api/me` now says when each save was last played); a finished game points at its certificate and the next game. Their overall rank shows only when it's encouraging (top ten, or the top half). Newcomers see nothing.
+- **Welcome back** (`site/static/social/resume.ts`): on the home page and on every game's page, a returning player sees their avatar, "Welcome back, Sleepy Prince 649.", where they are ("1 of 5 rooms of Prince of Versions cleared. Next up: The Vizier's Seal (git reset).") and one button to carry on, in the page's own button style. The home page picks the game they played last (`/api/me` now says when each save was last played); a finished game points at its certificate and the next game. Their overall rank shows only when it's encouraging (top ten, or the top half). Newcomers see nothing.
 - **Your row on every board**: when you're below the top ten (in a game) or the top five or fifty (the home page and `/leaderboards/`), your row appears under a gap, avatar and all, instead of a line of text.
 - **The next game, straight after a certificate**: the certificate dialog adds "Next: learn SQL in Just One More JOIN", the next game in the site's order that isn't finished.
 

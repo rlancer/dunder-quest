@@ -2,15 +2,18 @@
 // screenshots, Google sign-in, your save key (to move to another device
 // without Google), and deleting it all.
 
-import { avatarSvg } from "./avatar.js";
-import { GAMES, ORDER, bestLine } from "./games.js";
-import { api, deleteAccount, googleButton, me, rename, signOut, token, useKey } from "./client.js";
-import { icon, linkedInCertUrl } from "./share.js";
-import { copyText, h, plural } from "./ui.js";
+import { avatarSvg } from "./avatar.ts";
+import { GAMES, ORDER, bestLine } from "./games.ts";
+import {
+  api, deleteAccount, googleButton, me, rename, signOut, token, useKey,
+  type Certificate, type MeData, type Player, type Shot,
+} from "./client.ts";
+import { icon, linkedInCertUrl } from "./share.ts";
+import { copyText, h, plural, type Child } from "./ui.ts";
 
-const root = document.getElementById("dq-me");
+const root = document.getElementById("dq-me")!;
 
-async function fromHash() {
+async function fromHash(): Promise<string | null> {
   // A save key link: /me/#key=<token>
   const m = /key=([\w.-]+)/.exec(location.hash);
   if (!m) return null;
@@ -19,15 +22,15 @@ async function fromHash() {
     await useKey(m[1]);
     return "That save key worked: this browser now plays as you.";
   } catch (err) {
-    return `That save key didn't work (${err.message}).`;
+    return `That save key didn't work (${(err as Error).message}).`;
   }
 }
 
-function section(title, ...kids) {
+function section(title: string, ...kids: Child[]): HTMLElement {
   return h("section", {}, h("h2", {}, title), ...kids);
 }
 
-function nameForm(player, status) {
+function nameForm(player: Player, status: HTMLElement): HTMLFormElement {
   const input = h("input", { name: "name", value: player.name, maxlength: 32, minlength: 2, required: true, "aria-label": "Your name" });
   return h("form.dq-inline", {
     onsubmit: async (e) => {
@@ -36,13 +39,13 @@ function nameForm(player, status) {
         const p = await rename(input.value);
         status.textContent = `Saved. You're ${p.name} on the boards.`;
       } catch (err) {
-        status.textContent = err.message;
+        status.textContent = (err as Error).message;
       }
     },
   }, h("label", {}, "Your name on the leaderboards and certificates", input), h("button.btn.btn-small", { type: "submit" }, "Save"));
 }
 
-function signInBlock(player, status) {
+function signInBlock(player: Player | null, status: HTMLElement): HTMLDivElement {
   const box = h("div.dq-google");
   const wrap = h("div", {},
     h("p", {}, player?.google
@@ -63,7 +66,7 @@ function signInBlock(player, status) {
   return wrap;
 }
 
-function keyBlock(status, hasKey = true) {
+function keyBlock(status: HTMLElement, hasKey = true): HTMLDivElement {
   const key = token();
   const link = `${location.origin}/me/#key=${key}`;
   const shown = h("p.dq-key", { hidden: true }, link);
@@ -87,16 +90,16 @@ function keyBlock(status, hasKey = true) {
           await useKey(m[1]);
           render("Switched to that player.");
         } catch (err) {
-          status.textContent = err.message;
+          status.textContent = (err as Error).message;
         }
       },
     }, h("label", {}, "Have a key from another device?", input), h("button.btn.btn-small", { type: "submit" }, "Use it")));
 }
 
-function gamesBlock(saves) {
+function gamesBlock(saves: MeData["saves"]): HTMLDivElement {
   return h("div.dq-games", {}, ORDER.map((key) => {
     const def = GAMES[key];
-    const s = saves[key] || { count: 0, total: def.levels.length, cleared: [], complete: false };
+    const s = saves[key] || { count: 0, total: def.levels.length, cleared: [], complete: false, time: 0, tries: 0 };
     return h("article.dq-game-card", { style: { "--accent": def.accent } },
       h("header", {}, h("h3", {}, h("a", { href: def.page }, def.name)), h("span.dq-lang", {}, def.lang)),
       h("div.dq-bar", {}, h("span", { style: { width: `${Math.round((100 * s.count) / s.total)}%` } })),
@@ -105,7 +108,7 @@ function gamesBlock(saves) {
   }));
 }
 
-function certsBlock(certs) {
+function certsBlock(certs: Certificate[]): HTMLElement {
   if (!certs.length) return h("p", {}, "Finish a game to earn its certificate, with your name on it, ready for LinkedIn.");
   return h("div.dq-feed", {}, certs.map((c) => {
     const def = GAMES[c.game];
@@ -117,7 +120,7 @@ function certsBlock(certs) {
   }));
 }
 
-function shotsBlock(shots) {
+function shotsBlock(shots: Shot[]): HTMLElement {
   if (!shots.length) return h("p", {}, "Press the camera in the corner of any game (or F9) to frame a screenshot with a caption and share it.");
   return h("div.dq-shots", {}, shots.map((s) => h("figure", {},
     h("a", { href: s.url }, h("img", { src: s.image, alt: s.caption || "Screenshot", loading: "lazy" })),
@@ -127,18 +130,18 @@ function shotsBlock(shots) {
         onclick: async (e) => {
           if (!confirm("Delete this screenshot? Its link will stop working.")) return;
           await api("DELETE", `/api/shots/${s.id}`);
-          e.target.closest("figure").remove();
+          (e.target as Element).closest("figure")!.remove();
         },
       }, "Delete")))));
 }
 
-async function render(message = "") {
+async function render(message = ""): Promise<void> {
   root.replaceChildren(h("p.dq-fine", {}, "Loading…"));
-  let data;
+  let data: MeData | null;
   try {
     data = await me();
   } catch (err) {
-    root.replaceChildren(h("p", {}, err.message));
+    root.replaceChildren(h("p", {}, (err as Error).message));
     return;
   }
   const status = h("p.dq-status", { role: "status" }, message);
@@ -182,7 +185,7 @@ async function render(message = "") {
             render("Deleted. Everything's gone from the server.");
           },
         }, "Delete everything"))),
-  ].filter(Boolean));
+  ].filter((el): el is HTMLElement => Boolean(el)));
 }
 
 fromHash().then((msg) => render(msg || ""));

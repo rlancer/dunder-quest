@@ -3,7 +3,7 @@
 // the obvious, and a name that slips through can be hidden by hand
 // (`UPDATE players SET hidden = 1 WHERE id = ...`, see deploy/README.md).
 
-import { cleanName } from "../../site/static/social/games.js";
+import { cleanName } from "../../site/static/social/games.ts";
 
 // Base64, so the source does not read as a list of swear words.
 const BLOCKED = [

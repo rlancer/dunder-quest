@@ -1,14 +1,14 @@
 // The laptops on the Flatmates.js page, like the game's editor: tap the blank
 // to cycle through the options (or tap one), then Run to see what happens.
 (function () {
-  document.querySelectorAll("[data-laptop]").forEach(function (laptop) {
-    const blank = laptop.querySelector(".blank");
-    const picks = Array.from(laptop.querySelectorAll(".pick"));
-    const run = laptop.querySelector(".run");
-    const out = laptop.querySelector(".out");
+  document.querySelectorAll<HTMLElement>("[data-laptop]").forEach(function (laptop) {
+    const blank = laptop.querySelector<HTMLButtonElement>(".blank")!;
+    const picks = Array.from(laptop.querySelectorAll<HTMLButtonElement>(".pick"));
+    const run = laptop.querySelector<HTMLButtonElement>(".run")!;
+    const out = laptop.querySelector<HTMLElement>(".out")!;
     let choice = -1;
 
-    function choose(i) {
+    function choose(i: number): void {
       choice = i;
       blank.textContent = picks[i].textContent === "(nothing)" ? " " : picks[i].textContent;
       blank.classList.add("set");
@@ -26,8 +26,8 @@
     run.addEventListener("click", function () {
       const ok = picks[choice].dataset.ok === "true";
       out.className = "out " + (ok ? "right" : "wrong");
-      out.querySelector("b").textContent = ok ? "It works." : "Not quite.";
-      out.querySelector("span").textContent = picks[choice].dataset.result;
+      out.querySelector("b")!.textContent = ok ? "It works." : "Not quite.";
+      out.querySelector("span")!.textContent = picks[choice].dataset.result ?? null;
       out.hidden = false;
     });
     laptop.classList.add("live");
